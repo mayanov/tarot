@@ -1,80 +1,83 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mayanov Tarot — Sesi Tarot yang Analitis, Bukan Mistis</title>
-    
-    <!-- Load Tailwind CSS (As per reference) -->
+    <title>Mayanov Tarot — Guidance That Meets You Where You Are</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Load Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
     
-    <!-- Custom Configuration based on Reference -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        lilac: '#C0A0FF',
-                        tealAccent: '#81F4FF',
-                        gold: '#FFD700',
-                        bgDark: '#05050A', /* Darker, richer black from reference */
-                        textLight: '#EFEFEF',
-                        textSubtle: '#B0B0C0',
-                    },
-                    fontFamily: {
-                        primary: ['Inter', 'sans-serif'],
-                        accent: ['Lora', 'serif'],
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        /* --- GLOBAL BACKGROUND SETUP (From Reference) --- */
+        /* --- FONTS --- */
+        .font-primary { font-family: 'Inter', sans-serif; }
+        .font-accent { font-family: 'Lora', serif; }
+
+        /* --- COLORS & VARS --- */
+        :root {
+            --color-lilac: #C0A0FF;
+            --color-teal-accent: #81F4FF;
+            --color-bg-dark: #05050A; /* Darker, richer black */
+            --color-text-light: #EFEFEF;
+            --color-text-subtle: #B0B0C0;
+        }
+
+        /* --- GLOBAL BACKGROUND SETUP --- */
         body {
-            background-color: #05050A;
-            color: #EFEFEF;
+            background-color: var(--color-bg-dark);
+            color: var(--color-text-light);
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
             position: relative;
         }
 
-        /* 1. Fixed Gradient Background */
+        /* 1. The Fixed Gradient Background (Deep Space) */
         .fixed-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -3;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
             background: radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.15), transparent 25%), 
                         radial-gradient(circle at 85% 30%, rgba(45, 212, 191, 0.1), transparent 25%);
-            background-color: #05050A;
+            background-color: var(--color-bg-dark);
         }
 
-        /* 2. Star Field */
+        /* 2. The Star Field (Subtle Noise/Stars) */
         .stars-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
             background-image: 
                 radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 2.5px),
                 radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 1.5px);
             background-size: 550px 550px, 350px 350px;
             background-position: 0 0, 40px 60px;
-            opacity: 0.2; pointer-events: none;
-        }
-
-        /* 3. Ambient Glow Orbs */
-        .glow-orb {
-            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; z-index: -1;
+            opacity: 0.2; /* Very subtle */
             pointer-events: none;
         }
-        .glow-lilac { background: #C0A0FF; }
-        .glow-teal { background: #81F4FF; }
+
+        /* 3. Ambient Glow Orbs (Floating Colors) */
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            z-index: -1;
+        }
+        .glow-lilac { background: var(--color-lilac); width: 300px; height: 300px; }
+        .glow-teal { background: var(--color-teal-accent); width: 250px; height: 250px; }
 
         /* --- UTILITIES --- */
         /* Glassmorphism Card Effect */
         .glass-card {
-            background: rgba(30, 30, 47, 0.6);
+            background: rgba(30, 30, 47, 0.6); /* Semi-transparent */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -82,434 +85,397 @@
 
         /* Animations */
         .animate-fade-in-up {
-            opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        .animate-fade-in-up.is-visible { opacity: 1; transform: translateY(0); }
+        .animate-fade-in-up.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-        /* Button Custom Styles */
+        /* --- BUTTONS --- */
         .btn-primary {
-            background-color: #C0A0FF; color: #0F0F1A;
+            background-color: var(--color-lilac);
+            color: #0F0F1A;
+            transition: all 0.3s ease;
             box-shadow: 0 0 15px rgba(192, 160, 255, 0.3);
+            display: inline-block;
         }
         .btn-primary:hover {
-            background-color: #A385E5; transform: translateY(-2px); box-shadow: 0 0 25px rgba(192, 160, 255, 0.6);
+            background-color: #A385E5;
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(192, 160, 255, 0.6);
         }
-        
-        /* Floating WhatsApp */
-        .whatsapp-float {
-            position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px;
-            background-color: #25D366; color: #FFF; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); z-index: 100;
-            transition: transform 0.3s ease;
+        .btn-secondary {
+            border: 2px solid var(--color-lilac);
+            color: var(--color-lilac);
+            background: transparent;
+            transition: all 0.3s ease;
+            display: inline-block;
         }
-        .whatsapp-float:hover { transform: scale(1.1); }
+        .btn-secondary:hover {
+            background-color: rgba(192, 160, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .text-highlight { color: var(--color-teal-accent); }
     </style>
 </head>
-<body class="font-primary antialiased">
+<body class="font-primary">
 
     <!-- BACKGROUND ELEMENTS -->
-    <div class="fixed-bg"></div>
-    <div class="stars-overlay"></div>
+    <div class="fixed-bg"></div> <!-- Deep Gradient -->
+    <div class="stars-overlay"></div> <!-- Stars -->
 
     <div id="app" class="min-h-screen relative">
         
-        <!-- HEADER -->
+        <!-- HEADER / NAVIGATION -->
         <header class="p-6 flex justify-between items-center max-w-7xl mx-auto relative z-10">
-            <h1 class="text-xl font-bold tracking-wider text-lilac flex items-center gap-2 drop-shadow-md">
+            <h1 class="text-xl font-bold tracking-wider text-lilac flex items-center gap-2">
                 <i data-lucide="moon" class="w-5 h-5"></i> Mayanov Tarot
             </h1>
+            <a href="#services" class="text-sm font-semibold text-text-subtle hover:text-lilac transition duration-300 uppercase tracking-widest">
+                Readings
+            </a>
         </header>
 
-        <!-- SECTION 1: HERO -->
-        <section id="hero" class="relative py-24 md:py-32 text-center overflow-hidden">
-            <!-- Ambient Glows -->
-            <div class="glow-orb glow-lilac w-64 h-64 top-0 left-1/4 animate-pulse"></div>
-            <div class="glow-orb glow-teal w-64 h-64 bottom-0 right-1/4 animate-pulse delay-1000"></div>
+        <!-- SECTION 1: HERO SECTION -->
+        <section id="hero" class="relative py-24 md:py-40 text-center overflow-hidden">
+            
+            <!-- Ambient Glows specific to Hero -->
+            <div class="glow-orb glow-lilac top-0 left-1/4 animate-pulse duration-[5000ms]"></div>
+            <div class="glow-orb glow-teal bottom-0 right-1/4 animate-pulse duration-[7000ms]"></div>
 
             <div class="max-w-4xl mx-auto px-4 animate-fade-in-up relative z-10">
+                
                 <!-- Icon Visual -->
                 <div class="w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-b from-lilac/20 to-transparent border border-lilac/30 flex items-center justify-center shadow-[0_0_30px_rgba(192,160,255,0.2)]">
                     <i data-lucide="sparkles" class="w-10 h-10 text-lilac"></i>
                 </div>
 
-                <h2 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight font-accent text-transparent bg-clip-text bg-gradient-to-r from-lilac via-white to-tealAccent drop-shadow-lg">
-                    Sesi Tarot yang Analitis,<br>Bukan Mistis!
+                <h2 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight font-accent text-transparent bg-clip-text bg-gradient-to-r from-lilac via-white to-teal-accent drop-shadow-lg">
+                    Guidance That Meets You Where You Are.
                 </h2>
                 
-                <p class="text-lg md:text-xl text-textSubtle mb-10 max-w-2xl mx-auto leading-relaxed">
-                    Dapatkan bacaan yang jelas, analitis, dan solutif—bukan sekadar ramalan tanpa arah.
+                <p class="text-xl md:text-2xl text-text-subtle mb-10 max-w-2xl mx-auto leading-relaxed">
+                    Clear, compassionate, and accurate insight. <br class="hidden md:block"> Tarot for self-reflection, not just prediction.
                 </p>
 
-                <!-- CTA BUTTON -->
+                <!-- CTA BUTTONS -->
                 <div class="flex justify-center">
-                    <a href="#services" class="btn-primary py-4 px-10 rounded-full text-lg font-bold tracking-wide transition-all duration-300 flex items-center gap-2">
-                        <i data-lucide="book-open-text" class="w-5 h-5"></i>
-                        Pilih Paket & Pesan Sesi
+                    <a href="#services" class="btn-primary py-4 px-12 rounded-full text-lg font-bold tracking-wide">
+                        Book a Reading
                     </a>
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 2: ABOUT (Glassmorphism) -->
-        <section id="about" class="py-16 md:py-24 relative">
-            <div class="max-w-5xl mx-auto px-4 animate-fade-in-up relative z-10">
-                <div class="glass-card rounded-3xl p-8 md:p-12 md:flex md:gap-12 items-start shadow-2xl">
+        <!-- SECTION 2: TRUST PROOF -->
+        <section id="trust" class="py-16 border-y border-white/5 bg-black/20 backdrop-blur-sm">
+            <div class="max-w-6xl mx-auto px-4 text-center animate-fade-in-up">
+                
+                <div class="inline-block px-4 py-1 rounded-full border border-teal-accent/30 bg-teal-accent/5 text-teal-accent mb-6 text-sm font-semibold tracking-wider">
+                    ★ ★ ★ ★ ★ TRUSTED SINCE 2018
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mt-6">
+                    <div class="p-6">
+                        <div class="text-4xl font-bold text-white mb-2">1,000+</div>
+                        <p class="text-text-subtle">Happy Clients</p>
+                    </div>
+                    <div class="p-6 border-l-0 md:border-l border-white/10">
+                        <div class="text-4xl font-bold text-white mb-2">100%</div>
+                        <p class="text-text-subtle">Confidential</p>
+                    </div>
+                    <div class="p-6 border-l-0 md:border-l border-white/10">
+                        <div class="text-4xl font-bold text-white mb-2">Google</div>
+                        <p class="text-text-subtle">5-Star Reviews</p>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <a href="https://share.google/JFQhliOEEXSBetR9g" target="_blank" class="text-lilac hover:text-white transition underline underline-offset-4">
+                        Read reviews on Google Business &rarr;
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: ABOUT -->
+        <section id="about" class="py-20 md:py-32 relative">
+             <!-- Side Glow -->
+             <div class="glow-orb glow-lilac top-1/2 left-1/4 w-[400px] h-[400px]"></div>
+
+            <div class="max-w-5xl mx-auto px-4 animate-fade-in-up">
+                <div class="glass-card rounded-3xl p-8 md:p-12 md:flex md:space-x-12 items-center shadow-2xl">
                     
                     <!-- Profile Image -->
-                    <div class="w-48 h-48 md:w-64 md:h-64 mx-auto md:mx-0 mb-8 md:mb-0 rounded-full p-1 border-2 border-lilac/30 bg-white/5 flex-shrink-0 shadow-[0_0_20px_rgba(192,160,255,0.2)]">
+                    <div class="w-40 h-40 md:w-56 md:h-56 mx-auto md:mx-0 mb-8 md:mb-0 rounded-full p-2 border border-lilac/30 bg-white/5 flex-shrink-0">
                         <img 
-                            src="https://tarotreadingbymayanov.com/wp-content/uploads/2024/05/WhatsApp-Image-2024-05-15-at-5.34.55-PM-e1715769487923.jpeg" 
-                            alt="Mayanov Tarot Reader"
+                            src="https://mlpx3kook1t5.i.optimole.com/w:300/h:281/q:mauto/f:best/https://tarotreadingbymayanov.com/wp-content/uploads/2024/05/WhatsApp-Image-2024-05-15-at-5.34.55-PM-e1715769487923.jpeg" 
+                            alt="Mayanov"
                             class="w-full h-full object-cover rounded-full"
-                            loading="lazy"
+                            onerror="this.onerror=null; this.src='https://placehold.co/300x281/1E1E2F/C0A0FF?text=Mayanov';" 
                         >
                     </div>
 
-                    <div class="flex-1 text-center md:text-left space-y-6">
-                        <h2 class="text-3xl font-bold font-accent text-white">Tentang Mayanov</h2>
-                        <p class="text-textSubtle text-lg leading-relaxed">
-                            Saya telah mendalami seni membaca kartu Tarot sejak <b>2009</b>. Dengan pengalaman lebih dari 10 tahun, saya menemukan bahwa kartu Tarot adalah medium yang baik untuk melakukan <b>refleksi diri</b> dan <b>mencari solusi</b> sebuah permasalahan.
+                    <div class="text-lg md:text-xl text-text-light text-center md:text-left space-y-6">
+                        <h2 class="text-3xl font-bold font-accent text-white">Hi, I'm Mayanov.</h2>
+                        <p class="text-text-subtle">
+                            I’ve been practicing Tarot since 2009. To me, Tarot isn't about predicting a fixed future—it's a tool for clarity.
                         </p>
-                        <p class="text-textSubtle text-lg leading-relaxed">
-                            Karena pada dasarnya pembacaan Tarot bukanlah sesederhana ‘menerawang’ masa depan, melainkan menjadi sesi konsultasi yang <b>mendewasakan</b> baik Anda maupun saya.
+                        <p class="text-text-subtle">
+                            My goal is to help you understand your current energy and empower you to make the best decisions for your path. Grounded, practical, and empathetic guidance.
                         </p>
-                        <div class="pt-4">
-                            <a href="https://share.google/JFQhliOEEXSBetR9g" target="_blank" class="inline-flex items-center gap-2 text-tealAccent font-bold hover:text-white transition-colors duration-300">
-                                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
-                                Lihat Testimoni 5-Bintang di Google
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 3: SERVICES (The Grid) -->
+        <!-- SECTION 4: SERVICES (Glassmorphism + Premium Design) -->
         <section id="services" class="py-16 md:py-24 relative">
             <div class="max-w-7xl mx-auto px-4 relative z-10">
-                <h2 class="text-3xl md:text-5xl font-extrabold mb-12 text-center text-white font-accent animate-fade-in-up">
-                    Pilih Layanan Tarotmu
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-4 text-center text-white font-accent animate-fade-in-up">
+                    Choose Your Reading
                 </h2>
+                <p class="text-center text-text-subtle mb-16 max-w-2xl mx-auto">
+                    Select the depth of guidance that feels right for you today.
+                </p>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
 
-                    <!-- 1. SPECIAL: NEW YEAR (Gold Theme) -->
-                    <div class="glass-card flex flex-col p-6 rounded-2xl md:col-span-2 lg:col-span-1 border-2 border-gold/50 shadow-[0_0_20px_rgba(255,215,0,0.1)] relative overflow-hidden animate-fade-in-up group hover:border-gold transition duration-300">
-                        <div class="absolute top-0 right-0 bg-gold text-bgDark font-bold px-3 py-1 text-xs rounded-bl-lg">SPECIAL EDITION</div>
+                    <!-- 1. Basic (3-CARD SPREAD) -->
+                    <div class="glass-card flex flex-col p-8 rounded-2xl hover:bg-white/5 transition duration-300 animate-fade-in-up h-full border-t-4 border-t-lilac">
                         
-                        <div class="flex flex-col items-center mb-4 pt-4">
-                            <h3 class="text-xl font-bold text-white">New Year Reading 2026</h3>
-                            <p class="text-xs uppercase tracking-wider text-gold font-bold mt-1">Seasonal Special</p>
+                        <!-- Header -->
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-white">3-Card Spread</h3>
+                            <div class="text-3xl font-bold text-lilac">$12</div>
                         </div>
-                        <div class="text-center mb-6">
-                            <div class="text-4xl font-extrabold text-gold drop-shadow-sm">Rp250.000</div>
+
+                        <!-- Description -->
+                        <p class="text-text-light mb-6">
+                            Gain clarity and perspective on a specific situation.
+                        </p>
+
+                        <!-- Features List -->
+                        <ul class="space-y-3 mb-6 flex-grow">
+                            <li class="flex items-start text-sm text-text-subtle">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-lilac mr-3 mt-0.5 flex-shrink-0"></i>
+                                <span>Personalized insight for <strong>1 specific question</strong>.</span>
+                            </li>
+                            <li class="flex items-start text-sm text-text-subtle">
+                                <i data-lucide="image" class="w-4 h-4 text-lilac mr-3 mt-0.5 flex-shrink-0"></i>
+                                <span>Photo of your unique card spread.</span>
+                            </li>
+                            <li class="flex items-start text-sm text-text-subtle">
+                                <i data-lucide="clock" class="w-4 h-4 text-lilac mr-3 mt-0.5 flex-shrink-0"></i>
+                                <span>Delivered via email within 24 hours.</span>
+                            </li>
+                        </ul>
+
+                        <!-- Important Note (Quantity) -->
+                        <div class="bg-lilac/5 border border-lilac/10 rounded-lg p-3 mb-6">
+                            <p class="text-[11px] text-lilac/90 leading-relaxed">
+                                <strong>Note:</strong> 1 Quantity = 1 Question.
+                                <br>
+                                Have multiple questions? Please adjust the "Quantity" at checkout. (Max 3 questions per email).
+                            </p>
                         </div>
-                        <div class="flex-grow space-y-4">
-                            <p class="text-textLight text-center text-sm">Persiapkan dirimu menghadapi tahun depan. Aspek yang dibacakan:</p>
-                            <ul class="text-sm text-textSubtle space-y-2 bg-white/5 p-4 rounded-xl">
-                                <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-gold"></i> General Overview 2026</li>
-                                <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-gold"></i> Harta, Tahta, Wanita (atau Pria)</li>
-                                <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-gold"></i> Saran Strategis menghadapi 2026</li>
-                            </ul>
-                            <p class="text-xs text-center text-gray-500 italic">*Hasil dikirim PDF via WhatsApp (estimasi 2 hari).</p>
-                        </div>
-                        <div class="mt-6 pt-4 border-t border-white/10">
-                            <a href="https://forms.gle/xpMFUUhkyRW8FgY67" target="_blank" class="block w-full py-3 rounded-xl bg-gold text-bgDark text-center font-bold hover:bg-yellow-400 hover:scale-[1.02] transition-all shadow-lg shadow-gold/20">
-                                Pesan Edisi Spesial
+
+                        <!-- Button -->
+                        <div class="mt-auto pt-2 border-t border-white/10">
+                            <a href="https://www.paypal.com/ncp/payment/DSPX84KBN8GC2" target="_blank" class="btn-secondary w-full py-3 rounded-xl text-center font-semibold hover:bg-lilac hover:text-bg-dark mt-4">
+                                Book Now
                             </a>
                         </div>
                     </div>
 
-                    <!-- 2. PROMO: Beli 3 Dapat 5 (Teal Theme) -->
-                    <div class="glass-card flex flex-col p-6 rounded-2xl border-2 border-tealAccent/50 shadow-[0_0_20px_rgba(129,244,255,0.1)] relative overflow-hidden animate-fade-in-up group hover:border-tealAccent transition duration-300">
-                        <div class="absolute top-0 right-0 bg-tealAccent text-bgDark font-bold px-3 py-1 text-xs rounded-bl-lg">PROMO</div>
+                    <!-- 2. Standard (UPDATED 5-CARD DEEP) -->
+                    <div class="glass-card flex flex-col p-8 rounded-2xl hover:bg-white/5 transition duration-300 animate-fade-in-up delay-100 h-full border-t-4 border-t-lilac relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-lilac/20 text-lilac text-[10px] font-bold px-2 py-1 rounded-bl-lg">POPULAR</div>
                         
-                        <div class="flex flex-col items-center mb-4 pt-4">
-                            <h3 class="text-xl font-bold text-white">Beli 3 Dapat 5</h3>
-                            <p class="text-xs uppercase tracking-wider text-tealAccent font-bold mt-1">Limited Offer!</p>
+                        <!-- Header -->
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-white">5-Card Deep</h3>
+                            <div class="text-3xl font-bold text-lilac">$20</div>
                         </div>
-                        <div class="text-center mb-6">
-                            <div class="text-4xl font-extrabold text-tealAccent drop-shadow-sm">Rp315.000</div>
-                            <p class="text-xs text-textSubtle line-through opacity-60">Harga Normal: Rp500.000+</p>
+
+                        <!-- Description -->
+                        <p class="text-text-light mb-6 leading-relaxed">
+                            Dive deeper into your situation. Offers detailed insight, revealing hidden influences, nuanced challenges, and expanded advice.
+                        </p>
+                        
+                         <!-- Features List -->
+                         <ul class="space-y-3 mb-6 flex-grow">
+                            <li class="flex items-start text-sm text-text-subtle">
+                                <i data-lucide="layers" class="w-4 h-4 text-lilac mr-3 mt-0.5 flex-shrink-0"></i>
+                                <span>Detailed 5-card reading for <strong>1 specific question</strong>.</span>
+                            </li>
+                            <li class="flex items-start text-sm text-text-subtle">
+                                <i data-lucide="image" class="w-4 h-4 text-lilac mr-3 mt-0.5 flex-shrink-0"></i>
+                                <span>Photo of the cards drawn for you.</span>
+                            </li>
+                            <li class="flex items-start text-sm text-text-subtle">
+                                <i data-lucide="clock" class="w-4 h-4 text-lilac mr-3 mt-0.5 flex-shrink-0"></i>
+                                <span>Delivered via email within 24 hours.</span>
+                            </li>
+                        </ul>
+
+                        <!-- Important Note (Quantity) -->
+                        <div class="bg-lilac/5 border border-lilac/10 rounded-lg p-3 mb-6">
+                            <p class="text-[11px] text-lilac/90 leading-relaxed">
+                                <strong>Note:</strong> 1 Quantity = 1 Question.
+                                <br>
+                                Have multiple questions? Please adjust the "Quantity" at checkout. (Max 3 questions per email).
+                            </p>
                         </div>
-                        <div class="flex-grow space-y-4">
-                            <p class="text-textLight text-center text-sm">Paket hemat! Bayar 3 pertanyaan, dapat <b>5 pertanyaan</b> via chat.</p>
-                            <div class="bg-tealAccent/10 border border-tealAccent/20 p-3 rounded-lg">
-                                <p class="text-xs text-tealAccent/90 flex gap-2">
-                                    <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
-                                    <span><b>Syarat:</b> Semua 5 pertanyaan harus digunakan/dihabiskan pada hari yang sama.</span>
+
+                        <div class="mt-auto pt-2 border-t border-white/10">
+                            <a href="https://www.paypal.com/ncp/payment/V6U4QMAU642KA" target="_blank" class="btn-primary w-full py-3 rounded-xl text-center font-semibold border-none mt-4">
+                                Book Now
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 3. PREMIUM LIVE SESSION -->
+                    <div class="relative flex flex-col p-1 rounded-2xl bg-gradient-to-b from-teal-accent/50 to-teal-900/50 shadow-[0_0_40px_-10px_rgba(129,244,255,0.2)] hover:scale-[1.02] transition duration-300 animate-fade-in-up delay-200 h-full group">
+                        
+                        <!-- Inner Card Content -->
+                        <div class="bg-[#0b1e22] rounded-xl p-7 h-full flex flex-col relative overflow-hidden">
+                            
+                            <!-- Premium Glow -->
+                            <div class="absolute top-[-50px] right-[-50px] w-32 h-32 bg-teal-accent/20 blur-3xl rounded-full"></div>
+
+                            <div class="flex justify-between items-start mb-2 relative z-10">
+                                <h3 class="text-2xl font-bold text-white">Live Session</h3>
+                                <div class="text-3xl font-bold text-teal-accent">$45</div>
+                            </div>
+                            <div class="flex items-center space-x-2 mb-6">
+                                <span class="bg-teal-900 text-teal-200 text-[10px] font-bold px-2 py-1 rounded">30 MINS</span>
+                                <span class="text-xs font-bold uppercase tracking-wider text-teal-400 flex items-center gap-1">
+                                    <i data-lucide="video" class="w-3 h-3"></i> Google Meet
+                                </span>
+                            </div>
+                            
+                            <div class="flex-grow space-y-4 mb-6 relative z-10">
+                                <p class="text-gray-300">
+                                    A relaxed, interactive tarot conversation.
                                 </p>
+                                <ul class="space-y-3">
+                                    <li class="flex items-start text-gray-400 text-sm">
+                                        <i data-lucide="check-circle-2" class="w-4 h-4 text-teal-accent mr-2 mt-0.5"></i>
+                                        <span>Unlimited questions within time</span>
+                                    </li>
+                                    <li class="flex items-start text-gray-400 text-sm">
+                                        <i data-lucide="check-circle-2" class="w-4 h-4 text-teal-accent mr-2 mt-0.5"></i>
+                                        <span>No scripts, just real connection</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="mt-auto relative z-10">
+                                <a href="https://www.picktime.com/mayanovtarotEn#book/date" target="_blank" class="block w-full py-3 rounded-xl text-lg font-bold bg-teal-accent text-black text-center shadow-[0_0_15px_rgba(129,244,255,0.4)] hover:bg-white transition-colors">
+                                    Book Live Call
+                                </a>
+                                <p class="text-[10px] text-center text-teal-500/60 mt-2">Limited slots available</p>
                             </div>
                         </div>
-                        <div class="mt-6 pt-4 border-t border-white/10">
-                            <a href="http://lynk.id/mayanovtarot/mm7ykgdwndez/" target="_blank" class="block w-full py-3 rounded-xl bg-tealAccent text-bgDark text-center font-bold hover:bg-cyan-300 hover:scale-[1.02] transition-all shadow-lg shadow-tealAccent/20">
-                                Ambil Promo Ini
-                            </a>
-                        </div>
                     </div>
-
-                    <!-- 3. BEST SELLER: 3 Questions -->
-                    <div class="glass-card flex flex-col p-6 rounded-2xl border border-lilac/30 hover:bg-white/5 transition duration-300 animate-fade-in-up h-full">
-                        <div class="flex flex-col items-center mb-4">
-                            <h3 class="text-xl font-bold text-white">3 Question Chat</h3>
-                            <p class="text-xs uppercase tracking-wider text-textSubtle">Best Seller</p>
-                        </div>
-                        <div class="text-center mb-6">
-                            <div class="text-3xl font-bold text-lilac">Rp315.000</div>
-                        </div>
-                        <div class="flex-grow text-center text-sm text-textLight space-y-4">
-                            <p>Sesi tarot reading per pertanyaan via chat. Hasil dikirim via WA.</p>
-                            <p class="text-lilac/80 font-semibold">Keunggulan: Pertanyaan bisa disimpan (ditabung) untuk lain waktu.</p>
-                        </div>
-                        <div class="mt-6 pt-4 border-t border-white/10 mt-auto">
-                            <a href="https://lynk.id/mayanovtarot/XBpJGb5" target="_blank" class="block w-full py-3 rounded-xl bg-lilac text-bgDark text-center font-bold hover:bg-[#A385E5] transition-all">
-                                Pesan Sekarang
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- 4. BASIC: 1 Question -->
-                    <div class="glass-card flex flex-col p-6 rounded-2xl border border-white/10 hover:border-lilac/30 transition duration-300 animate-fade-in-up h-full">
-                        <div class="flex flex-col items-center mb-4">
-                            <h3 class="text-xl font-bold text-white">1 Question Chat</h3>
-                            <p class="text-xs uppercase tracking-wider text-textSubtle">Via Chat Teks</p>
-                        </div>
-                        <div class="text-center mb-6">
-                            <div class="text-3xl font-bold text-white">Rp140.000</div>
-                        </div>
-                        <div class="flex-grow text-center text-sm text-textLight">
-                            <p>Sesi tarot reading per pertanyaan via chat. Hasil reading akan dikirimkan melalui Whatsapp. Cocok untuk pertanyaan singkat dan sederhana.</p>
-                        </div>
-                        <div class="mt-6 pt-4 border-t border-white/10 mt-auto">
-                            <a href="https://lynk.id/mayanovtarot/AKbGK0X" target="_blank" class="block w-full py-3 rounded-xl bg-lilac text-bgDark text-center font-bold hover:bg-[#A385E5] transition-all">
-                                Pesan Sekarang
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- 5. CALL: 30 Mins -->
-                    <div class="glass-card flex flex-col p-6 rounded-2xl border border-white/10 hover:border-lilac/30 transition duration-300 animate-fade-in-up h-full">
-                        <div class="flex flex-col items-center mb-4">
-                            <h3 class="text-xl font-bold text-white">30-Min Call</h3>
-                            <p class="text-xs uppercase tracking-wider text-textSubtle">Panggilan Langsung</p>
-                        </div>
-                        <div class="text-center mb-6">
-                            <div class="text-3xl font-bold text-white">Rp220.000</div>
-                        </div>
-                        <div class="flex-grow text-center text-sm text-textLight">
-                            <p>Sesi interaktif 30 menit via panggilan suara. Cocok jika kamu ingin langsung curhat dan mendapat <i>feedback</i> cepat.</p>
-                        </div>
-                        <div class="mt-6 pt-4 border-t border-white/10 mt-auto space-y-3">
-                            <a href="https://lynk.id/mayanovtarot/9ANjbJE" target="_blank" class="block w-full py-3 rounded-xl bg-lilac text-bgDark text-center font-bold hover:bg-[#A385E5] transition-all">
-                                Book via Lynk.id
-                            </a>
-                            <a href="https://www.picktime.com/mayanovtarot" target="_blank" class="block w-full py-3 rounded-xl border border-tealAccent text-tealAccent text-center font-bold hover:bg-tealAccent hover:text-bgDark transition-all">
-                                Book via Picktime
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- 6. CALL: 60 Mins -->
-                    <div class="glass-card flex flex-col p-6 rounded-2xl border border-white/10 hover:border-lilac/30 transition duration-300 animate-fade-in-up h-full">
-                        <div class="flex flex-col items-center mb-4">
-                            <h3 class="text-xl font-bold text-white">60-Min Call</h3>
-                            <p class="text-xs uppercase tracking-wider text-textSubtle">Deep Dive</p>
-                        </div>
-                        <div class="text-center mb-6">
-                            <div class="text-3xl font-bold text-lilac">Rp360.000</div>
-                            <p class="text-[10px] text-textSubtle mt-1 font-bold">(Harga Sesi Call 60-Menit)</p>
-                        </div>
-                        <div class="flex-grow text-center text-sm text-textLight">
-                            <p>Sesi interaktif 60 menit via panggilan suara. Puas curhat, tanya jawab mendalam, dan bedah masalah sampai tuntas.</p>
-                        </div>
-                        <div class="mt-6 pt-4 border-t border-white/10 mt-auto space-y-3">
-                            <a href="https://lynk.id/mayanovtarot/gw0kzbA" target="_blank" class="block w-full py-3 rounded-xl bg-lilac text-bgDark text-center font-bold hover:bg-[#A385E5] transition-all">
-                                Book via Lynk.id
-                            </a>
-                            <a href="https://www.picktime.com/mayanovtarot" target="_blank" class="block w-full py-3 rounded-xl border border-tealAccent text-tealAccent text-center font-bold hover:bg-tealAccent hover:text-bgDark transition-all">
-                                Book via Picktime
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- 7. MEETUP -->
-                    <div class="glass-card flex flex-col p-6 rounded-2xl border border-white/10 hover:border-tealAccent/50 transition duration-300 animate-fade-in-up h-full">
-                        <div class="flex flex-col items-center mb-4">
-                            <h3 class="text-xl font-bold text-white">Meetup Session</h3>
-                            <p class="text-xs uppercase tracking-wider text-textSubtle">Tatap Muka (60 Menit)</p>
-                        </div>
-                        <div class="text-center mb-6">
-                            <div class="text-3xl font-bold text-tealAccent">Rp450.000</div>
-                            <p class="text-[10px] text-textSubtle mt-1 font-bold">(Harga Jam Pertama)</p>
-                        </div>
-                        <div class="flex-grow text-center text-sm text-textLight">
-                            <p>Sesi tarot reading temu langsung. Harga jam berikutnya Rp300.000. Meetup di Jakarta Selatan.</p>
-                        </div>
-                        <div class="mt-6 pt-4 border-t border-white/10 mt-auto space-y-3">
-                            <a href="https://www.picktime.com/mayanovtarot" target="_blank" class="block w-full py-3 rounded-xl bg-lilac text-bgDark text-center font-bold hover:bg-[#A385E5] transition-all">
-                                Book Sekarang
-                            </a>
-                            <a href="https://maps.app.goo.gl/LE2YwZiM2exhqunh8" target="_blank" class="block w-full py-3 rounded-xl border border-tealAccent text-tealAccent text-center font-bold hover:bg-tealAccent hover:text-bgDark transition-all">
-                                Rekomendasi Lokasi
-                            </a>
-                        </div>
-                    </div>
-
-                </div>
-                
-                <p class="text-center text-sm text-textSubtle mt-12 animate-fade-in-up">
-                    *Semua harga dalam Rupiah (IDR) dan dijamin transparan tanpa biaya tersembunyi.
-                </p>
-            </div>
-        </section>
-
-        <!-- SECTION 4: WHY CHOOSE (Grid) -->
-        <section class="py-16 md:py-24 border-t border-white/5 bg-black/20">
-            <div class="max-w-6xl mx-auto px-4 relative z-10">
-                <h2 class="text-3xl font-bold mb-12 text-center text-lilac font-accent">
-                    Kenapa Memilih Mayanov?
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Reason 1 -->
-                    <div class="glass-card p-6 rounded-xl flex flex-col items-center text-center hover:-translate-y-1 transition duration-300">
-                        <i data-lucide="smile" class="w-10 h-10 text-tealAccent mb-4"></i>
-                        <h3 class="font-bold text-lg text-white mb-2">Friendly & Supportive</h3>
-                        <p class="text-sm text-textSubtle">Sesi santai, non-judgemental, dan bikin nyaman.</p>
-                    </div>
-                    <!-- Reason 2 -->
-                    <div class="glass-card p-6 rounded-xl flex flex-col items-center text-center hover:-translate-y-1 transition duration-300">
-                        <i data-lucide="lock" class="w-10 h-10 text-tealAccent mb-4"></i>
-                        <h3 class="font-bold text-lg text-white mb-2">Rahasia Terjamin</h3>
-                        <p class="text-sm text-textSubtle">Semua curhatan dan hasil bacaan 100% aman.</p>
-                    </div>
-                    <!-- Reason 3 -->
-                    <div class="glass-card p-6 rounded-xl flex flex-col items-center text-center hover:-translate-y-1 transition duration-300">
-                        <i data-lucide="send" class="w-10 h-10 text-tealAccent mb-4"></i>
-                        <h3 class="font-bold text-lg text-white mb-2">Actionable Insight</h3>
-                        <p class="text-sm text-textSubtle">Panduan langkah nyata, bukan sekadar tebakan.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 5: TESTIMONIALS -->
-        <section class="py-16 md:py-24 border-t border-white/5 relative">
-            <div class="max-w-6xl mx-auto px-4 relative z-10">
-                <h2 class="text-3xl font-bold mb-4 text-center text-white font-accent">Apa Kata Klien?</h2>
-                <div class="flex justify-center items-center gap-2 mb-12 text-tealAccent font-bold">
-                    <i data-lucide="star" class="w-5 h-5 fill-current"></i> Rating 5 Bintang di Google
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     
-                    <!-- Google Card (Spans full width on mobile, 1 col on desktop for uniform look or col-span-3 for top) -->
-                    <!-- Request was: Google Top, 3 Below. -->
-                    <div class="md:col-span-3 glass-card bg-white text-gray-900 rounded-xl p-8 flex flex-col items-center text-center border-none shadow-xl mb-6 md:mb-2">
-                        <!-- Google Logo SVG -->
-                        <svg class="w-8 h-8 mb-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                        <div class="text-yellow-500 text-xl tracking-widest mb-1">★★★★★</div>
-                        <p class="font-bold text-gray-800 text-lg mb-4">5.0 Average Rating</p>
-                        <p class="italic text-gray-600 max-w-2xl mb-4">"Incredibly insightful and helpful tarot reading... She was able to connect with me on a deep level and interpret the cards in a way that was incredibly relevant."</p>
-                        <a href="https://share.google/4LrmhpcgHNXX9bTzr" target="_blank" class="text-blue-600 font-bold hover:underline text-sm">Lihat Semua Review di Google &rarr;</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: HOW IT WORKS -->
+        <section class="py-16 md:py-24 border-t border-white/5 bg-black/20">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <h2 class="text-3xl font-bold mb-12 text-white font-accent">How It Works</h2>
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 text-center">
+                    
+                    <div class="flex-1 px-4">
+                        <div class="w-16 h-16 mx-auto bg-lilac/10 rounded-full flex items-center justify-center text-lilac mb-4 border border-lilac/20">
+                            <i data-lucide="mouse-pointer-click" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">1. Book</h3>
+                        <p class="text-sm text-text-subtle">Choose your reading type and complete payment.</p>
                     </div>
 
-                    <!-- Client 1 -->
-                    <div class="glass-card p-6 rounded-xl flex flex-col justify-between">
-                        <p class="text-4xl text-lilac font-serif mb-2">❝</p>
-                        <p class="text-textLight italic text-sm mb-4">“Bacaan dari Maya nggak kaleng-kaleng, super accurate dan panduannya benar-benar membantu.”</p>
-                        <p class="text-textSubtle font-bold text-xs text-right">— A. R., Jakarta</p>
+                    <div class="hidden md:block w-12 h-0.5 bg-white/10"></div>
+
+                    <div class="flex-1 px-4">
+                        <div class="w-16 h-16 mx-auto bg-lilac/10 rounded-full flex items-center justify-center text-lilac mb-4 border border-lilac/20">
+                            <i data-lucide="message-square" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">2. Connect</h3>
+                        <p class="text-sm text-text-subtle">Send your questions or join the Google Meet link.</p>
                     </div>
 
-                    <!-- Client 2 -->
-                    <div class="glass-card p-6 rounded-xl flex flex-col justify-between">
-                        <p class="text-4xl text-tealAccent font-serif mb-2">❝</p>
-                        <p class="text-textLight italic text-sm mb-4">“Detail banget! Semuanya terjawab dan aku merasa lebih yakin dengan keputusanku.”</p>
-                        <p class="text-textSubtle font-bold text-xs text-right">— S. P., Bandung</p>
-                    </div>
+                    <div class="hidden md:block w-12 h-0.5 bg-white/10"></div>
 
-                    <!-- Client 3 -->
-                    <div class="glass-card p-6 rounded-xl flex flex-col justify-between">
-                        <p class="text-4xl text-lilac font-serif mb-2">❝</p>
-                        <p class="text-textLight italic text-sm mb-4">“Sesi yang sangat menenangkan. Mayanov tidak hanya membaca kartu tapi juga memberikan perspektif baru yang sangat logis.”</p>
-                        <p class="text-textSubtle font-bold text-xs text-right">— B. K., Malang</p>
+                    <div class="flex-1 px-4">
+                        <div class="w-16 h-16 mx-auto bg-lilac/10 rounded-full flex items-center justify-center text-lilac mb-4 border border-lilac/20">
+                            <i data-lucide="sparkles" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">3. Clarity</h3>
+                        <p class="text-sm text-text-subtle">Receive your insight and move forward with confidence.</p>
                     </div>
 
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 6: FINAL CTA -->
-        <section class="py-20 md:py-32 border-t border-white/5 text-center relative">
-            <div class="max-w-4xl mx-auto px-4 relative z-10">
-                <h2 class="text-4xl md:text-5xl font-extrabold mb-6 text-lilac font-accent drop-shadow-md">
-                    Ready for Clarity?
-                </h2>
-                <p class="text-xl text-textSubtle mb-10">
-                    Proses cepat, santai, dan semua ceritamu aman di sini.
+        <!-- DISCLAIMER -->
+        <section id="disclaimer" class="py-12 bg-black/40 border-t border-white/5">
+            <div class="max-w-3xl mx-auto px-4 text-center">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-text-subtle mb-4">Terms & Policy</h2>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    Readings are for guidance and entertainment purposes only. They are not a substitute for professional medical, legal, or financial advice. 
+                    You are responsible for your own life choices. All payments are non-refundable. <br>
+                    Your privacy is 100% respected.
                 </p>
-                <a href="#services" class="btn-primary py-4 px-12 rounded-full text-lg font-bold transition-all hover:scale-105 inline-flex items-center gap-2">
-                    <i data-lucide="book-open-text" class="w-5 h-5"></i>
-                    Pilih Paket Sekarang
-                </a>
             </div>
         </section>
 
         <!-- FOOTER -->
-        <footer class="bg-black/80 backdrop-blur-md text-white p-12 border-t border-white/10">
-            <div class="max-w-6xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center md:text-left mb-12">
-                    <!-- Contact -->
-                    <div>
-                        <h4 class="font-bold text-lg mb-4 text-lilac">Kontak & Info</h4>
-                        <p class="text-gray-400 mb-2 flex items-center justify-center md:justify-start gap-2">
-                            <i data-lucide="mail" class="w-4 h-4 text-tealAccent"></i> 
-                            <a href="mailto:tarotreadingbymayanov@gmail.com" class="hover:text-lilac transition">tarotreadingbymayanov@gmail.com</a>
-                        </p>
-                        <p class="text-gray-400 flex items-center justify-center md:justify-start gap-2">
-                            <i data-lucide="clock" class="w-4 h-4 text-tealAccent"></i> 
-                            Waktu Layanan: 11:00 - 20.00
-                        </p>
-                    </div>
-                    <!-- Socials -->
-                    <div>
-                        <h4 class="font-bold text-lg mb-4 text-lilac">Social Media</h4>
-                        <div class="flex justify-center md:justify-start gap-6">
-                            <a href="https://www.instagram.com/mayanov_/" target="_blank" class="text-gray-400 hover:text-white transition flex items-center gap-2">
-                                <i data-lucide="instagram" class="w-5 h-5"></i> Instagram
-                            </a>
-                            <a href="https://www.tiktok.com/@mayanov_" target="_blank" class="text-gray-400 hover:text-white transition flex items-center gap-2">
-                                <i data-lucide="video" class="w-5 h-5"></i> TikTok
-                            </a>
-                        </div>
-                    </div>
-                </div>
+        <footer class="bg-black text-white p-10 border-t border-white/10">
+            <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                 
-                <!-- Bottom Copyright -->
-                <div class="border-t border-white/10 pt-8 text-center text-sm text-gray-600">
-                    &copy; <span id="year"></span> Mayanov Tarot. Hak Cipta Dilindungi.
+                <div class="text-center md:text-left">
+                    <h4 class="font-bold text-lg text-lilac">Mayanov Tarot</h4>
+                    <p class="text-sm text-gray-500">Intl. Readings via Email & Video.</p>
+                </div>
+
+                <div class="flex space-x-6">
+                    <a href="mailto:tarotreadingbymayanov@gmail.com" class="text-gray-400 hover:text-white transition"><i data-lucide="mail" class="w-5 h-5"></i></a>
+                    <a href="https://www.instagram.com/mayanov_/" target="_blank" class="text-gray-400 hover:text-white transition"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                </div>
+
+                <div class="text-xs text-gray-600">
+                    &copy; <span id="current-year"></span> All rights reserved.
                 </div>
             </div>
         </footer>
 
-        <!-- Floating WhatsApp -->
-        <a href="http://bit.ly/AskTarot" target="_blank" class="whatsapp-float" aria-label="Chat WhatsApp">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-        </a>
-
     </div>
 
-    <!-- Initialization Scripts -->
     <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lilac': '#C0A0FF',
+                        'teal-accent': '#81F4FF',
+                        'bg-dark': '#05050A',
+                        'text-light': '#EFEFEF',
+                        'text-subtle': '#B0B0C0',
+                    },
+                },
+            },
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize Icons
-            lucide.createIcons();
-
-            // Set Year
-            document.getElementById('year').textContent = new Date().getFullYear();
-
-            // Scroll Animation Observer
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -519,6 +485,8 @@
             }, { threshold: 0.1 });
 
             document.querySelectorAll('.animate-fade-in-up').forEach(el => observer.observe(el));
+            lucide.createIcons();
+            document.getElementById('current-year').textContent = new Date().getFullYear();
         });
     </script>
 </body>
