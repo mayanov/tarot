@@ -1,0 +1,531 @@
+<!-- START OF SEO OPTIMIZED MAYANOV TAROT CODE -->
+<div id="mayanov-root">
+
+    <!-- 1. Pure CSS (Lightweight & Fast) -->
+    <style>
+        /* RESET & BASE */
+        #mayanov-root {
+            font-family: 'Inter', sans-serif;
+            color: #EFEFEF;
+            line-height: 1.6;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+        #mayanov-root *, #mayanov-root *::before, #mayanov-root *::after {
+            box-sizing: inherit;
+        }
+        
+        /* FONTS - Loaded via Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+        
+        .font-accent { font-family: 'Lora', serif; }
+        
+        /* VARIABLES */
+        :root {
+            --m-lilac: #C0A0FF;
+            --m-teal: #81F4FF;
+            --m-gold: #FFD700;
+            --m-dark: #050510;
+            --m-text: #EFEFEF;
+            --m-subtle: #A0A0B0;
+        }
+
+        /* BACKGROUND SYSTEM */
+        .cosmic-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            z-index: 0; pointer-events: none;
+        }
+        .stars-s, .stars-m {
+            position: absolute; width: 100%; height: 100%; background: transparent;
+        }
+        /* Optimized CSS Stars (No images, just code) */
+        .stars-s { background-image: radial-gradient(white 1px, transparent 1px); background-size: 50px 50px; opacity: 0.3; }
+        .stars-m { background-image: radial-gradient(white 2px, transparent 2px); background-size: 100px 100px; opacity: 0.1; animation: twinkle 5s infinite; }
+        
+        @keyframes twinkle { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.3; } }
+
+        /* GLOW ORBS */
+        .glow-orb {
+            position: fixed; width: 400px; height: 400px; border-radius: 50%; filter: blur(80px); opacity: 0.15; z-index: 0;
+            animation: floatOrb 10s ease-in-out infinite alternate;
+            will-change: transform; /* Performance optimization */
+        }
+        .orb-1 { background: var(--m-lilac); top: -100px; left: -100px; }
+        .orb-2 { background: var(--m-teal); bottom: -100px; right: -100px; animation-delay: -5s; }
+
+        @keyframes floatOrb { from { transform: translate(0,0); } to { transform: translate(30px, 30px); } }
+
+        /* LAYOUT CONTAINERS */
+        .m-container {
+            position: relative; z-index: 10;
+            max-width: 1100px; margin: 0 auto; padding: 0 20px;
+        }
+        .m-section {
+            padding: 80px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(5, 5, 16, 0.4); /* Glass effect */
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        .m-flex { display: flex; flex-wrap: wrap; }
+        .m-center { justify-content: center; text-align: center; }
+        .m-align-center { align-items: center; }
+        .m-grid-3 {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;
+        }
+        .m-grid-2 {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px;
+        }
+
+        /* TEXT STYLES */
+        h1, h2, h3 { margin: 0 0 15px 0; line-height: 1.2; }
+        h1 { font-size: 1.5rem; color: var(--m-lilac); text-transform: uppercase; letter-spacing: 2px; }
+        h2 { font-size: 2.5rem; color: var(--m-lilac); font-family: 'Lora', serif; }
+        h3 { font-size: 1.25rem; font-weight: 700; color: white; }
+        p { margin-bottom: 20px; color: var(--m-subtle); font-size: 1.1rem; }
+        .text-white { color: white; }
+        .text-lilac { color: var(--m-lilac); }
+        .text-teal { color: var(--m-teal); }
+        .text-gold { color: var(--m-gold); }
+
+        /* BUTTONS */
+        .m-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 12px 30px; border-radius: 50px;
+            text-decoration: none; font-weight: 600; font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none; cursor: pointer;
+        }
+        .m-btn:hover { transform: translateY(-3px); }
+        
+        .btn-primary { background: var(--m-lilac); color: var(--m-dark); box-shadow: 0 4px 15px rgba(192, 160, 255, 0.3); }
+        .btn-primary:hover { background: #A385E5; box-shadow: 0 6px 20px rgba(192, 160, 255, 0.5); }
+
+        .btn-teal { background: var(--m-teal); color: var(--m-dark); box-shadow: 0 4px 15px rgba(129, 244, 255, 0.3); }
+        .btn-teal:hover { background: #6CDEE8; box-shadow: 0 6px 20px rgba(129, 244, 255, 0.5); }
+
+        .btn-gold { background: var(--m-gold); color: var(--m-dark); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); }
+        .btn-gold:hover { background: #F4C430; box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5); }
+
+        .btn-outline { border: 2px solid var(--m-teal); color: var(--m-teal); background: transparent; width: 100%; }
+        .btn-outline:hover { background: var(--m-teal); color: var(--m-dark); }
+        
+        /* Helper for full width buttons on card bottom */
+        .btn-full { width: 100%; margin-top: 10px; }
+        
+        /* Helper to push buttons to bottom */
+        .btn-wrapper { margin-top: auto; width: 100%; }
+
+        /* CARDS */
+        .m-card {
+            background: rgba(20, 20, 35, 0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 30px;
+            display: flex; flex-direction: column;
+            height: 100%; /* Equal height */
+            transition: transform 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .m-card:hover { transform: translateY(-5px); border-color: rgba(192, 160, 255, 0.3); }
+        
+        .card-price { font-size: 2.5rem; font-weight: 800; margin: 15px 0; }
+        .card-tag { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; margin-bottom: 5px; display: block; }
+        
+        .badge {
+            position: absolute; top: 0; right: 0;
+            padding: 5px 12px; font-size: 0.75rem; font-weight: bold;
+            border-bottom-left-radius: 10px; color: var(--m-dark);
+        }
+
+        /* GOOGLE REVIEW CARD */
+        .google-card {
+            background: #ffffff; 
+            color: #202124; 
+            border-radius: 16px;
+            padding: 30px;
+            grid-column: 1 / -1; 
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
+        }
+        .google-card p { color: #5f6368; font-size: 1rem; }
+        .google-stars { color: #fbbc04; font-size: 1.5rem; letter-spacing: 2px; }
+        .google-link { text-decoration: none; color: #1a73e8; font-weight: bold; font-size: 0.95rem; margin-top: 5px; }
+        .google-link:hover { text-decoration: underline; }
+
+        /* PROFILE IMAGE */
+        .profile-img-wrapper {
+            width: 250px; height: 250px; margin: 0 auto;
+            border-radius: 50%; overflow: hidden;
+            border: 4px solid rgba(192, 160, 255, 0.5);
+            box-shadow: 0 0 30px rgba(192, 160, 255, 0.2);
+        }
+        .profile-img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* ICONS */
+        .icon-sm { width: 20px; height: 20px; vertical-align: middle; }
+        .icon-lg { width: 64px; height: 64px; margin-bottom: 20px; color: white; opacity: 0.9; }
+
+        /* FOOTER */
+        footer { background: rgba(0,0,0,0.8); padding: 50px 0 20px 0; font-size: 0.9rem; }
+        .footer-link { color: #888; text-decoration: none; margin-right: 15px; display: inline-flex; align-items: center; gap: 5px; }
+        .footer-link:hover { color: var(--m-lilac); }
+        .footer-bottom { 
+            text-align: center; margin-top: 40px; padding-top: 20px; 
+            border-top: 1px solid rgba(255,255,255,0.1); 
+            color: var(--m-subtle); font-size: 0.8rem;
+        }
+
+        /* WHATSAPP FLOAT */
+        .wa-float {
+            position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            background: #25D366; border-radius: 50%; color: white;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 999;
+            transition: transform 0.3s;
+        }
+        .wa-float:hover { transform: scale(1.1); }
+
+        /* MOBILE OPTIMIZATION (Responsive) */
+        @media (max-width: 768px) {
+            h2 { font-size: 2rem; }
+            p { font-size: 1rem; }
+            .m-section { padding: 50px 0; }
+            .m-flex.m-about-row { flex-direction: column; text-align: center; }
+            .profile-img-wrapper { width: 200px; height: 200px; margin-bottom: 20px; }
+            /* Force stacked grids on mobile for better readability */
+            .m-grid-3, .m-grid-2 { grid-template-columns: 1fr; gap: 20px; }
+            /* Make buttons full width on mobile for easier tapping */
+            .m-btn { width: 100%; margin-bottom: 10px; } 
+            /* Adjust padding on cards */
+            .m-card { padding: 25px; }
+        }
+    </style>
+
+    <!-- 2. COSMIC BACKGROUND LAYERS -->
+    <div class="cosmic-bg" aria-hidden="true">
+        <div class="stars-s"></div>
+        <div class="stars-m"></div>
+    </div>
+    <div class="glow-orb orb-1" aria-hidden="true"></div>
+    <div class="glow-orb orb-2" aria-hidden="true"></div>
+
+    <!-- 3. HEADER -->
+    <header style="position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); background: rgba(5,5,16,0.7); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px 0;">
+        <div class="m-container m-flex m-align-center" style="justify-content: space-between;">
+            <h1 style="margin: 0; font-size: 1.2rem;">Mayanov Tarot</h1>
+        </div>
+    </header>
+
+    <!-- 4. MAIN CONTENT -->
+    <main>
+        
+        <!-- HERO -->
+        <section class="m-section" style="border: none; padding-top: 80px;">
+            <div class="m-container m-center">
+                <!-- Diamond Icon SVG -->
+                <div style="margin-bottom: 30px;" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 10px rgba(192,160,255,0.5));">
+                        <path d="M6 3h12l4 6-10 13L2 9Z"/>
+                        <path d="M11 3 8 9l4 13 4-13-3-6"/>
+                        <path d="M2 9h20"/>
+                    </svg>
+                </div>
+                
+                <h2>Sesi Tarot yang Analitis,<br>Bukan Mistis!</h2>
+                <p style="font-size: 1.25rem; max-width: 700px; margin: 0 auto 40px auto;">
+                    Dapatkan bacaan yang jelas, analitis, dan solutif—bukan sekadar ramalan tanpa arah.
+                </p>
+                
+                <a href="#services" class="m-btn btn-primary" aria-label="Lihat Paket dan Pesan Sesi Tarot">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                    Pilih Paket & Pesan Sesi
+                </a>
+            </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="about" class="m-section">
+            <div class="m-container">
+                <h2 class="m-center">Tentang Mayanov</h2>
+                <div class="m-flex m-about-row m-align-center" style="gap: 50px; margin-top: 40px;">
+                    <!-- Profile Image -->
+                    <div class="profile-img-wrapper">
+                        <img src="https://tarotreadingbymayanov.com/wp-content/uploads/2024/05/WhatsApp-Image-2024-05-15-at-5.34.55-PM-e1715769487923.jpeg" 
+                             alt="Mayanov Tarot Reader Jakarta" 
+                             class="profile-img"
+                             loading="lazy"
+                             width="250"
+                             height="250">
+                    </div>
+                    <!-- Bio Text -->
+                    <div style="flex: 1;">
+                        <p>Saya telah mendalami seni membaca kartu Tarot sejak <b>2009</b>. Dengan pengalaman lebih dari 10 tahun, saya menemukan bahwa kartu Tarot adalah medium yang baik untuk melakukan <b>refleksi diri</b> dan <b>mencari solusi</b>.</p>
+                        <p>Pembacaan Tarot bukan sesederhana ‘menerawang’ masa depan, melainkan sesi konsultasi yang <b>mendewasakan</b>. Saya telah membantu <b>1000+ orang</b> memahami kondisi diri dan mengambil tindakan tepat.</p>
+                        <a href="https://share.google/JFQhliOEEXSBetR9g" target="_blank" style="color: var(--m-teal); text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 5px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            Lihat Testimoni 5-Bintang
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SERVICES -->
+        <section id="services" class="m-section">
+            <div class="m-container">
+                <h2 class="m-center text-white" style="margin-bottom: 50px;">Pilih Layanan Tarotmu</h2>
+                
+                <div class="m-grid-3">
+                    
+                    <!-- Card 1: New Year (Gold) -->
+                    <div class="m-card" style="border-color: var(--m-gold); grid-column: 1 / -1; max-width: 800px; margin: 0 auto; width: 100%;">
+                        <div class="badge" style="background: var(--m-gold);">SPECIAL EDITION</div>
+                        <div class="m-center">
+                            <h3>New Year Reading 2026</h3>
+                            <span class="card-tag text-gold">Seasonal Special</span>
+                            <div class="card-price text-gold">Rp250.000</div>
+                            <p>Persiapkan dirimu menghadapi tahun depan. <br>Overview 2026, Harta, Tahta, Cinta & Saran Strategis.</p>
+                            <p style="font-size: 0.85rem; opacity: 0.7;">*Hasil dikirim PDF via WhatsApp (estimasi 2 hari).</p>
+                            <div class="btn-wrapper">
+                                <a href="https://forms.gle/xpMFUUhkyRW8FgY67" target="_blank" class="m-btn btn-gold btn-full">Pesan Edisi Spesial</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Promo (Teal) -->
+                    <div class="m-card" style="border-color: var(--m-teal);">
+                        <div class="badge" style="background: var(--m-teal);">PROMO</div>
+                        <div class="m-center" style="height: 100%; display: flex; flex-direction: column;">
+                            <h3>Beli 3 Dapat 5</h3>
+                            <span class="card-tag text-teal">Limited Offer</span>
+                            <div class="card-price text-teal">Rp315.000</div>
+                            <p>Bayar 3 pertanyaan, dapat <b>5 pertanyaan</b> via chat.</p>
+                            <p style="font-size: 0.85rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">Syarat: Semua pertanyaan harus digunakan di hari yang sama. (tidak bisa disimpan)</p>
+                            <div class="btn-wrapper">
+                                <a href="http://lynk.id/mayanovtarot/mm7ykgdwndez/" target="_blank" class="m-btn btn-teal btn-full">Ambil Promo</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: 3 Questions -->
+                    <div class="m-card" style="border-color: var(--m-lilac);">
+                        <div class="m-center" style="height: 100%; display: flex; flex-direction: column;">
+                            <h3>3 Question Chat</h3>
+                            <span class="card-tag text-lilac">Best Seller</span>
+                            <div class="card-price text-lilac">Rp315.000</div>
+                            <p>Reading via chat WA. Pertanyaan bisa disimpan (ditabung) untuk lain waktu.</p>
+                            <div class="btn-wrapper">
+                               <a href="https://lynk.id/mayanovtarot/XBpJGb5" target="_blank" class="m-btn btn-primary btn-full">Pesan Sekarang</a> 
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: 1 Question -->
+                    <div class="m-card">
+                        <div class="m-center" style="height: 100%; display: flex; flex-direction: column;">
+                            <h3>1 Question Chat</h3>
+                            <span class="card-tag">Basic</span>
+                            <div class="card-price">Rp140.000</div>
+                            <p>Reading via chat WA. Cocok untuk satu pertanyaan spesifik/singkat.</p>
+                            <div class="btn-wrapper">
+                                <a href="https://lynk.id/mayanovtarot/AKbGK0X" target="_blank" class="m-btn btn-primary btn-full">Pesan Sekarang</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 5: 30 Min Call -->
+                    <div class="m-card">
+                        <div class="m-center" style="height: 100%; display: flex; flex-direction: column;">
+                            <h3>30-Min Call</h3>
+                            <span class="card-tag">Interactive</span>
+                            <div class="card-price">Rp220.000</div>
+                            <p>Sesi telepon 30 menit. Curhat langsung & feedback cepat.</p>
+                            <div class="btn-wrapper">
+                                <a href="https://lynk.id/mayanovtarot/9ANjbJE" target="_blank" class="m-btn btn-primary btn-full">Book via Lynk.id</a>
+                                <a href="https://www.picktime.com/mayanovtarot" target="_blank" class="m-btn btn-outline btn-full" style="margin-top: 10px;">Book via Picktime</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 6: 60 Min Call -->
+                    <div class="m-card">
+                        <div class="m-center" style="height: 100%; display: flex; flex-direction: column;">
+                            <h3>60-Min Call</h3>
+                            <span class="card-tag">Deep Dive</span>
+                            <div class="card-price text-lilac">Rp360.000</div>
+                            <p>Sesi telepon 60 menit. Bedah masalah sampai tuntas.</p>
+                            <div class="btn-wrapper">
+                                <a href="https://lynk.id/mayanovtarot/gw0kzbA" target="_blank" class="m-btn btn-primary btn-full">Book via Lynk.id</a>
+                                <a href="https://www.picktime.com/mayanovtarot" target="_blank" class="m-btn btn-outline btn-full" style="margin-top: 10px;">Book via Picktime</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 7: Meetup -->
+                    <div class="m-card">
+                        <div class="m-center" style="height: 100%; display: flex; flex-direction: column;">
+                            <h3>Meetup Session</h3>
+                            <span class="card-tag text-teal">Meet Up</span>
+                            <div class="card-price text-teal">Rp450.000</div>
+                            <p>Tatap muka (1 Jam). Meetup di Jakarta Selatan. Harga jam berikutnya Rp300rb.</p>
+                            <div class="btn-wrapper">
+                                <a href="https://www.picktime.com/mayanovtarot" target="_blank" class="m-btn btn-primary btn-full">Book Sekarang</a>
+                                <a href="https://maps.app.goo.gl/LE2YwZiM2exhqunh8" target="_blank" class="m-btn btn-outline btn-full" style="margin-top: 10px;">Lokasi</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- WHY CHOOSE -->
+        <section class="m-section">
+            <div class="m-container">
+                <h2 class="m-center">Kenapa Memilih Mayanov?</h2>
+                <div class="m-grid-3" style="margin-top: 40px;">
+                    
+                    <!-- Reason 1 (Friendly) -->
+                    <div class="m-card" style="flex-direction: row; align-items: flex-start; gap: 15px; padding: 20px;">
+                        <svg class="icon-sm text-teal" style="width: 30px; height: 30px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                        <div>
+                            <h3>Friendly & Supportive</h3>
+                            <p style="margin: 0;">Sesi santai, non-judgemental, dan bikin nyaman.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Reason 2 (Rahasia) -->
+                    <div class="m-card" style="flex-direction: row; align-items: flex-start; gap: 15px; padding: 20px;">
+                        <svg class="icon-sm text-teal" style="width: 30px; height: 30px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <div>
+                            <h3>Rahasia Terjamin</h3>
+                            <p style="margin: 0;">Semua curhatan dan hasil bacaan 100% aman.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Reason 3 (Actionable) -->
+                    <div class="m-card" style="flex-direction: row; align-items: flex-start; gap: 15px; padding: 20px;">
+                        <svg class="icon-sm text-teal" style="width: 30px; height: 30px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        <div>
+                            <h3>Actionable Insight</h3>
+                            <p style="margin: 0;">Panduan langkah nyata, bukan sekadar tebakan.</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+
+        <!-- TESTIMONIALS -->
+        <section class="m-section">
+            <div class="m-container m-center">
+                <h2 class="text-white">Apa Kata Klien?</h2>
+                
+                <div class="m-grid-3" style="margin-top: 30px; text-align: left;">
+                    
+                    <!-- GOOGLE REVIEW FEATURE CARD (Top Row - Full Width on small screens, part of grid on large) -->
+                    <div class="google-card">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M23.49 12.275C23.49 11.49 23.415 10.73 23.3 10H12V14.51H18.47C18.18 15.99 17.25 17.21 15.81 18.11L15.806 18.107V21.09H19.67C21.93 19.01 23.49 15.93 23.49 12.275Z" fill="#4285F4"/><path d="M12 24C15.24 24 17.95 22.92 19.97 21.06L16.1 18.07C15.02 18.79 13.62 19.24 12 19.24C8.87 19.24 6.22 17.13 5.26 14.26L1.22 14.26V17.38C3.21 21.36 7.33 24 12 24Z" fill="#34A853"/><path d="M5.26 14.26C5.01 13.52 4.87 12.76 4.87 12C4.87 11.24 5.01 10.48 5.26 9.74L5.259 9.736L1.22 6.62C0.44 8.23 0 10.06 0 12C0 13.94 0.44 15.77 1.22 17.38L5.26 14.26Z" fill="#FBBC05"/><path d="M12 4.75C13.77 4.75 15.35 5.36 16.6 6.55L20.06 3.1C17.95 1.13 15.24 0 12 0C7.33 0 3.21 2.64 1.22 6.62L5.26 9.74C6.22 6.87 8.87 4.75 12 4.75Z" fill="#EA4335"/></svg>
+                        <div>
+                            <div class="google-stars">★★★★★</div>
+                            <div style="font-weight: bold; color: #202124;">5.0 di Google Business</div>
+                        </div>
+                        <p style="font-style: italic;">“Incredibly insightful and helpful tarot reading... She was able to connect with me on a deep level and interpret the cards in a way that was incredibly relevant.”</p>
+                        <a href="https://share.google/4LrmhpcgHNXX9bTzr" target="_blank" class="google-link" aria-label="Lihat review Google Maps">Lihat Semua Review di Google →</a>
+                    </div>
+
+                    <!-- Client Testimonial 1 -->
+                    <div class="m-card">
+                        <div style="font-size: 3rem; line-height: 1; color: var(--m-lilac); font-family: serif;">❝</div>
+                        <p>“Bacaan dari Maya nggak kaleng-kaleng, super accurate dan panduannya benar-benar membantu.”</p>
+                        <div style="margin-top: auto; font-weight: bold; text-align: right; color: var(--m-subtle);">— A. R., Jakarta</div>
+                    </div>
+
+                    <!-- Client Testimonial 2 -->
+                    <div class="m-card">
+                        <div style="font-size: 3rem; line-height: 1; color: var(--m-teal); font-family: serif;">❝</div>
+                        <p>“Detail banget! Semuanya terjawab dan aku merasa lebih yakin dengan keputusanku.”</p>
+                        <div style="margin-top: auto; font-weight: bold; text-align: right; color: var(--m-subtle);">— S. P., Bandung</div>
+                    </div>
+
+                    <!-- Client Testimonial 3 -->
+                    <div class="m-card">
+                        <div style="font-size: 3rem; line-height: 1; color: var(--m-lilac); font-family: serif;">❝</div>
+                        <p>“Sesi yang sangat menenangkan. Mayanov tidak hanya membaca kartu tapi juga memberikan perspektif baru yang sangat logis.”</p>
+                        <div style="margin-top: auto; font-weight: bold; text-align: right; color: var(--m-subtle);">— B. K., Malang</div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        
+        <!-- CTA FINAL -->
+        <section class="m-section" style="border: none;">
+            <div class="m-container m-center">
+                <h2>Ready for Clarity?</h2>
+                <p style="font-size: 1.25rem; margin-bottom: 40px;">Proses cepat, santai, dan semua ceritamu aman di sini.</p>
+                <a href="#services" class="m-btn btn-primary">Pilih Paket Sekarang</a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="m-container">
+            <!-- 2 Columns for Content -->
+            <div class="m-grid-2">
+                <div>
+                    <h4 style="color: var(--m-lilac); margin-bottom: 15px;">Kontak</h4>
+                    <p>Email: tarotreadingbymayanov@gmail.com</p>
+                    <p>Waktu Layanan: 11:00 - 20.00</p>
+                </div>
+                <div>
+                    <h4 style="color: var(--m-lilac); margin-bottom: 15px;">Social Media</h4>
+                    <div style="display: flex;">
+                        <a href="https://www.instagram.com/mayanov_/" class="footer-link" aria-label="Instagram">Instagram</a>
+                        <a href="https://www.tiktok.com/@mayanov_" class="footer-link" aria-label="TikTok">TikTok</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Copyright Row -->
+            <div class="footer-bottom">
+                <p style="margin: 0;">&copy; <span id="m-year">2024</span> Mayanov Tarot. Hak Cipta Dilindungi.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WHATSAPP FLOAT -->
+    <a href="http://bit.ly/AskTarot" target="_blank" class="wa-float" title="Chat via WhatsApp" aria-label="Chat WhatsApp">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+    </a>
+
+    <!-- JS -->
+    <script>
+        document.getElementById('m-year').textContent = new Date().getFullYear();
+    </script>
+
+    <!-- SEO Schema Markup (Invisible to users, good for Google) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "Mayanov Tarot",
+      "image": "https://tarotreadingbymayanov.com/wp-content/uploads/2024/05/WhatsApp-Image-2024-05-15-at-5.34.55-PM-e1715769487923.jpeg",
+      "description": "Sesi Tarot yang Analitis, Bukan Mistis. Tarot Reading Professional di Jakarta.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Jakarta Selatan",
+        "addressCountry": "ID"
+      },
+      "priceRange": "$$"
+    }
+    </script>
+
+</div>
+<!-- END OF OPTIMIZED CODE -->
