@@ -1,0 +1,5 @@
+Property Name,Description,Example Values,Note
+country,"The user's country detected via GeoJS.","Indonesia, United States, Global, Unknown",
+city,"The user's city (only tracked for Indonesia/ID visitors).","Jakarta, Bandung, Surabaya, Unknown",
+region,"The user's region/province (only tracked for Indonesia/ID visitors).","DKI Jakarta, West Java","Conditional; only added if available in geo data."
+status,"Indicates if the session is a developer override.","DEV_OVERRIDE","Internal use for testing."

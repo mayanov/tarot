@@ -1,0 +1,24 @@
+[
+    {
+        "Property Name": "country",
+        "Description": "The user's country detected via GeoJS.",
+        "Example Values": "Indonesia, United States, Global, Unknown"
+    },
+    {
+        "Property Name": "city",
+        "Description": "The user's city (only tracked for Indonesia/ID visitors).",
+        "Example Values": "Jakarta, Bandung, Surabaya, Unknown"
+    },
+    {
+        "Property Name": "region",
+        "Description": "The user's region/province (only tracked for Indonesia/ID visitors).",
+        "Example Values": "DKI Jakarta, West Java",
+        "Note": "Conditional; only added if available in geo data."
+    },
+    {
+        "Property Name": "status",
+        "Description": "Indicates if the session is a developer override.",
+        "Example Values": "DEV_OVERRIDE",
+        "Note": "Internal use for testing."
+    }
+]

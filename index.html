@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mayanov Tarot — Clarity, Insight, and Real Guidance</title>
+  <meta name="description"
+    content="Strategic, psychological, and analytical tarot readings for clarity and insight. Get guidance on your career, relationships, and personal path." />
+
+  <!-- Social Media Meta Tags (Open Graph) -->
+  <meta property="og:title" content="Mayanov Tarot — Clarity, Insight, and Real Guidance" />
+  <meta property="og:description"
+    content="Analytical tarot sessions for a chaotic world. Honest, kind, and strategic guidance for your life's path." />
+  <meta property="og:image" content="/bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg" />
+  <meta property="og:url" content="https://mayanovtarot.com" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Mayanov Tarot — Strategic Guidance" />
+  <meta name="twitter:description" content="Find clarity in the chaos with analytical tarot readings." />
+  <meta name="twitter:image" content="/bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Fonts -->
+  <!-- Fonts -->
+  <!-- Local fonts loaded via index.css -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Lora', 'serif'],
+            heading: ['Lora', 'serif'],
+          },
+          colors: {
+            lilac: '#C0A0FF',
+            'lilac-dark': '#8A60D0',
+            'teal-accent': '#81F4FF',
+            'teal-dark': '#2A7A85',
+            'gold-accent': '#FFD700',
+            'bg-dark': '#0E0E12', // Slightly deeper for better contrast
+            'bg-deep': '#050507', // Near black for contrast
+            'surface-1': '#181820', // Richer card background
+            'surface-2': '#20202A', // Lighter interaction state
+            'surface-highlight': '#2A2A35',
+            'text-light': '#F4F4F8',
+            'text-subtle': '#B4B4C5', // Lightened for better WCAG contrast ratio
+          },
+          animation: {
+            'pulse-slow': 'pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'pulse-slower': 'pulse 7s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'spin-slow': 'spin 15s linear infinite',
+            'spin-reverse-slow': 'spin-reverse 20s linear infinite',
+            'float': 'float 6s ease-in-out infinite',
+            'float-delayed': 'float 6s ease-in-out 3s infinite',
+            'float-slow': 'float 10s ease-in-out infinite',
+            'float-slower': 'float 14s ease-in-out infinite',
+            'scroll': 'scroll 160s linear infinite',
+            'bounce-slow': 'bounce 2s infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            'spin-reverse': {
+              'from': { transform: 'rotate(360deg)' },
+              'to': { transform: 'rotate(0deg)' },
+            },
+            scroll: {
+              '0%': { transform: 'translateX(0)' },
+              '100%': { transform: 'translateX(-50%)' },
+            }
+          }
+        },
+      }
+    }
+  </script>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KKX2C4PCVX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-KKX2C4PCVX');
+  </script>
+
+  <!-- Facebook Pixel -->
+  <script>
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s)
+    }(window, document, 'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '4126133574309418');
+    fbq('track', 'PageView');
+  </script>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+
+<body class="bg-bg-dark text-text-light overflow-x-hidden selection:bg-lilac/30 antialiased font-sans">
+  <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=4126133574309418&ev=PageView&noscript=1" /></noscript>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

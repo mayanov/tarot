@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return; n = f.fbq = function () {
+                n.callMethod ?
+                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+            n.queue = []; t = b.createElement(e); t.async = !0;
+            t.src = v; s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '4126133574309418');
+        fbq('track', 'PageView');
+
+        // --- THE PURCHASE EVENT ---
+        fbq('track', 'Purchase', {
+            value: 20.00,
+            currency: 'USD',
+            content_name: 'Tarot Reading'
+        });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=4126133574309418&ev=PageView&noscript=1" /></noscript>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You — Mayanov Tarot</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Load Tailwind CSS (As per reference) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Load Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Lora:ital,wght@0,400..700;1,400..700&display=swap"
+        rel="stylesheet">
+
+    <!-- Custom Configuration (Exact Match) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        lilac: '#C0A0FF',
+                        tealAccent: '#81F4FF',
+                        gold: '#FFD700',
+                        bgDark: '#05050A',
+                        textLight: '#EFEFEF',
+                        textSubtle: '#B0B0C0',
+                    },
+                    fontFamily: {
+                        primary: ['Inter', 'sans-serif'],
+                        accent: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- GLOBAL BACKGROUND SETUP (Exact Clone) --- */
+        body {
+            background-color: #05050A;
+            color: #EFEFEF;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .fixed-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+            background: radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(45, 212, 191, 0.1), transparent 25%);
+            background-color: #05050A;
+        }
+
+        .stars-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-image:
+                radial-gradient(white, rgba(255, 255, 255, .2) 2px, transparent 2.5px),
+                radial-gradient(white, rgba(255, 255, 255, .15) 1px, transparent 1.5px);
+            background-size: 550px 550px, 350px 350px;
+            background-position: 0 0, 40px 60px;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .glow-lilac {
+            background: #C0A0FF;
+        }
+
+        .glow-teal {
+            background: #81F4FF;
+        }
+
+        /* --- UTILITIES --- */
+        .glass-card {
+            background: rgba(30, 30, 47, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .animate-fade-in-up.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background-color: #C0A0FF;
+            color: #0F0F1A;
+            box-shadow: 0 0 15px rgba(192, 160, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: #A385E5;
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(192, 160, 255, 0.6);
+        }
+    </style>
+</head>
+
+<body class="font-primary antialiased flex flex-col min-h-screen">
+
+    <!-- BACKGROUND ELEMENTS -->
+    <div class="fixed-bg"></div>
+    <div class="stars-overlay"></div>
+
+    <div id="app" class="relative flex-grow flex flex-col">
+
+        <!-- HEADER (Brand consistency) -->
+        <header class="p-6 flex justify-center items-center relative z-10">
+            <h1 class="text-xl font-bold tracking-wider text-lilac flex items-center gap-2 drop-shadow-md">
+                <i data-lucide="moon" class="w-5 h-5"></i> Mayanov Tarot
+            </h1>
+        </header>
+
+        <!-- THANK YOU CONTENT -->
+        <main class="flex-grow flex items-center justify-center px-4 py-12 relative">
+            <!-- Ambient Glows -->
+            <div class="glow-orb glow-lilac w-64 h-64 top-1/4 -left-20 animate-pulse"></div>
+            <div class="glow-orb glow-teal w-64 h-64 bottom-1/4 -right-20 animate-pulse delay-700"></div>
+
+            <div
+                class="max-w-2xl w-full glass-card rounded-3xl p-8 md:p-12 shadow-2xl animate-fade-in-up relative z-10">
+
+                <!-- Icon Visual -->
+                <div
+                    class="w-20 h-20 mx-auto mb-8 rounded-full bg-gradient-to-b from-lilac/20 to-transparent border border-lilac/30 flex items-center justify-center shadow-[0_0_30px_rgba(192,160,255,0.2)]">
+                    <i data-lucide="check-circle" class="w-10 h-10 text-tealAccent"></i>
+                </div>
+
+                <h2
+                    class="text-3xl md:text-4xl font-extrabold mb-6 text-center font-accent text-transparent bg-clip-text bg-gradient-to-r from-lilac via-white to-tealAccent">
+                    Payment Success!
+                </h2>
+
+                <p class="text-lg text-center text-textLight mb-8 leading-relaxed">
+                    Thank you for choosing the <b>5-Card Tarot Reading</b>. Your session is confirmed. Please follow the
+                    steps below to finalize your request:
+                </p>
+
+                <!-- INSTRUCTIONS LIST -->
+                <div class="space-y-4 mb-10">
+                    <div class="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+                        <div
+                            class="bg-tealAccent/20 text-tealAccent font-bold rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
+                            1</div>
+                        <p class="text-textSubtle text-sm md:text-base">Please send your <b>question(s) and proof of
+                                payment</b> via email so I can start your reading.</p>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+                        <div
+                            class="bg-tealAccent/20 text-tealAccent font-bold rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
+                            2</div>
+                        <p class="text-textSubtle text-sm md:text-base">Ensure the number of questions matches your
+                            checkout <b>Quantity</b> (1 Qty = 1 Question). If you submit more questions than paid for,
+                            only the purchased amount will be answered.</p>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+                        <div
+                            class="bg-tealAccent/20 text-tealAccent font-bold rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
+                            3</div>
+                        <p class="text-textSubtle text-sm md:text-base">Delivery will be sent via email within the
+                            stated time frame (please check your inbox/spam).</p>
+                    </div>
+                </div>
+
+                <!-- CTA BUTTON (Preserved mailto logic) -->
+                <div class="flex justify-center flex-col items-center gap-6">
+                    <a href="mailto:tarotreadingbymayanov@gmail.com?subject=5%20Card%20Reading%20Request&body=Hi%20Mayanov,%0D%0A%0D%0AI%20just%20completed%20my%20payment%20for%20the%205-card%20reading.%0D%0A%0D%0AHere%20is%20my%20proof%20of%20payment%20(attached):%0D%0A%0D%0A%5BPlease%20attach%20your%20screenshot%20here%5D%0D%0A%0D%0AMy%20question:%0D%0A%5BWrite%20your%20question%20here%5D%0D%0A%0D%0AA%20little%20context%20about%20my%20situation:%0D%0A%5BAdd%20your%20context%20here%5D%0D%0A%0D%0AThank%20you!"
+                        class="btn-primary py-4 px-10 rounded-full text-lg font-bold tracking-wide transition-all duration-300 flex items-center gap-2 w-full justify-center">
+                        <i data-lucide="send" class="w-5 h-5"></i>
+                        Submit Your Question
+                    </a>
+
+                    <p class="text-xs text-textSubtle italic text-center max-w-xs">
+                        "Tarot shows the likely outcome based on your current patterns. Thank you for trusting my
+                        analytical approach."
+                    </p>
+
+                    <a href="/"
+                        class="mt-8 text-sm text-textSubtle hover:text-lilac transition duration-300 flex items-center gap-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Homepage
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- FOOTER (Matching id.html) -->
+        <footer class="bg-black/80 backdrop-blur-md text-white p-8 border-t border-white/10 relative z-10">
+            <div class="max-w-6xl mx-auto text-center">
+                <p class="text-sm text-gray-500">
+                    &copy; <span id="year"></span> Mayanov Tarot. All Rights Reserved.
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Initialization Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Icons
+            lucide.createIcons();
+
+            // Set Year
+            document.getElementById('year').textContent = new Date().getFullYear();
+
+            // Trigger Animation immediately on load for Thank You page
+            setTimeout(() => {
+                document.querySelectorAll('.animate-fade-in-up').forEach(el => el.classList.add('is-visible'));
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>

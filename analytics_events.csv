@@ -1,0 +1,9 @@
+Event Name,Description,GA4 Event Name,Facebook Pixel Event,Parameters,Trigger
+page_view,"Fired when a page is viewed.",page_view,PageView,"page_location, page_title, page_referrer, [User Properties]","On page load (App mount)"
+contact,"Fired when a user clicks a contact link (Email, WhatsApp).",contact,Contact,"method ('Email', 'WhatsApp'), market ('ID', 'Global'), [User Properties]","Click on email or WA links in Footer/Header"
+view_item,"Fired when viewing content like social profiles.",view_item,ViewContent,"item_name ('Instagram Profile', 'TikTok Profile'), market ('ID', 'Global'), [User Properties]","Click on Instagram/TikTok icons"
+outbound_click,"General tracking for outbound links.",outbound_click,ViewContent,"event_category, event_label, market, [User Properties]","Click on 'Google Reviews', 'Meetup Location'"
+initiate_checkout (Global),"Fired when a user clicks to book a global service (PayPal).",initiate_checkout,InitiateCheckout,"item_name, value, currency ('USD'), market ('Global'), content_category, [User Properties]","Click 'Book This' or 'Get Clarity Now' on Global service cards"
+schedule (Global),"Fired when a user clicks to schedule a live global session.",schedule,Schedule,"item_name, value, currency ('USD'), market ('Global'), content_category, [User Properties]","Click 'Schedule Call' on Global service cards"
+begin_checkout (ID),"Fired when a user clicks to book an Indonesian service (Lynk/Form).",begin_checkout,InitiateCheckout,"item_name, value, currency ('IDR'), market ('ID'), content_category, [User Properties]","Click booking buttons for ID services (New Year, Promo, Chat, Call via Lynk)"
+schedule (ID),"Fired when a user clicks to schedule a session via Picktime (ID).",schedule,Schedule,"item_name, value, currency ('IDR'), market ('ID'), content_category, [User Properties]","Click 'Via Picktime' or 'Book Sekarang' (Meetup)"

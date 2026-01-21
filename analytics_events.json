@@ -1,0 +1,66 @@
+[
+    {
+        "Event Name": "page_view",
+        "Description": "Fired when a page is viewed.",
+        "GA4 Event Name": "page_view",
+        "Facebook Pixel Event": "PageView",
+        "Parameters": "page_location, page_title, page_referrer, [User Properties]",
+        "Trigger": "On page load (App mount)"
+    },
+    {
+        "Event Name": "contact",
+        "Description": "Fired when a user clicks a contact link (Email, WhatsApp).",
+        "GA4 Event Name": "contact",
+        "Facebook Pixel Event": "Contact",
+        "Parameters": "method ('Email', 'WhatsApp'), market ('ID', 'Global'), [User Properties]",
+        "Trigger": "Click on email or WA links in Footer/Header"
+    },
+    {
+        "Event Name": "view_item",
+        "Description": "Fired when viewing content like social profiles.",
+        "GA4 Event Name": "view_item",
+        "Facebook Pixel Event": "ViewContent",
+        "Parameters": "item_name ('Instagram Profile', 'TikTok Profile'), market ('ID', 'Global'), [User Properties]",
+        "Trigger": "Click on Instagram/TikTok icons"
+    },
+    {
+        "Event Name": "outbound_click",
+        "Description": "General tracking for outbound links.",
+        "GA4 Event Name": "outbound_click",
+        "Facebook Pixel Event": "ViewContent",
+        "Parameters": "event_category, event_label, market, [User Properties]",
+        "Trigger": "Click on 'Google Reviews', 'Meetup Location'"
+    },
+    {
+        "Event Name": "initiate_checkout (Global)",
+        "Description": "Fired when a user clicks to book a global service (PayPal).",
+        "GA4 Event Name": "initiate_checkout",
+        "Facebook Pixel Event": "InitiateCheckout",
+        "Parameters": "item_name, value, currency ('USD'), market ('Global'), content_category, [User Properties]",
+        "Trigger": "Click 'Book This' or 'Get Clarity Now' on Global service cards"
+    },
+    {
+        "Event Name": "schedule (Global)",
+        "Description": "Fired when a user clicks to schedule a live global session.",
+        "GA4 Event Name": "schedule",
+        "Facebook Pixel Event": "Schedule",
+        "Parameters": "item_name, value, currency ('USD'), market ('Global'), content_category, [User Properties]",
+        "Trigger": "Click 'Schedule Call' on Global service cards"
+    },
+    {
+        "Event Name": "begin_checkout (ID)",
+        "Description": "Fired when a user clicks to book an Indonesian service (Lynk/Form).",
+        "GA4 Event Name": "begin_checkout",
+        "Facebook Pixel Event": "InitiateCheckout",
+        "Parameters": "item_name, value, currency ('IDR'), market ('ID'), content_category, [User Properties]",
+        "Trigger": "Click booking buttons for ID services (New Year, Promo, Chat, Call via Lynk)"
+    },
+    {
+        "Event Name": "schedule (ID)",
+        "Description": "Fired when a user clicks to schedule a session via Picktime (ID).",
+        "GA4 Event Name": "schedule",
+        "Facebook Pixel Event": "Schedule",
+        "Parameters": "item_name, value, currency ('IDR'), market ('ID'), content_category, [User Properties]",
+        "Trigger": "Click 'Via Picktime' or 'Book Sekarang' (Meetup)"
+    }
+]
