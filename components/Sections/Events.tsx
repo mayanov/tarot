@@ -3,7 +3,7 @@ import FadeIn from '../UI/FadeIn';
 import { ChevronDown } from 'lucide-react';
 
 interface EventsProps {
-    isIndonesian?: boolean;
+  isIndonesian?: boolean;
 }
 
 const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
@@ -48,20 +48,17 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
     <section id="events" className="py-20 bg-bg-dark relative overflow-hidden border-t border-white/5">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-lilac/5 rounded-full blur-[100px] pointer-events-none" />
-      
+
       <div className="max-w-6xl mx-auto px-4 relative z-10">
         <FadeIn>
           <div className="text-center mb-16">
-            <span className="text-lilac font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-                {isIndonesian ? "Jejak & Komunitas" : "Out In The Wild"}
-            </span>
             <h2 className="text-3xl md:text-5xl font-bold text-white font-serif mb-6">
               {isIndonesian ? "Acara & Kolaborasi" : "Community & Events"}
             </h2>
             <p className="text-text-subtle text-lg max-w-2xl mx-auto">
-                {isIndonesian 
-                 ? "Beragam acara dan kolaborasi yang telah saya lakukan." 
-                 : "From intimate gatherings to corporate events, I love connecting with people offline too."}
+              {isIndonesian
+                ? "Beragam acara dan kolaborasi yang telah saya lakukan."
+                : "From intimate gatherings to corporate events, I love connecting with people offline too."}
             </p>
           </div>
 
@@ -70,7 +67,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               <div key={index} className="flex gap-4 items-start group">
                 {/* Timeline Dot */}
                 <div className="mt-1.5 w-2.5 h-2.5 rounded-full bg-lilac/30 group-hover:bg-teal-accent group-hover:shadow-[0_0_8px_rgba(129,244,255,0.6)] transition-all duration-300 shrink-0"></div>
-                
+
                 <div>
                   <span className="text-xs font-bold text-teal-accent mb-1 block">{event.year}</span>
                   <h3 className="text-white font-bold text-base leading-tight mb-1 group-hover:text-lilac transition-colors duration-200">
@@ -84,14 +81,14 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
           {/* Load More Button */}
           {visibleCount < eventList.length && (
-             <div className="text-center">
-                <button 
-                  onClick={handleLoadMore}
-                  className="inline-flex items-center gap-2 px-8 py-3 rounded-full border border-white/10 hover:border-lilac/50 hover:bg-white/5 text-sm font-bold text-white transition-all duration-300 group shadow-lg"
-                >
-                  {isIndonesian ? "Lihat Lainnya" : "Load More Events"} <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-                </button>
-             </div>
+            <div className="text-center">
+              <button
+                onClick={handleLoadMore}
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-full border border-white/10 hover:border-lilac/50 hover:bg-white/5 text-sm font-bold text-white transition-all duration-300 group shadow-lg"
+              >
+                {isIndonesian ? "Lihat Lainnya" : "Load More Events"} <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+              </button>
+            </div>
           )}
 
         </FadeIn>

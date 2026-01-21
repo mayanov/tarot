@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Quote } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 
@@ -7,6 +7,11 @@ interface TestimonialsProps {
 }
 
 const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDown, setIsDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
   const reviewsEN = [
     {
       text: "had a 1 hr call session with Mayanov and it was suuuuper great. she really helped me out when i got stuck on what to ask next and didn't judge my 'stupid' questions (lol, thank u!). i actually feel relieved after the call, not just because of the reading, but because i could pour out everything i was curious about before. thank youuuuu~",
@@ -211,6 +216,53 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   // But now the list is quite long (21 items), so duplicating once is enough or might not even be needed if items > screen width
   const loopingReviews = [...reviews, ...reviews];
 
+  // Drag to scroll logic
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDown(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDown(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDown(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDown || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5; // scroll speed multiplier
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  // Auto-scroll logic
+  useEffect(() => {
+    const slider = scrollRef.current;
+    if (!slider) return;
+
+    let requestID: number;
+    const speed = 0.4; // pixels per frame
+
+    const animate = () => {
+      if (!isDown) {
+        slider.scrollLeft += speed;
+        // If we reach the middle point of loopingReviews, reset to 0 for infinite feel
+        if (slider.scrollLeft >= slider.scrollWidth / 2) {
+          slider.scrollLeft = 0;
+        }
+      }
+      requestID = requestAnimationFrame(animate);
+    };
+
+    requestID = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(requestID);
+  }, [isDown]);
+
   return (
     <section id="testimonials" className="py-24 relative overflow-hidden bg-bg-dark border-t border-white/5">
       {/* Background Accent */}
@@ -220,9 +272,6 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
       <div className="max-w-full mx-auto">
         <FadeIn>
           <div className="max-w-7xl mx-auto px-4 text-center mb-16">
-            <span className="text-lilac font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-              {isIndonesian ? "Ulasan Klien" : "Testimonials"}
-            </span>
             <h2 className="text-3xl md:text-5xl font-bold text-white font-serif mb-6">
               {isIndonesian ? "Apa Kata Mereka?" : "What Others Are Saying"}
             </h2>
@@ -248,19 +297,26 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           {/* Infinite Scroll Container */}
           <div className="relative w-full mask-image-gradient-horizontal">
             {/* Gradient Masks for edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-r from-bg-dark to-transparent z-10"></div>
-            <div className="absolute right-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-l from-bg-dark to-transparent z-10"></div>
+            <div className="absolute left-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-r from-bg-dark to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-l from-bg-dark to-transparent z-10 pointer-events-none"></div>
 
-            <div className="flex gap-6 animate-scroll w-max hover:[animation-play-state:paused] px-4">
+            <div
+              ref={scrollRef}
+              className="flex gap-6 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing px-4 select-none"
+              onMouseDown={handleMouseDown}
+              onMouseLeave={handleMouseLeave}
+              onMouseUp={handleMouseUp}
+              onMouseMove={handleMouseMove}
+            >
               {loopingReviews.map((review, index) => (
                 <div
                   key={index}
-                  className="w-[300px] md:w-[400px] flex-shrink-0 bg-[#1E1E2E] border border-white/5 p-8 rounded-2xl relative shadow-lg hover:shadow-2xl hover:border-lilac/20 transition duration-300 group flex flex-col"
+                  className="w-[300px] md:w-[400px] flex-shrink-0 bg-[#1E1E2E] border border-white/5 p-8 rounded-2xl relative shadow-lg transition duration-300 flex flex-col"
                 >
                   {/* Top Border Accent */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-lilac/20 to-transparent group-hover:via-lilac/60 transition-all duration-500"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-lilac/20 to-transparent transition-all duration-500"></div>
 
-                  <Quote className="absolute top-6 left-6 w-8 h-8 text-lilac/20 group-hover:text-lilac transition duration-300" />
+                  <Quote className="absolute top-6 left-6 w-8 h-8 text-lilac/20 transition duration-300" />
                   <p className="text-text-light/90 mb-6 relative z-10 italic leading-relaxed pt-6 font-medium text-sm md:text-base flex-grow">
                     "{review.text}"
                   </p>

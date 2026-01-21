@@ -153,9 +153,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             <div className="max-w-7xl mx-auto px-4 relative z-10">
                 <FadeIn>
                     <div className="text-center mb-16">
-                        <span className="text-lilac font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-                            {isIndonesian ? "Layanan Tarot" : "Pricing & Packages"}
-                        </span>
                         <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-white font-serif">
                             {isIndonesian ? "Pilih Layanan Tarotmu" : "Ways We Can Work Together"}
                         </h2>
@@ -392,11 +389,11 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         <div className="relative" id="service-call">
                             <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-[3rem] -z-10 blur-xl"></div>
 
-                            <div className="flex flex-col items-center gap-2 mb-10">
+                            <div className="flex flex-col items-center gap-2 mb-10 text-center">
                                 <div className="p-3 bg-white/10 rounded-full border border-white/20">
                                     <Phone className="w-6 h-6 text-white" />
                                 </div>
-                                <h3 className="text-2xl font-bold text-white font-serif tracking-wide uppercase">Panggilan Suara & Video</h3>
+                                <h3 className="text-2xl font-bold text-white font-serif tracking-wide uppercase text-center">Panggilan Suara & Video</h3>
                                 <div className="w-24 h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
                             </div>
 

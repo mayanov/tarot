@@ -73,7 +73,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                                     <FaTiktok size={16} />
                                 </a>
                                 <a
-                                    href="https://wa.me/6282122042079?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading"
+                                    href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={() => trackEvent('contact', { method: 'WhatsApp', market: 'ID' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: 'ID' })}

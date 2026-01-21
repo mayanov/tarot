@@ -3,7 +3,7 @@ import { Plus, Minus } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 
 interface FAQProps {
-    isIndonesian?: boolean;
+  isIndonesian?: boolean;
 }
 
 const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
@@ -12,7 +12,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   const faqs = [
     {
       question: isIndonesian ? "Bagaimana cara kerja reading via chat?" : "How does an email reading work?",
-      answer: isIndonesian 
+      answer: isIndonesian
         ? "Simpel. Pilih paket, lakukan pembayaran, lalu kirim pertanyaanmu lewat WhatsApp. Saya akan analisa kartunya, lalu kirim hasilnya berupa Voice Note dan Teks (plus foto kartu) dalam 2-3 hari kerja. Kamu bisa dengar ulang kapan saja."
         : "After you purchase a reading via PayPal, I will receive your request. Please ensure you include your question in the notes or reply to the confirmation email. I will then meditate on your query, pull the cards, and send you a detailed PDF report including a photo of your spread within 24 hours."
     },
@@ -51,14 +51,11 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
       <div className="max-w-3xl mx-auto px-4 relative z-10">
         <FadeIn>
           <div className="text-center mb-12">
-             <span className="text-lilac font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-                {isIndonesian ? "Pertanyaan Umum" : "Common Questions"}
-             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-white font-serif mb-4">
-                {isIndonesian ? "Sering Ditanyakan" : "Frequently Asked"}
+              {isIndonesian ? "Sering Ditanyakan" : "Frequently Asked"}
             </h2>
             <p className="text-text-subtle text-lg max-w-xl mx-auto">
-              {isIndonesian 
+              {isIndonesian
                 ? "Segala hal tentang proses bacaan, etika, dan cara penyampaian."
                 : "Everything you need to know about the reading process, ethics, and delivery."}
             </p>
@@ -66,13 +63,12 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
 
           <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <div 
-                key={index} 
-                className={`border rounded-2xl transition-all duration-300 overflow-hidden ${
-                    openIndex === index 
-                    ? 'bg-[#1E1E2E] border-lilac/30 shadow-[0_4px_20px_-10px_rgba(192,160,255,0.2)]' 
+              <div
+                key={index}
+                className={`border rounded-2xl transition-all duration-300 overflow-hidden ${openIndex === index
+                    ? 'bg-[#1E1E2E] border-lilac/30 shadow-[0_4px_20px_-10px_rgba(192,160,255,0.2)]'
                     : 'bg-[#151520] border-white/5 hover:border-white/10'
-                }`}
+                  }`}
               >
                 <button
                   onClick={() => toggleFAQ(index)}
@@ -85,10 +81,9 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                     {openIndex === index ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                   </div>
                 </button>
-                
-                <div 
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        openIndex === index ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
+
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                 >
                   <div className="p-6 pt-0 text-text-subtle text-sm md:text-base leading-relaxed border-t border-white/5 mt-2">

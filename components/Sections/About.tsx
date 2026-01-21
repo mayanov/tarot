@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import FadeIn from '../UI/FadeIn';
 import { Sparkles, Quote } from 'lucide-react';
+import { trackEvent } from '../../services/analytics';
 
 interface AboutProps {
   isIndonesian?: boolean;
 }
 
 const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
+  useEffect(() => {
+    trackEvent(
+      'view_item',
+      { item_name: 'About Me', market: isIndonesian ? 'ID' : 'Global' },
+      'ViewContent',
+      { content_name: 'About Me', content_category: isIndonesian ? 'ID' : 'Global' }
+    );
+  }, [isIndonesian]);
+
   return (
     <section id="about" className="py-24 md:py-32 relative bg-bg-deep overflow-hidden">
       {/* Background Elements */}
@@ -18,17 +28,17 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
 
             {/* LEFT: Image Composition */}
-            <div className="relative group mx-auto md:mx-0 max-w-sm md:max-w-full">
+            <div className="relative mx-auto md:mx-0 max-w-sm md:max-w-full">
               {/* Back Layer */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-lilac to-teal-accent rounded-[2rem] rotate-6 opacity-20 group-hover:rotate-12 transition-transform duration-500 blur-sm"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-lilac to-teal-accent rounded-[2rem] rotate-6 opacity-20 transition-transform duration-500 blur-sm"></div>
 
               {/* Middle Layer (Border) */}
-              <div className="absolute inset-0 border-2 border-white/10 rounded-[2rem] -rotate-3 group-hover:-rotate-6 transition-transform duration-500 bg-[#1E1E2E]"></div>
+              <div className="absolute inset-0 border-2 border-white/10 rounded-[2rem] -rotate-3 transition-transform duration-500 bg-[#1E1E2E]"></div>
 
               {/* Main Image Container */}
               <div className="relative rounded-[2rem] overflow-hidden shadow-2xl rotate-0 transition-transform duration-300">
                 <img
-                  src="/bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg"
+                  src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
                   alt="Mayanov"
                   className="w-full h-auto object-cover transition-all duration-700"
                 />
@@ -63,10 +73,10 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 {isIndonesian ? (
                   <>
                     <p>
-                      Bagi saya, Tarot itu bukan soal tebak-tebakan masa depan yang kaku atau klenik yang menakutkan. Itu cara lama.
+                      Saya telah mendalami seni membaca kartu Tarot sejak 2009. Dengan pengalaman lebih dari 10 tahun, saya menemukan bahwa kartu Tarot adalah medium yang baik untuk melakukan refleksi diri dan mencari solusi sebuah permasalahan.
                     </p>
                     <p>
-                      Pendekatan saya adalah <strong className="text-white font-medium">Tarot Psikologis & Strategis</strong>. Kita bongkar apa yang bikin kamu <i>stuck</i>, kita lihat peta situasinya, lalu kita susun langkah konkret ke depan.
+                      Karena pada dasarnya pembacaan Tarot bukanlah sesederhana ‘menerawang’ masa depan, melainkan menjadi sesi konsultasi yang mendewasakan baik Anda maupun saya.
                     </p>
                   </>
                 ) : (

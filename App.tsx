@@ -27,8 +27,7 @@ function App() {
       try {
         // [DEV ONLY] Secure Sandbox for Geolocation Testing
         // This ensures ONLY the developer (YOU) can simulate locations.
-        // It detects "npm run dev" mode OR localhost.
-        if (import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if (import.meta.env.DEV) {
           const params = new URLSearchParams(window.location.search);
           const geoParam = params.get('geo'); // Use ?geo=id or ?geo=global
 
@@ -181,7 +180,7 @@ function App() {
         {/* WhatsApp Floating Button */}
         {isIndonesian && (
           <a
-            href="https://wa.me/6282122042079?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading"
+            href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading"
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackEvent('contact', { method: 'WhatsApp', market: 'ID' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: 'ID' })}

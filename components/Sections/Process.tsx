@@ -17,9 +17,6 @@ const Process: React.FC<ProcessProps> = ({ isIndonesian = false }) => {
 
       <div className="max-w-5xl mx-auto px-4 text-center relative z-10">
         <FadeIn>
-          <span className="text-lilac text-sm font-bold tracking-widest uppercase mb-4 block">
-            {isIndonesian ? "Mudah & Aman" : "Simple & Secure"}
-          </span>
           <h2 className="text-3xl md:text-5xl font-bold mb-16 text-white font-serif">
             {isIndonesian ? "Cara Kerjanya" : "How It Works"}
           </h2>

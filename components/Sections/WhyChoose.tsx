@@ -97,9 +97,6 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         <FadeIn>
           <div className="text-center mb-16">
-            <span className="text-lilac font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-              {isIndonesian ? "Nilai Utama" : "Core Values"}
-            </span>
             <h2 className="text-3xl md:text-5xl font-bold text-white font-serif mb-6">
               {isIndonesian ? "Kenapa Baca Tarot di Sini?" : "Why Work With Me?"}
             </h2>
@@ -112,13 +109,13 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
 
           <div className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-4">
             {reasons.map((reason, index) => (
-              <div key={index} className={`group relative bg-gradient-to-b ${reason.bgGradient} border border-white/10 rounded-2xl p-6 md:p-8 overflow-hidden ${reason.borderColor}`}>
+              <div key={index} className={`relative bg-gradient-to-b ${reason.bgGradient} border border-white/10 rounded-2xl p-6 md:p-8 overflow-hidden`}>
 
                 {/* Decorative Gradient Background */}
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${reason.color} blur-[40px] opacity-30 group-hover:opacity-60 transition-opacity duration-500`}></div>
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${reason.color} blur-[40px] opacity-30 transition-opacity duration-500`}></div>
 
                 {/* Large Number Background */}
-                <div className="absolute -bottom-4 -right-2 text-8xl font-serif font-bold text-white/5 group-hover:text-white/10 transition-colors duration-300 pointer-events-none select-none">
+                <div className="absolute -bottom-4 -right-2 text-8xl font-serif font-bold text-white/5 transition-colors duration-300 pointer-events-none select-none">
                   0{index + 1}
                 </div>
 
