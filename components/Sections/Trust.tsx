@@ -1,7 +1,7 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
 import { trackEvent } from '../../services/analytics';
-import { Users, Clock, MessageCircle, Star, Info, ShieldCheck, FileWarning, Heart } from 'lucide-react';
+import { Users, Clock, MessageCircle, Star } from 'lucide-react';
 
 interface TrustProps {
   isIndonesian?: boolean;
@@ -39,37 +39,6 @@ const Trust: React.FC<TrustProps> = ({ isIndonesian = false }) => {
       value: "5.0",
       label: isIndonesian ? "Rating Google Review" : "Google Review Rating"
     },
-  ];
-
-  const policies = [
-    {
-      icon: <Info className="w-5 h-5 text-teal-accent" />,
-      title: isIndonesian ? "Panduan & Refleksi" : "Guidance & Reflection",
-      text: isIndonesian
-        ? "Bacaan untuk wawasan, kejelasan, dan hiburan."
-        : "Readings are for insight, clarity, and entertainment."
-    },
-    {
-      icon: <ShieldCheck className="w-5 h-5 text-lilac" />,
-      title: isIndonesian ? "Privat & Aman" : "Private & Safe",
-      text: isIndonesian
-        ? "Pertanyaan dan ceritamu 100% rahasia."
-        : "Your questions and stories are 100% confidential."
-    },
-    {
-      icon: <FileWarning className="w-5 h-5 text-teal-accent" />,
-      title: isIndonesian ? "Kamu Kendalinya" : "You Are In Control",
-      text: isIndonesian
-        ? "Saya baca energinya, tapi keputusan tetap di tanganmu."
-        : "I read the energy, but you always hold the power to choose."
-    },
-    {
-      icon: <Heart className="w-5 h-5 text-lilac" />,
-      title: isIndonesian ? "Tidak Ada Refund" : "Final Sale",
-      text: isIndonesian
-        ? "Karena waktu dan energi terpakai, bacaan tidak dapat di-refund."
-        : "Because time and energy are used, readings are non-refundable."
-    }
   ];
 
   return (
