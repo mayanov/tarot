@@ -73,7 +73,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 {isIndonesian ? (
                   <>
                     <p>
-                      Saya telah mendalami seni membaca kartu Tarot sejak 2009. Dengan pengalaman lebih dari 10 tahun, saya menemukan bahwa kartu Tarot adalah medium yang baik untuk melakukan refleksi diri dan mencari solusi sebuah permasalahan.
+                      Saya telah mendalami seni membaca kartu Tarot sejak 2009. Dengan pengalaman lebih dari 15 tahun, saya menemukan bahwa kartu Tarot adalah medium yang baik untuk melakukan refleksi diri dan mencari solusi sebuah permasalahan.
                     </p>
                     <p>
                       Karena pada dasarnya pembacaan Tarot bukanlah sesederhana ‘menerawang’ masa depan, melainkan menjadi sesi konsultasi yang mendewasakan baik Anda maupun saya.
@@ -85,7 +85,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                       For me, Tarot isn't about predicting a scary, fixed future. That's the old way.
                     </p>
                     <p>
-                      My approach is <strong className="text-white font-medium">Analytical & Strategic</strong>. We uncover what's keeping you stuck, map out the situation, and build a concrete plan to move forward.
+                      With more than 15 years of experience, my tarot reading approach is <strong className="text-white font-medium">Analytical & Strategic</strong>. We uncover what's keeping you stuck, map out the situation, and build a concrete plan to move forward.
                     </p>
                   </>
                 )}
