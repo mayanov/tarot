@@ -90,7 +90,7 @@ const Trust: React.FC<TrustProps> = ({ isIndonesian = false }) => {
           {/* GOOGLE REVIEWS BUTTON */}
           <div className="text-center">
             <a
-              href="https://share.google/JFQhliOEEXSBetR9g"
+              href="https://www.google.com/search?sca_esv=ef40956f7e4432eb&sxsrf=ANbL-n7SdVoM--CpcK3sNMDGosFTkoIWNg:1769068673057&si=AL3DRZEsmMGCryMMFSHJ3StBhOdZ2-6yYkXd_doETEE1OR-qOVbcCtc4v5CIiAET9zkHteUbRsgQt_Fpl3GV3F0FBTI5EvY7ur0sclLFX70p-8HpGb9DWBLb3vb0m5xByDWdvJPYkiNoXJpeI-f10yU8hV2jeBa8TQ%3D%3D&q=Tarot+Reading+by+Mayanov+Reviews&sa=X&ved=2ahUKEwj64dyu1p6SAxWSxzgGHSkADDwQ0bkNegQIJxAF&biw=1512&bih=949&dpr=2&aic=0"
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleReviewsClick}
