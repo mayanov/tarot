@@ -410,7 +410,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                                 <div className="text-3xl font-bold text-white">Rp 220.000</div>
                                             </div>
                                             <div className="text-center text-sm text-text-light mb-6 flex-grow">
-                                                <p>Ngobrol langsung selama 30 menit. Curhat lebih leluasa, feedback langsung.</p>
+                                                <p>Ngobrol langsung selama 30 menit via Whatsapp Call/Gmeet (sesuai request). Tidak terbatas jumlah pertanyaan. Curhat lebih nyaman dan leluasa.</p>
                                             </div>
                                             <div className="mt-auto min-h-[56px] flex items-end">
                                                 {activeCard === 'call-30' ? (
@@ -442,7 +442,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                                 <div className="text-3xl font-bold text-lilac">Rp 360.000</div>
                                             </div>
                                             <div className="text-center text-sm text-text-light mb-6 flex-grow">
-                                                <p>Deep dive selama 60 menit. Kita bedah masalahmu sampai ke akarnya.</p>
+                                                <p>Ngobrol langsung selama 60 menit via Whatsapp Call/Gmeet (sesuai request). Tidak terbatas jumlah pertanyaan. Bedah masalah kamu sampai ke akarnya.</p>
                                             </div>
                                             <div className="mt-auto min-h-[56px] flex items-end">
                                                 {activeCard === 'call-60' ? (
@@ -490,7 +490,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                                 <p className="text-[10px] text-text-subtle mt-1 font-bold">(Jam Pertama. Berikutnya Rp 300rb)</p>
                                             </div>
                                             <div className="text-center text-sm text-text-light mb-6 flex-grow">
-                                                <p>Tatap muka langsung. Energi lebih terasa, analisa lebih tajam dan personal.</p>
+                                                <p>Sesi tarot reading temu langsung di Jakarta Selatan. Energi lebih terasa, analisa lebih personal.</p>
                                             </div>
                                             <div className="mt-auto space-y-4">
                                                 <a href="https://www.picktime.com/mayanovtarot" target="_blank" rel="noopener noreferrer" onClick={handleMeetup} className={tealButtonClass}>Book Sekarang</a>

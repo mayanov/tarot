@@ -9,38 +9,85 @@ interface FAQProps {
 const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const faqs = [
+  const faqsEN = [
     {
-      question: isIndonesian ? "Bagaimana cara kerja reading via chat?" : "How does an email reading work?",
-      answer: isIndonesian
-        ? "Simpel. Pilih paket, lakukan pembayaran, lalu kirim pertanyaanmu lewat WhatsApp. Saya akan analisa kartunya, lalu kirim hasilnya berupa Voice Note dan Teks (plus foto kartu) dalam 2-3 hari kerja. Kamu bisa dengar ulang kapan saja."
-        : "After you purchase a reading via PayPal, I will receive your request. Please ensure you include your question in the notes or reply to the confirmation email. I will then meditate on your query, pull the cards, and send you a detailed PDF report including a photo of your spread within 24 hours."
+      question: "How does an email reading work?",
+      answer: "After you purchase a reading via PayPal, I will receive your request. Please ensure you include your question in the notes or reply to the confirmation email. I will then meditate on your query, pull the cards, and send you a detailed PDF report including a photo of your spread within 24 hours."
     },
     {
-      question: isIndonesian ? "Apa yang boleh ditanyakan?" : "What kind of questions can I ask?",
-      answer: isIndonesian
-        ? "Bebas, mulai dari karir, asmara, pengembangan diri, sampai situasi yang bikin galau. Fokus saya adalah strategi. Catatan: Saya TIDAK menjawab soal kesehatan medis, hasil hukum, atau nomor togel ya."
-        : "You can ask about relationships, career choices, personal growth, or general guidance. I specialize in strategic advice. However, I do not answer questions related to medical diagnoses, legal outcomes, or lottery numbers."
+      question: "What kind of questions can I ask?",
+      answer: "You can ask about relationships, career choices, personal growth, or general guidance. I specialize in strategic advice. However, I do not answer questions related to medical diagnoses, legal outcomes, or lottery numbers."
     },
     {
-      question: isIndonesian ? "Apakah saya harus online saat dibacakan?" : "Do I need to be present for the reading?",
-      answer: isIndonesian
-        ? "Kalau ambil paket Chat Reading, nggak perlu. Kamu tinggal tunggu hasilnya dikirim. Kalau ambil sesi Call (Google Meet), kita harus online bareng di waktu yang sudah dijadwalkan."
-        : "For Email readings (3-Card and 5-Card), you do not need to be present. I connect with your energy remotely. For Live Sessions, we will meet via Google Meet at your scheduled time."
+      question: "Do I need to be present for the reading?",
+      answer: "For Email readings (3-Card and 5-Card), you do not need to be present. I connect with your energy remotely. For Live Sessions, we will meet via Google Meet at your scheduled time."
     },
     {
-      question: isIndonesian ? "Apakah ada refund?" : "What is your refund policy?",
-      answer: isIndonesian
-        ? "Karena waktu dan energi sudah terpakai, penjualan bersifat final (no refund). Tapi kalau saya yang berhalangan hadir pas sesi Call, uangmu kembali 100% atau kita atur jadwal ulang."
-        : "Since time and energy are expended during the reading process, all sales are final once the reading has been delivered. If you need to cancel a Live Session, please do so at least 24 hours in advance for a reschedule."
+      question: "What is your refund policy?",
+      answer: "Since time and energy are expended during the reading process, all sales are final once the reading has been delivered. If you need to cancel a Live Session, please do so at least 24 hours in advance for a reschedule."
     },
     {
-      question: isIndonesian ? "Apakah Tarot itu musyrik atau menakutkan?" : "Is Tarot evil or scary?",
-      answer: isIndonesian
-        ? "Sama sekali nggak. Saya pakai Tarot sebagai alat psikologi dan refleksi diri. Anggap aja cermin buat lihat pikiran bawah sadarmu sendiri. Tujuannya memberdayakan kamu buat ambil keputusan, bukan nakut-nakutin."
-        : "Not at all. My practice is grounded in psychology and self-reflection. I use Tarot as a mirror to your subconscious to help you see options you might have missed. It is a tool for empowerment, not fear."
+      question: "Is Tarot evil or scary?",
+      answer: "Not at all. My practice is grounded in psychology and self-reflection. I use Tarot as a mirror to your subconscious to help you see options you might have missed. It is a tool for empowerment, not fear."
     }
   ];
+
+  const faqsID = [
+    {
+      question: "Apa itu tarot reading?",
+      answer: "Tarot reading adalah proses membaca simbol dari kartu tarot untuk membantu melihat situasi, pola, dan kemungkinan yang sedang kamu hadapi. Tarot digunakan sebagai alat refleksi dan panduan, bukan untuk menakut-nakuti atau menentukan nasib secara mutlak."
+    },
+    {
+      question: "Apakah tarot bisa meramal masa depan?",
+      answer: "Tarot tidak melihat masa depan sebagai sesuatu yang pasti dan tidak bisa diubah. Yang dibaca adalah energi dan kecenderungan berdasarkan kondisi saat ini. Pilihan dan tindakan kamu tetap punya peran besar dalam menentukan arah ke depannya."
+    },
+    {
+      question: "Apakah saya harus percaya tarot agar reading-nya bekerja?",
+      answer: "Tidak harus percaya sepenuhnya. Yang terpenting adalah datang dengan pikiran terbuka. Tarot paling efektif saat digunakan sebagai alat untuk memahami diri dan situasi dengan lebih jernih."
+    },
+    {
+      question: "Pertanyaan apa saja yang bisa ditanyakan?",
+      answer: "Tarot cocok untuk membahas: Percintaan & hubungan, Karier & pekerjaan, Keputusan hidup, Pengembangan diri, Kondisi emosi dan dinamika situasi"
+    },
+    {
+      question: "Apakah ada pertanyaan yang tidak bisa dibaca?",
+      answer: "Ya. Demi etika dan tanggung jawab, tarot reading tidak menerima pertanyaan mengenai: Kematian, Kehamilan, Judi, Barang atau hewan yang hilang"
+    },
+    {
+      question: "Apakah pembayaran bisa dikembalikan (refund)?",
+      answer: "Semua pembayaran bersifat non-refundable. Mohon pastikan kamu sudah yakin sebelum melakukan booking."
+    },
+    {
+      question: "Bagaimana jika waktu sesi habis?",
+      answer: "Jika waktu sesi sudah selesai, reading akan disimpulkan. Apabila ingin melanjutkan, sesi tambahan bisa dilakukan sesuai ketentuan yang berlaku."
+    },
+    {
+      question: "Bagaimana cara kerja tarot reading via chat?",
+      answer: "Setelah kamu memilih paket dan menyelesaikan pembayaran, kamu bisa langsung mengirimkan konteks cerita dan pertanyaan melalui WhatsApp chat. Hasil reading akan dikirim dalam bentuk: Foto kartu tarot yang keluar, dan Penjelasan dalam bentuk voice note, agar lebih jelas dan terasa personal."
+    },
+    {
+      question: "Kapan sesi dimulai?",
+      answer: "Untuk sesi online, reading dimulai setelah pembayaran diterima. Untuk sesi tatap muka, pembayaran dapat dilakukan sebelum sesi atau langsung di tempat."
+    },
+    {
+      question: "Informasi apa yang perlu saya siapkan untuk reading?",
+      answer: "Cukup siapkan: Nama, Cerita singkat atau konteks situasi. Foto atau tanggal lahir tidak wajib."
+    },
+    {
+      question: "Apakah sesi tarot bersifat rahasia?",
+      answer: "Ya. Kerahasiaan klien sepenuhnya dijaga. Cerita, pertanyaan, dan hasil reading tidak akan dibagikan tanpa persetujuan klien."
+    },
+    {
+      question: "Apakah tarot bisa menggantikan profesional lain?",
+      answer: "Tidak. Tarot bukan pengganti layanan profesional di bidang hukum, keuangan, kesehatan, atau psikologi."
+    },
+    {
+      question: "Apakah hasil tarot bersifat mutlak?",
+      answer: "Tidak. Tarot menunjukkan gambaran dan kemungkinan sementara. Masa depan bisa berubah seiring usaha dan pilihan yang kamu ambil."
+    }
+  ];
+
+  const faqs = isIndonesian ? faqsID : faqsEN;
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -66,8 +113,8 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               <div
                 key={index}
                 className={`border rounded-2xl transition-all duration-300 overflow-hidden ${openIndex === index
-                    ? 'bg-[#1E1E2E] border-lilac/30 shadow-[0_4px_20px_-10px_rgba(192,160,255,0.2)]'
-                    : 'bg-[#151520] border-white/5 hover:border-white/10'
+                  ? 'bg-[#1E1E2E] border-lilac/30 shadow-[0_4px_20px_-10px_rgba(192,160,255,0.2)]'
+                  : 'bg-[#151520] border-white/5 hover:border-white/10'
                   }`}
               >
                 <button
@@ -83,10 +130,10 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                 </button>
 
                 <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                 >
-                  <div className="p-6 pt-0 text-text-subtle text-sm md:text-base leading-relaxed border-t border-white/5 mt-2">
+                  <div className="p-6 pt-0 text-text-subtle text-sm md:text-base leading-relaxed border-t border-white/5 mt-2 whitespace-pre-line">
                     {faq.answer}
                   </div>
                 </div>

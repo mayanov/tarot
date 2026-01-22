@@ -53,11 +53,11 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
         <FadeIn>
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold text-white font-serif mb-6">
-              {isIndonesian ? "Acara & Kolaborasi" : "Community & Events"}
+              {isIndonesian ? "Event & Collaboration" : "Community & Events"}
             </h2>
             <p className="text-text-subtle text-lg max-w-2xl mx-auto">
               {isIndonesian
-                ? "Beragam acara dan kolaborasi yang telah saya lakukan."
+                ? "Mayanov Tarot siap sedia meramaikan acara kamu!"
                 : "From intimate gatherings to corporate events, I love connecting with people offline too."}
             </p>
           </div>

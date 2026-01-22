@@ -18,7 +18,7 @@ const Process: React.FC<ProcessProps> = ({ isIndonesian = false }) => {
       <div className="max-w-5xl mx-auto px-4 text-center relative z-10">
         <FadeIn>
           <h2 className="text-3xl md:text-5xl font-bold mb-16 text-white font-serif">
-            {isIndonesian ? "Cara Kerjanya" : "How It Works"}
+            {isIndonesian ? "Gimana Cara Kerjanya?" : "How It Works"}
           </h2>
 
           <div className="relative grid grid-cols-3 gap-4 md:gap-12 md:flex md:flex-row md:justify-between items-start md:items-center text-center">
@@ -48,7 +48,7 @@ const Process: React.FC<ProcessProps> = ({ isIndonesian = false }) => {
                 {isIndonesian ? "2. Ceritakan Masalahmu" : "2. Send Your Question"}
               </h3>
               <p className="text-[10px] md:text-sm text-text-subtle md:max-w-[200px] mx-auto leading-tight opacity-80">
-                {isIndonesian ? "Kirim pertanyaan atau cerita singkat lewat form/chat." : "Tell me what's on your mind in the order notes."}
+                {isIndonesian ? "Ceritakan secara singkat konteks permasalahan yang ingin ditanyakan" : "Tell me what's on your mind in the order notes."}
               </p>
             </div>
 
@@ -61,7 +61,7 @@ const Process: React.FC<ProcessProps> = ({ isIndonesian = false }) => {
                 {isIndonesian ? "3. Dapat Pencerahan" : "3. Get Your Answers"}
               </h3>
               <p className="text-[10px] md:text-sm text-text-subtle md:max-w-[200px] mx-auto leading-tight opacity-80">
-                {isIndonesian ? "Saya kirimkan analisa lengkap dan saran strategis." : "Receive your personal insights & guidance."}
+                {isIndonesian ? "Dapatkan hasil reading kamu sesuai dengan layanan yang kamu pilih." : "Receive your personal insights & guidance."}
               </p>
             </div>
 

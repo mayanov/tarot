@@ -12,6 +12,7 @@ import WhyChoose from './components/Sections/WhyChoose';
 import Events from './components/Sections/Events';
 import CTA from './components/Sections/CTA';
 import FAQ from './components/Sections/FAQ';
+import Disclaimer from './components/Sections/Disclaimer';
 import { Moon, ArrowUp } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
@@ -160,6 +161,7 @@ function App() {
         <Testimonials isIndonesian={isIndonesian} />
         <Events isIndonesian={isIndonesian} />
         <FAQ isIndonesian={isIndonesian} />
+        <Disclaimer isIndonesian={isIndonesian} />
         <CTA isIndonesian={isIndonesian} />
       </main>
 

@@ -57,24 +57,24 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   // Indonesian Content (Aligned with Global)
   const reasonsID: ReasonItem[] = [
     {
-      title: "Kekuatanmu, yang Utama",
-      description: "Fokus pada langkah nyata yang bisa kamu ambil. Ini soal strategi dan pilihanmu, bukan cuma pasrah pada takdir.",
+      title: "Bukan Nakutin, Tapi Empowering",
+      description: "Pembacaan jujur yang fokus pada langkah nyata yang bisa kamu ambil. Baca tarot jadi soal susun strategi dan menentukan pilihan, bukan hanya pasrah pada keadaan",
       color: "from-gold-accent/20 to-transparent",
       borderColor: "group-hover:border-gold-accent/50",
       textColor: "text-gold-accent",
       bgGradient: "from-[#252535] to-[#1A1A27]"
     },
     {
-      title: "Wawasan Terapeutik, Rasa Teman",
-      description: "Perpaduan unik antara wawasan terapeutik dan kehangatan seorang teman. Aman, tanpa penghakiman, dan sangat mendukung.",
+      title: "Sesi Tarot yang Hangat Seperti Curhat",
+      description: "Sesi tarot jadi ruangnya buat kamu bercerita dan dapat insight dengan aman dan tanpa penghakiman.",
       color: "from-teal-accent/20 to-transparent",
       borderColor: "group-hover:border-teal-accent/50",
       textColor: "text-teal-accent",
       bgGradient: "from-[#1A2530] to-[#1A1A27]"
     },
     {
-      title: "Ada untuk Kamu, Di Mana Saja",
-      description: "Dapatkan bacaan detail via email atau tatap muka langsung via Google Meet. Fleksibel sesuai kebutuhanmu.",
+      title: "Ada untuk Kamu di Mana Saja",
+      description: "Dapatkan bacaan detil via chat, call/video call, ataupun temu langsung. Super fleksibel sesuai dengan kebutuhanmu.",
       color: "from-lilac/20 to-transparent",
       borderColor: "group-hover:border-lilac/50",
       textColor: "text-lilac",
@@ -82,7 +82,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
     },
     {
       title: "Rahasia Terjamin",
-      description: "Apa yang kita bahas, berhenti di antara kita. Privasimu adalah prioritas utamaku.",
+      description: "Apa yang kita bahas berhenti di antara kita. Cerita kamu dijamin aman.",
       color: "from-pink-400/20 to-transparent",
       borderColor: "group-hover:border-pink-400/50",
       textColor: "text-pink-400",
@@ -98,11 +98,11 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
         <FadeIn>
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold text-white font-serif mb-6">
-              {isIndonesian ? "Kenapa Baca Tarot di Sini?" : "Why Work With Me?"}
+              {isIndonesian ? "Kenapa Baca Tarot sama Mayanov?" : "Why Work With Me?"}
             </h2>
             <p className="text-text-subtle text-lg max-w-2xl mx-auto">
               {isIndonesian
-                ? "Bayangkan objektivitas seorang terapis dipadukan dengan kehangatan sahabat. Pendekatanku membumi, praktis, dan berpusat padamu."
+                ? "Sesi pembacaan tarot tidak menjadi sesuatu yang kaku, apalagi menyeramkan. Melainkan jadi sesi curhat yang penuh insight."
                 : "Imagine the objectivity of a therapist mixed with the warmth of a best friend. My approach is grounded, practical, and centered on you."}
             </p>
           </div>

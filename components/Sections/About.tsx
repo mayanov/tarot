@@ -85,7 +85,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                       For me, Tarot isn't about predicting a scary, fixed future. That's the old way.
                     </p>
                     <p>
-                      My approach is <strong className="text-white font-medium">Psychological & Strategic</strong>. We uncover what's keeping you stuck, map out the situation, and build a concrete plan to move forward.
+                      My approach is <strong className="text-white font-medium">Analytical & Strategic</strong>. We uncover what's keeping you stuck, map out the situation, and build a concrete plan to move forward.
                     </p>
                   </>
                 )}

@@ -26,12 +26,12 @@ const Trust: React.FC<TrustProps> = ({ isIndonesian = false }) => {
     },
     {
       icon: Clock,
-      value: "2,000+",
+      value: "3,200+",
       label: isIndonesian ? "Jam Sesi" : "Hours of Guidance"
     },
     {
       icon: MessageCircle,
-      value: "3,500+",
+      value: "7,700+",
       label: isIndonesian ? "Total Sesi" : "Sessions Done"
     },
     {

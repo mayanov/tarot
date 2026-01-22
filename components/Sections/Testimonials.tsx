@@ -273,7 +273,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         <FadeIn>
           <div className="max-w-7xl mx-auto px-4 text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold text-white font-serif mb-6">
-              {isIndonesian ? "Apa Kata Mereka?" : "What Others Are Saying"}
+              {isIndonesian ? "Apa Kata Mereka" : "What Others Are Saying"}
             </h2>
             {/* 5-Star Rating Info */}
             <div className="flex justify-center items-center gap-2 mb-6 text-teal-accent font-bold animate-pulse-slow">
@@ -289,7 +289,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
 
             <p className="text-text-subtle text-lg max-w-2xl mx-auto">
               {isIndonesian
-                ? "Jangan hanya percaya kata saya. Berikut pengalaman teman-teman yang sudah konsultasi."
+                ? "Begini kata mereka yang udah pernah tarot reading sama Mayanov"
                 : "Don't just take my word for it. Here’s how others found their way with a little help from the cards."}
             </p>
           </div>
