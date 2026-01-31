@@ -4,129 +4,256 @@ import Header from './components/Layout/Header';
 import Hero from './components/Sections/Hero';
 import Trust from './components/Sections/Trust';
 import About from './components/Sections/About';
-import Services from './components/Sections/Services';
-import Process from './components/Sections/Process';
-import Footer from './components/Layout/Footer';
-import Testimonials from './components/Sections/Testimonials';
 import WhyChoose from './components/Sections/WhyChoose';
-import Events from './components/Sections/Events';
-import CTA from './components/Sections/CTA';
-import FAQ from './components/Sections/FAQ';
-import Disclaimer from './components/Sections/Disclaimer';
-import { Moon, ArrowUp } from 'lucide-react';
-import { FaWhatsapp } from 'react-icons/fa';
+import Footer from './components/Layout/Footer';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
+import { Moon, ArrowUp, RefreshCw } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
+
+// Lazy Load below-the-fold components
+const Services = React.lazy(() => import('./components/Sections/Services'));
+const Process = React.lazy(() => import('./components/Sections/Process'));
+const Testimonials = React.lazy(() => import('./components/Sections/Testimonials'));
+const Events = React.lazy(() => import('./components/Sections/Events'));
+const CTA = React.lazy(() => import('./components/Sections/CTA'));
+const FAQ = React.lazy(() => import('./components/Sections/FAQ'));
+const Disclaimer = React.lazy(() => import('./components/Sections/Disclaimer'));
+const AnalyticsDashboard = React.lazy(() => import('./components/Dashboard/AnalyticsDashboard'));
+const AdminLogin = React.lazy(() => import('./components/Admin/AdminLogin'));
+const NotFound = React.lazy(() => import('./components/Layout/NotFound'));
+
+
+// Helper to fetch with timeout
+const fetchWithTimeout = async (url: string, timeout = 2500) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(id);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+};
 
 function App() {
   const [isIndonesian, setIsIndonesian] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isGeoError, setIsGeoError] = useState<boolean>(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isDevOverride, setIsDevOverride] = useState<boolean>(false);
 
-  useEffect(() => {
-    const checkLocation = async () => {
+  // Define location check as a reusable function so we can retry from UI
+  const performLocationCheck = async () => {
+    setIsLoading(true);
+    setIsGeoError(false);
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+
+
+      // 1. CHECK CACHE FIRST
+      const cachedCountry = localStorage.getItem('user_country');
+      if (cachedCountry && !params.has('geo') && !import.meta.env.DEV) {
+        console.log(`[GEO] Using cached location: ${cachedCountry}`);
+        const isID = cachedCountry === 'ID';
+        setIsIndonesian(isID);
+        setIsLoading(false);
+        setUserProperties({
+          country: isID ? 'Indonesia (Cached)' : (cachedCountry || 'Global (Cached)'),
+          source: 'cache'
+        });
+        trackPageView({
+          page_path: isID ? '/id' : '/en',
+          page_title: isID ? 'Mayanov Tarot (Indonesia)' : 'Mayanov Tarot (Global)'
+        });
+        return;
+      }
+
+      // 2. SIMULATION MODES
+      if (params.get('simulate_geo_error') === 'true') {
+        throw new Error("Simulated Geo Error");
+      }
+
+      if (import.meta.env.DEV || params.has('geo')) {
+        const geoParam = params.get('geo');
+        if (geoParam === 'id' || geoParam === 'global') {
+          const isID = geoParam === 'id';
+          console.log(`[DEV MODE] 🔒 Overriding location to: ${isID ? 'Indonesia' : 'Global'}`);
+          setIsIndonesian(isID);
+          setIsDevOverride(true);
+          setUserProperties({ country: isID ? 'Indonesia (Dev)' : 'Global (Dev)', status: 'DEV_OVERRIDE' });
+          trackPageView({
+            page_path: isID ? '/id' : '/en',
+            page_title: isID ? 'Mayanov Tarot (Indonesia)' : 'Mayanov Tarot (Global)'
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // 3. REAL LOCATION CHECK (Waterfall)
+      let countryCode = '';
+      let city = '';
+      let source = '';
+
+      // Attempt 1: get.geojs.io
       try {
-        // [DEV ONLY] Secure Sandbox for Geolocation Testing
-        // This ensures ONLY the developer (YOU) can simulate locations.
-        if (import.meta.env.DEV) {
-          const params = new URLSearchParams(window.location.search);
-          const geoParam = params.get('geo'); // Use ?geo=id or ?geo=global
-
-          if (geoParam === 'id' || geoParam === 'global') {
-            const isID = geoParam === 'id';
-            console.log(`[DEV MODE] 🔒 Overriding location to: ${isID ? 'Indonesia' : 'Global'}`);
-
-            setIsIndonesian(isID);
-            setIsDevOverride(true);
-
-            // Mock tracking to prevent errors
-            setUserProperties({
-              country: isID ? 'Indonesia (Dev)' : 'Global (Dev)',
-              status: 'DEV_OVERRIDE'
-            });
-            trackPageView();
-
-            return; // Skip the real API call; 'finally' block handles loading state
+        console.log('Attempting GeoJS...');
+        const data = await fetchWithTimeout('https://get.geojs.io/v1/ip/geo.json', 2500);
+        countryCode = data.country_code;
+        city = data.city;
+        source = 'geojs';
+      } catch (e) {
+        console.warn('GeoJS failed, trying ipapi.co...');
+        // Attempt 2: ipapi.co
+        try {
+          const data = await fetchWithTimeout('https://ipapi.co/json/', 2500);
+          countryCode = data.country_code; // ipapi uses country_code
+          city = data.city;
+          source = 'ipapi';
+        } catch (e2) {
+          console.warn('ipapi.co failed, trying ip-api.com...');
+          // Attempt 3: ipwho.is (Backup 2 - HTTPS enabled)
+          try {
+            // ipwho.is returns 'country_code'
+            const data = await fetchWithTimeout('https://ipwho.is/', 2500);
+            if (!data.success) throw new Error("ipwho.is failed");
+            countryCode = data.country_code;
+            city = data.city;
+            source = 'ipwhois';
+          } catch (e3) {
+            console.error('All Geo providers failed.');
+            throw new Error("All Geo Providers Failed");
           }
         }
-
-        // Create a timeout controller to prevent infinite loading
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000); // 4 second timeout
-
-        // Using geojs.io for reliable client-side country lookup
-        // Switched to /geo.json to get city information
-        const response = await fetch('https://get.geojs.io/v1/ip/geo.json', {
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-
-        const data = await response.json();
-        const countryCode = data.country_code;
-
-        // geojs returns { country_code: 'ID', city: 'Jakarta', ... }
-        const isID = countryCode === 'ID';
-        setIsIndonesian(isID);
-
-        // Prepare User Properties for Tracking
-        const userProps: Record<string, any> = {};
-
-        if (isID) {
-          // For Indonesia: Add City Information
-          userProps.country = 'Indonesia';
-          userProps.city = data.city || 'Unknown';
-          if (data.region) userProps.region = data.region;
-        } else {
-          // For Global: Use Country
-          userProps.country = data.country || countryCode || 'Global';
-        }
-
-        // Set properties (will be included in all future events)
-        setUserProperties(userProps);
-
-        // Track Page Open (Page View)
-        trackPageView();
-
-      } catch (error) {
-        // Fallback to Global (English) on error or timeout
-        console.warn("GeoIP lookup failed or timed out, defaulting to Global mode.", error);
-        setIsIndonesian(false);
-        // Track page view even if geo fails
-        trackPageView({ note: 'geo_failed' });
-      } finally {
-        setTimeout(() => setIsLoading(false), 800);
       }
-    };
 
+      // Process Success
+      const isID = countryCode === 'ID';
+      setIsIndonesian(isID);
+
+      // Cache the result
+      localStorage.setItem('user_country', countryCode || 'Global');
+
+      console.log(`[GEO] Detected: ${countryCode} via ${source}`);
+      setUserProperties({
+        country: isID ? 'Indonesia' : (countryCode || 'Global'),
+        city: city || 'Unknown',
+        source: source
+      });
+      // Send Virtual Page View to distinguish traffic in Dashboard
+      trackPageView({
+        page_path: isID ? '/id' : '/en',
+        page_title: isID ? 'Mayanov Tarot (Indonesia)' : 'Mayanov Tarot (Global)'
+      });
+
+    } catch (error) {
+      console.error("Critical Location Failure:", error);
+      setIsGeoError(true);
+      trackEvent('error', { type: 'geo_failure' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 500);
     };
 
-    // Handle PayPal Success Redirects
+    // Handle Payment Redirects
     const params = new URLSearchParams(window.location.search);
     const successParam = params.get('payment_success');
     if (successParam === '3card' || successParam === '5card') {
-      console.log(`[PAYMENT] ✅ Success detected for: ${successParam}. Redirecting to thank you page...`);
-      // Short timeout to ensure analytics/state are settled if needed, though immediate is fine
-      setTimeout(() => {
-        window.location.href = `/thankyou-page-${successParam}.html`;
-      }, 500);
+      setTimeout(() => { window.location.href = `/thankyou-page-${successParam}.html`; }, 500);
     }
 
-    checkLocation();
+    performLocationCheck();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Handle Hash Navigation after Loading
+  useEffect(() => {
+    if (!isLoading && window.location.hash) {
+      setTimeout(() => {
+        const id = window.location.hash.substring(1);
+        const element = document.getElementById(id);
+        if (element) {
+          const offset = 80;
+          const bodyRect = document.body.getBoundingClientRect().top;
+          const elementRect = element.getBoundingClientRect().top;
+          const elementPosition = elementRect - bodyRect;
+          const offsetPosition = elementPosition - offset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 500);
+    }
+  }, [isLoading]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // ------------------------------------------------------------
+  // 1. ADMIN / DASHBOARD ROUTING (Bypasses Geo Check)
+  // ------------------------------------------------------------
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
+    try {
+      return localStorage.getItem('admin_session') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const path = window.location.pathname;
+
+  // Legacy query param support
+  const params = new URLSearchParams(window.location.search);
+  const isDashboardMode = params.get('dashboard') === 'true' || path === '/admin';
+
+  if (isDashboardMode) {
+    const handleAdminLogin = () => {
+      localStorage.setItem('admin_session', 'true');
+      setIsAdminLoggedIn(true);
+    };
+
+    const handleAdminLogout = async () => {
+      try {
+        await fetch('http://localhost:3001/api/logout', { method: 'POST' });
+        localStorage.removeItem('authToken');
+      } catch (e) {
+        console.error("Logout failed", e);
+      }
+      localStorage.removeItem('admin_session');
+      setIsAdminLoggedIn(false);
+      // Optional: Reset other states if needed, but unmounting Dashboard does it.
+    };
+
+    // If authenticating for admin
+    if (path === '/admin' && !isAdminLoggedIn) {
+      return (
+        <React.Suspense fallback={<div className="min-h-screen bg-bg-dark" />}>
+          <AdminLogin onLogin={handleAdminLogin} />
+        </React.Suspense>
+      );
+    }
+    return (
+      <React.Suspense fallback={<div className="min-h-screen bg-bg-dark" />}>
+        <AnalyticsDashboard onLogout={handleAdminLogout} />
+      </React.Suspense>
+    );
+  }
+
+  // ------------------------------------------------------------
+  // 2. MAIN APP LOGIC (Geo Checks only happen here)
+  // ------------------------------------------------------------
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-dark text-white">
@@ -135,6 +262,46 @@ function App() {
           <span className="text-sm tracking-[0.3em] uppercase text-text-subtle">Loading...</span>
         </div>
       </div>
+    );
+  }
+
+  if (isGeoError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-bg-dark text-white p-4 text-center">
+        <div className="bg-surface-1 p-8 rounded-2xl border border-white/10 max-w-md shadow-2xl">
+          <div className="mx-auto mb-4 w-12 h-16 border-2 border-red-400 rounded-lg flex items-center justify-center relative bg-red-400/10 animate-float">
+            <div className="w-8 h-12 border border-red-400/50 rounded-sm flex items-center justify-center">
+              <span className="text-xl">⚡</span>
+            </div>
+          </div>
+          <h2 className="text-2xl font-serif font-bold mb-2">Something Went Wrong</h2>
+          <p className="text-text-subtle mb-6">
+            We encountered an issue loading the page. Please check your connection and try again.
+          </p>
+          <button
+            onClick={performLocationCheck}
+            className="px-6 py-3 rounded-full bg-lilac text-bg-dark font-bold hover:bg-white transition flex items-center gap-2 mx-auto"
+          >
+            <RefreshCw className="w-4 h-4" /> Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ------------------------------------------------------------
+  // 3. 404 NOT FOUND CHECK
+  // ------------------------------------------------------------
+  // We only allow root /, /index.html, and /admin (handled above).
+  // Everything else is a 404.
+  // Note: Anchors (#section) do not change pathname.
+  const isNotFound = !['/', '/index.html'].includes(path) && !path.endsWith('.html');
+
+  if (isNotFound) {
+    return (
+      <React.Suspense fallback={<div className="min-h-screen bg-bg-dark" />}>
+        <NotFound isIndonesian={isIndonesian} />
+      </React.Suspense>
     );
   }
 
@@ -156,13 +323,16 @@ function App() {
         <About isIndonesian={isIndonesian} />
         <Trust isIndonesian={isIndonesian} />
         <WhyChoose isIndonesian={isIndonesian} />
-        <Process isIndonesian={isIndonesian} />
-        <Services isIndonesian={isIndonesian} />
-        <Testimonials isIndonesian={isIndonesian} />
-        <Events isIndonesian={isIndonesian} />
-        <FAQ isIndonesian={isIndonesian} />
-        <Disclaimer isIndonesian={isIndonesian} />
-        <CTA isIndonesian={isIndonesian} />
+
+        <React.Suspense fallback={<div className="h-96 flex items-center justify-center text-white/20">Loading...</div>}>
+          <Process isIndonesian={isIndonesian} />
+          <Services isIndonesian={isIndonesian} />
+          <Testimonials isIndonesian={isIndonesian} />
+          <Events isIndonesian={isIndonesian} />
+          <FAQ isIndonesian={isIndonesian} />
+          <Disclaimer isIndonesian={isIndonesian} />
+          <CTA isIndonesian={isIndonesian} />
+        </React.Suspense>
       </main>
 
       <Footer isIndonesian={isIndonesian} />

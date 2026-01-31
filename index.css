@@ -36,3 +36,109 @@ h6 {
   scrollbar-width: none;
   /* Firefox */
 }
+
+/* =========================================
+   React Day Picker Custom Dark Theme (v9)
+   Scoped to .rdp-custom-wrapper for high specificity
+   ========================================= */
+
+.rdp-custom-wrapper {
+  --rdp-cell-size: 38px;
+  --rdp-accent-color: #C0A0FF;
+  /* Lilac */
+  --rdp-background-color: transparent;
+  width: 100%;
+}
+
+.rdp-custom-wrapper .rdp {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #E2E8F0;
+  /* Default text light slate */
+}
+
+/* Navigation & Header */
+.rdp-custom-wrapper .rdp-month_caption {
+  font-family: 'Lora', serif;
+  font-weight: 700;
+  color: white;
+  padding-left: 0.5rem;
+}
+
+.rdp-custom-wrapper .rdp-nav_button {
+  color: #C0A0FF;
+  opacity: 0.8;
+  background-color: transparent;
+}
+
+.rdp-custom-wrapper .rdp-nav_button:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.rdp-custom-wrapper .rdp-weekday {
+  color: #94A3B8;
+  /* Slate 400 */
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Day Cells - Default State */
+.rdp-custom-wrapper .rdp-day {
+  color: #E2E8F0;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.rdp-custom-wrapper .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+/* SELECTED STATE (Start & End Dates) */
+.rdp-custom-wrapper .rdp-day_selected:not([disabled]),
+.rdp-custom-wrapper .rdp-day_selected:focus:not([disabled]),
+.rdp-custom-wrapper .rdp-day_selected:active:not([disabled]),
+.rdp-custom-wrapper .rdp-day_selected:hover:not([disabled]) {
+  background-color: #C0A0FF !important;
+  /* LILAC */
+  color: #0F0F1A !important;
+  /* DARK TEXT */
+  font-weight: 800;
+  border: none;
+  box-shadow: 0 0 12px rgba(192, 160, 255, 0.5);
+}
+
+/* RANGE MIDDLE (Dates between start and end) */
+.rdp-custom-wrapper .rdp-day_range_middle {
+  background-color: rgba(192, 160, 255, 0.15) !important;
+  /* Subtle Lilac Wash */
+  color: #E2E8F0 !important;
+  /* LIGHT TEXT - Fixes the blue issue */
+  border-radius: 0;
+}
+
+/* Range Connectors */
+.rdp-custom-wrapper .rdp-day_range_start {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.rdp-custom-wrapper .rdp-day_range_end {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* TODAY'S DATE */
+.rdp-custom-wrapper .rdp-today:not(.rdp-day_selected) {
+  color: #2DD4BF !important;
+  /* TEAL */
+  font-weight: 900;
+}
+
+/* Remove default dot if it exists, use color instead */
+.rdp-custom-wrapper .rdp-today:not(.rdp-day_selected)::after {
+  display: none;
+}

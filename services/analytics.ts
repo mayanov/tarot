@@ -56,7 +56,28 @@ export const trackEvent = (
 
         // Google Analytics 4
         if (window.gtag) {
-            window.gtag('event', eventName, finalGaParams);
+            // Check if this is an ecommerce-like event with 'item_name'
+            // If so, we must structure it as { items: [{ item_name: ... }] } 
+            // for the standard 'itemName' dimension to populate in reports.
+            if (finalGaParams.item_name) {
+                const { item_name, value, currency, ...otherParams } = finalGaParams;
+
+                const ecommerceParams = {
+                    ...otherParams,
+                    value: value,
+                    currency: currency,
+                    items: [{
+                        item_name: item_name,
+                        // Include other item-level properties if present in top-level
+                        // (Mapping common ones for safety)
+                        brand: 'Mayanov Tarot',
+                        category: finalGaParams.content_category || 'Service'
+                    }]
+                };
+                window.gtag('event', eventName, ecommerceParams);
+            } else {
+                window.gtag('event', eventName, finalGaParams);
+            }
         }
 
         // Facebook Pixel

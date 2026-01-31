@@ -55,11 +55,21 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             <h2 className="text-3xl md:text-5xl font-bold text-white font-serif mb-6">
               {isIndonesian ? "Event & Collaboration" : "Community & Events"}
             </h2>
-            <p className="text-text-subtle text-lg max-w-2xl mx-auto">
+            <p className="text-text-subtle text-lg max-w-2xl mx-auto mb-8">
               {isIndonesian
                 ? "Mayanov Tarot siap sedia meramaikan acara kamu!"
                 : "From intimate gatherings to corporate events, I love connecting with people offline too."}
             </p>
+            {isIndonesian && (
+              <a
+                href="https://wa.link/5peyhb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-teal-accent hover:bg-white text-sm font-bold text-[#05050A] transition-all duration-300 shadow-lg hover:scale-105"
+              >
+                Yuk Collab
+              </a>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 mb-12">
@@ -81,7 +91,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
           {/* Load More Button */}
           {visibleCount < eventList.length && (
-            <div className="text-center">
+            <div className="text-center mt-8">
               <button
                 onClick={handleLoadMore}
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-full border border-white/10 hover:border-lilac/50 hover:bg-white/5 text-sm font-bold text-white transition-all duration-300 group shadow-lg"

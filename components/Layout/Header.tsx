@@ -47,6 +47,17 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false }) => {
         top: offsetPosition,
         behavior: 'smooth'
       });
+    } else {
+      // If element not found (e.g. on 404 page), redirect to home with hash
+      window.location.href = `/#${id}`;
+    }
+  };
+
+  const handleLogoClick = () => {
+    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.location.href = '/';
     }
   };
 
@@ -80,7 +91,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false }) => {
           {/* Logo */}
           <div
             className="flex items-center gap-2 cursor-pointer group"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={handleLogoClick}
           >
             <div className="p-1.5 rounded-full bg-lilac/10 border border-lilac/20 group-hover:bg-lilac/20 transition duration-300">
               <Moon className="w-5 h-5 text-lilac" />
