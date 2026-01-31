@@ -273,10 +273,11 @@ export const fetchGA4Data = async (
 
     // Check if Backend Server is available (Try fetching from it)
     try {
-        const backendUrl = 'http://localhost:3001/api/analytics'; // Dev default
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const backendUrl = `${baseUrl}/api/analytics`;
         // In prod, this would be /api/analytics relative to domain
 
-        console.log("GA4: Attempting to fetch from Backend Server...");
+        console.log("GA4: Attempting to fetch from Backend Server...", backendUrl);
         const token = localStorage.getItem('authToken');
         const res = await fetch(`${backendUrl}?startDate=${startDate}&endDate=${endDate}&propertyId=${propertyId}`, {
             headers: {

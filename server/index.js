@@ -20,9 +20,15 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // Strict Allowed Origins
+    origin: [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'https://tarotreadingbymayanov.com',
+        'https://www.tarotreadingbymayanov.com',
+        'https://mayanov-tarot.onrender.com'
+    ],
     methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'x-api-key', 'Authorization']
+    allowedHeaders: ['Content-Type', 'x-api-key', 'Authorization', 'Authorization-Token']
 }));
 app.use(express.json());
 app.use(cookieParser());
