@@ -34,7 +34,25 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Initialize Analytics Client
-const analyticsDataClient = new BetaAnalyticsDataClient();
+let analyticsDataClient;
+
+try {
+    const credentialsJson = process.env.GOOGLE_CREDENTIALS_JSON;
+    if (credentialsJson) {
+        // Vercel / Cloud Environment
+        const credentials = JSON.parse(credentialsJson);
+        analyticsDataClient = new BetaAnalyticsDataClient({
+            credentials
+        });
+        console.log('[Server] Analytics Client initialized with ENV credentials');
+    } else {
+        // Local / File-based Environment
+        analyticsDataClient = new BetaAnalyticsDataClient();
+        console.log('[Server] Analytics Client initialized with FILE credentials');
+    }
+} catch (error) {
+    console.error('[Server] Failed to initialize Analytics Client:', error);
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_jwt_key_mayanov_2026';
 
