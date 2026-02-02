@@ -24,6 +24,25 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     }
   };
 
+  const scrollToAbout = (e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const element = document.getElementById('about');
+    if (element) {
+      // About section usually has padding-top, so we might want to scroll exactly to it or slightly offset
+      // Since it's the next section, standard offset usually works well.
+      const offset = 80;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <section id="hero" className="relative min-h-[60vh] md:min-h-[60vh] flex flex-col justify-center pt-28 pb-12 md:pt-32 md:pb-20 text-center overflow-hidden">
 
@@ -91,7 +110,18 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 animate-bounce-slow opacity-50 hover:opacity-100 transition-opacity cursor-pointer hidden md:block">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={scrollToAbout}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            scrollToAbout(e);
+          }
+        }}
+        className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 animate-bounce-slow opacity-50 hover:opacity-100 transition-opacity cursor-pointer hidden md:block"
+        aria-label="Scroll to next section"
+      >
         <ChevronDown className="w-6 h-6 text-white" />
       </div>
     </section>
