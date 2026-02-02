@@ -301,8 +301,13 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`----------------------------------------------------------`);
-    console.log(`🚀 Admin Backend Server running on http://localhost:${PORT}`);
-    console.log(`----------------------------------------------------------`);
-});
+// Start Server (Only locally, Vercel handles this automatically)
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`----------------------------------------------------------`);
+        console.log(`🚀 Admin Backend Server running on http://localhost:${PORT}`);
+        console.log(`----------------------------------------------------------`);
+    });
+}
+
+export default app;
