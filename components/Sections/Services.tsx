@@ -487,7 +487,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                             </div>
                                             <div className="text-center mb-6">
                                                 <div className="text-3xl font-bold text-teal-accent">Rp 450.000</div>
-                                                <p className="text-[10px] text-text-subtle mt-1 font-bold">(Jam Pertama. Berikutnya Rp 300rb)</p>
+                                                <p className="text-[10px] text-text-subtle mt-1 font-bold">(Jam Pertama. Berikutnya Rp 360rb per jam)</p>
                                             </div>
                                             <div className="text-center text-sm text-text-light mb-6 flex-grow">
                                                 <p>Sesi tarot reading temu langsung di Jakarta Selatan. Energi lebih terasa, analisa lebih personal.</p>
