@@ -75,13 +75,13 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           <h1 className="text-4xl md:text-7xl mb-4 md:mb-6 leading-tight font-serif text-white drop-shadow-2xl tracking-normal">
             {isIndonesian ? (
               <>
-                Sesi Tarot yang Analitis, <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-lilac via-white to-teal-accent">Bukan Mistis!</span>
+                Tarot untuk <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-lilac via-white to-teal-accent">Pikiran Lebih Jernih.</span>
               </>
             ) : (
               <>
-                Find Your Clarity. <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-lilac via-white to-teal-accent">Own Your Path.</span>
+                Tarot for a <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-lilac via-white to-teal-accent">Clearer Mind.</span>
               </>
             )}
           </h1>
