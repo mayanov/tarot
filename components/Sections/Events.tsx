@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FadeIn from '../UI/FadeIn';
+import SectionHeader from '../UI/SectionHeader';
 import { ChevronDown } from 'lucide-react';
 
 interface EventsProps {
@@ -45,45 +46,49 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   };
 
   return (
-    <section id="events" className="py-20 bg-bg-dark relative overflow-hidden border-t border-white/5">
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-lilac/5 rounded-full blur-[100px] pointer-events-none" />
-
-      <div className="max-w-6xl mx-auto px-4 relative z-10">
+    <section
+      id="events"
+      className="py-12 md:py-16 relative overflow-hidden border-y border-line"
+      style={{
+        background:
+          'radial-gradient(56% 50% at 6% 2%, rgba(86,77,77,0.24), rgba(243,237,230,0) 58%), radial-gradient(58% 56% at 96% 102%, rgba(95,129,105,0.30), rgba(243,237,230,0) 60%), linear-gradient(160deg, #E9E8E3 0%, #E5EAE5 100%)',
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
         <FadeIn>
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-white font-serif mb-6">
-              {isIndonesian ? "Event & Collaboration" : "Community & Events"}
-            </h2>
-            <p className="text-text-subtle text-lg max-w-2xl mx-auto mb-8">
-              {isIndonesian
-                ? "Mayanov Tarot siap sedia meramaikan acara kamu!"
-                : "From intimate gatherings to corporate events, I love connecting with people offline too."}
-            </p>
-            {isIndonesian && (
+          <SectionHeader
+            label={isIndonesian ? "Rekam Jejak" : "Track Record"}
+            accent="text-sage"
+            title={isIndonesian ? "Event & collaboration" : "Community & events"}
+            intro={isIndonesian
+              ? "Mayanov Tarot siap sedia meramaikan acara kamu!"
+              : "From intimate gatherings to corporate events, I love connecting with people offline too."}
+          />
+          {isIndonesian && (
+            <div className="mb-10 -mt-2">
               <a
                 href="https://wa.link/5peyhb"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-teal-accent hover:bg-white text-sm font-bold text-[#05050A] transition-all duration-300 shadow-lg hover:scale-105"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-terracotta hover:bg-terracotta-dark text-sm font-medium text-paper transition-all duration-300 shadow-[0_10px_30px_-12px_rgba(193,97,74,0.7)] hover:-translate-y-0.5"
               >
                 Yuk Collab
               </a>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-7 mb-12">
             {displayedEvents.map((event, index) => (
-              <div key={index} className="flex gap-4 items-start group">
+              <div key={index} className="flex gap-4 items-start group border-b border-line pb-5">
                 {/* Timeline Dot */}
-                <div className="mt-1.5 w-2.5 h-2.5 rounded-full bg-lilac/30 group-hover:bg-teal-accent group-hover:shadow-[0_0_8px_rgba(129,244,255,0.6)] transition-all duration-300 shrink-0"></div>
+                <div className="mt-1.5 w-2 h-2 rounded-full bg-line group-hover:bg-sage transition-all duration-300 shrink-0"></div>
 
                 <div>
-                  <span className="text-xs font-bold text-teal-accent mb-1 block">{event.year}</span>
-                  <h3 className="text-white font-bold text-base leading-tight mb-1 group-hover:text-lilac transition-colors duration-200">
+                  <span className="text-xs font-semibold text-sage mb-1 block tracking-wide">{event.year}</span>
+                  <h3 className="text-ink font-serif font-medium text-base leading-snug mb-1 group-hover:text-sage transition-colors duration-200">
                     {event.title}
                   </h3>
-                  <p className="text-sm text-gray-500 font-medium">{event.loc}</p>
+                  <p className="text-sm text-taupe font-light">{event.loc}</p>
                 </div>
               </div>
             ))}
@@ -94,7 +99,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             <div className="text-center mt-8">
               <button
                 onClick={handleLoadMore}
-                className="inline-flex items-center gap-2 px-8 py-3 rounded-full border border-white/10 hover:border-lilac/50 hover:bg-white/5 text-sm font-bold text-white transition-all duration-300 group shadow-lg"
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-full border border-line hover:border-terracotta hover:text-terracotta bg-surface-1 text-sm font-medium text-ink transition-all duration-300 group"
               >
                 {isIndonesian ? "Lihat Lainnya" : "Load More Events"} <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
               </button>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
+import SectionHeader from '../UI/SectionHeader';
 
 interface FAQProps {
   isIndonesian?: boolean;
@@ -94,37 +95,43 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   };
 
   return (
-    <section id="faq" className="py-20 bg-bg-deep border-t border-white/5 relative">
-      <div className="max-w-3xl mx-auto px-4 relative z-10">
+    <section
+      id="faq"
+      className="py-12 md:py-16 relative border-y border-line"
+      style={{
+        background:
+          'radial-gradient(58% 54% at 92% 0%, rgba(84,77,90,0.34), rgba(243,237,230,0) 58%), radial-gradient(60% 56% at 4% 104%, rgba(93,122,153,0.32), rgba(243,237,230,0) 60%), linear-gradient(160deg, #E7E6E9 0%, #E3E5EA 55%, #E1E4E9 100%)',
+      }}
+    >
+      <div className="max-w-5xl mx-auto px-6 relative z-10">
         <FadeIn>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white font-serif mb-4">
-              {isIndonesian ? "Sering Ditanyakan" : "Frequently Asked"}
-            </h2>
-            <p className="text-text-subtle text-lg max-w-xl mx-auto">
-              {isIndonesian
-                ? "Segala hal tentang proses bacaan, etika, dan cara penyampaian."
-                : "Everything you need to know about the reading process, ethics, and delivery."}
-            </p>
-          </div>
+          <SectionHeader
+            label="FAQ"
+            index="(?)"
+            accent="text-plum"
+            title={isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
+            intro={isIndonesian
+              ? 'Segala hal tentang proses bacaan, etika, dan cara penyampaian.'
+              : 'Everything about the reading process, ethics, and delivery.'}
+          />
 
-          <div className="space-y-4">
+          <div className="space-y-3 max-w-3xl">
             {faqs.map((faq, index) => (
               <div
                 key={index}
                 className={`border rounded-2xl transition-all duration-300 overflow-hidden ${openIndex === index
-                  ? 'bg-[#1E1E2E] border-lilac/30 shadow-[0_4px_20px_-10px_rgba(192,160,255,0.2)]'
-                  : 'bg-[#151520] border-white/5 hover:border-white/10'
+                  ? 'bg-surface-1 border-plum/40 shadow-[0_16px_40px_-30px_rgba(42,35,32,0.4)]'
+                  : 'bg-surface-1 border-line hover:border-plum/30'
                   }`}
               >
                 <button
                   onClick={() => toggleFAQ(index)}
                   className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
                 >
-                  <span className={`font-bold text-base md:text-lg transition-colors ${openIndex === index ? 'text-white' : 'text-gray-300'}`}>
+                  <span className={`font-serif font-medium text-base md:text-lg transition-colors ${openIndex === index ? 'text-plum' : 'text-ink'}`}>
                     {faq.question}
                   </span>
-                  <div className={`p-1 rounded-full border transition-all duration-300 shrink-0 ml-4 ${openIndex === index ? 'border-lilac bg-lilac text-[#0F0F1A]' : 'border-white/20 text-white/50'}`}>
+                  <div className={`p-1 rounded-full border transition-all duration-300 shrink-0 ml-4 ${openIndex === index ? 'border-plum bg-plum text-paper' : 'border-line text-taupe'}`}>
                     {openIndex === index ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                   </div>
                 </button>
@@ -133,7 +140,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                 >
-                  <div className="p-6 pt-0 text-text-subtle text-sm md:text-base leading-relaxed border-t border-white/5 mt-2 whitespace-pre-line">
+                  <div className="p-6 pt-0 text-ink-soft text-sm md:text-base leading-relaxed border-t border-line mt-2 whitespace-pre-line font-light">
                     {faq.answer}
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
-import { Smile, Lock, Send } from 'lucide-react';
+import SectionHeader from '../UI/SectionHeader';
 
 interface WhyChooseProps {
   isIndonesian?: boolean;
@@ -9,127 +9,90 @@ interface WhyChooseProps {
 interface ReasonItem {
   title: string;
   description: string;
-  color: string;
-  borderColor: string;
-  textColor: string;
-  bgGradient: string;
-  icon?: React.ReactNode;
 }
 
 const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
-  // Global Content
   const reasonsGlobal: ReasonItem[] = [
     {
-      title: "Your Power, First",
-      description: "I focus on actionable steps. This is about strategy and choices, not just fate.",
-      color: "from-gold-accent/20 to-transparent",
-      borderColor: "group-hover:border-gold-accent/50",
-      textColor: "text-gold-accent",
-      bgGradient: "from-[#252535] to-[#1A1A27]"
+      title: 'Your Power, First',
+      description: 'I focus on actionable steps. This is about strategy and choices, not just fate.',
     },
     {
-      title: "Therapeutic Insight, Friendly Vibe",
-      description: "A unique blend of therapeutic insight and warm friendship. Safe, non-judgmental, and deeply supportive.",
-      color: "from-teal-accent/20 to-transparent",
-      borderColor: "group-hover:border-teal-accent/50",
-      textColor: "text-teal-accent",
-      bgGradient: "from-[#1A2530] to-[#1A1A27]"
+      title: 'Therapeutic Insight, Friendly Vibe',
+      description: 'A unique blend of therapeutic insight and warm friendship. Safe, non-judgmental, and deeply supportive.',
     },
     {
-      title: "Here For You, Anywhere",
-      description: "Get detailed readings via email or meet face-to-face on Google Meet.",
-      color: "from-lilac/20 to-transparent",
-      borderColor: "group-hover:border-lilac/50",
-      textColor: "text-lilac",
-      bgGradient: "from-[#2A2035] to-[#1A1A27]"
+      title: 'Here For You, Anywhere',
+      description: 'Get detailed readings via email or meet face-to-face on Google Meet.',
     },
     {
-      title: "Strictly Confidential",
-      description: "What we discuss stays between us. Your privacy is my top priority.",
-      color: "from-pink-400/20 to-transparent",
-      borderColor: "group-hover:border-pink-400/50",
-      textColor: "text-pink-400",
-      bgGradient: "from-[#301A25] to-[#1A1A27]"
-    }
+      title: 'Strictly Confidential',
+      description: 'What we discuss stays between us. Your privacy is my top priority.',
+    },
   ];
 
-  // Indonesian Content from HTML
-  // Indonesian Content (Aligned with Global)
   const reasonsID: ReasonItem[] = [
     {
-      title: "Bukan Nakutin, Tapi Empowering",
-      description: "Pembacaan jujur yang fokus pada langkah nyata yang bisa kamu ambil. Baca tarot jadi soal susun strategi dan menentukan pilihan, bukan hanya pasrah pada keadaan",
-      color: "from-gold-accent/20 to-transparent",
-      borderColor: "group-hover:border-gold-accent/50",
-      textColor: "text-gold-accent",
-      bgGradient: "from-[#252535] to-[#1A1A27]"
+      title: 'Bukan Nakutin, Tapi Empowering',
+      description: 'Pembacaan jujur yang fokus pada langkah nyata yang bisa kamu ambil. Baca tarot jadi soal susun strategi dan menentukan pilihan, bukan hanya pasrah pada keadaan',
     },
     {
-      title: "Sesi Tarot yang Hangat Seperti Curhat",
-      description: "Sesi tarot jadi ruangnya buat kamu bercerita dan dapat insight dengan aman dan tanpa penghakiman.",
-      color: "from-teal-accent/20 to-transparent",
-      borderColor: "group-hover:border-teal-accent/50",
-      textColor: "text-teal-accent",
-      bgGradient: "from-[#1A2530] to-[#1A1A27]"
+      title: 'Sesi Tarot yang Hangat Seperti Curhat',
+      description: 'Sesi tarot jadi ruangnya buat kamu bercerita dan dapat insight dengan aman dan tanpa penghakiman.',
     },
     {
-      title: "Ada untuk Kamu di Mana Saja",
-      description: "Dapatkan bacaan detil via chat, call/video call, ataupun temu langsung. Super fleksibel sesuai dengan kebutuhanmu.",
-      color: "from-lilac/20 to-transparent",
-      borderColor: "group-hover:border-lilac/50",
-      textColor: "text-lilac",
-      bgGradient: "from-[#2A2035] to-[#1A1A27]"
+      title: 'Ada untuk Kamu di Mana Saja',
+      description: 'Dapatkan bacaan detil via chat, call/video call, ataupun temu langsung. Super fleksibel sesuai dengan kebutuhanmu.',
     },
     {
-      title: "Rahasia Terjamin",
-      description: "Apa yang kita bahas berhenti di antara kita. Cerita kamu dijamin aman.",
-      color: "from-pink-400/20 to-transparent",
-      borderColor: "group-hover:border-pink-400/50",
-      textColor: "text-pink-400",
-      bgGradient: "from-[#301A25] to-[#1A1A27]"
-    }
+      title: 'Rahasia Terjamin',
+      description: 'Apa yang kita bahas berhenti di antara kita. Cerita kamu dijamin aman.',
+    },
   ];
 
   const reasons = isIndonesian ? reasonsID : reasonsGlobal;
 
   return (
-    <section id="why-choose" className="py-24 relative bg-[#0F0F16] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 relative z-10">
+    <section
+      id="why-choose"
+      className="py-12 md:py-16 relative overflow-hidden border-y border-line"
+      style={{
+        background:
+          'radial-gradient(58% 48% at 4% -4%, rgba(93,122,153,0.38), rgba(243,237,230,0) 58%), radial-gradient(64% 60% at 100% 104%, rgba(86,77,77,0.30), rgba(243,237,230,0) 60%), linear-gradient(160deg, #E4E7EC 0%, #E3E4E5 55%, #E5E4E2 100%)',
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
         <FadeIn>
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-white font-serif mb-6">
-              {isIndonesian ? "Kenapa Baca Tarot sama Mayanov?" : "Why Work With Me?"}
-            </h2>
-            <p className="text-text-subtle text-lg max-w-2xl mx-auto">
-              {isIndonesian
-                ? "Sesi pembacaan tarot tidak menjadi sesuatu yang kaku, apalagi menyeramkan. Melainkan jadi sesi curhat yang penuh insight."
-                : "Imagine the objectivity of a therapist mixed with the warmth of a best friend. My approach is grounded, practical, and centered on you."}
-            </p>
-          </div>
+          <SectionHeader
+            label={isIndonesian ? 'Nilai' : 'Why Me'}
+            index="(01 — 04)"
+            title={isIndonesian ? 'Kenapa baca tarot sama Mayanov?' : 'Why work with me?'}
+            intro={isIndonesian
+              ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan sesi curhat yang penuh insight.'
+              : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
+          />
 
-          <div className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-4">
-            {reasons.map((reason, index) => (
-              <div key={index} className={`relative bg-gradient-to-b ${reason.bgGradient} border border-white/10 rounded-2xl p-6 md:p-8 overflow-hidden`}>
-
-                {/* Decorative Gradient Background */}
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${reason.color} blur-[40px] opacity-30 transition-opacity duration-500`}></div>
-
-                {/* Large Number Background */}
-                <div className="absolute -bottom-4 -right-2 text-8xl font-serif font-bold text-white/5 transition-colors duration-300 pointer-events-none select-none">
-                  0{index + 1}
-                </div>
-
-                <div className="relative z-10 h-full flex flex-col justify-between">
-                  <div className="flex flex-col items-center text-center">
-                    <h3 className={`text-base md:text-xl font-bold text-white mb-3 leading-tight ${isIndonesian ? 'text-lg' : ''}`}>{reason.title}</h3>
+          {/* Editorial index, not cards */}
+          <div className="border-t border-ink/10">
+            {reasons.map((reason, index) => {
+              const tone = ['text-coral', 'text-plum', 'text-blue', 'text-sage'][index % 4];
+              return (
+                <div
+                  key={index}
+                  className="group grid md:grid-cols-12 gap-x-8 gap-y-2 items-baseline py-4 md:py-6 border-b border-ink/10 transition-colors"
+                >
+                  <div className={`md:col-span-2 font-serif text-3xl md:text-5xl leading-none ${tone}`}>
+                    0{index + 1}
                   </div>
-
-                  <p className={`text-[11px] md:text-sm text-text-subtle leading-relaxed font-medium ${isIndonesian ? 'text-center' : ''}`}>
+                  <h3 className="md:col-span-4 text-xl md:text-2xl font-serif font-medium text-ink leading-snug transition-transform duration-300 md:group-hover:translate-x-1.5">
+                    {reason.title}
+                  </h3>
+                  <p className="md:col-span-6 text-ink-soft font-light leading-relaxed">
                     {reason.description}
                   </p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </FadeIn>
       </div>

@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import Background from './components/Layout/Background';
 import Header from './components/Layout/Header';
 import Hero from './components/Sections/Hero';
-import Trust from './components/Sections/Trust';
 import About from './components/Sections/About';
+import Marquee from './components/Sections/Marquee';
 import WhyChoose from './components/Sections/WhyChoose';
 import Footer from './components/Layout/Footer';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
+import { initLenis, destroyLenis, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
 import { Moon, ArrowUp, RefreshCw } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 
 // Lazy Load below-the-fold components
 const Services = React.lazy(() => import('./components/Sections/Services'));
-const Process = React.lazy(() => import('./components/Sections/Process'));
 const Testimonials = React.lazy(() => import('./components/Sections/Testimonials'));
 const Events = React.lazy(() => import('./components/Sections/Events'));
 const CTA = React.lazy(() => import('./components/Sections/CTA'));
@@ -53,6 +53,25 @@ function App() {
     try {
       const params = new URLSearchParams(window.location.search);
 
+      // 0. MANUAL REGION OVERRIDE (user picked a version via the switcher)
+      // Highest priority so their choice sticks across reloads, in dev and prod.
+      // An explicit ?geo= param still wins for testing.
+      const regionOverride = localStorage.getItem('region_override');
+      if (regionOverride && !params.has('geo')) {
+        const isID = regionOverride === 'id';
+        console.log(`[GEO] Using manual region override: ${isID ? 'Indonesia' : 'Global'}`);
+        setIsIndonesian(isID);
+        setIsLoading(false);
+        setUserProperties({
+          country: isID ? 'Indonesia (Manual)' : 'Global (Manual)',
+          source: 'manual_override'
+        });
+        trackPageView({
+          page_path: isID ? '/id' : '/en',
+          page_title: isID ? 'Mayanov Tarot (Indonesia)' : 'Mayanov Tarot (Global)'
+        });
+        return;
+      }
 
       // 1. CHECK CACHE FIRST
       const cachedCountry = localStorage.getItem('user_country');
@@ -176,29 +195,45 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Smooth inertia scrolling (Lenis) for the whole page.
+  useEffect(() => {
+    initLenis();
+    return () => destroyLenis();
+  }, []);
+
   // Handle Hash Navigation after Loading
   useEffect(() => {
     if (!isLoading && window.location.hash) {
       setTimeout(() => {
         const id = window.location.hash.substring(1);
-        const element = document.getElementById(id);
-        if (element) {
-          const offset = 80;
-          const bodyRect = document.body.getBoundingClientRect().top;
-          const elementRect = element.getBoundingClientRect().top;
-          const elementPosition = elementRect - bodyRect;
-          const offsetPosition = elementPosition - offset;
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-        }
+        smoothScrollToId(id, 80);
       }, 500);
     }
   }, [isLoading]);
 
   const scrollToTop = () => {
+    smoothScrollTo(0);
+  };
+
+  // Let the visitor switch between the Global and Indonesian versions.
+  // Persists the choice so it sticks on reload; updates live without a full reload.
+  const handleSwitchRegion = (toID: boolean) => {
+    if (toID === isIndonesian) return;
+    try {
+      localStorage.setItem('region_override', toID ? 'id' : 'global');
+      localStorage.setItem('user_country', toID ? 'ID' : 'Global');
+    } catch { /* ignore storage errors */ }
+    setIsIndonesian(toID);
+    trackEvent(
+      'select_content',
+      { content_type: 'region_switch', item_id: toID ? 'ID' : 'Global' },
+      'ViewContent',
+      { content_name: 'Region Switch', content_category: toID ? 'ID' : 'Global' }
+    );
+    trackPageView({
+      page_path: toID ? '/id' : '/en',
+      page_title: toID ? 'Mayanov Tarot (Indonesia)' : 'Mayanov Tarot (Global)'
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -256,10 +291,10 @@ function App() {
   // ------------------------------------------------------------
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-dark text-white">
+      <div className="min-h-screen flex items-center justify-center bg-cream text-ink">
         <div className="flex flex-col items-center gap-4 animate-pulse">
-          <Moon className="w-12 h-12 text-lilac animate-spin-slow" />
-          <span className="text-sm tracking-[0.3em] uppercase text-text-subtle">Loading...</span>
+          <Moon className="w-10 h-10 text-coral animate-spin-slow" strokeWidth={1.5} />
+          <span className="text-xs tracking-[0.3em] uppercase text-taupe">Loading...</span>
         </div>
       </div>
     );
@@ -267,20 +302,20 @@ function App() {
 
   if (isGeoError) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-bg-dark text-white p-4 text-center">
-        <div className="bg-surface-1 p-8 rounded-2xl border border-white/10 max-w-md shadow-2xl">
-          <div className="mx-auto mb-4 w-12 h-16 border-2 border-red-400 rounded-lg flex items-center justify-center relative bg-red-400/10 animate-float">
-            <div className="w-8 h-12 border border-red-400/50 rounded-sm flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-cream text-ink p-4 text-center">
+        <div className="bg-surface-1 p-8 rounded-2xl border border-line max-w-md shadow-[0_24px_60px_-30px_rgba(42,35,32,0.4)]">
+          <div className="mx-auto mb-4 w-12 h-16 border-2 border-terracotta rounded-lg flex items-center justify-center relative bg-terracotta/10 animate-float">
+            <div className="w-8 h-12 border border-terracotta/50 rounded-sm flex items-center justify-center">
               <span className="text-xl">⚡</span>
             </div>
           </div>
-          <h2 className="text-2xl font-serif font-bold mb-2">Something Went Wrong</h2>
-          <p className="text-text-subtle mb-6">
+          <h2 className="text-2xl font-serif font-medium mb-2 text-ink">Something Went Wrong</h2>
+          <p className="text-ink-soft mb-6 font-light">
             We encountered an issue loading the page. Please check your connection and try again.
           </p>
           <button
             onClick={performLocationCheck}
-            className="px-6 py-3 rounded-full bg-lilac text-bg-dark font-bold hover:bg-white transition flex items-center gap-2 mx-auto"
+            className="px-6 py-3 rounded-full bg-terracotta text-paper font-medium hover:bg-terracotta-dark transition flex items-center gap-2 mx-auto"
           >
             <RefreshCw className="w-4 h-4" /> Try Again
           </button>
@@ -306,10 +341,10 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen relative font-sans text-text-light selection:bg-lilac/30">
+    <div className="min-h-screen relative font-sans text-ink selection:bg-coral/25">
       <Background />
 
-      <Header isIndonesian={isIndonesian} />
+      <Header isIndonesian={isIndonesian} onSwitchRegion={handleSwitchRegion} />
 
       {/* DEV MODE INDICATOR */}
       {isDevOverride && (
@@ -321,11 +356,10 @@ function App() {
       <main>
         <Hero isIndonesian={isIndonesian} />
         <About isIndonesian={isIndonesian} />
-        <Trust isIndonesian={isIndonesian} />
+        <Marquee isIndonesian={isIndonesian} />
         <WhyChoose isIndonesian={isIndonesian} />
 
         <React.Suspense fallback={<div className="h-96 flex items-center justify-center text-white/20">Loading...</div>}>
-          <Process isIndonesian={isIndonesian} />
           <Services isIndonesian={isIndonesian} />
           <Testimonials isIndonesian={isIndonesian} />
           <Events isIndonesian={isIndonesian} />
@@ -342,7 +376,7 @@ function App() {
         {showBackToTop && (
           <button
             onClick={scrollToTop}
-            className="p-3 rounded-full bg-surface-highlight text-lilac shadow-lg hover:bg-lilac hover:text-white transition-all duration-300 border border-white/10 hover:-translate-y-1"
+            className="p-3 rounded-full bg-surface-1 text-terracotta shadow-[0_10px_30px_-12px_rgba(42,35,32,0.5)] hover:bg-terracotta hover:text-paper transition-all duration-300 border border-line hover:-translate-y-1"
             title="Back to Top"
           >
             <ArrowUp className="w-5 h-5" />

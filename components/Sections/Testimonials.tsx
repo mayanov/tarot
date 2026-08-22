@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Quote } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
+import SectionHeader from '../UI/SectionHeader';
 
 interface TestimonialsProps {
   isIndonesian?: boolean;
@@ -264,41 +265,42 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   }, [isDown]);
 
   return (
-    <section id="testimonials" className="py-24 relative overflow-hidden bg-bg-dark border-t border-white/5">
-      {/* Background Accent */}
-      <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-teal-accent/5 rounded-full blur-[120px] -z-10" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-lilac/5 rounded-full blur-[100px] -z-10" />
-
+    <section
+      id="testimonials"
+      className="py-12 md:py-16 relative overflow-hidden border-y border-line"
+      style={{
+        background:
+          'radial-gradient(64% 54% at 10% 2%, rgba(95,129,105,0.36), rgba(243,237,230,0) 60%), radial-gradient(64% 62% at 94% 100%, rgba(93,122,153,0.38), rgba(243,237,230,0) 62%), linear-gradient(160deg, #E6ECE8 0%, #E3E7EB 55%, #E1E6EC 100%)',
+      }}
+    >
       <div className="max-w-full mx-auto">
         <FadeIn>
-          <div className="max-w-7xl mx-auto px-4 text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-white font-serif mb-6">
-              {isIndonesian ? "Apa Kata Mereka" : "What Others Are Saying"}
-            </h2>
-            {/* 5-Star Rating Info */}
-            <div className="flex justify-center items-center gap-2 mb-6 text-teal-accent font-bold animate-pulse-slow">
-              <div className="flex">
+          <div className="max-w-6xl mx-auto px-6 mb-12 md:mb-14">
+            <SectionHeader
+              label={isIndonesian ? "Testimoni" : "Reviews"}
+              accent="text-plum"
+              title={isIndonesian ? "Apa kata mereka" : "What others are saying"}
+              intro={isIndonesian
+                ? "Begini kata mereka yang udah pernah tarot reading sama Mayanov."
+                : "Don't just take my word for it — here's how others found their way with the cards."}
+              className="mb-6"
+            />
+            <div className="flex items-center gap-2 text-sm">
+              <div className="flex text-coral">
                 {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className="w-5 h-5 fill-current text-gold-accent" />
+                  <Star key={s} className="w-4 h-4 fill-current" />
                 ))}
               </div>
-              <span className="text-white ml-2">
-                {isIndonesian ? "5.0 Rating Rata-rata di Google" : "5.0 Average Rating on Google"}
-              </span>
+              <span className="text-ink font-medium ml-1">5.0</span>
+              <span className="text-ink-soft">· {isIndonesian ? "Rating rata-rata di Google" : "Average rating on Google"}</span>
             </div>
-
-            <p className="text-text-subtle text-lg max-w-2xl mx-auto">
-              {isIndonesian
-                ? "Begini kata mereka yang udah pernah tarot reading sama Mayanov"
-                : "Don't just take my word for it. Here’s how others found their way with a little help from the cards."}
-            </p>
           </div>
 
           {/* Infinite Scroll Container */}
           <div className="relative w-full mask-image-gradient-horizontal">
             {/* Gradient Masks for edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-r from-bg-dark to-transparent z-10 pointer-events-none"></div>
-            <div className="absolute right-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-l from-bg-dark to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute left-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-r from-[#E4EAE6] to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-l from-[#E1E6EC] to-transparent z-10 pointer-events-none"></div>
 
             <div
               ref={scrollRef}
@@ -311,23 +313,23 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
               {loopingReviews.map((review, index) => (
                 <div
                   key={index}
-                  className="w-[300px] md:w-[400px] flex-shrink-0 bg-[#1E1E2E] border border-white/5 p-8 rounded-2xl relative shadow-lg transition duration-300 flex flex-col"
+                  className="w-[300px] md:w-[400px] flex-shrink-0 bg-surface-1 border border-line p-8 rounded-2xl relative shadow-[0_16px_40px_-30px_rgba(42,35,32,0.4)] transition duration-300 flex flex-col"
                 >
                   {/* Top Border Accent */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-lilac/20 to-transparent transition-all duration-500"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue/50 to-transparent rounded-t-2xl"></div>
 
-                  <Quote className="absolute top-6 left-6 w-8 h-8 text-lilac/20 transition duration-300" />
-                  <p className="text-text-light/90 mb-6 relative z-10 italic leading-relaxed pt-6 font-medium text-sm md:text-base flex-grow">
+                  <Quote className="absolute top-6 left-6 w-8 h-8 text-blue/30 transition duration-300" />
+                  <p className="text-ink-soft mb-6 relative z-10 italic leading-relaxed pt-6 font-light text-sm md:text-base flex-grow">
                     "{review.text}"
                   </p>
-                  <div className="border-t border-white/5 pt-4 flex items-center justify-between mt-auto">
+                  <div className="border-t border-line pt-4 flex items-center justify-between mt-auto">
                     <div>
-                      <div className="font-bold text-white text-sm">{review.author}</div>
-                      <div className="text-xs text-text-subtle font-medium tracking-wide">{review.location}</div>
+                      <div className="font-medium text-ink text-sm">{review.author}</div>
+                      <div className="text-xs text-taupe font-medium tracking-wide">{review.location}</div>
                     </div>
-                    <div className="flex gap-0.5">
+                    <div className="flex gap-0.5 text-gold">
                       {[1, 2, 3, 4, 5].map(s => (
-                        <div key={s} className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gold-accent opacity-80"></div>
+                        <Star key={s} className="w-3 h-3 fill-current" />
                       ))}
                     </div>
                   </div>
@@ -342,9 +344,9 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
               href="https://share.google/4LrmhpcgHNXX9bTzr"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#1E1E2E] border border-white/10 hover:bg-white hover:text-bg-dark transition-all duration-300 text-teal-accent hover:border-teal-accent font-bold group"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-surface-1 border border-line hover:border-terracotta hover:text-terracotta transition-all duration-300 text-ink font-medium group"
             >
-              <Star className="w-5 h-5 fill-current group-hover:text-gold-accent transition-colors" />
+              <Star className="w-4 h-4 fill-current text-gold" />
               <span>{isIndonesian ? "Lihat Semua Review di Google" : "Read All Reviews on Google"}</span>
             </a>
           </div>

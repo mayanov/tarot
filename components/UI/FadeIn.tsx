@@ -14,7 +14,7 @@ const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0, className = '' }) 
           if (domRef.current) observer.unobserve(domRef.current);
         }
       });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
 
     const currentElement = domRef.current;
     if (currentElement) observer.observe(currentElement);
@@ -27,8 +27,8 @@ const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0, className = '' }) 
   return (
     <div
       ref={domRef}
-      className={`transition-all duration-700 ease-out transform ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+      className={`transition-all duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)] transform will-change-transform ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-14'
       } ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
     >
