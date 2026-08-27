@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React from 'react';
 import { Quote } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import SectionHeader from '../UI/SectionHeader';
@@ -8,10 +8,6 @@ interface TestimonialsProps {
 }
 
 const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isDown, setIsDown] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
 
   const reviewsEN = [
     {
@@ -212,146 +208,80 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
 
   const reviews = isIndonesian ? reviewsID : reviewsEN;
 
-  // Create loop array
-  // If list is small, duplicate it to ensure infinite scroll looks smooth
-  // But now the list is quite long (21 items), so duplicating once is enough or might not even be needed if items > screen width
-  const loopingReviews = [...reviews, ...reviews];
+  // Split into two rows that drift in opposite directions.
+  const mid = Math.ceil(reviews.length / 2);
+  const rowTop = reviews.slice(0, mid);
+  const rowBottom = reviews.slice(mid);
 
-  // Drag to scroll logic
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollRef.current) return;
-    setIsDown(true);
-    setStartX(e.pageX - scrollRef.current.offsetLeft);
-    setScrollLeft(scrollRef.current.scrollLeft);
-  };
+  const edgeMask = 'linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%)';
 
-  const handleMouseLeave = () => {
-    setIsDown(false);
-  };
+  const Card: React.FC<{ review: { text: string; author: string; location: string } }> = ({ review }) => (
+    <article className="w-[290px] md:w-[360px] shrink-0 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm p-6 md:p-7 flex flex-col transition-colors duration-300 hover:border-white/25">
+      <Quote className="w-7 h-7 text-coral/50 mb-4 shrink-0" />
+      <p className="text-white text-sm md:text-[0.95rem] leading-relaxed font-normal flex-grow">
+        {review.text}
+      </p>
+      <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
+        <div>
+          <div className="font-serif font-semibold text-cream text-sm">{review.author}</div>
+          <div className="text-xs text-cream/70 tracking-wide">{review.location}</div>
+        </div>
+        <div className="flex gap-0.5 text-coral/80 shrink-0">
+          {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-3 h-3 fill-current" />))}
+        </div>
+      </div>
+    </article>
+  );
 
-  const handleMouseUp = () => {
-    setIsDown(false);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDown || !scrollRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5; // scroll speed multiplier
-    scrollRef.current.scrollLeft = scrollLeft - walk;
-  };
-
-  // Auto-scroll logic
-  useEffect(() => {
-    const slider = scrollRef.current;
-    if (!slider) return;
-
-    let requestID: number;
-    const speed = 0.4; // pixels per frame
-
-    const animate = () => {
-      if (!isDown) {
-        slider.scrollLeft += speed;
-        // If we reach the middle point of loopingReviews, reset to 0 for infinite feel
-        if (slider.scrollLeft >= slider.scrollWidth / 2) {
-          slider.scrollLeft = 0;
-        }
-      }
-      requestID = requestAnimationFrame(animate);
-    };
-
-    requestID = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(requestID);
-  }, [isDown]);
+  const Row: React.FC<{ items: typeof reviews; reverse?: boolean; duration: number }> = ({ items, reverse, duration }) => (
+    <div className="group flex overflow-hidden">
+      <div
+        className="flex gap-5 pr-5 shrink-0 group-hover:[animation-play-state:paused]"
+        style={{ animation: `marquee ${duration}s linear infinite`, animationDirection: reverse ? 'reverse' : 'normal' }}
+      >
+        {[...items, ...items].map((r, i) => (<Card key={i} review={r} />))}
+      </div>
+    </div>
+  );
 
   return (
-    <section
-      id="testimonials"
-      className="py-12 md:py-16 relative overflow-hidden border-y border-line"
-      style={{
-        background:
-          'radial-gradient(64% 54% at 10% 2%, rgba(95,129,105,0.36), rgba(243,237,230,0) 60%), radial-gradient(64% 62% at 94% 100%, rgba(93,122,153,0.38), rgba(243,237,230,0) 62%), linear-gradient(160deg, #E6ECE8 0%, #E3E7EB 55%, #E1E6EC 100%)',
-      }}
-    >
-      <div className="max-w-full mx-auto">
-        <FadeIn>
-          <div className="max-w-6xl mx-auto px-6 mb-12 md:mb-14">
-            <SectionHeader
-              label={isIndonesian ? "Testimoni" : "Reviews"}
-              accent="text-plum"
-              title={isIndonesian ? "Apa kata mereka" : "What others are saying"}
-              intro={isIndonesian
-                ? "Begini kata mereka yang udah pernah tarot reading sama Mayanov."
-                : "Don't just take my word for it — here's how others found their way with the cards."}
-              className="mb-6"
-            />
-            <div className="flex items-center gap-2 text-sm">
-              <div className="flex text-coral">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className="w-4 h-4 fill-current" />
-                ))}
-              </div>
-              <span className="text-ink font-medium ml-1">5.0</span>
-              <span className="text-ink-soft">· {isIndonesian ? "Rating rata-rata di Google" : "Average rating on Google"}</span>
+    <section id="testimonials" className="py-16 md:py-24 relative overflow-hidden isolate border-y border-white/10">
+      <FadeIn>
+        <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 mb-12 md:mb-14">
+          <SectionHeader
+            label={isIndonesian ? 'Testimoni' : 'Reviews'}
+            title={isIndonesian ? 'Apa kata mereka' : 'What others are saying'}
+            intro={isIndonesian
+              ? 'Begini kata mereka yang udah pernah tarot reading sama Mayanov.'
+              : "Don't just take my word for it — here's how others found their way with the cards."}
+            className="mb-6"
+          />
+          <div className="flex items-center gap-2 text-sm">
+            <div className="flex text-coral">
+              {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
             </div>
+            <span className="text-cream font-medium ml-1">5.0</span>
+            <span className="text-cream/70">· {isIndonesian ? 'Rating rata-rata di Google' : 'Average rating on Google'}</span>
           </div>
+        </div>
+      </FadeIn>
 
-          {/* Infinite Scroll Container */}
-          <div className="relative w-full mask-image-gradient-horizontal">
-            {/* Gradient Masks for edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-r from-[#E4EAE6] to-transparent z-10 pointer-events-none"></div>
-            <div className="absolute right-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-l from-[#E1E6EC] to-transparent z-10 pointer-events-none"></div>
+      {/* Two opposing marquee rows — neutral glass cards, edges fade into the page */}
+      <div className="space-y-5 md:space-y-6" style={{ maskImage: edgeMask, WebkitMaskImage: edgeMask }}>
+        <Row items={rowTop} duration={90} />
+        <Row items={rowBottom} reverse duration={110} />
+      </div>
 
-            <div
-              ref={scrollRef}
-              className="flex gap-6 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing px-4 select-none"
-              onMouseDown={handleMouseDown}
-              onMouseLeave={handleMouseLeave}
-              onMouseUp={handleMouseUp}
-              onMouseMove={handleMouseMove}
-            >
-              {loopingReviews.map((review, index) => (
-                <div
-                  key={index}
-                  className="w-[300px] md:w-[400px] flex-shrink-0 bg-surface-1 border border-line p-8 rounded-2xl relative shadow-[0_16px_40px_-30px_rgba(42,35,32,0.4)] transition duration-300 flex flex-col"
-                >
-                  {/* Top Border Accent */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue/50 to-transparent rounded-t-2xl"></div>
-
-                  <Quote className="absolute top-6 left-6 w-8 h-8 text-blue/30 transition duration-300" />
-                  <p className="text-ink-soft mb-6 relative z-10 italic leading-relaxed pt-6 font-light text-sm md:text-base flex-grow">
-                    "{review.text}"
-                  </p>
-                  <div className="border-t border-line pt-4 flex items-center justify-between mt-auto">
-                    <div>
-                      <div className="font-medium text-ink text-sm">{review.author}</div>
-                      <div className="text-xs text-taupe font-medium tracking-wide">{review.location}</div>
-                    </div>
-                    <div className="flex gap-0.5 text-gold">
-                      {[1, 2, 3, 4, 5].map(s => (
-                        <Star key={s} className="w-3 h-3 fill-current" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Google Review Button */}
-          <div className="text-center mt-12">
-            <a
-              href="https://share.google/4LrmhpcgHNXX9bTzr"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-surface-1 border border-line hover:border-terracotta hover:text-terracotta transition-all duration-300 text-ink font-medium group"
-            >
-              <Star className="w-4 h-4 fill-current text-gold" />
-              <span>{isIndonesian ? "Lihat Semua Review di Google" : "Read All Reviews on Google"}</span>
-            </a>
-          </div>
-
-        </FadeIn>
+      <div className="text-center mt-12 md:mt-14 px-4">
+        <a
+          href="https://share.google/4LrmhpcgHNXX9bTzr"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-cream/30 hover:border-cream hover:bg-cream hover:text-ink transition-all duration-300 text-cream font-medium group"
+        >
+          <Star className="w-4 h-4 fill-current text-coral" />
+          <span>{isIndonesian ? 'Lihat Semua Review di Google' : 'Read All Reviews on Google'}</span>
+        </a>
       </div>
     </section>
   );

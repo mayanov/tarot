@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Minus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import SectionHeader from '../UI/SectionHeader';
+import GrainyMesh from '../UI/GrainyMesh';
 
 interface FAQProps {
   isIndonesian?: boolean;
@@ -97,17 +98,13 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="faq"
-      className="py-12 md:py-16 relative border-y border-line"
-      style={{
-        background:
-          'radial-gradient(58% 54% at 92% 0%, rgba(84,77,90,0.34), rgba(243,237,230,0) 58%), radial-gradient(60% 56% at 4% 104%, rgba(93,122,153,0.32), rgba(243,237,230,0) 60%), linear-gradient(160deg, #E7E6E9 0%, #E3E5EA 55%, #E1E4E9 100%)',
-      }}
+      className="py-16 md:py-24 relative overflow-hidden isolate border-y border-white/10"
     >
-      <div className="max-w-5xl mx-auto px-6 relative z-10">
+      <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
         <FadeIn>
           <SectionHeader
+            num="06"
             label="FAQ"
-            index="(?)"
             accent="text-plum"
             title={isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
             intro={isIndonesian
@@ -115,37 +112,40 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               : 'Everything about the reading process, ethics, and delivery.'}
           />
 
-          <div className="space-y-3 max-w-3xl">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className={`border rounded-2xl transition-all duration-300 overflow-hidden ${openIndex === index
-                  ? 'bg-surface-1 border-plum/40 shadow-[0_16px_40px_-30px_rgba(42,35,32,0.4)]'
-                  : 'bg-surface-1 border-line hover:border-plum/30'
-                  }`}
-              >
-                <button
-                  onClick={() => toggleFAQ(index)}
-                  className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
-                >
-                  <span className={`font-serif font-medium text-base md:text-lg transition-colors ${openIndex === index ? 'text-plum' : 'text-ink'}`}>
-                    {faq.question}
-                  </span>
-                  <div className={`p-1 rounded-full border transition-all duration-300 shrink-0 ml-4 ${openIndex === index ? 'border-plum bg-plum text-paper' : 'border-line text-taupe'}`}>
-                    {openIndex === index ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                  </div>
-                </button>
+          <div className="border-t border-white/10">
+            {faqs.map((faq, index) => {
+              const open = openIndex === index;
+              const tone = ['text-coral', 'text-mauve', 'text-[#88ADDA]', 'text-[#7FC08F]'][index % 4];
+              return (
+                <FadeIn key={index} delay={Math.min(index, 7) * 60}>
+                <div className="border-b border-white/10">
+                  <button
+                    onClick={() => toggleFAQ(index)}
+                    className="group w-full flex items-start justify-between gap-6 py-7 text-left focus:outline-none"
+                    aria-expanded={open}
+                  >
+                    <span className="flex gap-4 md:gap-7 items-baseline">
+                      <span className={`text-xl md:text-2xl font-serif font-semibold tabular-nums shrink-0 ${tone}`}>
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className={`font-serif font-medium text-xl md:text-2xl leading-snug tracking-tight transition-colors ${open ? tone : 'text-cream'}`}>
+                        {faq.question}
+                      </span>
+                    </span>
+                    <Plus className={`w-6 h-6 mt-1 shrink-0 transition-all duration-300 ${open ? `rotate-45 ${tone}` : 'text-cream/50'}`} />
+                  </button>
 
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                    }`}
-                >
-                  <div className="p-6 pt-0 text-ink-soft text-sm md:text-base leading-relaxed border-t border-line mt-2 whitespace-pre-line font-light">
-                    {faq.answer}
+                  <div className={`grid transition-all duration-300 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                    <div className="overflow-hidden">
+                      <p className="pb-8 md:pl-[3.6rem] text-cream/70 text-base md:text-lg leading-relaxed whitespace-pre-line font-light">
+                        {faq.answer}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+                </FadeIn>
+              );
+            })}
           </div>
         </FadeIn>
       </div>

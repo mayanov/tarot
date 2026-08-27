@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import FadeIn from '../UI/FadeIn';
-import SectionHeader from '../UI/SectionHeader';
+import GrainyMesh from '../UI/GrainyMesh';
 import { ChevronDown } from 'lucide-react';
 
 interface EventsProps {
@@ -48,64 +48,62 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="events"
-      className="py-12 md:py-16 relative overflow-hidden border-y border-line"
-      style={{
-        background:
-          'radial-gradient(56% 50% at 6% 2%, rgba(86,77,77,0.24), rgba(243,237,230,0) 58%), radial-gradient(58% 56% at 96% 102%, rgba(95,129,105,0.30), rgba(243,237,230,0) 60%), linear-gradient(160deg, #E9E8E3 0%, #E5EAE5 100%)',
-      }}
+      className="py-16 md:py-24 relative overflow-hidden isolate border-y border-white/10"
     >
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
+      <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
         <FadeIn>
-          <SectionHeader
-            label={isIndonesian ? "Rekam Jejak" : "Track Record"}
-            accent="text-sage"
-            title={isIndonesian ? "Event & collaboration" : "Community & events"}
-            intro={isIndonesian
-              ? "Mayanov Tarot siap sedia meramaikan acara kamu!"
-              : "From intimate gatherings to corporate events, I love connecting with people offline too."}
-          />
-          {isIndonesian && (
-            <div className="mb-10 -mt-2">
-              <a
-                href="https://wa.link/5peyhb"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-terracotta hover:bg-terracotta-dark text-sm font-medium text-paper transition-all duration-300 shadow-[0_10px_30px_-12px_rgba(193,97,74,0.7)] hover:-translate-y-0.5"
-              >
-                Yuk Collab
-              </a>
-            </div>
-          )}
+          <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16">
+            {/* LEFT — heading + count */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative z-10 py-9 md:py-12 pr-8 md:pr-12 text-cream">
+                <h2 className="font-serif font-semibold text-cream text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em] [text-shadow:0_2px_24px_rgba(20,12,26,0.5)]">
+                  {isIndonesian ? "Event & collaboration" : "Community & events"}
+                </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-7 mb-12">
-            {displayedEvents.map((event, index) => (
-              <div key={index} className="flex gap-4 items-start group border-b border-line pb-5">
-                {/* Timeline Dot */}
-                <div className="mt-1.5 w-2 h-2 rounded-full bg-line group-hover:bg-sage transition-all duration-300 shrink-0"></div>
-
-                <div>
-                  <span className="text-xs font-semibold text-sage mb-1 block tracking-wide">{event.year}</span>
-                  <h3 className="text-ink font-serif font-medium text-base leading-snug mb-1 group-hover:text-sage transition-colors duration-200">
-                    {event.title}
-                  </h3>
-                  <p className="text-sm text-taupe font-light">{event.loc}</p>
+                <div className="mt-8 flex items-baseline gap-3">
+                  <span className="font-serif font-semibold text-6xl md:text-7xl text-cream leading-none tracking-tight [text-shadow:0_2px_22px_rgba(20,12,26,0.5)]">{eventList.length}+</span>
+                  <span className="text-[0.7rem] uppercase tracking-[0.24em] text-cream whitespace-nowrap leading-snug [text-shadow:0_1px_10px_rgba(20,12,26,0.6)]">
+                    {isIndonesian ? "Event sejak 2016" : "Events since 2016"}
+                  </span>
                 </div>
+
+                <a
+                  href="https://wa.link/5peyhb"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-8 inline-flex items-center justify-center px-8 py-3 rounded-full bg-cream text-ink hover:bg-white text-sm font-medium transition-all duration-300 hover:-translate-y-0.5"
+                >
+                  {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
+                </a>
               </div>
-            ))}
-          </div>
-
-          {/* Load More Button */}
-          {visibleCount < eventList.length && (
-            <div className="text-center mt-8">
-              <button
-                onClick={handleLoadMore}
-                className="inline-flex items-center gap-2 px-8 py-3 rounded-full border border-line hover:border-terracotta hover:text-terracotta bg-surface-1 text-sm font-medium text-ink transition-all duration-300 group"
-              >
-                {isIndonesian ? "Lihat Lainnya" : "Load More Events"} <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-              </button>
             </div>
-          )}
 
+            {/* RIGHT — timeline list */}
+            <div className="lg:col-span-7 lg:col-start-6 border-t border-white/10">
+              {displayedEvents.map((event, index) => (
+                <FadeIn key={index} delay={Math.min(index, 6) * 60} dir="left">
+                  <div className="group grid grid-cols-[3.5rem_1fr] md:grid-cols-[4.5rem_1fr] gap-x-4 py-5 border-b border-white/10">
+                    <span className="font-serif font-semibold text-sage text-sm md:text-base tabular-nums pt-0.5">{event.year}</span>
+                    <div>
+                      <h3 className="text-cream font-serif font-semibold text-base md:text-lg leading-snug group-hover:text-sage transition-colors duration-200">
+                        {event.title}
+                      </h3>
+                      <p className="mt-0.5 text-sm text-cream/55 font-light">{event.loc}</p>
+                    </div>
+                  </div>
+                </FadeIn>
+              ))}
+
+              {visibleCount < eventList.length && (
+                <button
+                  onClick={handleLoadMore}
+                  className="mt-8 inline-flex items-center gap-2 px-7 py-2.5 rounded-full border border-cream/30 hover:border-cream hover:bg-cream hover:text-ink text-sm font-medium text-cream transition-all duration-300 group"
+                >
+                  {isIndonesian ? "Lihat Lainnya" : "Load More Events"} <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+                </button>
+              )}
+            </div>
+          </div>
         </FadeIn>
       </div>
     </section>

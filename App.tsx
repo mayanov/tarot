@@ -3,7 +3,6 @@ import Background from './components/Layout/Background';
 import Header from './components/Layout/Header';
 import Hero from './components/Sections/Hero';
 import About from './components/Sections/About';
-import Marquee from './components/Sections/Marquee';
 import WhyChoose from './components/Sections/WhyChoose';
 import Footer from './components/Layout/Footer';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
@@ -15,7 +14,6 @@ import { FaWhatsapp } from 'react-icons/fa';
 const Services = React.lazy(() => import('./components/Sections/Services'));
 const Testimonials = React.lazy(() => import('./components/Sections/Testimonials'));
 const Events = React.lazy(() => import('./components/Sections/Events'));
-const CTA = React.lazy(() => import('./components/Sections/CTA'));
 const FAQ = React.lazy(() => import('./components/Sections/FAQ'));
 const Disclaimer = React.lazy(() => import('./components/Sections/Disclaimer'));
 const AnalyticsDashboard = React.lazy(() => import('./components/Dashboard/AnalyticsDashboard'));
@@ -353,23 +351,23 @@ function App() {
         </div>
       )}
 
-      <main>
+      <main className="relative z-10">
         <Hero isIndonesian={isIndonesian} />
         <About isIndonesian={isIndonesian} />
-        <Marquee isIndonesian={isIndonesian} />
-        <WhyChoose isIndonesian={isIndonesian} />
 
         <React.Suspense fallback={<div className="h-96 flex items-center justify-center text-white/20">Loading...</div>}>
           <Services isIndonesian={isIndonesian} />
+          <WhyChoose isIndonesian={isIndonesian} />
           <Testimonials isIndonesian={isIndonesian} />
           <Events isIndonesian={isIndonesian} />
           <FAQ isIndonesian={isIndonesian} />
           <Disclaimer isIndonesian={isIndonesian} />
-          <CTA isIndonesian={isIndonesian} />
         </React.Suspense>
       </main>
 
-      <Footer isIndonesian={isIndonesian} />
+      <div className="relative z-10">
+        <Footer isIndonesian={isIndonesian} />
+      </div>
 
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-4 items-end">

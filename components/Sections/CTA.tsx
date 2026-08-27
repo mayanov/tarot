@@ -44,20 +44,17 @@ const CTA: React.FC<CTAProps> = ({ isIndonesian = false }) => {
               style={{ background: 'linear-gradient(100deg, rgba(230,240,255,0.12) 0%, rgba(230,240,255,0) 44%)' }}
             ></div>
             <div
-              className="absolute inset-0 pointer-events-none opacity-[0.22] mix-blend-overlay"
+              className="absolute inset-0 pointer-events-none opacity-[0.45] mix-blend-overlay"
               style={{
                 backgroundImage:
-                  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.4'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E\")",
-                backgroundSize: '200px 200px',
+                  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.95'/%3E%3C/svg%3E\")",
+                backgroundSize: '160px 160px',
               }}
             ></div>
 
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10 text-center md:text-left">
               <div className="max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/70 mb-4">
-                  {isIndonesian ? "Yuk Mulai" : "Ready When You Are"}
-                </p>
-                <h2 className="text-4xl md:text-5xl font-serif font-medium text-[#FBF6EF] mb-5 leading-tight">
+                <h2 className="text-[2.5rem] md:text-[3.4rem] font-serif font-semibold text-[#FBF6EF] mb-5 leading-[1.0] tracking-[-0.03em]">
                   {isIndonesian
                     ? "Siap untuk kejelasan?"
                     : "Let's uncover the answers you've been looking for."}
@@ -72,7 +69,7 @@ const CTA: React.FC<CTAProps> = ({ isIndonesian = false }) => {
               <div className="flex-shrink-0">
                 <button
                   onClick={scrollToServices}
-                  className="bg-[#FBF6EF] text-ink px-8 py-4 md:px-10 md:py-5 rounded-full font-medium text-lg shadow-xl hover:-translate-y-0.5 hover:bg-white transition-all duration-300 flex items-center gap-3 group"
+                  className="bg-[#FBF6EF] text-ink px-8 py-4 md:px-10 md:py-5 rounded-full font-medium text-lg hover:-translate-y-0.5 hover:bg-white transition-all duration-300 flex items-center gap-3 group"
                 >
                   {isIndonesian ? "Pesan Bacaan" : "Book a Reading"}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

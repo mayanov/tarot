@@ -29,7 +29,7 @@
   <!-- Fonts: Fraunces (editorial serif display) + Work Sans (humanist body) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Google API Scripts (for Real Data Dashboard) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -43,43 +43,47 @@
         extend: {
           fontFamily: {
             sans: ['Work Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            serif: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
-            heading: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+            // Display face — Syne (geometric art-display) carries all headings.
+            serif: ['Syne', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            heading: ['Syne', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            display: ['Syne', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            // Retained for occasional elegant italic accents.
+            elegant: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
           },
           colors: {
-            // --- Brand palette v1.0 (dusk-sky, wellness) ---
-            plum: '#6B5480',
-            'plum-deep': '#3E3050',
-            blue: '#5D7A99',
-            mauve: '#B98A96',
-            coral: '#D8805A',
-            'coral-deep': '#BE6743',
+            // --- Brand palette v2.0 (jewel tones) ---
+            plum: '#39234E',
+            'plum-deep': '#2A1839',
+            blue: '#29527B',
+            mauve: '#8E5C86',
+            coral: '#E47423',
+            'coral-deep': '#C25E14',
             charcoal: '#564D4D',
             'charcoal-deep': '#3A3234',
-            sage: '#5F8169',
-            cream: '#F3EDE6',
+            sage: '#4F8E62',
+            cream: '#FFFFFF',
             ink: '#2B2426',
             // --- Semantic tokens ---
             'ink-soft': '#55494B',
             taupe: '#8A7D7D',
-            paper: '#F3EDE6',
+            paper: '#FFFFFF',
             'paper-2': '#EAE0D5',
             'paper-3': '#E0D4C6',
-            line: '#DCD0C2',
-            espresso: '#372B45',          // dark band -> deep plum/charcoal
-            // --- Back-compat aliases (remapped onto the brand palette) ---
-            terracotta: '#D8805A',        // -> coral
-            'terracotta-dark': '#BE6743',
-            gold: '#D8805A',              // no gold in brand -> coral for highlights/stars
-            'gold-soft': '#E6A683',
-            lilac: '#D8805A',             // legacy primary accent -> coral
-            'lilac-dark': '#BE6743',
-            'teal-accent': '#6B5480',     // legacy secondary accent -> plum
-            'teal-dark': '#4A3A5C',
-            'gold-accent': '#D8805A',
-            'bg-dark': '#F3EDE6',
+            line: '#E7E5E1',
+            espresso: '#2C1B3E',          // dark band -> deep aubergine
+            // --- Back-compat aliases (remapped onto the jewel palette) ---
+            terracotta: '#E47423',        // -> coral/orange
+            'terracotta-dark': '#C25E14',
+            gold: '#E47423',
+            'gold-soft': '#F0A15C',
+            lilac: '#E47423',
+            'lilac-dark': '#C25E14',
+            'teal-accent': '#39234E',     // -> plum
+            'teal-dark': '#2A1839',
+            'gold-accent': '#E47423',
+            'bg-dark': '#FFFFFF',
             'bg-deep': '#EAE0D5',
-            'surface-1': '#FBF7F1',
+            'surface-1': '#FFFFFF',
             'surface-2': '#EAE0D5',
             'surface-highlight': '#E0D4C6',
             'text-light': '#2B2426',
@@ -154,7 +158,7 @@
   <link rel="stylesheet" href="/index.css">
 </head>
 
-<body class="bg-paper text-ink overflow-x-hidden selection:bg-terracotta/20 antialiased font-sans">
+<body class="text-cream overflow-x-hidden selection:bg-terracotta/30 antialiased font-sans">
   <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=4126133574309418&ev=PageView&noscript=1" /></noscript>
   <div id="root"></div>

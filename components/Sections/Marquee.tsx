@@ -14,7 +14,7 @@ const Marquee: React.FC<MarqueeProps> = ({ isIndonesian = false }) => {
         <div className="flex items-center shrink-0">
             {[...words, ...words, ...words].map((w, i) => (
                 <span key={i} className="flex items-center">
-                    <span className="text-3xl md:text-5xl font-serif italic text-cream px-6 md:px-10 whitespace-nowrap">{w}</span>
+                    <span className="text-3xl md:text-5xl font-serif font-semibold uppercase tracking-tight text-cream px-6 md:px-10 whitespace-nowrap">{w}</span>
                     <span className="text-coral text-xl md:text-2xl">✦</span>
                 </span>
             ))}

@@ -4,21 +4,20 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Fraunces', ui-serif, Georgia, serif;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-/* Editorial display headings get the soft optical axis + a touch of contrast */
+/* Display headings lean into Syne's heavy, geometric character */
 h1,
 h2 {
-  font-optical-sizing: auto;
-  font-weight: 500;
+  font-weight: 800;
 }
 
-/* Warm cream ground (brand neutral) */
+/* Dark fallback behind the fixed sunset field (see <Background>) */
 body {
-  background-color: #F3EDE6;
+  background-color: #17102A;
 }
 
 /* ---- Lenis smooth scroll ---- */

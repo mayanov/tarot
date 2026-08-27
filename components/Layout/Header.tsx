@@ -118,8 +118,6 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
   const navLinks: NavItem[] = [
     { name: isIndonesian ? 'Tentang' : 'About', id: 'about' },
-    { name: isIndonesian ? 'Kenapa Mayanov?' : 'Values', id: 'why-choose' },
-    { name: isIndonesian ? 'Cara Kerja' : 'How it Works', id: 'process' },
     {
       name: isIndonesian ? 'Layanan' : 'Services',
       id: 'services',
@@ -130,13 +128,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         { name: 'Meetup', id: 'service-meetup' }
       ] : undefined
     },
+    { name: isIndonesian ? 'Kenapa Mayanov?' : 'Values', id: 'why-choose' },
     { name: isIndonesian ? 'Testimony' : 'Reviews', id: 'testimonials' },
     { name: isIndonesian ? 'Events & Collaborations' : 'Track Record', id: 'events' },
     { name: isIndonesian ? 'FAQ' : 'FAQ', id: 'faq' },
   ];
 
-  // Over the dark hero (top of page) the header uses cream ink; once scrolled it flips to a cream panel with dark ink.
-  const onDark = !isScrolled;
+  // The whole page is dark, so the header always uses cream ink; scrolled it gets a translucent frosted bar (same tint as the category chips).
+  const onDark = true;
 
   const Wordmark = () => (
     <div className="flex items-center gap-2.5 cursor-pointer group" onClick={handleLogoClick}>
@@ -144,7 +143,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         M
       </span>
       <span className={`text-lg font-serif font-semibold tracking-tight transition-colors duration-300 ${onDark ? 'text-cream group-hover:text-coral' : 'text-ink group-hover:text-coral'}`}>
-        Mayanov <span className={`font-normal italic ${onDark ? 'text-cream/60' : 'text-taupe'}`}>Tarot</span>
+        Mayanov <span className={`font-normal ${onDark ? 'text-cream/55' : 'text-taupe'}`}>Tarot</span>
       </span>
     </div>
   );
@@ -153,11 +152,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-            ? 'bg-paper/85 backdrop-blur-md py-3 border-b border-line shadow-[0_1px_20px_-12px_rgba(42,35,32,0.35)]'
+            ? 'bg-white/[0.07] backdrop-blur-xl py-3 border-b border-white/10 shadow-[0_8px_30px_-16px_rgba(0,0,0,0.55)]'
             : 'bg-transparent py-5'
           }`}
       >
-        <div className="max-w-7xl mx-auto px-5 flex justify-between items-center relative z-50">
+        <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 flex justify-between items-center relative z-50">
           {/* Logo */}
           <Wordmark />
 
@@ -195,7 +194,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             )}
             <button
               onClick={() => scrollToSection('services')}
-              className="px-6 py-2.5 rounded-full bg-terracotta text-paper text-sm font-medium hover:bg-terracotta-dark transition-all duration-300 hover:-translate-y-0.5 shadow-[0_8px_24px_-12px_rgba(193,97,74,0.8)] whitespace-nowrap"
+              className={`px-6 py-2.5 rounded-full bg-ink text-cream text-sm font-medium hover:bg-charcoal-deep transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap ${onDark ? 'border border-cream/30' : 'border border-ink/10'}`}
             >
               {isIndonesian ? 'Pesan Sekarang' : 'Book Now'}
             </button>
@@ -291,7 +290,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           ))}
           <button
             onClick={() => scrollToSection('services')}
-            className="mt-4 px-10 py-4 rounded-full bg-terracotta text-paper font-medium text-lg hover:bg-terracotta-dark transition shadow-[0_10px_30px_-12px_rgba(193,97,74,0.8)] shrink-0"
+            className="mt-4 px-10 py-4 rounded-full bg-ink text-cream font-medium text-lg hover:bg-charcoal-deep transition shrink-0"
           >
             {isIndonesian ? 'Pesan Pembacaan' : 'Book a Reading'}
           </button>

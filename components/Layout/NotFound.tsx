@@ -34,7 +34,7 @@ const NotFound: React.FC<NotFoundProps> = ({ isIndonesian = false }) => {
 
                     <a
                         href="/"
-                        className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-terracotta text-paper font-medium text-lg hover:bg-terracotta-dark transition-all duration-300 shadow-[0_10px_30px_-12px_rgba(193,97,74,0.7)] hover:-translate-y-1 group"
+                        className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-ink text-cream font-medium text-lg hover:bg-charcoal-deep transition-all duration-300 hover:-translate-y-1 group"
                     >
                         <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         {isIndonesian ? 'Kembali ke Beranda' : 'Back to Home'}
