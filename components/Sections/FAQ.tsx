@@ -100,7 +100,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
       id="faq"
       className="py-16 md:py-24 relative overflow-hidden isolate border-y border-white/10"
     >
-      <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
         <FadeIn>
           <SectionHeader
             num="06"

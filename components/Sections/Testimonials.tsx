@@ -247,7 +247,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   return (
     <section id="testimonials" className="py-16 md:py-24 relative overflow-hidden isolate border-y border-white/10">
       <FadeIn>
-        <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 mb-12 md:mb-14">
+        <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 mb-12 md:mb-14">
           <SectionHeader
             label={isIndonesian ? 'Testimoni' : 'Reviews'}
             title={isIndonesian ? 'Apa kata mereka' : 'What others are saying'}

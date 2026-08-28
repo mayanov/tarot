@@ -240,7 +240,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             id="services"
             className="py-16 md:py-24 relative overflow-hidden isolate border-y border-white/10"
         >
-            <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
+            <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
                 {/* Header — asymmetric */}
                 <FadeIn>
                     <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end mb-12 md:mb-16">

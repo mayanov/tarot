@@ -65,7 +65,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 MAYANOV
             </span>
 
-            <FadeIn className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
+            <FadeIn className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
                 {/* Top — CTA line */}
                 <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-14 border-b border-white/10">
                     <h2 className="lg:col-span-8 font-serif font-semibold text-[#F7F0E6] text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">

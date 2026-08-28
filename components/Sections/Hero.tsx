@@ -8,6 +8,9 @@ interface HeroProps {
 
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 
+// Plays the hero count-up only the first time it mounts, never again on re-render.
+let heroStatsPlayed = false;
+
 const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const [shown, setShown] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -99,18 +102,43 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     );
   };
 
+  // Count-up: animates from 0 on the first load, then shows the final value forever after.
+  const CountUp: React.FC<{ end: number; decimals?: number; suffix?: string; sep: string; delay?: number }> = ({ end, decimals = 0, suffix = '', sep, delay = 0 }) => {
+    const [val, setVal] = useState(heroStatsPlayed ? end : 0);
+    useEffect(() => {
+      if (!shown || heroStatsPlayed) return;
+      let raf = 0;
+      const dur = 1700;
+      const t0 = performance.now() + delay;
+      const tick = (now: number) => {
+        const t = Math.min(Math.max((now - t0) / dur, 0), 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        setVal(end * eased);
+        if (t < 1) raf = requestAnimationFrame(tick);
+        else heroStatsPlayed = true;
+      };
+      raf = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(raf);
+    }, [shown]);
+    const text = decimals > 0
+      ? val.toFixed(decimals)
+      : Math.round(val).toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+    return <>{text}{suffix && <span className="text-coral">{suffix}</span>}</>;
+  };
+
+  const sep = isIndonesian ? '.' : ',';
   const metrics = isIndonesian
     ? [
-        { value: '1.500+', label: 'Orang Terbantu' },
-        { value: '3.200+', label: 'Jam Sesi' },
-        { value: '7.700+', label: 'Total Sesi' },
-        { value: '5.0', label: 'Rating Google', rating: true },
+        { end: 1500, suffix: '+', label: 'Orang Terbantu' },
+        { end: 3200, suffix: '+', label: 'Jam Sesi' },
+        { end: 7700, suffix: '+', label: 'Total Sesi' },
+        { end: 5, decimals: 1, label: 'Rating Google', rating: true },
       ]
     : [
-        { value: '1,500+', label: 'People Helped' },
-        { value: '3,200+', label: 'Hours of Guidance' },
-        { value: '7,700+', label: 'Sessions Done' },
-        { value: '5.0', label: 'Google Rating', rating: true },
+        { end: 1500, suffix: '+', label: 'People Helped' },
+        { end: 3200, suffix: '+', label: 'Hours of Guidance' },
+        { end: 7700, suffix: '+', label: 'Sessions Done' },
+        { end: 5, decimals: 1, label: 'Google Rating', rating: true },
       ];
 
   return (
@@ -143,10 +171,10 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       {/* ===== Editorial asymmetric brand hero ===== */}
       <div
         ref={contentRef}
-        className="flex-1 w-full max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 flex flex-col justify-center pt-32 pb-8 will-change-transform"
+        className="flex-1 w-full max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 flex flex-col justify-center pt-32 pb-8 will-change-transform"
       >
         {/* staggered wordmark */}
-        <h1 className="font-serif font-bold uppercase text-coral leading-[0.82] tracking-[-0.015em] text-[3.4rem] sm:text-[5.2rem] md:text-[7.2rem] lg:text-[9rem] [text-shadow:0_6px_28px_rgba(6,4,14,0.65)]">
+        <h1 className="font-serif font-bold uppercase text-coral leading-[0.82] tracking-[-0.015em] text-[3.4rem] sm:text-[5.2rem] md:text-[7.2rem] lg:text-[9rem] xl:text-[10.5rem] 2xl:text-[13rem] [text-shadow:0_6px_28px_rgba(6,4,14,0.65)]">
           <span className="block text-coral">
             <MaskLine delay={180}>Mayanov</MaskLine>
           </span>
@@ -158,12 +186,12 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         {/* asymmetric supporting row */}
         <div className="mt-10 md:mt-16 grid lg:grid-cols-12 gap-x-8 gap-y-8 items-center">
           <Rise delay={520} className="lg:col-span-6">
-            <p className="font-serif text-2xl md:text-[2.1rem] leading-tight tracking-[-0.01em] text-cream/95 [text-shadow:0_2px_10px_rgba(6,4,12,0.8),0_3px_24px_rgba(6,4,12,0.7)]">
+            <p className="font-serif text-2xl md:text-[2.1rem] xl:text-[2.5rem] 2xl:text-[2.9rem] leading-tight tracking-[-0.01em] text-cream/95 [text-shadow:0_2px_10px_rgba(6,4,12,0.8),0_3px_24px_rgba(6,4,12,0.7)]">
               {isIndonesian
                 ? <>Ruang untuk <span className="text-coral">berpikir jernih.</span></>
                 : <>A clearer view of <span className="text-coral">what&rsquo;s next.</span></>}
             </p>
-            <p className="mt-4 text-base md:text-lg text-white max-w-lg leading-relaxed font-normal [text-shadow:0_1px_8px_rgba(6,4,12,0.9),0_2px_18px_rgba(6,4,12,0.7)]">
+            <p className="mt-4 text-base md:text-lg xl:text-xl 2xl:text-[1.35rem] text-white max-w-lg xl:max-w-2xl leading-relaxed font-normal [text-shadow:0_1px_8px_rgba(6,4,12,0.9),0_2px_18px_rgba(6,4,12,0.7)]">
               {isIndonesian
                 ? 'Tarot sebagai ruang refleksi—analitis, hangat, dan membumi. Bukan ramalan, tapi percakapan jujur untuk melihat langkahmu lebih jelas.'
                 : 'Tarot as a space for reflection — analytical, warm, and grounded. Not fortune-telling, just an honest conversation that helps you see your next step clearly.'}
@@ -185,18 +213,22 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       </div>
 
       {/* ===== Stats bar pinned to the bottom ===== */}
-      <div className="w-full max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 pb-9 md:pb-12">
+      <div className="w-full max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 pb-9 md:pb-12">
         <Rise delay={860}>
-          <div className="rounded-2xl border border-white/15 bg-white/[0.08] backdrop-blur-md shadow-[0_20px_60px_-34px_rgba(0,0,0,0.6)] px-4 py-5 md:px-8 md:py-6 grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-6">
+          <div className="rounded-2xl border border-white/15 bg-white/[0.06] backdrop-blur-md shadow-[0_20px_60px_-34px_rgba(0,0,0,0.6)] px-2 py-6 md:px-6 md:py-8 grid grid-cols-2 md:grid-cols-4 gap-y-8">
             {metrics.map((m, i) => (
-              <div key={i} className="flex flex-col items-center text-center md:border-l md:border-white/12 md:first:border-l-0 px-2">
-                <div className="font-serif font-semibold text-[1.7rem] md:text-[2.1rem] leading-none text-cream tracking-tight">{m.value}</div>
+              <div key={i} className="group relative flex flex-col items-center text-center px-4 md:px-6 cursor-default md:border-l md:border-white/12 md:first:border-l-0">
+                <div className="relative font-serif font-semibold text-[2.3rem] md:text-[2.9rem] xl:text-[3.4rem] leading-none text-cream tracking-tight tabular-nums transition-all duration-300 group-hover:text-coral group-hover:-translate-y-1">
+                  <CountUp end={m.end} decimals={'decimals' in m ? m.decimals : 0} suffix={'suffix' in m ? m.suffix : ''} sep={sep} delay={i * 180} />
+                </div>
                 {'rating' in m && m.rating && (
-                  <div className="flex gap-0.5 text-coral mt-2">
+                  <div className="flex gap-0.5 text-coral mt-2.5">
                     {[0, 1, 2, 3, 4].map((s) => (<Star key={s} className="w-3.5 h-3.5 fill-current" strokeWidth={0} />))}
                   </div>
                 )}
-                <div className="mt-2.5 text-[0.58rem] md:text-[0.66rem] uppercase tracking-[0.18em] text-white/70">{m.label}</div>
+                <div className="mt-3 text-[0.6rem] md:text-[0.68rem] uppercase tracking-[0.2em] text-white/60 group-hover:text-white transition-colors duration-300">{m.label}</div>
+                {/* accent underline grows on hover */}
+                <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] w-0 bg-coral rounded-full transition-all duration-300 group-hover:w-10" />
               </div>
             ))}
           </div>

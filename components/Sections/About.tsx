@@ -46,7 +46,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       id="about"
       className="py-16 md:py-24 relative overflow-hidden isolate border-b border-white/10"
     >
-      <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10">
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10">
         <FadeIn>
           <div className="grid lg:grid-cols-12 gap-y-12 gap-x-10 lg:gap-x-16 items-start">
 

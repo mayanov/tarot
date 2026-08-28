@@ -139,11 +139,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
   const Wordmark = () => (
     <div className="flex items-center gap-2.5 cursor-pointer group whitespace-nowrap" onClick={handleLogoClick}>
-      <span className={`grid place-items-center w-8 h-8 shrink-0 rounded-full border font-serif text-lg leading-none transition-colors duration-300 ${onDark ? 'border-cream/40 text-cream group-hover:bg-cream group-hover:text-ink' : 'border-coral/40 text-coral group-hover:bg-coral group-hover:text-cream'}`}>
+      <span className="grid place-items-center w-8 h-8 shrink-0 rounded-full border border-coral/50 text-coral font-serif text-lg leading-none transition-colors duration-300 group-hover:bg-coral group-hover:text-ink">
         M
       </span>
-      <span className={`text-lg font-serif font-semibold tracking-tight transition-colors duration-300 ${onDark ? 'text-cream group-hover:text-coral' : 'text-ink group-hover:text-coral'}`}>
-        Mayanov <span className={`font-normal ${onDark ? 'text-cream/55' : 'text-taupe'}`}>Tarot</span>
+      <span className="text-lg font-serif font-bold uppercase tracking-tight text-coral">
+        Mayanov <span className="text-transparent [-webkit-text-stroke:1px_#FFFFFF]">Tarot</span>
       </span>
     </div>
   );
@@ -156,7 +156,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             : 'bg-transparent py-5'
           }`}
       >
-        <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 flex justify-between items-center relative z-50">
+        <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 flex justify-between items-center relative z-50">
           {/* LEFT — wordmark (collapses at the top so links sit at the left edge) + nav links */}
           <div className="flex items-center min-w-0">
             {/* Logo — hidden at the top (it lives in the hero), slides up into the nav on scroll */}

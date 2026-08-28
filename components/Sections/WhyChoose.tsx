@@ -58,7 +58,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
       className="py-16 md:py-24 relative overflow-hidden text-cream isolate"
     >
 
-      <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
         <FadeIn>
           <div className="grid lg:grid-cols-12 gap-y-12 lg:gap-x-16 items-start">
             {/* LEFT — heading */}

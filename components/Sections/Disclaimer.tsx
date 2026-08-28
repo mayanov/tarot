@@ -24,7 +24,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
 
     return (
         <section id="disclaimer" className="pt-16 md:pt-24 pb-8 md:pb-10 relative overflow-hidden isolate border-t-2 border-white/15">
-            <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
+            <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
                 <FadeIn>
                     {/* Header row */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-8 border-b border-white/15">
