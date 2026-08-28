@@ -130,68 +130,6 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </div>
           </div>
 
-          {/* ---- By the numbers — grainy aura-gradient panel ---- */}
-          <div className="relative overflow-hidden rounded-[1.75rem] mt-16 md:mt-20 p-8 md:p-12 lg:p-14 isolate">
-            {/* Aura / mesh gradient */}
-            <div
-              className="absolute inset-0 -z-10"
-              style={{
-                background: `
-                  radial-gradient(60% 65% at 16% 22%, #E47423 0%, rgba(225,116,63,0) 60%),
-                  radial-gradient(55% 55% at 84% 12%, #F0A15C 0%, rgba(230,166,131,0) 55%),
-                  radial-gradient(70% 70% at 82% 88%, #39234E 0%, rgba(107,84,128,0) 62%),
-                  radial-gradient(58% 62% at 10% 90%, #C25E14 0%, rgba(193,73,58,0) 58%),
-                  radial-gradient(75% 80% at 52% 55%, #29527B 0%, rgba(93,122,153,0) 66%),
-                  linear-gradient(135deg, #2E1B40 0%, #3A2450 55%, #2C1A3C 100%)
-                `,
-              }}
-            />
-            {/* Film grain */}
-            <div
-              className="absolute inset-0 -z-10 opacity-[0.6] mix-blend-overlay"
-              style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }}
-            />
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-6">
-              {stats.map((stat, idx) => (
-                <div key={idx} className="md:border-l md:border-cream/20 md:pl-6 md:first:border-l-0 md:first:pl-0">
-                  <div className="font-serif font-medium text-[2.75rem] md:text-[3.5rem] leading-none text-cream tracking-tight [text-shadow:0_2px_22px_rgba(20,12,26,0.4)]">
-                    {stat.value}
-                  </div>
-                  <p className="mt-3 text-[0.7rem] md:text-xs text-cream/70 uppercase tracking-[0.2em]">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-
-              {/* Rating cell */}
-              <div className="md:border-l md:border-cream/20 md:pl-6">
-                <div className="font-serif font-medium text-[2.75rem] md:text-[3.5rem] leading-none text-cream tracking-tight [text-shadow:0_2px_22px_rgba(20,12,26,0.4)]">5.0</div>
-                <div className="flex gap-0.5 text-gold-soft mt-3 mb-1">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" strokeWidth={0} />
-                  ))}
-                </div>
-                <p className="text-[0.7rem] md:text-xs text-cream/70 uppercase tracking-[0.2em]">
-                  {isIndonesian ? 'Rating Google' : 'Google Rating'}
-                </p>
-              </div>
-            </div>
-
-            {/* Verified reviews link */}
-            <div className="mt-10 pt-8 border-t border-cream/15">
-              <a
-                href="https://www.google.com/search?sca_esv=ef40956f7e4432eb&sxsrf=ANbL-n7SdVoM--CpcK3sNMDGosFTkoIWNg:1769068673057&si=AL3DRZEsmMGCryMMFSHJ3StBhOdZ2-6yYkXd_doETEE1OR-qOVbcCtc4v5CIiAET9zkHteUbRsgQt_Fpl3GV3F0FBTI5EvY7ur0sclLFX70p-8HpGb9DWBLb3vb0m5xByDWdvJPYkiNoXJpeI-f10yU8hV2jeBa8TQ%3D%3D&q=Tarot+Reading+by+Mayanov+Reviews&sa=X&ved=2ahUKEwj64dyu1p6SAxWSxzgGHSkADDwQ0bkNegQIJxAF"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleReviewsClick}
-                className="inline-flex items-center gap-2 text-sm font-medium text-cream border-b border-cream/40 hover:border-cream pb-0.5 transition-colors group"
-              >
-                {isIndonesian ? 'Baca ulasan terverifikasi di Google' : 'Read verified reviews on Google'}
-                <span className="text-gold-soft group-hover:translate-x-0.5 transition-transform">&rarr;</span>
-              </a>
-            </div>
-          </div>
         </FadeIn>
       </div>
     </section>

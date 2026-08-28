@@ -37,16 +37,14 @@ const Background: React.FC = () => {
       <div
         ref={fieldRef}
         className="absolute -inset-y-[6%] inset-x-0 will-change-transform"
-        style={{ background: 'linear-gradient(178deg, #141A38 0%, #1E1B3C 28%, #2E2140 58%, #3A2637 100%)' }}
+        style={{ background: 'radial-gradient(135% 118% at 50% 24%, #261E46 0%, #1C1534 56%, #17112C 100%)' }}
       />
-      {/* dawn layer — fades in as you scroll (the sky warms & lightens) */}
+      {/* dawn layer — fades in as you scroll (the sky warms & lightens), diffuse so it never bands */}
       <div
         ref={dawnRef}
         className="absolute inset-0 opacity-0 will-change-[opacity]"
-        style={{ background: 'linear-gradient(178deg, #45548C 0%, #7C5E86 33%, #B2726A 61%, #D68C55 100%)' }}
+        style={{ background: 'radial-gradient(150% 132% at 74% 92%, rgba(216,140,85,0.62) 0%, rgba(152,92,118,0.32) 44%, rgba(66,72,130,0.12) 100%)' }}
       />
-      {/* cool cast up top */}
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(82% 52% at 18% 2%, rgba(41,58,110,0.30) 0%, rgba(41,58,110,0) 60%)' }} />
       {/* rising sun — climbs and brightens on scroll */}
       <div
         ref={sunRef}

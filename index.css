@@ -53,6 +53,12 @@ html.lenis body {
   0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
   50%      { transform: translate3d(14%, -16%, 0) scale(1.22); }
 }
+/* ---- Star twinkle ---- */
+@keyframes twinkle {
+  0%, 100% { opacity: var(--tw-o, 0.85); transform: scale(1); }
+  50%      { opacity: 0.12; transform: scale(0.6); }
+}
+
 /* ---- Kinetic marquee ---- */
 @keyframes marquee {
   0%   { transform: translateX(0); }

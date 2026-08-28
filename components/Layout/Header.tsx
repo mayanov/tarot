@@ -138,8 +138,8 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   const onDark = true;
 
   const Wordmark = () => (
-    <div className="flex items-center gap-2.5 cursor-pointer group" onClick={handleLogoClick}>
-      <span className={`grid place-items-center w-8 h-8 rounded-full border font-serif text-lg leading-none transition-colors duration-300 ${onDark ? 'border-cream/40 text-cream group-hover:bg-cream group-hover:text-ink' : 'border-coral/40 text-coral group-hover:bg-coral group-hover:text-cream'}`}>
+    <div className="flex items-center gap-2.5 cursor-pointer group whitespace-nowrap" onClick={handleLogoClick}>
+      <span className={`grid place-items-center w-8 h-8 shrink-0 rounded-full border font-serif text-lg leading-none transition-colors duration-300 ${onDark ? 'border-cream/40 text-cream group-hover:bg-cream group-hover:text-ink' : 'border-coral/40 text-coral group-hover:bg-coral group-hover:text-cream'}`}>
         M
       </span>
       <span className={`text-lg font-serif font-semibold tracking-tight transition-colors duration-300 ${onDark ? 'text-cream group-hover:text-coral' : 'text-ink group-hover:text-coral'}`}>
@@ -157,38 +157,46 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           }`}
       >
         <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 flex justify-between items-center relative z-50">
-          {/* Logo */}
-          <Wordmark />
+          {/* LEFT — wordmark (collapses at the top so links sit at the left edge) + nav links */}
+          <div className="flex items-center min-w-0">
+            {/* Logo — hidden at the top (it lives in the hero), slides up into the nav on scroll */}
+            <div className={`transition-all duration-500 ease-out overflow-hidden ${isScrolled ? 'opacity-100 max-w-[240px] mr-8 lg:mr-10' : 'opacity-0 max-w-0 mr-0 pointer-events-none'}`}>
+              <Wordmark />
+            </div>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-7">
-            {navLinks.map((link) => (
-              <div key={link.name} className="relative group/menu">
-                <button
-                  onClick={() => scrollToSection(link.id)}
-                  className={`flex items-center gap-1 text-sm font-medium transition duration-300 tracking-wide whitespace-nowrap py-2 ${onDark ? 'text-cream/80 hover:text-cream' : 'text-ink-soft hover:text-coral'}`}
-                >
-                  {link.name}
-                  {link.children && <ChevronDown className="w-3 h-3 group-hover/menu:rotate-180 transition-transform duration-200" />}
-                </button>
+            <nav className="hidden lg:flex items-center space-x-6 xl:space-x-7">
+              {navLinks.map((link) => (
+                <div key={link.name} className="relative group/menu">
+                  <button
+                    onClick={() => scrollToSection(link.id)}
+                    className={`flex items-center gap-1 text-sm font-medium transition duration-300 tracking-wide whitespace-nowrap py-2 ${onDark ? 'text-cream hover:text-coral' : 'text-ink hover:text-coral'}`}
+                  >
+                    {link.name}
+                    {link.children && <ChevronDown className="w-3 h-3 group-hover/menu:rotate-180 transition-transform duration-200" />}
+                  </button>
 
-                {link.children && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 transform translate-y-2 group-hover/menu:translate-y-0 w-48">
-                    <div className="bg-surface-1 border border-line rounded-xl shadow-xl overflow-hidden p-2 flex flex-col gap-1">
-                      {link.children.map(child => (
-                        <button
-                          key={child.name}
-                          onClick={(e) => { e.stopPropagation(); scrollToSection(child.id); }}
-                          className="text-left px-4 py-2 text-sm text-ink-soft hover:text-terracotta hover:bg-paper-2 rounded-lg transition-colors"
-                        >
-                          {child.name}
-                        </button>
-                      ))}
+                  {link.children && (
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 transform translate-y-2 group-hover/menu:translate-y-0 w-48">
+                      <div className="bg-surface-1 border border-line rounded-xl shadow-xl overflow-hidden p-2 flex flex-col gap-1">
+                        {link.children.map(child => (
+                          <button
+                            key={child.name}
+                            onClick={(e) => { e.stopPropagation(); scrollToSection(child.id); }}
+                            className="text-left px-4 py-2 text-sm text-ink-soft hover:text-terracotta hover:bg-paper-2 rounded-lg transition-colors"
+                          >
+                            {child.name}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              ))}
+            </nav>
+          </div>
+
+          {/* RIGHT — region switcher + Book Now (always right) */}
+          <div className="hidden lg:flex items-center gap-4 xl:gap-5">
             {onSwitchRegion && (
               <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} onDark={onDark} />
             )}
@@ -198,7 +206,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             >
               {isIndonesian ? 'Pesan Sekarang' : 'Book Now'}
             </button>
-          </nav>
+          </div>
 
           {/* Mobile Menu Toggle */}
           {!isMobileMenuOpen && (

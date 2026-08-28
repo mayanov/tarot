@@ -1,65 +1,50 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { ArrowRight } from 'lucide-react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { ArrowRight, Star } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 
 interface HeroProps {
   isIndonesian?: boolean;
 }
 
-const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.4'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E\")";
-
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 
 const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const [shown, setShown] = useState(false);
-  const blobsRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
-  const bgRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const cardTiltRef = useRef<HTMLDivElement>(null);
+
+  // A scattered starfield (generated once) — makes the sky feel alive.
+  const stars = useMemo(
+    () => Array.from({ length: 185 }, () => {
+      const r = Math.random();
+      const size = r < 0.72 ? 1 : r < 0.92 ? 1.5 : r < 0.98 ? 2 : 2.5;
+      return {
+        top: Math.random() * 100,
+        left: Math.random() * 100,
+        size,
+        opacity: 0.35 + Math.random() * 0.55,
+        dur: 2.2 + Math.random() * 4.5,
+        delay: Math.random() * 6,
+        coral: Math.random() < 0.12,
+      };
+    }),
+    []
+  );
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setShown(true));
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // Cursor-reactive: a warm light follows the cursor, the colour field drifts,
-  // and the tarot card tilts in 3D toward the pointer.
-  useEffect(() => {
-    if (window.matchMedia('(pointer: coarse)').matches) return;
-    let raf = 0;
-    const onMove = (e: MouseEvent) => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const nx = e.clientX / window.innerWidth - 0.5;   // -0.5..0.5
-        const ny = e.clientY / window.innerHeight - 0.5;
-        if (blobsRef.current) blobsRef.current.style.transform = `translate3d(${nx * -92}px, ${ny * -76}px, 0)`;
-        if (glowRef.current) {
-          glowRef.current.style.left = `${e.clientX}px`;
-          glowRef.current.style.top = `${e.clientY}px`;
-          glowRef.current.style.opacity = '1';
-        }
-        if (cardTiltRef.current) {
-          cardTiltRef.current.style.transform = `perspective(1100px) rotateX(${(-ny * 16).toFixed(2)}deg) rotateY(${(nx * 20).toFixed(2)}deg)`;
-        }
-      });
-    };
-    window.addEventListener('mousemove', onMove);
-    return () => { window.removeEventListener('mousemove', onMove); cancelAnimationFrame(raf); };
-  }, []);
-
-  // Scroll-linked: content lifts + fades and the colour field scales as you leave.
+  // Scroll-linked: content lifts + fades as you leave the hero.
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     let raf = 0;
     const update = () => {
       const p = Math.min(window.scrollY / window.innerHeight, 1);
       if (contentRef.current) {
-        contentRef.current.style.transform = `translate3d(0, ${(p * 70).toFixed(1)}px, 0)`;
+        contentRef.current.style.transform = `translate3d(0, ${(p * 60).toFixed(1)}px, 0)`;
         contentRef.current.style.opacity = String(1 - p * 0.9);
       }
-      if (bgRef.current) bgRef.current.style.transform = `scale(${(1 + p * 0.16).toFixed(3)})`;
     };
     const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
     update();
@@ -96,91 +81,126 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     </div>
   );
 
+  // Magnetic wrapper — element drifts toward the cursor, springs back on leave.
+  const Magnetic: React.FC<{ children: React.ReactNode; strength?: number; className?: string }> = ({ children, strength = 0.32, className = '' }) => {
+    const ref = useRef<HTMLDivElement>(null);
+    const onMove = (e: React.MouseEvent) => {
+      const el = ref.current; if (!el) return;
+      const r = el.getBoundingClientRect();
+      const x = e.clientX - (r.left + r.width / 2);
+      const y = e.clientY - (r.top + r.height / 2);
+      el.style.transform = `translate(${(x * strength).toFixed(1)}px, ${(y * strength).toFixed(1)}px)`;
+    };
+    const onLeave = () => { if (ref.current) ref.current.style.transform = 'translate(0, 0)'; };
+    return (
+      <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} className={`inline-block transition-transform duration-300 ease-out will-change-transform ${className}`}>
+        {children}
+      </div>
+    );
+  };
+
+  const metrics = isIndonesian
+    ? [
+        { value: '1.500+', label: 'Orang Terbantu' },
+        { value: '3.200+', label: 'Jam Sesi' },
+        { value: '7.700+', label: 'Total Sesi' },
+        { value: '5.0', label: 'Rating Google', rating: true },
+      ]
+    : [
+        { value: '1,500+', label: 'People Helped' },
+        { value: '3,200+', label: 'Hours of Guidance' },
+        { value: '7,700+', label: 'Sessions Done' },
+        { value: '5.0', label: 'Google Rating', rating: true },
+      ];
+
   return (
     <section
       id="hero"
       className="relative min-h-screen flex flex-col overflow-hidden isolate"
     >
-      {/* ===== Main editorial grid ===== */}
+      {/* living sky — soft nebula auras + a scattered twinkling starfield */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+        <div className="absolute top-[10%] right-[2%] w-[44%] h-[48%] rounded-full bg-[#6E5A9E]/[0.10] blur-[150px] animate-[blobB_34s_ease-in-out_infinite]" />
+        <div className="absolute top-[30%] left-[6%] w-[42%] h-[46%] rounded-full bg-coral/[0.06] blur-[150px] animate-[blobA_30s_ease-in-out_infinite]" />
+        {stars.map((s, i) => (
+          <span
+            key={i}
+            className={`absolute rounded-full ${s.coral ? 'bg-coral' : 'bg-white'}`}
+            style={{
+              top: `${s.top}%`,
+              left: `${s.left}%`,
+              width: `${s.size}px`,
+              height: `${s.size}px`,
+              opacity: s.opacity,
+              boxShadow: s.size >= 2 ? '0 0 6px rgba(255,246,230,0.7)' : 'none',
+              animation: `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
+              ['--tw-o' as string]: String(s.opacity),
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
+
+      {/* ===== Editorial asymmetric brand hero ===== */}
       <div
         ref={contentRef}
-        className="flex-1 w-full max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 flex flex-col justify-center pt-28 pb-16 md:pt-28 md:pb-20 will-change-transform"
+        className="flex-1 w-full max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 flex flex-col justify-center pt-32 pb-8 will-change-transform"
       >
-        <div className="grid lg:grid-cols-12 items-center gap-10 lg:gap-6">
-          {/* Left — display type */}
-          <div className="lg:col-span-7 text-left">
-          {/* Headline — masked line reveal */}
-          <h1 className="font-serif font-semibold tracking-[-0.03em] text-cream text-[2.7rem] leading-[0.96] sm:text-[3.5rem] md:text-[4.4rem] lg:text-[5.3rem] lg:leading-[0.94]">
-            {isIndonesian ? (
-              <>
-                <MaskLine delay={180}>Ruang untuk</MaskLine>
-                <MaskLine delay={310}><span className="text-coral">berpikir jernih.</span></MaskLine>
-              </>
-            ) : (
-              <>
-                <MaskLine delay={180}>A clearer view</MaskLine>
-                <MaskLine delay={310}>of <span className="text-coral">what&rsquo;s next.</span></MaskLine>
-              </>
-            )}
-          </h1>
+        {/* staggered wordmark */}
+        <h1 className="font-serif font-bold uppercase text-coral leading-[0.82] tracking-[-0.015em] text-[3.4rem] sm:text-[5.2rem] md:text-[7.2rem] lg:text-[9rem] [text-shadow:0_6px_28px_rgba(6,4,14,0.65)]">
+          <span className="block text-coral">
+            <MaskLine delay={180}>Mayanov</MaskLine>
+          </span>
+          <span className="block text-right text-transparent [-webkit-text-stroke:1.5px_#FFFFFF] md:[-webkit-text-stroke:2.5px_#FFFFFF]">
+            <MaskLine delay={300}>Tarot</MaskLine>
+          </span>
+        </h1>
 
-          {/* Subhead */}
-          <Rise delay={540}>
-            <p className="mt-8 text-base md:text-xl text-white max-w-lg leading-relaxed font-light">
+        {/* asymmetric supporting row */}
+        <div className="mt-10 md:mt-16 grid lg:grid-cols-12 gap-x-8 gap-y-8 items-center">
+          <Rise delay={520} className="lg:col-span-6">
+            <p className="font-serif text-2xl md:text-[2.1rem] leading-tight tracking-[-0.01em] text-cream/95 [text-shadow:0_2px_10px_rgba(6,4,12,0.8),0_3px_24px_rgba(6,4,12,0.7)]">
+              {isIndonesian
+                ? <>Ruang untuk <span className="text-coral">berpikir jernih.</span></>
+                : <>A clearer view of <span className="text-coral">what&rsquo;s next.</span></>}
+            </p>
+            <p className="mt-4 text-base md:text-lg text-white max-w-lg leading-relaxed font-normal [text-shadow:0_1px_8px_rgba(6,4,12,0.9),0_2px_18px_rgba(6,4,12,0.7)]">
               {isIndonesian
                 ? 'Tarot sebagai ruang refleksi—analitis, hangat, dan membumi. Bukan ramalan, tapi percakapan jujur untuk melihat langkahmu lebih jelas.'
                 : 'Tarot as a space for reflection — analytical, warm, and grounded. Not fortune-telling, just an honest conversation that helps you see your next step clearly.'}
             </p>
           </Rise>
-
-          {/* CTA */}
-          <Rise delay={660}>
-            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
+          <Rise delay={640} className="lg:col-span-4 lg:col-start-9 lg:justify-self-end">
+            <Magnetic strength={0.4}>
               <a
                 href="#services"
                 onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                className="group inline-flex items-center justify-center gap-2.5 pl-8 pr-6 py-4 rounded-full bg-ink text-cream text-base font-medium tracking-wide border border-cream/25 transition-all duration-200 hover:bg-charcoal-deep hover:border-cream/45 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-cream/50 focus:ring-offset-2 focus:ring-offset-[#34274F]"
+                className="group inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-white text-ink text-base font-medium tracking-wide transition-colors duration-200 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-[#241733]"
               >
                 {isIndonesian ? 'Pilih Paket & Pesan Sesi' : 'Book a Reading'}
-                <span className="grid place-items-center w-7 h-7 rounded-full bg-cream/15 group-hover:bg-cream/25 transition-colors">
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </a>
-            </div>
+            </Magnetic>
           </Rise>
         </div>
+      </div>
 
-        {/* Right — soft aura orb */}
-        <div className="lg:col-span-5 flex justify-center lg:justify-end">
-          <Rise delay={420} className="relative">
-            {/* outer halo */}
-            <div className="absolute inset-0 -m-16 rounded-full bg-coral/[0.13] blur-[120px] pointer-events-none" />
-            <div className="animate-float-slow">
-              <div
-                ref={cardTiltRef}
-                className="relative w-[16rem] sm:w-[19rem] md:w-[22rem] aspect-square transition-transform duration-300 ease-out will-change-transform"
-              >
-                {/* the orb */}
-                <div className="absolute inset-0 rounded-full overflow-hidden isolate shadow-[0_60px_150px_-45px_rgba(10,7,16,0.7)]">
-                  {/* aura gradient — a dusk moon */}
-                  <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 34% 28%, #EDBE93 0%, #D07C3F 28%, #7A4A66 56%, #2C1B40 88%)' }} />
-                  {/* volume shading (opposite side) */}
-                  <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 70% 74%, rgba(16,9,24,0.6) 0%, rgba(16,9,24,0) 52%)' }} />
-                  {/* soft specular highlight */}
-                  <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 30% 24%, rgba(255,243,229,0.42) 0%, rgba(255,243,229,0) 26%)' }} />
-                  {/* grain */}
-                  <div className="absolute inset-0 opacity-[0.5] mix-blend-overlay pointer-events-none" style={{ backgroundImage: GRAIN, backgroundSize: '150px 150px' }} />
-                </div>
-                {/* thin orbit ring */}
-                <div className="absolute -inset-4 rounded-full border border-cream/10 pointer-events-none" />
-                {/* tiny star accents */}
-                <span className="absolute top-[5%] right-[18%] w-1.5 h-1.5 rounded-full bg-cream/70" />
-                <span className="absolute bottom-[16%] -left-1.5 w-1 h-1 rounded-full bg-coral/80" />
+      {/* ===== Stats bar pinned to the bottom ===== */}
+      <div className="w-full max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 pb-9 md:pb-12">
+        <Rise delay={860}>
+          <div className="rounded-2xl border border-white/15 bg-white/[0.08] backdrop-blur-md shadow-[0_20px_60px_-34px_rgba(0,0,0,0.6)] px-4 py-5 md:px-8 md:py-6 grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-6">
+            {metrics.map((m, i) => (
+              <div key={i} className="flex flex-col items-center text-center md:border-l md:border-white/12 md:first:border-l-0 px-2">
+                <div className="font-serif font-semibold text-[1.7rem] md:text-[2.1rem] leading-none text-cream tracking-tight">{m.value}</div>
+                {'rating' in m && m.rating && (
+                  <div className="flex gap-0.5 text-coral mt-2">
+                    {[0, 1, 2, 3, 4].map((s) => (<Star key={s} className="w-3.5 h-3.5 fill-current" strokeWidth={0} />))}
+                  </div>
+                )}
+                <div className="mt-2.5 text-[0.58rem] md:text-[0.66rem] uppercase tracking-[0.18em] text-white/70">{m.label}</div>
               </div>
-            </div>
-          </Rise>
-        </div>
-        </div>
+            ))}
+          </div>
+        </Rise>
       </div>
     </section>
   );

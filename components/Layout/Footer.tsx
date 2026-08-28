@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Mail, Instagram, Clock, ArrowRight, MapPin } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
-import GrainyMesh from '../UI/GrainyMesh';
+import FadeIn from '../UI/FadeIn';
 
 interface FooterProps {
     isIndonesian?: boolean;
@@ -11,6 +11,33 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const currentYear = new Date().getFullYear();
+    const footerRef = useRef<HTMLElement>(null);
+
+    // As you reach the bottom, the footer rises up into the section above it —
+    // so it feels like the footer is pushing that section up. Settles to 0 at rest
+    // (no gap), and reveals the deep panel from below.
+    useEffect(() => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const el = footerRef.current;
+        if (!el) return;
+        let raf = 0;
+        const update = () => {
+            const rect = el.getBoundingClientRect();
+            const vh = window.innerHeight;
+            const t = Math.min(Math.max((vh - rect.top) / (vh * 0.62), 0), 1);
+            const shift = (1 - t) * 72; // starts lower, rises to its resting spot
+            el.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0)`;
+        };
+        const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+        return () => {
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('resize', onScroll);
+            cancelAnimationFrame(raf);
+        };
+    }, []);
 
     const socialClass = "w-11 h-11 rounded-full bg-white/[0.06] flex items-center justify-center text-[#C4B5A4] hover:bg-coral hover:text-cream transition-all duration-300 border border-white/10";
     const linkClass = "text-sm text-[#C4B5A4] hover:text-[#F7F0E6] transition-colors";
@@ -23,7 +50,11 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const goTo = (id: string) => smoothScrollToId(id, 80);
 
     return (
-        <footer className="relative pt-20 md:pt-24 pb-8 overflow-hidden isolate">
+        <footer
+            ref={footerRef}
+            className="relative z-20 mt-3 md:mt-6 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-20 md:pt-28 pb-8 overflow-hidden isolate will-change-transform shadow-[0_-44px_100px_-46px_rgba(0,0,0,0.85)]"
+            style={{ background: 'linear-gradient(180deg, #1B1230 0%, #120B1E 100%)' }}
+        >
 
             {/* Oversized faint wordmark */}
             <span
@@ -34,7 +65,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 MAYANOV
             </span>
 
-            <div className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
+            <FadeIn className="max-w-[1640px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
                 {/* Top — CTA line */}
                 <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-14 border-b border-white/10">
                     <h2 className="lg:col-span-8 font-serif font-semibold text-[#F7F0E6] text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
@@ -148,7 +179,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 <div className="pt-8 border-t border-white/10 text-center text-xs text-[#8C7F72] tracking-wide">
                     &copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}
                 </div>
-            </div>
+            </FadeIn>
         </footer>
     );
 };
