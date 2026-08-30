@@ -1,13 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import FadeIn from '../UI/FadeIn';
-import GrainyMesh from '../UI/GrainyMesh';
-import { Star } from 'lucide-react';
 import { trackEvent } from '../../services/analytics';
 import { useParallax } from '../UI/scroll';
-
-// Denser film grain for the aura-gradient panel.
-const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.95'/%3E%3C/svg%3E\")";
 
 interface AboutProps {
   isIndonesian?: boolean;
@@ -15,7 +9,7 @@ interface AboutProps {
 
 const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
   const photoRef = useRef<HTMLDivElement>(null);
-  useParallax(photoRef, -0.07);
+  useParallax(photoRef, -0.06);
 
   useEffect(() => {
     trackEvent(
@@ -26,110 +20,95 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
     );
   }, [isIndonesian]);
 
-  const handleReviewsClick = () => {
-    trackEvent(
-      'outbound_click',
-      { event_category: 'trust', event_label: 'google_reviews', market: isIndonesian ? 'ID' : 'Global' },
-      'ViewContent',
-      { content_name: 'Google Review', content_category: isIndonesian ? 'ID' : 'Global' }
-    );
-  };
-
-  const stats = [
-    { value: '1,500+', label: isIndonesian ? 'Orang Terbantu' : 'People Helped' },
-    { value: '3,200+', label: isIndonesian ? 'Jam Sesi' : 'Hours of Guidance' },
-    { value: '7,700+', label: isIndonesian ? 'Total Sesi' : 'Sessions Done' },
-  ];
-
   return (
     <section
       id="about"
-      className="py-16 md:py-24 relative overflow-hidden isolate border-b border-white/10"
+      className="py-20 md:py-28 lg:py-32 relative overflow-hidden isolate border-b border-white/10"
     >
       <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10">
         <FadeIn>
-          <div className="grid lg:grid-cols-12 gap-y-12 gap-x-10 lg:gap-x-16 items-start">
+          {/* oversized editorial heading — starts at the page margin */}
+          <h2 className="font-serif font-semibold text-cream tracking-[-0.03em] leading-[0.9] text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] xl:text-[7rem]">
+            {isIndonesian ? (
+              <>Halo, saya <span className="text-coral">Mayanov.</span></>
+            ) : (
+              <>Hi, I&rsquo;m <span className="text-coral">Mayanov.</span></>
+            )}
+          </h2>
 
-            {/* LEFT: editorial portrait */}
-            <div className="lg:col-span-5 relative">
-              {/* Oversized background numeral for depth */}
-              <span
-                aria-hidden
-                className="pointer-events-none select-none absolute -top-10 md:-top-14 -left-3 md:-left-8 font-serif font-bold text-cream/[0.07] leading-none z-0"
-                style={{ fontSize: 'clamp(7rem, 16vw, 13rem)' }}
-              >
-                15
-              </span>
-
-              <div ref={photoRef} className="relative z-10 will-change-transform">
-                <div className="relative overflow-hidden rounded-lg shadow-[0_18px_40px_-32px_rgba(42,35,32,0.35)]">
+          <div className="mt-12 md:mt-16 grid lg:grid-cols-12 gap-y-14 gap-x-10 lg:gap-x-20 items-start">
+            {/* LEFT — portrait with clean overlay */}
+            <div className="lg:col-span-5">
+              <div ref={photoRef} className="relative will-change-transform">
+                <div className="relative overflow-hidden rounded-xl shadow-[0_40px_80px_-50px_rgba(0,0,0,0.7)]">
                   <img
                     src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
                     alt="Mayanov"
-                    className="w-full h-[26rem] md:h-[32rem] object-cover object-top"
+                    className="w-full h-[30rem] md:h-[38rem] xl:h-[42rem] object-cover object-top"
                   />
-                  {/* warm bottom gradient to seat the caption */}
-                  <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(42,35,32,0.55) 0%, rgba(42,35,32,0) 42%)' }} />
-                  {/* overlaid caption */}
-                  <div className="absolute bottom-5 left-5 right-5">
-                    <span className="font-serif font-semibold text-cream text-lg tracking-tight">Mayanov</span>
+                  <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(16,10,24,0.72) 0%, rgba(16,10,24,0) 44%)' }} />
+                  <div className="absolute inset-x-6 bottom-6 flex items-end justify-between">
+                    <div>
+                      <div className="font-serif font-semibold text-cream text-xl md:text-2xl tracking-tight">Mayanov</div>
+                      <div className="mt-1 text-white/65 text-[0.62rem] uppercase tracking-[0.24em]">{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-serif font-bold text-coral text-[2.6rem] md:text-[3.2rem] leading-none">15+</div>
+                      <div className="mt-1 text-white/65 text-[0.58rem] uppercase tracking-[0.22em]">{isIndonesian ? 'Tahun Praktik' : 'Years Reading'}</div>
+                    </div>
                   </div>
                 </div>
-
               </div>
             </div>
 
-            {/* RIGHT: story */}
-            <div className="lg:col-span-7 lg:pt-6">
-              <h2 className="font-serif font-semibold text-cream tracking-[-0.03em] leading-[1.0] text-[2.5rem] md:text-[3.4rem]">
-                {isIndonesian ? (
-                  <>Halo, saya <span className="font-normal text-coral">Mayanov.</span></>
-                ) : (
-                  <>Hi, I&rsquo;m <span className="font-normal text-coral">Mayanov.</span></>
-                )}
-              </h2>
+            {/* RIGHT — story */}
+            <div className="lg:col-span-7 lg:pt-3">
+              {/* wellness hook */}
+              <p className="font-serif text-cream text-[1.65rem] md:text-[2.1rem] xl:text-[2.4rem] leading-[1.25] tracking-[-0.01em]">
+                {isIndonesian
+                  ? <>Tarot, buat saya, bukan soal takdir yang menakutkan — melainkan <span className="text-coral">ruang tenang</span> untuk berhenti sejenak, mendengarkan diri, dan menemukan kejernihan di tengah hiruk-pikuk.</>
+                  : <>Tarot, for me, isn&rsquo;t about scary fate — it&rsquo;s a <span className="text-coral">calm space</span> to pause, listen to yourself, and find clarity in the middle of the noise.</>}
+              </p>
 
-              <div className="mt-7 space-y-5 text-cream/75 font-light leading-relaxed max-w-xl">
-                {isIndonesian ? (
-                  <>
-                    <p className="text-xl text-cream/90">
-                      Saya telah mendalami seni membaca kartu Tarot sejak 2009 — lebih dari 15 tahun menjadikan Tarot sebagai medium untuk refleksi diri dan mencari solusi.
-                    </p>
-                    <p className="text-lg">
-                      Karena pada dasarnya pembacaan Tarot bukanlah sesederhana &lsquo;menerawang&rsquo; masa depan, melainkan menjadi sesi konsultasi yang mendewasakan baik Anda maupun saya.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-xl text-cream/90">
-                      For me, Tarot isn&rsquo;t about predicting a scary, fixed future. That&rsquo;s the old way.
-                    </p>
-                    <p className="text-lg">
-                      With more than 15 years of experience, my approach is{' '}
-                      <strong className="text-coral font-medium">analytical &amp; strategic</strong>. We uncover what&rsquo;s keeping you stuck, map out the situation, and build a concrete plan to move forward.
-                    </p>
-                  </>
-                )}
-              </div>
-
-              {/* Hanging editorial pull-quote */}
-              <blockquote className="relative mt-10 pl-8 md:pl-10">
-                <span aria-hidden className="absolute left-0 -top-4 font-serif text-coral/40 leading-none text-6xl md:text-7xl">&ldquo;</span>
-                <p className="font-serif font-medium text-cream text-2xl md:text-[2rem] leading-[1.2] tracking-[-0.02em]">
+              <div className="mt-8 grid sm:grid-cols-2 gap-x-10 gap-y-6 text-base md:text-lg text-cream/80 font-light leading-relaxed">
+                <p>
                   {isIndonesian
-                    ? 'Tujuan saya simpel: memberi kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
-                    : 'My goal is simple — the clarity you need to make decisions with confidence.'}
+                    ? <>Saya sudah mendalami seni membaca Tarot sejak 2009 — lebih dari <span className="text-cream font-normal">15 tahun</span> menjadikannya medium untuk refleksi diri dan menemukan solusi yang nyata.</>
+                    : <>I&rsquo;ve been reading Tarot since 2009 — over <span className="text-cream font-normal">15 years</span> using the cards as a medium for self-reflection and finding real solutions.</>}
                 </p>
-              </blockquote>
-
-              {/* Signature */}
-              <div className="mt-8 flex items-center gap-4">
-                <span className="h-px w-12 bg-coral/50" />
-                <span className="font-serif font-bold text-2xl md:text-3xl text-coral tracking-tight">Mayanov</span>
+                <p>
+                  {isIndonesian
+                    ? <>Sesi bersama saya terasa seperti <span className="text-cream font-normal">percakapan jujur</span>, bukan ramalan. Kita bedah situasimu, kenali pola yang bikin stuck, lalu susun langkah konkret — <span className="text-coral font-normal">analitis, hangat, tanpa menghakimi.</span></>
+                    : <>A session feels like an <span className="text-cream font-normal">honest conversation</span>, not a prediction. We unpack your situation, spot what keeps you stuck, and map concrete next steps — <span className="text-coral font-normal">analytical, warm, never judgmental.</span></>}
+                </p>
+                <p>
+                  {isIndonesian
+                    ? <>Kamu tidak perlu tahu apa-apa soal Tarot. Datang saja apa adanya — dengan pertanyaan besar, kegelisahan kecil, atau sekadar butuh didengar.</>
+                    : <>You don&rsquo;t need to know anything about Tarot. Just come as you are — with the big questions, the small worries, or simply the need to be heard.</>}
+                </p>
+                <p>
+                  {isIndonesian
+                    ? <>Yang kamu bawa pulang bukan ketakutan, tapi <span className="text-cream font-normal">ketenangan</span> dan arah yang lebih jelas untuk melangkah.</>
+                    : <>What you leave with isn&rsquo;t fear, but <span className="text-cream font-normal">calm</span> and a clearer sense of direction for your next step.</>}
+                </p>
               </div>
+
             </div>
           </div>
 
+          {/* full-width closing statement */}
+          <div className="mt-16 md:mt-24 pt-10 md:pt-14 border-t border-white/10">
+            <p className="font-serif text-cream text-[1.6rem] md:text-[2.3rem] lg:text-[2.7rem] xl:text-[3.1rem] leading-[1.2] tracking-[-0.015em] max-w-5xl">
+              {isIndonesian
+                ? <>Tujuan saya simpel: memberi <span className="text-coral">kejelasan</span> agar kamu bisa mengambil keputusan dengan percaya diri.</>
+                : <>My goal is simple — the <span className="text-coral">clarity</span> you need to make decisions with confidence.</>}
+            </p>
+            <div className="mt-8 md:mt-10 flex items-center gap-5">
+              <span className="font-serif font-bold text-2xl md:text-3xl text-coral tracking-tight">Mayanov</span>
+              <span className="h-px flex-1 bg-white/15" />
+              <span className="text-white/45 text-[0.66rem] uppercase tracking-[0.24em] whitespace-nowrap">{isIndonesian ? 'Pembaca Tarot · Sejak 2009' : 'Tarot Reader · Since 2009'}</span>
+            </div>
+          </div>
         </FadeIn>
       </div>
     </section>

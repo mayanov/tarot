@@ -212,23 +212,21 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </div>
       </div>
 
-      {/* ===== Stats bar pinned to the bottom ===== */}
-      <div className="w-full max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 pb-9 md:pb-12">
+      {/* ===== Metrics — free-standing editorial stats (no container) ===== */}
+      <div className="w-full max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 pb-10 md:pb-14">
         <Rise delay={860}>
-          <div className="rounded-2xl border border-white/15 bg-white/[0.06] backdrop-blur-md shadow-[0_20px_60px_-34px_rgba(0,0,0,0.6)] px-2 py-6 md:px-6 md:py-8 grid grid-cols-2 md:grid-cols-4 gap-y-8">
+          <div className="pt-7 md:pt-9 border-t border-white/15 grid grid-cols-2 md:grid-cols-4 gap-y-9 gap-x-6">
             {metrics.map((m, i) => (
-              <div key={i} className="group relative flex flex-col items-center text-center px-4 md:px-6 cursor-default md:border-l md:border-white/12 md:first:border-l-0">
-                <div className="relative font-serif font-semibold text-[2.3rem] md:text-[2.9rem] xl:text-[3.4rem] leading-none text-cream tracking-tight tabular-nums transition-all duration-300 group-hover:text-coral group-hover:-translate-y-1">
+              <div key={i} className="group flex flex-col items-center text-center cursor-default">
+                <span className="font-serif font-semibold text-[2.6rem] md:text-[3.4rem] xl:text-[4.2rem] leading-[0.85] text-cream tracking-[-0.02em] tabular-nums transition-colors duration-300 group-hover:text-coral">
                   <CountUp end={m.end} decimals={'decimals' in m ? m.decimals : 0} suffix={'suffix' in m ? m.suffix : ''} sep={sep} delay={i * 180} />
-                </div>
+                </span>
                 {'rating' in m && m.rating && (
                   <div className="flex gap-0.5 text-coral mt-2.5">
                     {[0, 1, 2, 3, 4].map((s) => (<Star key={s} className="w-3.5 h-3.5 fill-current" strokeWidth={0} />))}
                   </div>
                 )}
-                <div className="mt-3 text-[0.6rem] md:text-[0.68rem] uppercase tracking-[0.2em] text-white/60 group-hover:text-white transition-colors duration-300">{m.label}</div>
-                {/* accent underline grows on hover */}
-                <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] w-0 bg-coral rounded-full transition-all duration-300 group-hover:w-10" />
+                <div className="mt-3 text-[0.62rem] md:text-[0.7rem] uppercase tracking-[0.22em] text-white/55 group-hover:text-white/90 transition-colors duration-300">{m.label}</div>
               </div>
             ))}
           </div>
