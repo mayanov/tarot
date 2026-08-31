@@ -1,6 +1,7 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
 import GrainyMesh from '../UI/GrainyMesh';
+import SectionPanel from '../UI/SectionPanel';
 
 interface WhyChooseProps {
   isIndonesian?: boolean;
@@ -55,18 +56,18 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="why-choose"
-      className="py-16 md:py-24 relative overflow-hidden text-cream isolate"
+      className="py-10 md:py-16 relative overflow-hidden text-cream isolate"
     >
 
-      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
+      <SectionPanel>
         <FadeIn>
           <div className="grid lg:grid-cols-12 gap-y-12 lg:gap-x-16 items-start">
             {/* LEFT — heading */}
             <div className="lg:col-span-4">
-              <h2 className="font-serif font-semibold text-cream text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
+              <h2 className="font-serif font-semibold text-ink text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
                 {isIndonesian ? 'Kenapa baca tarot sama Mayanov?' : 'Why work with me?'}
               </h2>
-              <p className="mt-6 text-cream/60 font-light leading-relaxed max-w-sm">
+              <p className="mt-6 text-ink/65 font-light leading-relaxed max-w-sm">
                 {isIndonesian
                   ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan sesi curhat yang penuh insight.'
                   : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
@@ -74,18 +75,18 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* RIGHT — big numbered index */}
-            <div className="lg:col-span-7 lg:col-start-6 border-t border-cream/15">
+            <div className="lg:col-span-7 lg:col-start-6 border-t border-ink/15">
               {reasons.map((reason, index) => (
                 <FadeIn key={index} delay={index * 90} dir="right">
-                  <div className="group grid grid-cols-[auto_1fr] gap-x-5 md:gap-x-8 py-7 md:py-8 border-b border-cream/15">
-                    <span className="font-serif font-semibold text-2xl md:text-4xl leading-none text-coral/90 tabular-nums">
+                  <div className="group grid grid-cols-[auto_1fr] gap-x-5 md:gap-x-8 py-7 md:py-8 border-b border-ink/15">
+                    <span className="font-serif font-semibold text-2xl md:text-4xl leading-none text-coral-deep tabular-nums">
                       0{index + 1}
                     </span>
                     <div className="transition-transform duration-300 md:group-hover:translate-x-1.5">
-                      <h3 className="text-xl md:text-2xl font-serif font-semibold text-cream leading-snug tracking-tight">
+                      <h3 className="text-xl md:text-2xl font-serif font-semibold text-ink leading-snug tracking-tight">
                         {reason.title}
                       </h3>
-                      <p className="mt-2.5 text-cream/60 font-light leading-relaxed max-w-xl">
+                      <p className="mt-2.5 text-ink/65 font-light leading-relaxed max-w-xl">
                         {reason.description}
                       </p>
                     </div>
@@ -95,7 +96,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             </div>
           </div>
         </FadeIn>
-      </div>
+      </SectionPanel>
     </section>
   );
 };

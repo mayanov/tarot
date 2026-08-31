@@ -28,7 +28,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10">
         <FadeIn>
           {/* oversized editorial heading — starts at the page margin */}
-          <h2 className="font-serif font-semibold text-cream tracking-[-0.03em] leading-[0.9] text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] xl:text-[7rem]">
+          <h2 className="font-serif font-semibold text-cream text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
             {isIndonesian ? (
               <>Halo, saya <span className="text-coral">Mayanov.</span></>
             ) : (
@@ -70,7 +70,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                   : <>Tarot, for me, isn&rsquo;t about scary fate — it&rsquo;s a <span className="text-coral">calm space</span> to pause, listen to yourself, and find clarity in the middle of the noise.</>}
               </p>
 
-              <div className="mt-8 grid sm:grid-cols-2 gap-x-10 gap-y-6 text-base md:text-lg text-cream/80 font-light leading-relaxed">
+              <div className="mt-8 space-y-6 text-base md:text-lg text-cream font-light leading-relaxed">
                 <p>
                   {isIndonesian
                     ? <>Saya sudah mendalami seni membaca Tarot sejak 2009 — lebih dari <span className="text-cream font-normal">15 tahun</span> menjadikannya medium untuk refleksi diri dan menemukan solusi yang nyata.</>
@@ -97,8 +97,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           </div>
 
           {/* full-width closing statement */}
-          <div className="mt-16 md:mt-24 pt-10 md:pt-14 border-t border-white/10">
-            <p className="font-serif text-cream text-[1.6rem] md:text-[2.3rem] lg:text-[2.7rem] xl:text-[3.1rem] leading-[1.2] tracking-[-0.015em] max-w-5xl">
+          <div className="mt-16 md:mt-24">
+            <p className="font-serif text-cream text-[1.6rem] md:text-[2.3rem] lg:text-[2.7rem] xl:text-[3.1rem] leading-[1.2] tracking-[-0.015em]">
               {isIndonesian
                 ? <>Tujuan saya simpel: memberi <span className="text-coral">kejelasan</span> agar kamu bisa mengambil keputusan dengan percaya diri.</>
                 : <>My goal is simple — the <span className="text-coral">clarity</span> you need to make decisions with confidence.</>}
