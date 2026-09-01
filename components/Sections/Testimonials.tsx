@@ -1,7 +1,6 @@
-import React from 'react';
-import { Quote } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
-import SectionHeader from '../UI/SectionHeader';
 
 interface TestimonialsProps {
   isIndonesian?: boolean;
@@ -208,68 +207,80 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
 
   const reviews = isIndonesian ? reviewsID : reviewsEN;
 
-  // Split into two rows that drift in opposite directions.
-  const mid = Math.ceil(reviews.length / 2);
-  const rowTop = reviews.slice(0, mid);
-  const rowBottom = reviews.slice(mid);
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-  const edgeMask = 'linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%)';
+  // Reset to the first review when the market (and thus the list) changes.
+  useEffect(() => { setIndex(0); }, [isIndonesian]);
 
-  const Card: React.FC<{ review: { text: string; author: string; location: string } }> = ({ review }) => (
-    <article className="w-[290px] md:w-[360px] shrink-0 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm p-6 md:p-7 flex flex-col transition-colors duration-300 hover:border-white/25">
-      <Quote className="w-7 h-7 text-coral/50 mb-4 shrink-0" />
-      <p className="text-white text-sm md:text-[0.95rem] leading-relaxed font-normal flex-grow">
-        {review.text}
-      </p>
-      <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
-        <div>
-          <div className="font-serif font-semibold text-cream text-sm">{review.author}</div>
-          <div className="text-xs text-cream/70 tracking-wide">{review.location}</div>
-        </div>
-        <div className="flex gap-0.5 text-coral/80 shrink-0">
-          {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-3 h-3 fill-current" />))}
-        </div>
-      </div>
-    </article>
-  );
+  // Auto-advance one review every few seconds; pause on hover.
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % reviews.length), 5500);
+    return () => clearInterval(id);
+  }, [paused, reviews.length]);
 
-  const Row: React.FC<{ items: typeof reviews; reverse?: boolean; duration: number }> = ({ items, reverse, duration }) => (
-    <div className="group flex overflow-hidden">
-      <div
-        className="flex gap-5 pr-5 shrink-0 group-hover:[animation-play-state:paused]"
-        style={{ animation: `marquee ${duration}s linear infinite`, animationDirection: reverse ? 'reverse' : 'normal' }}
-      >
-        {[...items, ...items].map((r, i) => (<Card key={i} review={r} />))}
-      </div>
-    </div>
-  );
+  const go = (dir: number) => setIndex((i) => (i + dir + reviews.length) % reviews.length);
+  const review = reviews[index];
 
   return (
     <section id="testimonials" className="py-16 md:py-24 relative overflow-hidden isolate border-y border-white/10">
       <FadeIn>
         <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 mb-12 md:mb-14">
-          <SectionHeader
-            label={isIndonesian ? 'Testimoni' : 'Reviews'}
-            title={isIndonesian ? 'Apa kata mereka' : 'What others are saying'}
-            intro={isIndonesian
-              ? 'Begini kata mereka yang udah pernah tarot reading sama Mayanov.'
-              : "Don't just take my word for it — here's how others found their way with the cards."}
-            className="mb-6"
-          />
-          <div className="flex items-center gap-2 text-sm">
-            <div className="flex text-coral">
-              {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-8">
+            <h2 className="text-[2.5rem] md:text-[3.4rem] leading-[1.0] font-serif font-semibold text-cream tracking-[-0.03em]">
+              {isIndonesian ? 'Apa kata mereka' : 'What others are saying'}
+            </h2>
+            <div className="flex items-center gap-2 text-sm shrink-0 md:pb-2">
+              <div className="flex text-coral">
+                {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
+              </div>
+              <span className="text-cream font-medium ml-1">5.0</span>
+              <span className="text-cream/70">· {isIndonesian ? 'Rating rata-rata di Google' : 'Average rating on Google'}</span>
             </div>
-            <span className="text-cream font-medium ml-1">5.0</span>
-            <span className="text-cream/70">· {isIndonesian ? 'Rating rata-rata di Google' : 'Average rating on Google'}</span>
           </div>
         </div>
       </FadeIn>
 
-      {/* Two opposing marquee rows — neutral glass cards, edges fade into the page */}
-      <div className="space-y-5 md:space-y-6" style={{ maskImage: edgeMask, WebkitMaskImage: edgeMask }}>
-        <Row items={rowTop} duration={90} />
-        <Row items={rowBottom} reverse duration={110} />
+      {/* One review at a time, centered and auto-advancing */}
+      <div
+        className="max-w-3xl mx-auto px-4"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <div className="relative text-center min-h-[17rem] sm:min-h-[15rem] flex flex-col items-center justify-center">
+          <Quote className="w-9 h-9 md:w-10 md:h-10 text-coral/50 mb-5 shrink-0" />
+          <div key={index} className="animate-fade-up flex flex-col items-center">
+            <p className="text-cream text-lg md:text-2xl leading-relaxed md:leading-relaxed font-normal">
+              {review.text}
+            </p>
+            <div className="mt-7 flex gap-1 text-coral">
+              {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
+            </div>
+            <div className="mt-3 font-serif font-semibold text-cream text-base">{review.author}</div>
+          </div>
+        </div>
+
+        {/* controls */}
+        <div className="mt-8 flex items-center justify-center gap-6">
+          <button
+            type="button"
+            onClick={() => go(-1)}
+            aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
+            className="p-1 text-cream/70 hover:text-coral transition-colors duration-300"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="text-cream/60 text-sm tabular-nums tracking-wide">{index + 1} / {reviews.length}</span>
+          <button
+            type="button"
+            onClick={() => go(1)}
+            aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
+            className="p-1 text-cream/70 hover:text-coral transition-colors duration-300"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <div className="text-center mt-12 md:mt-14 px-4">

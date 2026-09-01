@@ -39,9 +39,9 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         };
     }, []);
 
-    const socialClass = "w-11 h-11 rounded-full bg-white/[0.06] flex items-center justify-center text-[#C4B5A4] hover:bg-coral hover:text-cream transition-all duration-300 border border-white/10";
-    const linkClass = "text-sm text-[#C4B5A4] hover:text-[#F7F0E6] transition-colors";
-    const labelClass = "text-[0.68rem] uppercase tracking-[0.24em] text-gold-soft mb-5";
+    const socialClass = "text-white hover:text-coral transition-colors duration-300";
+    const linkClass = "text-sm text-white hover:text-coral transition-colors";
+    const labelClass = "text-base font-bold uppercase tracking-[0.12em] text-white mb-4";
 
     const navLinks = isIndonesian
         ? [{ name: 'Tentang', id: 'about' }, { name: 'Layanan', id: 'services' }, { name: 'Testimoni', id: 'testimonials' }, { name: 'Event', id: 'events' }, { name: 'FAQ', id: 'faq' }]
@@ -52,30 +52,21 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     return (
         <footer
             ref={footerRef}
-            className="relative z-20 mt-3 md:mt-6 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-20 md:pt-28 pb-8 overflow-hidden isolate will-change-transform shadow-[0_-44px_100px_-46px_rgba(0,0,0,0.85)]"
+            className="relative z-20 mt-3 md:mt-6 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-44px_100px_-46px_rgba(0,0,0,0.85)]"
             style={{ background: 'linear-gradient(180deg, #1B1230 0%, #120B1E 100%)' }}
         >
 
-            {/* Oversized faint wordmark */}
-            <span
-                aria-hidden
-                className="pointer-events-none select-none absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-[26%] font-serif font-bold text-white/[0.035] leading-none tracking-[-0.05em] whitespace-nowrap -z-10"
-                style={{ fontSize: '21vw' }}
-            >
-                MAYANOV
-            </span>
-
             <FadeIn className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
                 {/* Top — CTA line */}
-                <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-14 border-b border-white/10">
-                    <h2 className="lg:col-span-8 font-serif font-semibold text-[#F7F0E6] text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
+                <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 border-b border-white/10">
+                    <h2 className="lg:col-span-8 font-serif font-semibold text-white text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
                         {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                     </h2>
                     <div className="lg:col-span-4 lg:justify-self-end">
                         <a
                             href="#services"
                             onClick={(e) => { e.preventDefault(); goTo('services'); }}
-                            className="group inline-flex items-center gap-2.5 pl-8 pr-6 py-4 rounded-full bg-coral text-cream text-base font-medium hover:bg-coral-deep hover:-translate-y-0.5 transition-all duration-200 shadow-[0_18px_44px_-16px_rgba(216,128,90,0.8)]"
+                            className="group inline-flex items-center gap-2.5 pl-8 pr-6 py-4 rounded-full bg-coral text-cream text-base font-medium hover:bg-coral-deep hover:-translate-y-0.5 transition-all duration-200 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.55)]"
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                             <span className="grid place-items-center w-7 h-7 rounded-full bg-cream/15 group-hover:bg-cream/25 transition-colors">
@@ -86,16 +77,16 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 </div>
 
                 {/* Middle — columns */}
-                <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-12 py-14 md:py-16">
+                <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-12 py-10 md:py-12">
                     {/* Brand */}
                     <div className="col-span-2 md:col-span-4">
                         <div className="flex items-center gap-2.5">
-                            <span className="grid place-items-center w-9 h-9 rounded-full border border-gold/40 text-gold-soft font-serif text-lg leading-none">M</span>
-                            <span className="text-2xl font-serif font-semibold text-[#F7F0E6] tracking-tight">
-                                Mayanov <span className="font-normal text-[#C4B5A4]">Tarot</span>
+                            <span className="grid place-items-center w-9 h-9 rounded-full border border-white/40 text-white font-serif text-lg leading-none">M</span>
+                            <span className="text-2xl font-serif font-semibold text-white tracking-tight">
+                                Mayanov <span className="font-normal text-white/70">Tarot</span>
                             </span>
                         </div>
-                        <p className="mt-5 text-sm text-[#C4B5A4] max-w-xs leading-relaxed font-light">
+                        <p className="mt-5 text-sm text-white/80 max-w-xs leading-relaxed font-light">
                             {isIndonesian
                                 ? 'Tarot sebagai ruang refleksi—analitis, hangat, dan membumi.'
                                 : 'Helping you find clarity in a chaotic world. Honest, kind, and strategic guidance.'}
@@ -124,18 +115,18 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                                     onClick={() => trackEvent('contact', { method: 'Email', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'Email Lead', content_category: isIndonesian ? 'ID' : 'Global' })}
                                     className={`${linkClass} flex items-start gap-2.5`}
                                 >
-                                    <Mail className="w-4 h-4 mt-0.5 text-gold-soft shrink-0" />
+                                    <Mail className="w-4 h-4 mt-0.5 text-white/70 shrink-0" />
                                     <span className="break-all">tarotreadingbymayanov@gmail.com</span>
                                 </a>
                             </li>
                             {isIndonesian && (
                                 <>
-                                    <li className="flex items-start gap-2.5 text-sm text-[#C4B5A4]">
-                                        <Clock className="w-4 h-4 mt-0.5 text-gold-soft shrink-0" />
+                                    <li className="flex items-start gap-2.5 text-sm text-white/80">
+                                        <Clock className="w-4 h-4 mt-0.5 text-white/70 shrink-0" />
                                         <span>Waktu Layanan: 11:00 – 20:00</span>
                                     </li>
-                                    <li className="flex items-start gap-2.5 text-sm text-[#C4B5A4]">
-                                        <MapPin className="w-4 h-4 mt-0.5 text-gold-soft shrink-0" />
+                                    <li className="flex items-start gap-2.5 text-sm text-white/80">
+                                        <MapPin className="w-4 h-4 mt-0.5 text-white/70 shrink-0" />
                                         <span>Jakarta Selatan</span>
                                     </li>
                                 </>
@@ -176,7 +167,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 </div>
 
                 {/* Bottom bar */}
-                <div className="pt-8 border-t border-white/10 text-center text-xs text-[#8C7F72] tracking-wide">
+                <div className="pt-6 border-t border-white/10 text-center text-xs text-white/60 tracking-wide">
                     &copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}
                 </div>
             </FadeIn>

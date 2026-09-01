@@ -13,6 +13,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 // Lazy Load below-the-fold components
 const Services = React.lazy(() => import('./components/Sections/Services'));
 const Testimonials = React.lazy(() => import('./components/Sections/Testimonials'));
+const Interlude = React.lazy(() => import('./components/Sections/Interlude'));
 const Events = React.lazy(() => import('./components/Sections/Events'));
 const FAQ = React.lazy(() => import('./components/Sections/FAQ'));
 const Disclaimer = React.lazy(() => import('./components/Sections/Disclaimer'));
@@ -359,6 +360,7 @@ function App() {
           <Services isIndonesian={isIndonesian} />
           <WhyChoose isIndonesian={isIndonesian} />
           <Testimonials isIndonesian={isIndonesian} />
+          <Interlude isIndonesian={isIndonesian} />
           <Events isIndonesian={isIndonesian} />
           <FAQ isIndonesian={isIndonesian} />
           <Disclaimer isIndonesian={isIndonesian} />

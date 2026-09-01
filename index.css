@@ -59,6 +59,20 @@ html.lenis body {
   50%      { opacity: 0.12; transform: scale(0.6); }
 }
 
+/* ---- Sky: drifting clouds + star shimmer ---- */
+@keyframes cloudA {
+  0%   { transform: translate3d(-7%, 0, 0); }
+  100% { transform: translate3d(9%, 0, 0); }
+}
+@keyframes cloudB {
+  0%   { transform: translate3d(7%, 0, 0); }
+  100% { transform: translate3d(-9%, 0, 0); }
+}
+@keyframes skyTwinkle {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.85; }
+}
+
 /* ---- Kinetic marquee ---- */
 @keyframes marquee {
   0%   { transform: translateX(0); }
