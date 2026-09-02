@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 
 interface HeroProps {
@@ -123,7 +123,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     const text = decimals > 0
       ? val.toFixed(decimals)
       : Math.round(val).toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep);
-    return <>{text}{suffix && <span className="text-coral">{suffix}</span>}</>;
+    return <>{text}{suffix && <span className="text-transparent [-webkit-text-stroke:1.5px_#ffffff]">{suffix}</span>}</>;
   };
 
   const sep = isIndonesian ? '.' : ',';
@@ -218,15 +218,10 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           <div className="pt-7 md:pt-9 border-t border-white/15 grid grid-cols-2 md:grid-cols-4 gap-y-9 gap-x-6">
             {metrics.map((m, i) => (
               <div key={i} className="group flex flex-col items-center text-center cursor-default">
-                <span className="font-serif font-semibold text-[2.6rem] md:text-[3.4rem] xl:text-[4.2rem] leading-[0.85] text-cream tracking-[-0.02em] tabular-nums transition-colors duration-300 group-hover:text-coral">
+                <span className="font-serif font-semibold text-[1.9rem] md:text-[2.5rem] xl:text-[3rem] leading-[0.85] text-cream tracking-[-0.02em] tabular-nums transition-colors duration-300 group-hover:text-coral">
                   <CountUp end={m.end} decimals={'decimals' in m ? m.decimals : 0} suffix={'suffix' in m ? m.suffix : ''} sep={sep} delay={i * 180} />
                 </span>
-                {'rating' in m && m.rating && (
-                  <div className="flex gap-0.5 text-coral mt-2.5">
-                    {[0, 1, 2, 3, 4].map((s) => (<Star key={s} className="w-3.5 h-3.5 fill-current" strokeWidth={0} />))}
-                  </div>
-                )}
-                <div className="mt-3 text-[0.62rem] md:text-[0.7rem] uppercase tracking-[0.22em] text-white/55 group-hover:text-white/90 transition-colors duration-300">{m.label}</div>
+                <div className="mt-3 text-[0.62rem] md:text-[0.7rem] uppercase tracking-[0.22em] text-white transition-colors duration-300">{m.label}</div>
               </div>
             ))}
           </div>

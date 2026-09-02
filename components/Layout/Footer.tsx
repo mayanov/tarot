@@ -9,6 +9,10 @@ interface FooterProps {
     isIndonesian?: boolean;
 }
 
+// Film-grain noise — same texture the site background uses.
+const GRAIN =
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E\")";
+
 const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const currentYear = new Date().getFullYear();
     const footerRef = useRef<HTMLElement>(null);
@@ -40,8 +44,8 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     }, []);
 
     const socialClass = "text-white hover:text-coral transition-colors duration-300";
-    const linkClass = "text-sm text-white hover:text-coral transition-colors";
-    const labelClass = "text-base font-bold uppercase tracking-[0.12em] text-white mb-4";
+    const linkClass = "text-[0.82rem] text-white hover:text-coral transition-colors";
+    const labelClass = "text-sm font-bold uppercase tracking-[0.12em] text-white mb-4";
 
     const navLinks = isIndonesian
         ? [{ name: 'Tentang', id: 'about' }, { name: 'Layanan', id: 'services' }, { name: 'Testimoni', id: 'testimonials' }, { name: 'Event', id: 'events' }, { name: 'FAQ', id: 'faq' }]
@@ -55,18 +59,21 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
             className="relative z-20 mt-3 md:mt-6 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-44px_100px_-46px_rgba(0,0,0,0.85)]"
             style={{ background: 'linear-gradient(180deg, #1B1230 0%, #120B1E 100%)' }}
         >
+            {/* film grain — matches the site background (two layers) */}
+            <div className="pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
+            <div className="pointer-events-none absolute inset-0 opacity-[0.12] mix-blend-screen" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
 
             <FadeIn className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
                 {/* Top — CTA line */}
                 <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 border-b border-white/10">
-                    <h2 className="lg:col-span-8 font-serif font-semibold text-white text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
+                    <h2 className="lg:col-span-8 font-serif font-semibold text-white text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]">
                         {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                     </h2>
                     <div className="lg:col-span-4 lg:justify-self-end">
                         <a
                             href="#services"
                             onClick={(e) => { e.preventDefault(); goTo('services'); }}
-                            className="group inline-flex items-center gap-2.5 pl-8 pr-6 py-4 rounded-full bg-coral text-cream text-base font-medium hover:bg-coral-deep hover:-translate-y-0.5 transition-all duration-200 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.55)]"
+                            className="group inline-flex items-center gap-2.5 pl-7 pr-5 py-3.5 rounded-full bg-coral text-cream text-sm font-medium hover:bg-coral-deep hover:-translate-y-0.5 transition-all duration-200 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.55)]"
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                             <span className="grid place-items-center w-7 h-7 rounded-full bg-cream/15 group-hover:bg-cream/25 transition-colors">
@@ -82,11 +89,11 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     <div className="col-span-2 md:col-span-4">
                         <div className="flex items-center gap-2.5">
                             <span className="grid place-items-center w-9 h-9 rounded-full border border-white/40 text-white font-serif text-lg leading-none">M</span>
-                            <span className="text-2xl font-serif font-semibold text-white tracking-tight">
+                            <span className="text-xl font-serif font-semibold text-white tracking-tight">
                                 Mayanov <span className="font-normal text-white/70">Tarot</span>
                             </span>
                         </div>
-                        <p className="mt-5 text-sm text-white/80 max-w-xs leading-relaxed font-light">
+                        <p className="mt-5 text-[0.82rem] text-white/80 max-w-xs leading-relaxed font-light">
                             {isIndonesian
                                 ? 'Tarot sebagai ruang refleksi—analitis, hangat, dan membumi.'
                                 : 'Helping you find clarity in a chaotic world. Honest, kind, and strategic guidance.'}
@@ -121,11 +128,11 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                             </li>
                             {isIndonesian && (
                                 <>
-                                    <li className="flex items-start gap-2.5 text-sm text-white/80">
+                                    <li className="flex items-start gap-2.5 text-[0.82rem] text-white/80">
                                         <Clock className="w-4 h-4 mt-0.5 text-white/70 shrink-0" />
                                         <span>Waktu Layanan: 11:00 – 20:00</span>
                                     </li>
-                                    <li className="flex items-start gap-2.5 text-sm text-white/80">
+                                    <li className="flex items-start gap-2.5 text-[0.82rem] text-white/80">
                                         <MapPin className="w-4 h-4 mt-0.5 text-white/70 shrink-0" />
                                         <span>Jakarta Selatan</span>
                                     </li>

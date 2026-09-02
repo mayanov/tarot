@@ -216,7 +216,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   // Auto-advance one review every few seconds; pause on hover.
   useEffect(() => {
     if (paused) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % reviews.length), 5500);
+    const id = setInterval(() => setIndex((i) => (i + 1) % reviews.length), 5000);
     return () => clearInterval(id);
   }, [paused, reviews.length]);
 
@@ -271,7 +271,6 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-cream/60 text-sm tabular-nums tracking-wide">{index + 1} / {reviews.length}</span>
           <button
             type="button"
             onClick={() => go(1)}

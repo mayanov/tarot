@@ -7,9 +7,8 @@ interface ServicesProps {
     isIndonesian?: boolean;
 }
 
-// Compact pill buttons for the price list (dark buttons on the light cards).
-const btnFilled = "inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-full bg-ink text-cream text-sm font-medium hover:bg-charcoal-deep transition-colors w-full sm:w-auto whitespace-nowrap";
-const btnOutline = "inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-full border border-ink/30 text-ink text-sm font-medium hover:bg-ink hover:text-cream transition-colors w-full sm:w-auto whitespace-nowrap";
+// One full-width dark order button per category card.
+const btnCard = "inline-flex w-full items-center justify-center gap-1.5 px-6 py-3 rounded-full bg-ink text-cream text-sm font-medium hover:bg-charcoal-deep transition-colors";
 
 // Film-grain noise (shared with the rest of the site) — keeps colour blocks from feeling flat.
 const GRAIN =
@@ -25,8 +24,8 @@ const MESHES = [
     'radial-gradient(80% 70% at 8% 8%, rgba(170,188,232,0.52) 0%, transparent 55%), radial-gradient(82% 72% at 92% 90%, rgba(246,180,134,0.52) 0%, transparent 55%), radial-gradient(78% 72% at 60% 46%, rgba(232,160,192,0.40) 0%, transparent 55%), linear-gradient(150deg, #F9F3F0 0%, #EEE9F2 100%)',
 ];
 
-// A single CTA that opens a dropdown of booking platforms (for services with 2 links).
-const BookingDropdown: React.FC<{ label: string; btnClass: string; options: { name: string; href: string; onClick?: () => void }[] }> = ({ label, btnClass, options }) => {
+// One order button that opens a dropdown listing a category's booking options.
+const BookingDropdown: React.FC<{ label: string; heading: string; btnClass: string; options: { name: string; href: string; onClick?: () => void }[] }> = ({ label, heading, btnClass, options }) => {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -35,18 +34,18 @@ const BookingDropdown: React.FC<{ label: string; btnClass: string; options: { na
         return () => document.removeEventListener('mousedown', h);
     }, []);
     return (
-        <div className="relative w-full sm:w-auto" ref={ref}>
+        <div className="relative w-full" ref={ref}>
             <button type="button" onClick={() => setOpen((o) => !o)} aria-haspopup="true" aria-expanded={open} className={btnClass}>
                 {label}
                 <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
             </button>
             {open && (
-                <div className="absolute right-0 mt-2 w-full sm:w-56 bg-[#20142F] border border-white/12 rounded-xl shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] p-1.5 z-30">
-                    <p className="px-3 pt-1.5 pb-2 text-[0.6rem] uppercase tracking-[0.18em] text-cream">Pilih platform booking</p>
+                <div className="absolute left-0 right-0 bottom-full mb-2 bg-[#20142F] border border-white/12 rounded-xl shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] p-1.5 z-30">
+                    <p className="px-3 pt-1.5 pb-2 text-[0.6rem] uppercase tracking-[0.18em] text-cream/70">{heading}</p>
                     {options.map((o) => (
                         <a key={o.name} href={o.href} target="_blank" rel="noopener noreferrer" onClick={o.onClick}
-                            className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-cream hover:bg-white/8 transition-colors">
-                            {o.name} <ExternalLink className="w-3.5 h-3.5 opacity-50" />
+                            className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-cream hover:bg-white/[0.08] transition-colors">
+                            <span>{o.name}</span> <ExternalLink className="w-3.5 h-3.5 opacity-50 shrink-0" />
                         </a>
                     ))}
                 </div>
@@ -54,6 +53,78 @@ const BookingDropdown: React.FC<{ label: string; btnClass: string; options: { na
         </div>
     );
 };
+
+// Flatten a category's offers into one list of booking options (for the single order button).
+const bookingOptions = (g: any) =>
+    g.offers.flatMap((o: any) =>
+        (o.book || []).map((b: any) => ({
+            name: `${o.name}${b.platform ? ' · ' + b.platform : ''} — ${o.price}`,
+            href: b.href,
+            onClick: b.onClick,
+        }))
+    );
+
+// One offer line: name (+ inline badge) on the left, price on the right.
+const OfferRow: React.FC<{ o: any }> = ({ o }) => (
+    <div className="py-4 md:py-5 border-t border-ink/10 first:border-t-0">
+        <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-2.5 flex-wrap min-w-0">
+                <h4 className="text-lg font-serif font-semibold text-ink leading-tight tracking-tight">
+                    {o.name}{o.sub && <span className="text-sm text-ink/55 font-sans font-normal ml-2">{o.sub}</span>}
+                </h4>
+                {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-full ${o.badgeTone || 'bg-ink/10 text-ink'}`}>{o.badge}</span>}
+            </div>
+            <div className="text-right shrink-0">
+                {o.oldPrice && <span className="text-xs text-ink/45 line-through leading-none block">{o.oldPrice}</span>}
+                <span className="text-lg md:text-xl font-serif font-semibold text-blue leading-none whitespace-nowrap">{o.price}</span>
+            </div>
+        </div>
+        {o.desc && <p className="mt-2 text-sm text-ink/65 font-light leading-relaxed">{o.desc}</p>}
+        {o.features && <p className="mt-1.5 text-xs text-ink/50 leading-relaxed">{o.features}</p>}
+    </div>
+);
+
+// The order button for a category — a direct link, or a dropdown when several options exist.
+const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndonesian }) => {
+    const opts = bookingOptions(g);
+    const label = isIndonesian ? 'Pesan Sekarang' : 'Book a Reading';
+    if (opts.length === 1) {
+        return (
+            <a href={opts[0].href} target="_blank" rel="noopener noreferrer" onClick={opts[0].onClick} className={btnCard}>
+                {label} <ChevronRight className="w-4 h-4" />
+            </a>
+        );
+    }
+    return <BookingDropdown label={label} heading={isIndonesian ? 'Pilih paket' : 'Choose an option'} btnClass={btnCard} options={opts} />;
+};
+
+// A standard vertical category card (used in the 3-up service row).
+const CategoryCard: React.FC<{ g: any; mesh: string; isIndonesian: boolean; delay?: number }> = ({ g, mesh, isIndonesian, delay = 0 }) => (
+    <div
+        id={g.id || undefined}
+        className="animate-fade-up scroll-mt-28 relative overflow-hidden isolate rounded-2xl border border-black/5 p-6 md:p-7 lg:p-8 flex flex-col shadow-[0_30px_70px_-40px_rgba(0,0,0,0.75)]"
+        style={{ background: mesh, animationDelay: `${delay}ms` }}
+    >
+        <div className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-[0.14]" style={{ backgroundImage: GRAIN, backgroundSize: '130px 130px' }} />
+        <div className="relative mb-5">
+            <div className="flex items-center gap-2.5 flex-wrap">
+                <h3 className="text-xl md:text-2xl font-serif font-semibold text-plum leading-none tracking-tight">{g.type}</h3>
+                <div className="flex flex-wrap gap-1.5">
+                    {g.tags.map((t: string) => (
+                        <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
+                    ))}
+                </div>
+            </div>
+            <p className="mt-2.5 text-sm text-ink/65 font-light leading-relaxed">{g.blurb}</p>
+        </div>
+        <div className="relative border-t border-ink/12">
+            {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
+        </div>
+        <div className="relative mt-auto pt-6">
+            <OrderButton g={g} isIndonesian={isIndonesian} />
+        </div>
+    </div>
+);
 
 const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     // --- Handlers for Global (USD) ---
@@ -88,16 +159,15 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     const groups = isIndonesian
         ? [
             {
-                id: 'service-special', type: 'Edisi Spesial', tags: ['PDF', 'MUSIMAN'],
+                id: 'service-special', type: 'Edisi Spesial', tags: ['PDF', 'MUSIMAN'], seasonal: true,
                 blurb: 'Bacaan tematik & musiman, dikirim rapi sebagai PDF via WhatsApp.',
-                priceLabel: 'Rp 250.000',
+                priceLabel: 'Rp 250K',
                 offers: [
                     {
-                        name: 'New Year Reading 2026', price: 'Rp 250.000',
-                        badge: 'Limited', badgeTone: 'bg-coral text-cream',
+                        name: 'New Year Reading 2026', price: 'Rp 250K',
                         desc: 'Siap hadapi tahun depan dengan strategi matang.',
                         features: 'General Overview 2026 · Harta, Tahta, Cinta · PDF via WhatsApp (2 hari kerja)',
-                        cta: <a href="https://forms.gle/xpMFUUhkyRW8FgY67" target="_blank" rel="noopener noreferrer" onClick={handleNewYear} className={btnFilled}>Pesan <ChevronRight className="w-4 h-4" /></a>,
+                        book: [{ href: 'https://forms.gle/xpMFUUhkyRW8FgY67', onClick: handleNewYear }],
                     },
                 ],
             },
@@ -107,18 +177,18 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 priceLabel: 'Rp 140rb–315rb',
                 offers: [
                     {
-                        name: '1 Pertanyaan', price: 'Rp 140.000',
-                        cta: <a href="https://lynk.id/mayanovtarot/AKbGK0X" target="_blank" rel="noopener noreferrer" onClick={handleChat1Question} className={btnOutline}>Pesan <ChevronRight className="w-4 h-4" /></a>,
+                        name: '1 Pertanyaan', price: 'Rp 140K',
+                        book: [{ href: 'https://lynk.id/mayanovtarot/AKbGK0X', onClick: handleChat1Question }],
                     },
                     {
-                        name: '3 Pertanyaan', price: 'Rp 315.000',
-                        cta: <a href="https://lynk.id/mayanovtarot/XBpJGb5" target="_blank" rel="noopener noreferrer" onClick={handleChat3Question} className={btnOutline}>Pesan <ChevronRight className="w-4 h-4" /></a>,
+                        name: '3 Pertanyaan', price: 'Rp 315K',
+                        book: [{ href: 'https://lynk.id/mayanovtarot/XBpJGb5', onClick: handleChat3Question }],
                     },
                     {
-                        name: 'Beli 3 Dapat 5 Pertanyaan', price: 'Rp 315.000',
+                        name: 'Beli 3 Dapat 5 Pertanyaan', price: 'Rp 315K',
                         badge: 'Promo', badgeTone: 'bg-coral/20 text-coral',
                         features: 'Bayar 3, dapat 5 pertanyaan (dipakai di hari yang sama).',
-                        cta: <a href="http://lynk.id/mayanovtarot/mm7ykgdwndez/" target="_blank" rel="noopener noreferrer" onClick={handlePromoBuy3Get5} className={btnFilled}>Ambil Promo <ChevronRight className="w-4 h-4" /></a>,
+                        book: [{ href: 'http://lynk.id/mayanovtarot/mm7ykgdwndez/', onClick: handlePromoBuy3Get5 }],
                     },
                 ],
             },
@@ -128,25 +198,27 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 priceLabel: 'Rp 220rb–360rb',
                 offers: [
                     {
-                        name: '30-Min Call', price: 'Rp 220.000',
-                        cta: <BookingDropdown label="Pesan" btnClass={btnOutline} options={[{ name: 'Lynk.id', href: 'https://lynk.id/mayanovtarot/9ANjbJE', onClick: handleCall30Lynk }, { name: 'Picktime', href: 'https://www.picktime.com/mayanovtarot', onClick: handleCall30Picktime }]} />,
+                        name: '30-Min Call', price: 'Rp 220K',
+                        book: [{ platform: 'Lynk.id', href: 'https://lynk.id/mayanovtarot/9ANjbJE', onClick: handleCall30Lynk }, { platform: 'Picktime', href: 'https://www.picktime.com/mayanovtarot', onClick: handleCall30Picktime }],
                     },
                     {
-                        name: '60-Min Call', price: 'Rp 360.000',
-                        cta: <BookingDropdown label="Pesan" btnClass={btnFilled} options={[{ name: 'Lynk.id', href: 'https://lynk.id/mayanovtarot/gw0kzbA', onClick: handleCall60Lynk }, { name: 'Picktime', href: 'https://www.picktime.com/mayanovtarot', onClick: handleCall60Picktime }]} />,
+                        name: '60-Min Call', price: 'Rp 360K',
+                        book: [{ platform: 'Lynk.id', href: 'https://lynk.id/mayanovtarot/gw0kzbA', onClick: handleCall60Lynk }, { platform: 'Picktime', href: 'https://www.picktime.com/mayanovtarot', onClick: handleCall60Picktime }],
                     },
                 ],
             },
             {
                 id: 'service-meetup', type: 'Sesi Tatap Muka', tags: ['JAKSEL', '1 JAM'],
-                blurb: 'Temu langsung di Jakarta Selatan — energi lebih terasa, analisa lebih personal.',
-                priceLabel: 'Rp 450.000',
+                blurb: <>Temu langsung di Jakarta Selatan — energi lebih terasa, analisa lebih personal. <a href="https://maps.app.goo.gl/LE2YwZiM2exhqunh8" target="_blank" rel="noopener noreferrer" className="text-ink border-b border-ink/40 hover:border-ink">Rekomendasi tempat</a></>,
+                priceLabel: 'Rp 450K',
                 offers: [
                     {
-                        name: 'Meetup Session', sub: '1 Jam · Jakarta Selatan', price: 'Rp 450.000',
-                        desc: 'Sesi tarot reading temu langsung. Jam pertama; berikutnya Rp 360rb/jam.',
-                        features: <><a href="https://maps.app.goo.gl/LE2YwZiM2exhqunh8" target="_blank" rel="noopener noreferrer" className="text-ink border-b border-ink/40 hover:border-ink">Rekomendasi tempat</a></>,
-                        cta: <a href="https://www.picktime.com/mayanovtarot" target="_blank" rel="noopener noreferrer" onClick={handleMeetup} className={btnFilled}>Book <ChevronRight className="w-4 h-4" /></a>,
+                        name: 'Jam Pertama', price: 'Rp 450K',
+                        book: [{ href: 'https://www.picktime.com/mayanovtarot', onClick: handleMeetup }],
+                    },
+                    {
+                        name: 'Jam Berikutnya', sub: 'per jam', price: 'Rp 360K',
+                        book: [],
                     },
                 ],
             },
@@ -161,7 +233,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         name: '3-Card Spread', price: '$12',
                         desc: 'A quick check-in on one specific question — direct and to the point.',
                         features: <>Photo of your spread · within 24h · <span className="text-ink font-medium">1 qty = 1 question</span></>,
-                        cta: <a href="https://www.paypal.com/ncp/payment/DSPX84KBN8GC2" target="_blank" rel="noopener noreferrer" onClick={handleBookBasic} className={btnOutline}>Book <ChevronRight className="w-4 h-4" /></a>,
+                        book: [{ href: 'https://www.paypal.com/ncp/payment/DSPX84KBN8GC2', onClick: handleBookBasic }],
                     },
                 ],
             },
@@ -174,7 +246,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         name: '5-Card Deep', price: '$20', badge: 'Most Popular', badgeTone: 'bg-coral text-cream',
                         desc: "The bigger picture — hidden influences and what's coming next, read in depth.",
                         features: <>5-card spread · high-res photo · priority 24h · <span className="text-ink font-medium">1 qty = 1 question</span></>,
-                        cta: <a href="https://www.paypal.com/ncp/payment/V6U4QMAU642KA" target="_blank" rel="noopener noreferrer" onClick={handleBookDeep} className={btnFilled}>Get Clarity <ChevronRight className="w-4 h-4" /></a>,
+                        book: [{ href: 'https://www.paypal.com/ncp/payment/V6U4QMAU642KA', onClick: handleBookDeep }],
                     },
                 ],
             },
@@ -187,11 +259,14 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         name: 'Live Session', sub: '30 min', price: '$45',
                         desc: 'Talk it out live on Google Meet and dive as deep as you want, together.',
                         features: <><span className="text-ink font-medium">Unlimited questions</span> · real-time feedback · natural flow</>,
-                        cta: <a href="https://www.picktime.com/mayanovtarotEn#book/date" target="_blank" rel="noopener noreferrer" onClick={handleBookLive} className={btnOutline}>Schedule <ChevronRight className="w-4 h-4" /></a>,
+                        book: [{ href: 'https://www.picktime.com/mayanovtarotEn#book/date', onClick: handleBookLive }],
                     },
                 ],
             },
         ];
+
+    const mainGroups = groups.filter((g: any) => !g.seasonal);
+    const seasonalGroups = groups.filter((g: any) => g.seasonal);
 
     return (
         <section
@@ -213,58 +288,51 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                     </div>
                 </FadeIn>
 
-                {/* ===== Pricelist — every category visible; aligned colour-coded cards ===== */}
-                <div className="grid sm:grid-cols-2 gap-5 lg:gap-6">
-                    {groups.map((g, i) => {
-                        return (
-                            <div
-                                key={g.type}
-                                id={g.id || undefined}
-                                className="animate-fade-up scroll-mt-28 relative overflow-hidden isolate rounded-2xl border border-black/5 p-6 md:p-7 lg:p-8 flex flex-col shadow-[0_30px_70px_-40px_rgba(0,0,0,0.75)]"
-                                style={{ background: MESHES[i % MESHES.length], animationDelay: `${i * 90}ms` }}
-                            >
-                                {/* film grain over the mesh */}
-                                <div className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-[0.14]" style={{ backgroundImage: GRAIN, backgroundSize: '130px 130px' }} />
+                {/* ===== Core services — three side by side ===== */}
+                <div className="grid gap-5 lg:gap-6 md:grid-cols-3">
+                    {mainGroups.map((g, i) => (
+                        <CategoryCard key={g.type} g={g} mesh={MESHES[i % MESHES.length]} isIndonesian={isIndonesian} delay={i * 90} />
+                    ))}
+                </div>
 
-                                {/* category header */}
-                                <div className="relative mb-5">
+                {/* ===== Seasonal / special edition — full-width feature card ===== */}
+                {seasonalGroups.map((g) => {
+                    const o = g.offers[0];
+                    const opts = bookingOptions(g);
+                    const label = isIndonesian ? 'Pesan Sekarang' : 'Book a Reading';
+                    return (
+                        <div
+                            key={g.type}
+                            id={g.id || undefined}
+                            className="animate-fade-up scroll-mt-28 relative overflow-hidden isolate rounded-2xl border border-black/5 p-6 md:p-8 lg:p-10 mt-5 lg:mt-6 shadow-[0_30px_70px_-40px_rgba(0,0,0,0.75)]"
+                            style={{ background: MESHES[3], animationDelay: '320ms' }}
+                        >
+                            <div className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-[0.14]" style={{ backgroundImage: GRAIN, backgroundSize: '130px 130px' }} />
+                            <div className="relative grid md:grid-cols-[1.6fr_auto] gap-6 md:gap-12 md:items-center">
+                                {/* left — identity + offer */}
+                                <div>
                                     <div className="flex items-center gap-2.5 flex-wrap">
-                                        <h3 className="text-xl md:text-2xl font-serif font-semibold text-ink leading-none tracking-tight">
-                                            {g.type}
-                                        </h3>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {g.tags.map((t) => (
-                                                <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
-                                            ))}
-                                        </div>
+                                        <span className="text-[0.66rem] uppercase tracking-[0.24em] text-plum font-semibold">{g.type}</span>
+                                        {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-full ${o.badgeTone || 'bg-ink/10 text-ink'}`}>{o.badge}</span>}
                                     </div>
-                                    <p className="mt-2.5 text-sm text-ink/65 font-light leading-relaxed">{g.blurb}</p>
+                                    <h3 className="mt-3 text-2xl md:text-3xl font-serif font-semibold text-ink leading-tight tracking-tight">{o.name}</h3>
+                                    <p className="mt-2.5 text-sm text-ink/65 font-light leading-relaxed max-w-xl">{g.blurb}</p>
+                                    {o.features && <p className="mt-2 text-xs text-ink/55 leading-relaxed max-w-xl">{o.features}</p>}
                                 </div>
-
-                                {/* offers — each with its own price + CTA */}
-                                <div className="relative border-t border-ink/12">
-                                    {g.offers.map((o, oi) => (
-                                        <div key={oi} className="py-4 md:py-5 border-t border-ink/10 first:border-t-0">
-                                            <div className="flex items-baseline justify-between gap-4">
-                                                <h4 className="text-lg font-serif font-semibold text-ink leading-tight tracking-tight">
-                                                    {o.name}{o.sub && <span className="text-sm text-ink/55 font-sans font-normal ml-2">{o.sub}</span>}
-                                                </h4>
-                                                <div className="text-right shrink-0">
-                                                    {o.oldPrice && <span className="text-xs text-ink/45 line-through leading-none block">{o.oldPrice}</span>}
-                                                    <span className="text-xl md:text-2xl font-serif font-semibold text-ink leading-none whitespace-nowrap">{o.price}</span>
-                                                </div>
-                                            </div>
-                                            {o.badge && <span className={`inline-block mt-2 text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-full ${o.badgeTone || 'bg-ink/10 text-ink'}`}>{o.badge}</span>}
-                                            {o.desc && <p className="mt-2 text-sm text-ink/65 font-light leading-relaxed">{o.desc}</p>}
-                                            {o.features && <p className="mt-1.5 text-xs text-ink/50 leading-relaxed">{o.features}</p>}
-                                            <div className="mt-4">{o.cta}</div>
-                                        </div>
-                                    ))}
+                                {/* right — price + button */}
+                                <div className="md:text-right shrink-0">
+                                    {o.oldPrice && <span className="text-sm text-ink/45 line-through block">{o.oldPrice}</span>}
+                                    <div className="text-2xl md:text-3xl font-serif font-semibold text-blue leading-none whitespace-nowrap">{o.price}</div>
+                                    <div className="mt-5 md:w-60 md:ml-auto">
+                                        <a href={opts[0].href} target="_blank" rel="noopener noreferrer" onClick={opts[0].onClick} className={btnCard}>
+                                            {label} <ChevronRight className="w-4 h-4" />
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                        );
-                    })}
-                </div>
+                        </div>
+                    );
+                })}
 
                 {/* ===== How it works ===== */}
                 <FadeIn>
