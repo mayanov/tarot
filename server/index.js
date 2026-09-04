@@ -28,7 +28,9 @@ app.use(cors({
         'http://127.0.0.1:3100',
         'https://tarotreadingbymayanov.com',
         'https://www.tarotreadingbymayanov.com',
-        'https://mayanov-tarot.onrender.com'
+        'https://mayanov-tarot.onrender.com',
+        'https://mayanov-tarot.vercel.app',
+        /\.vercel\.app$/,
     ],
     methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
     allowedHeaders: ['Content-Type', 'x-api-key', 'Authorization', 'Authorization-Token']
