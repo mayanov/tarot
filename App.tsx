@@ -303,7 +303,7 @@ function App() {
   if (isGeoError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-cream text-ink p-4 text-center">
-        <div className="bg-surface-1 p-8 rounded-2xl border border-line max-w-md shadow-[0_24px_60px_-30px_rgba(42,35,32,0.4)]">
+        <div className="bg-paper p-8 rounded-2xl border border-line max-w-md shadow-[0_24px_60px_-30px_rgba(42,35,32,0.4)]">
           <div className="mx-auto mb-4 w-12 h-16 border-2 border-terracotta rounded-lg flex items-center justify-center relative bg-terracotta/10 animate-float">
             <div className="w-8 h-12 border border-terracotta/50 rounded-sm flex items-center justify-center">
               <span className="text-xl">⚡</span>
@@ -334,7 +334,7 @@ function App() {
 
   if (isNotFound) {
     return (
-      <React.Suspense fallback={<div className="min-h-screen bg-bg-dark" />}>
+      <React.Suspense fallback={<div className="min-h-screen bg-cream" />}>
         <NotFound isIndonesian={isIndonesian} />
       </React.Suspense>
     );
@@ -379,7 +379,7 @@ function App() {
         {showBackToTop && (
           <button
             onClick={scrollToTop}
-            className="p-3 rounded-full bg-surface-1 text-terracotta shadow-[0_10px_30px_-12px_rgba(42,35,32,0.5)] hover:bg-terracotta hover:text-paper transition-all duration-300 border border-line hover:-translate-y-1"
+            className="p-3 rounded-full bg-paper text-terracotta shadow-[0_10px_30px_-12px_rgba(42,35,32,0.5)] hover:bg-terracotta hover:text-paper transition-all duration-300 border border-line hover:-translate-y-1"
             title="Back to Top"
           >
             <ArrowUp className="w-5 h-5" />

@@ -43,7 +43,7 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-2 w-56 bg-surface-1 border border-line rounded-xl shadow-xl overflow-hidden p-1.5 z-50" role="listbox">
+        <div className="absolute top-full right-0 mt-2 w-56 bg-paper border border-line rounded-xl shadow-xl overflow-hidden p-1.5 z-50" role="listbox">
           <p className="px-3 pt-1.5 pb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-taupe">Choose your version</p>
           {([['global', false], ['id', true]] as const).map(([key, toID]) => {
             const r = REGIONS[key];
