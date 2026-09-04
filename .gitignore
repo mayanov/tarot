@@ -31,3 +31,4 @@ full_analytics_response*.json
 .vercel
 .claude/
 .env*
+server/data/

@@ -142,8 +142,10 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
       <span className="grid place-items-center w-8 h-8 shrink-0 rounded-full border border-coral/50 text-coral font-serif text-lg leading-none transition-colors duration-300 group-hover:bg-coral group-hover:text-ink">
         M
       </span>
-      <span className="text-lg font-serif font-bold uppercase tracking-tight text-coral">
-        Mayanov <span className="text-transparent [-webkit-text-stroke:1px_#FFFFFF]">Tarot</span>
+      <span className={`overflow-hidden whitespace-nowrap transition-[max-width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled ? 'max-w-[220px]' : 'max-w-0'}`}>
+        <span className="pl-0.5 text-lg font-serif font-bold uppercase tracking-tight text-coral">
+          Mayanov <span className="text-transparent [-webkit-text-stroke:1px_#FFFFFF]">Tarot</span>
+        </span>
       </span>
     </div>
   );
@@ -151,72 +153,79 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-            ? 'bg-white/[0.07] backdrop-blur-xl py-3 border-b border-white/10 shadow-[0_8px_30px_-16px_rgba(0,0,0,0.55)]'
-            : 'bg-transparent py-5'
-          }`}
+        className={`fixed left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'top-2 md:top-3' : 'top-3 md:top-5'}`}
       >
-        <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 flex justify-between items-center relative z-50">
-          {/* LEFT — wordmark (collapses at the top so links sit at the left edge) + nav links */}
-          <div className="flex items-center min-w-0">
-            {/* Logo — hidden at the top (it lives in the hero), slides up into the nav on scroll */}
-            <div className={`transition-all duration-500 ease-out overflow-hidden ${isScrolled ? 'opacity-100 max-w-[240px] mr-8 lg:mr-10' : 'opacity-0 max-w-0 mr-0 pointer-events-none'}`}>
-              <Wordmark />
+        <div className="max-w-[1280px] xl:max-w-[1400px] mx-auto px-4 md:px-6">
+          <div
+            className={`relative flex justify-between items-center gap-3 rounded-full pl-4 pr-2 py-2 transition-all duration-300 ${isScrolled
+                ? 'bg-plum-deep/75 backdrop-blur-xl shadow-[0_22px_50px_-24px_rgba(0,0,0,0.75)]'
+                : 'bg-white/[0.06] backdrop-blur-md shadow-[0_12px_34px_-22px_rgba(0,0,0,0.55)]'
+              }`}
+          >
+            {/* LEFT — brand badge (always) + nav links */}
+            <div className="flex items-center min-w-0">
+              <div className="mr-2 lg:mr-4 shrink-0">
+                <Wordmark />
+              </div>
+
+              <nav className="hidden lg:flex items-center gap-0.5">
+                {navLinks.map((link, i) => (
+                  <div
+                    key={link.name}
+                    className="relative group/menu animate-[navSlide_0.5s_cubic-bezier(0.22,1,0.36,1)_both]"
+                    style={{ animationDelay: `${i * 70 + 150}ms` }}
+                  >
+                    <button
+                      onClick={() => scrollToSection(link.id)}
+                      className="flex items-center gap-1 px-3.5 py-2 rounded-full text-sm font-medium tracking-wide whitespace-nowrap text-cream/85 hover:text-cream hover:bg-white/10 transition-colors duration-200"
+                    >
+                      {link.name}
+                      {link.children && <ChevronDown className="w-3 h-3 group-hover/menu:rotate-180 transition-transform duration-200" />}
+                    </button>
+
+                    {link.children && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 transform translate-y-2 group-hover/menu:translate-y-0 w-48">
+                        <div className="bg-plum-deep/90 border border-white/10 backdrop-blur-xl rounded-2xl shadow-[0_24px_50px_-24px_rgba(0,0,0,0.8)] overflow-hidden p-2 flex flex-col gap-0.5">
+                          {link.children.map(child => (
+                            <button
+                              key={child.name}
+                              onClick={(e) => { e.stopPropagation(); scrollToSection(child.id); }}
+                              className="text-left px-4 py-2 text-sm text-cream/75 hover:text-cream hover:bg-white/10 rounded-lg transition-colors"
+                            >
+                              {child.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </nav>
             </div>
 
-            <nav className="hidden lg:flex items-center space-x-6 xl:space-x-7">
-              {navLinks.map((link) => (
-                <div key={link.name} className="relative group/menu">
-                  <button
-                    onClick={() => scrollToSection(link.id)}
-                    className={`flex items-center gap-1 text-sm font-medium transition duration-300 tracking-wide whitespace-nowrap py-2 ${onDark ? 'text-cream hover:text-coral' : 'text-ink hover:text-coral'}`}
-                  >
-                    {link.name}
-                    {link.children && <ChevronDown className="w-3 h-3 group-hover/menu:rotate-180 transition-transform duration-200" />}
-                  </button>
+            {/* RIGHT — region switcher + Book Now */}
+            <div className="hidden lg:flex items-center gap-2 shrink-0">
+              {onSwitchRegion && (
+                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} onDark={onDark} />
+              )}
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
+                className="px-5 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap"
+              >
+                {isIndonesian ? 'Pesan Sekarang' : 'Book Now'}
+              </button>
+            </div>
 
-                  {link.children && (
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 transform translate-y-2 group-hover/menu:translate-y-0 w-48">
-                      <div className="bg-surface-1 border border-line rounded-xl shadow-xl overflow-hidden p-2 flex flex-col gap-1">
-                        {link.children.map(child => (
-                          <button
-                            key={child.name}
-                            onClick={(e) => { e.stopPropagation(); scrollToSection(child.id); }}
-                            className="text-left px-4 py-2 text-sm text-ink-soft hover:text-terracotta hover:bg-paper-2 rounded-lg transition-colors"
-                          >
-                            {child.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </nav>
-          </div>
-
-          {/* RIGHT — region switcher + Book Now (always right) */}
-          <div className="hidden lg:flex items-center gap-4 xl:gap-5">
-            {onSwitchRegion && (
-              <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} onDark={onDark} />
+            {/* Mobile Menu Toggle */}
+            {!isMobileMenuOpen && (
+              <button
+                className="lg:hidden transition p-2 text-cream hover:text-coral"
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                <Menu className="w-6 h-6" />
+              </button>
             )}
-            <button
-              onClick={() => scrollToSection('services')}
-              className={`px-6 py-2.5 rounded-full bg-ink text-cream text-sm font-medium hover:bg-charcoal-deep transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap ${onDark ? 'border border-cream/30' : 'border border-ink/10'}`}
-            >
-              {isIndonesian ? 'Pesan Sekarang' : 'Book Now'}
-            </button>
           </div>
-
-          {/* Mobile Menu Toggle */}
-          {!isMobileMenuOpen && (
-            <button
-              className={`lg:hidden transition p-2 ${onDark ? 'text-cream hover:text-coral' : 'text-ink hover:text-coral'}`}
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-          )}
         </div>
       </header>
 
@@ -297,8 +306,8 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             </div>
           ))}
           <button
-            onClick={() => scrollToSection('services')}
-            className="mt-4 px-10 py-4 rounded-full bg-ink text-cream font-medium text-lg hover:bg-charcoal-deep transition shrink-0"
+            onClick={() => { setIsMobileMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
+            className="mt-4 px-10 py-4 rounded-full bg-coral text-ink font-semibold text-lg hover:bg-coral-deep hover:text-cream transition shrink-0"
           >
             {isIndonesian ? 'Pesan Pembacaan' : 'Book a Reading'}
           </button>

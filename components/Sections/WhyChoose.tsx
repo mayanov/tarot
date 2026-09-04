@@ -1,7 +1,6 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
-import GrainyMesh from '../UI/GrainyMesh';
-import SectionPanel from '../UI/SectionPanel';
+import { Compass, HeartHandshake, Globe, Lock, Award, Zap } from 'lucide-react';
 
 interface WhyChooseProps {
   isIndonesian?: boolean;
@@ -11,6 +10,8 @@ interface ReasonItem {
   title: string;
   description: string;
 }
+
+const ICONS = [Compass, HeartHandshake, Globe, Lock, Award, Zap];
 
 const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   const reasonsGlobal: ReasonItem[] = [
@@ -24,11 +25,19 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
     },
     {
       title: 'Here For You, Anywhere',
-      description: 'Get detailed readings via email or meet face-to-face on Google Meet.',
+      description: 'Get detailed readings via chat, call, or meet face-to-face — whatever suits you.',
     },
     {
       title: 'Strictly Confidential',
       description: 'What we discuss stays between us. Your privacy is my top priority.',
+    },
+    {
+      title: 'Rooted in Real Experience',
+      description: 'Reading the cards since 2009 — over 15 years of grounded, practical wisdom.',
+    },
+    {
+      title: 'Honest, Even When It Stings',
+      description: 'You get the real read — not just what is comfortable to hear — always delivered with care.',
     },
   ];
 
@@ -49,6 +58,14 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
       title: 'Rahasia Terjamin',
       description: 'Apa yang kita bahas berhenti di antara kita. Cerita kamu dijamin aman.',
     },
+    {
+      title: 'Berpengalaman Sejak 2009',
+      description: 'Lebih dari 15 tahun membaca kartu — insight yang teruji, bukan sekadar tebakan.',
+    },
+    {
+      title: 'Jujur, Meski Kadang Nampol',
+      description: 'Kamu dapat bacaan apa adanya — bukan cuma yang enak didengar — tapi selalu disampaikan dengan hati.',
+    },
   ];
 
   const reasons = isIndonesian ? reasonsID : reasonsGlobal;
@@ -58,45 +75,43 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
       id="why-choose"
       className="py-10 md:py-16 relative overflow-hidden text-cream isolate"
     >
-
-      <SectionPanel>
-        <FadeIn>
-          <div className="grid lg:grid-cols-12 gap-y-12 lg:gap-x-16 items-start">
-            {/* LEFT — heading */}
-            <div className="lg:col-span-4">
-              <h2 className="font-serif font-semibold text-ink text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
+        <div className="relative overflow-hidden rounded-xl md:rounded-2xl border border-white/10 bg-plum-deep/80 backdrop-blur-md shadow-[0_40px_120px_-55px_rgba(0,0,0,0.85)] px-6 sm:px-10 md:px-14 lg:px-16 py-14 md:py-20">
+          <FadeIn>
+            {/* header — title left, subtitle right */}
+            <div className="grid lg:grid-cols-12 gap-y-5 lg:gap-x-16 items-end mb-10 md:mb-14">
+              <h2 className="lg:col-span-7 font-serif font-semibold text-cream text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
                 {isIndonesian ? 'Kenapa baca tarot sama Mayanov?' : 'Why work with me?'}
               </h2>
-              <p className="mt-6 text-ink/65 font-light leading-relaxed max-w-sm">
+              <p className="lg:col-span-4 lg:col-start-9 text-cream/70 font-light leading-relaxed lg:pb-2">
                 {isIndonesian
                   ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan sesi curhat yang penuh insight.'
                   : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
               </p>
             </div>
 
-            {/* RIGHT — big numbered index */}
-            <div className="lg:col-span-7 lg:col-start-6 border-t border-ink/15">
-              {reasons.map((reason, index) => (
-                <FadeIn key={index} delay={index * 90} dir="right">
-                  <div className="group grid grid-cols-[auto_1fr] gap-x-5 md:gap-x-8 py-7 md:py-8 border-b border-ink/15">
-                    <span className="font-serif font-semibold text-2xl md:text-4xl leading-none text-coral-deep tabular-nums">
-                      0{index + 1}
-                    </span>
-                    <div className="transition-transform duration-300 md:group-hover:translate-x-1.5">
-                      <h3 className="text-xl md:text-2xl font-serif font-semibold text-ink leading-snug tracking-tight">
+            {/* feature cards — 6 in a responsive grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+              {reasons.map((reason, index) => {
+                const Icon = ICONS[index % ICONS.length];
+                return (
+                  <FadeIn key={index} delay={index * 70} dir="up">
+                    <div className="group h-full rounded-2xl bg-white/[0.08] p-6 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.12]">
+                      <Icon className="w-7 h-7 text-coral transition-transform duration-300 group-hover:scale-110" strokeWidth={1.75} />
+                      <h3 className="mt-5 text-lg md:text-xl font-serif font-semibold text-cream leading-snug tracking-tight">
                         {reason.title}
                       </h3>
-                      <p className="mt-2.5 text-ink/65 font-light leading-relaxed max-w-xl">
+                      <p className="mt-2.5 text-sm md:text-[0.95rem] text-cream font-light leading-relaxed">
                         {reason.description}
                       </p>
                     </div>
-                  </div>
-                </FadeIn>
-              ))}
+                  </FadeIn>
+                );
+              })}
             </div>
-          </div>
-        </FadeIn>
-      </SectionPanel>
+          </FadeIn>
+        </div>
+      </div>
     </section>
   );
 };

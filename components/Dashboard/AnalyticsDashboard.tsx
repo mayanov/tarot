@@ -8,6 +8,7 @@ import { initGoogleAPI, loginToGoogle, fetchGA4Data } from '../../services/ga4';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { format, parseISO } from 'date-fns';
+import BookingsView from './BookingsView';
 
 type DateRangePreset = '7D' | '30D' | 'THIS_MONTH' | 'CUSTOM';
 
@@ -155,7 +156,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     // User Management State
     // User Management State
     // View State
-    const [activeView, setActiveView] = useState<'analytics' | 'users'>('analytics');
+    const [activeView, setActiveView] = useState<'analytics' | 'users' | 'bookings'>('analytics');
     const [showAddUserModal, setShowAddUserModal] = useState(false); // New state for Add User Popup
     const [userList, setUserList] = useState<string[]>([]);
     const [isLoadingUsers, setIsLoadingUsers] = useState(false);
@@ -287,6 +288,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         <span>Manage Users</span>
                     </button>
 
+                    <button
+                        onClick={() => setActiveView('bookings')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'bookings' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-white hover:bg-white/5'}`}>
+                        <Calendar size={18} />
+                        <span>Bookings</span>
+                    </button>
+
                     {/* Disabled Menu */}
                     <button className="w-full flex items-center gap-3 px-4 py-3 text-text-subtle/50 cursor-not-allowed rounded-xl font-medium text-sm">
                         <RefreshCcw size={18} />
@@ -312,7 +320,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
             <main className="flex-1 overflow-y-auto relative bg-bg-deep">
                 {/* Mobile Header (Hamburger would go here if we were doing mobile fully, keeping simple for now) */}
                 {/* MAIN CONTENT SWITCHER */}
-                {activeView === 'users' ? (
+                {activeView === 'bookings' ? (
+                    <BookingsView />
+                ) : activeView === 'users' ? (
                     /* USER MANAGEMENT VIEW (Full Page) */
                     <div className="space-y-6 pt-24 md:pt-12 p-6 md:p-12 max-w-5xl mx-auto">
                         <div className="pb-6 border-b border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

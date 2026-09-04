@@ -84,18 +84,30 @@ const OfferRow: React.FC<{ o: any }> = ({ o }) => (
     </div>
 );
 
-// The order button for a category — a direct link, or a dropdown when several options exist.
+// Maps a pricelist category to a booking-modal service id (by category name so it
+// works for both markets). Unmapped categories (e.g. Call, with 30/60 options) open
+// the booking modal on its service picker.
+const BOOKING_MAP: Record<string, string> = {
+    'Edisi Spesial': 'special',
+    'Konsultasi via Chat': 'chat',
+    'Panggilan Suara & Video': 'call',
+    'Sesi Tatap Muka': 'meetup',
+    '3-Card Spread': '3card',
+    '5-Card Deep': '5card',
+    'Live Session': 'live',
+};
+
+const openBooking = (serviceId?: string) =>
+    window.dispatchEvent(new CustomEvent('open-booking', { detail: serviceId ? { serviceId } : {} }));
+
+// The order button for a category — opens the on-site booking flow.
 const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndonesian }) => {
-    const opts = bookingOptions(g);
     const label = isIndonesian ? 'Pesan Sekarang' : 'Book a Reading';
-    if (opts.length === 1) {
-        return (
-            <a href={opts[0].href} target="_blank" rel="noopener noreferrer" onClick={opts[0].onClick} className={btnCard}>
-                {label} <ChevronRight className="w-4 h-4" />
-            </a>
-        );
-    }
-    return <BookingDropdown label={label} heading={isIndonesian ? 'Pilih paket' : 'Choose an option'} btnClass={btnCard} options={opts} />;
+    return (
+        <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={btnCard}>
+            {label} <ChevronRight className="w-4 h-4" />
+        </button>
+    );
 };
 
 // A standard vertical category card (used in the 3-up service row).
@@ -145,14 +157,18 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
 
     const steps = isIndonesian
         ? [
-            { title: 'Pilih Layanan', desc: 'Cari paket yang sesuai kebutuhanmu saat ini.' },
-            { title: 'Ceritakan Masalahmu', desc: 'Ceritakan secara singkat konteks permasalahan yang ingin ditanyakan.' },
-            { title: 'Dapat Pencerahan', desc: 'Dapatkan hasil reading kamu sesuai dengan layanan yang kamu pilih.' },
+            { title: 'Pilih Layanan', desc: 'Pilih paket yang paling sesuai dengan kebutuhanmu saat ini.' },
+            { title: 'Booking & Bayar', desc: 'Amankan slotmu lewat platform booking pilihanmu.' },
+            { title: 'Ceritakan Masalahmu', desc: 'Bagikan konteks singkat & pertanyaan yang ingin ditanyakan.' },
+            { title: 'Sesi Pembacaan', desc: 'Kartu dibuka & dibahas sesuai layanan yang kamu pilih.' },
+            { title: 'Langkah Konkret', desc: 'Pulang dengan kejelasan & arah yang bisa langsung dijalankan.' },
         ]
         : [
-            { title: 'Pick a Reading', desc: 'Choose the option that feels right for you.' },
-            { title: 'Send Your Question', desc: "Tell me what's on your mind in the order notes." },
-            { title: 'Get Your Answers', desc: 'Receive your personal insights & guidance.' },
+            { title: 'Pick a Reading', desc: 'Choose the option that fits where you are right now.' },
+            { title: 'Book & Pay', desc: 'Secure your slot through your preferred platform.' },
+            { title: 'Share Your Question', desc: 'Tell me the context and what you want to explore.' },
+            { title: 'The Reading', desc: 'We open the cards and unpack them together.' },
+            { title: 'Walk Away Clear', desc: 'Leave with concrete next steps and direction.' },
         ];
 
     // Editorial accordion pricelist — each service type is a row that expands to its options.
@@ -298,7 +314,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 {/* ===== Seasonal / special edition — full-width feature card ===== */}
                 {seasonalGroups.map((g) => {
                     const o = g.offers[0];
-                    const opts = bookingOptions(g);
                     const label = isIndonesian ? 'Pesan Sekarang' : 'Book a Reading';
                     return (
                         <div
@@ -324,9 +339,9 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     {o.oldPrice && <span className="text-sm text-ink/45 line-through block">{o.oldPrice}</span>}
                                     <div className="text-2xl md:text-3xl font-serif font-semibold text-blue leading-none whitespace-nowrap">{o.price}</div>
                                     <div className="mt-5 md:w-60 md:ml-auto">
-                                        <a href={opts[0].href} target="_blank" rel="noopener noreferrer" onClick={opts[0].onClick} className={btnCard}>
+                                        <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={btnCard}>
                                             {label} <ChevronRight className="w-4 h-4" />
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -334,21 +349,29 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                     );
                 })}
 
-                {/* ===== How it works ===== */}
+                {/* ===== How it works — connected stepper ===== */}
                 <FadeIn>
-                    <div id="process" className={`mt-16 md:mt-24 pt-10 border-t ${isIndonesian ? 'border-cream/15' : 'border-white/12'} scroll-mt-24`}>
-                        <h3 className={`font-serif font-semibold ${isIndonesian ? 'text-cream' : 'text-cream'} text-xl md:text-2xl tracking-tight mb-8`}>
+                    <div id="process" className="mt-10 md:mt-14 scroll-mt-24">
+                        <h3 className="font-serif font-semibold text-cream text-2xl md:text-[2rem] tracking-tight leading-none text-center mb-10 md:mb-14">
                             {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
-                            <span className={`font-normal ${isIndonesian ? 'text-cream' : 'text-cream'}`}>{isIndonesian ? ' — 3 langkah' : ' — in 3 steps'}</span>
                         </h3>
-                        <div className="grid sm:grid-cols-3 gap-x-8 gap-y-8">
-                            {steps.map((step, i) => (
-                                <div key={i} className={`border-t ${isIndonesian ? 'border-cream/15' : 'border-white/12'} pt-5`}>
-                                    <span className={`font-serif font-semibold text-3xl md:text-4xl tabular-nums leading-none ${isIndonesian ? 'text-coral/70' : 'text-coral/40'}`}>0{i + 1}</span>
-                                    <h4 className={`mt-4 text-base md:text-lg font-serif font-semibold ${isIndonesian ? 'text-cream' : 'text-cream'}`}>{step.title}</h4>
-                                    <p className={`mt-1.5 text-sm leading-relaxed font-light ${isIndonesian ? 'text-cream' : 'text-cream'}`}>{step.desc}</p>
-                                </div>
-                            ))}
+
+                        <div className="relative">
+                            <ol className="grid gap-y-10 sm:grid-cols-2 lg:grid-cols-5 gap-x-6">
+                                {steps.map((step, i) => (
+                                    <li key={i} className="group relative text-center animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                                        {/* connector — sits only in the gap to the next square */}
+                                        {i < steps.length - 1 && (
+                                            <span className="hidden lg:block absolute top-6 left-[calc(50%+1.5rem)] w-[calc(100%-1.5rem)] h-px bg-plum/40" />
+                                        )}
+                                        <div className="relative z-10 mx-auto w-12 h-12 rounded-xl grid place-items-center bg-plum/30 border border-plum/50 text-cream font-serif font-bold text-lg backdrop-blur-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:bg-plum/45">
+                                            {i + 1}
+                                        </div>
+                                        <h4 className="mt-5 text-base md:text-lg font-serif font-semibold leading-snug text-[#E99EBE]">{step.title}</h4>
+                                        <p className="mt-2 text-sm leading-relaxed font-light text-cream max-w-[15rem] mx-auto">{step.desc}</p>
+                                    </li>
+                                ))}
+                            </ol>
                         </div>
                     </div>
                 </FadeIn>

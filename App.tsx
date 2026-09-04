@@ -5,6 +5,7 @@ import Hero from './components/Sections/Hero';
 import About from './components/Sections/About';
 import WhyChoose from './components/Sections/WhyChoose';
 import Footer from './components/Layout/Footer';
+import BookingModal from './components/Booking/BookingModal';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
 import { initLenis, destroyLenis, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
 import { Moon, ArrowUp, RefreshCw } from 'lucide-react';
@@ -370,6 +371,8 @@ function App() {
       <div className="relative z-10">
         <Footer isIndonesian={isIndonesian} />
       </div>
+
+      <BookingModal isIndonesian={isIndonesian} />
 
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-4 items-end">

@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
-import SectionHeader from '../UI/SectionHeader';
-import GrainyMesh from '../UI/GrainyMesh';
 
 interface FAQProps {
   isIndonesian?: boolean;
 }
 
 const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openSet, setOpenSet] = useState<Set<number>>(() => new Set([0]));
 
   const faqsEN = [
     {
@@ -92,7 +90,11 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   const faqs = isIndonesian ? faqsID : faqsEN;
 
   const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
+    setOpenSet((prev) => {
+      const next = new Set(prev);
+      next.has(index) ? next.delete(index) : next.add(index);
+      return next;
+    });
   };
 
   return (
@@ -101,53 +103,56 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
       className="py-16 md:py-24 relative overflow-hidden isolate border-y border-white/10"
     >
       <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
-        <FadeIn>
-          <SectionHeader
-            num="06"
-            label="FAQ"
-            accent="text-plum"
-            title={isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
-            intro={isIndonesian
-              ? 'Segala hal tentang proses bacaan, etika, dan cara penyampaian.'
-              : 'Everything about the reading process, ethics, and delivery.'}
-          />
-
-          <div className="border-t border-white/10">
-            {faqs.map((faq, index) => {
-              const open = openIndex === index;
-              const tone = ['text-coral', 'text-mauve', 'text-[#88ADDA]', 'text-[#7FC08F]'][index % 4];
-              return (
-                <FadeIn key={index} delay={Math.min(index, 7) * 60}>
-                <div className="border-b border-white/10">
-                  <button
-                    onClick={() => toggleFAQ(index)}
-                    className="group w-full flex items-start justify-between gap-6 py-7 text-left focus:outline-none"
-                    aria-expanded={open}
-                  >
-                    <span className="flex gap-4 md:gap-7 items-baseline">
-                      <span className={`text-xl md:text-2xl font-serif font-semibold tabular-nums shrink-0 ${tone}`}>
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      <span className={`font-serif font-medium text-xl md:text-2xl leading-snug tracking-tight transition-colors ${open ? tone : 'text-cream'}`}>
-                        {faq.question}
-                      </span>
-                    </span>
-                    <Plus className={`w-6 h-6 mt-1 shrink-0 transition-all duration-300 ${open ? `rotate-45 ${tone}` : 'text-cream/50'}`} />
-                  </button>
-
-                  <div className={`grid transition-all duration-300 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                    <div className="overflow-hidden">
-                      <p className="pb-8 md:pl-[3.6rem] text-cream/70 text-base md:text-lg leading-relaxed whitespace-pre-line font-light">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                </FadeIn>
-              );
-            })}
+        <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16">
+          {/* LEFT — sticky intro */}
+          <div className="lg:col-span-4">
+            <FadeIn>
+              <div className="lg:sticky lg:top-28">
+                <h2 className="font-serif font-semibold text-cream text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
+                  {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
+                </h2>
+                <p className="mt-5 text-cream font-light leading-relaxed max-w-xs">
+                  {isIndonesian
+                    ? 'Segala hal tentang proses bacaan, etika, dan cara penyampaian.'
+                    : 'Everything about the reading process, ethics, and delivery.'}
+                </p>
+              </div>
+            </FadeIn>
           </div>
-        </FadeIn>
+
+          {/* RIGHT — accordion */}
+          <div className="lg:col-span-8">
+            <div className="border-t border-white/10">
+              {faqs.map((faq, index) => {
+                const open = openSet.has(index);
+                return (
+                  <FadeIn key={index} delay={Math.min(index, 6) * 40}>
+                    <div className="border-b border-white/10">
+                      <button
+                        onClick={() => toggleFAQ(index)}
+                        className="w-full flex items-center justify-between gap-5 py-4 md:py-5 text-left focus:outline-none"
+                        aria-expanded={open}
+                      >
+                        <span className="font-serif font-medium text-base md:text-lg leading-snug tracking-tight text-cream">
+                          {faq.question}
+                        </span>
+                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-300 ${open ? 'text-coral rotate-180' : 'text-cream/60'}`} />
+                      </button>
+
+                      <div className={`grid transition-all duration-300 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                        <div className="overflow-hidden">
+                          <p className="pb-5 pr-10 text-cream text-[0.95rem] md:text-base leading-relaxed whitespace-pre-line font-light">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </FadeIn>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

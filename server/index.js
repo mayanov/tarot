@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { verifyPassword } from './auth.js';
+import * as bookingStore from './bookingStore.js';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 
@@ -23,6 +24,8 @@ app.use(cors({
     origin: [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
+        'http://localhost:3100',
+        'http://127.0.0.1:3100',
         'https://tarotreadingbymayanov.com',
         'https://www.tarotreadingbymayanov.com',
         'https://mayanov-tarot.onrender.com'
@@ -316,6 +319,81 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
             error: "Failed to fetch analytics data",
             details: error.message
         });
+    }
+});
+
+// ------------------------------------------------------------------
+// BOOKINGS
+// ------------------------------------------------------------------
+
+// Public: which time slots are already taken on a date (no personal data).
+app.get('/api/availability', async (req, res) => {
+    const date = String(req.query.date || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return res.status(400).json({ error: 'Invalid date' });
+    }
+    try {
+        res.json({ date, taken: await bookingStore.getTakenSlots(date) });
+    } catch (e) {
+        console.error('availability failed:', e);
+        res.status(500).json({ error: 'Failed to load availability' });
+    }
+});
+
+// Public: create a booking.
+app.post('/api/bookings', async (req, res) => {
+    const { serviceId, serviceName, date, time, name, contact, question, market } = req.body || {};
+    if (!serviceId || !name || !contact) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return res.status(400).json({ error: 'Invalid date' });
+    }
+    if (time && !/^\d{2}:\d{2}$/.test(time)) {
+        return res.status(400).json({ error: 'Invalid time' });
+    }
+    try {
+        const booking = await bookingStore.createBooking({
+            serviceId: String(serviceId).slice(0, 60),
+            serviceName: String(serviceName || '').slice(0, 120),
+            date,
+            time,
+            name: String(name).slice(0, 120),
+            contact: String(contact).slice(0, 160),
+            question: String(question || '').slice(0, 2000),
+            market: market === 'ID' ? 'ID' : 'Global',
+        });
+        res.status(201).json(booking);
+    } catch (e) {
+        if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
+        console.error('Booking create failed:', e);
+        res.status(500).json({ error: 'Failed to create booking' });
+    }
+});
+
+// Admin: list all bookings (JWT-protected, same auth as the dashboard).
+app.get('/api/admin/bookings', verifyToken, async (req, res) => {
+    try {
+        res.json(await bookingStore.getAllBookings());
+    } catch (e) {
+        console.error('list bookings failed:', e);
+        res.status(500).json({ error: 'Failed to load bookings' });
+    }
+});
+
+// Admin: update a booking's status (pending | confirmed | cancelled | done).
+app.post('/api/admin/bookings/:id/status', verifyToken, async (req, res) => {
+    const { status } = req.body || {};
+    if (!['pending', 'confirmed', 'cancelled', 'done'].includes(status)) {
+        return res.status(400).json({ error: 'Invalid status' });
+    }
+    try {
+        const updated = await bookingStore.updateStatus(req.params.id, status);
+        if (!updated) return res.status(404).json({ error: 'Not found' });
+        res.json(updated);
+    } catch (e) {
+        console.error('update status failed:', e);
+        res.status(500).json({ error: 'Failed to update status' });
     }
 });
 
