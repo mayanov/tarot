@@ -206,3 +206,19 @@ html.lenis body {
 .rdp-custom-wrapper .rdp-today:not(.rdp-day_selected)::after {
   display: none;
 }
+/* Admin bookings calendar: dot marker on days that have scheduled sessions */
+.day-booked {
+  position: relative;
+  font-weight: 700;
+}
+.day-booked::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: #DA8636;
+}
