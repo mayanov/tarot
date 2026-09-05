@@ -130,28 +130,31 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
       {/* backdrop */}
-      <div className="absolute inset-0 bg-ink/70 backdrop-blur-sm" onClick={close} />
+      <div className="absolute inset-0 bg-plum-deep/50 backdrop-blur-md" onClick={close} />
 
-      {/* panel */}
-      <div className="relative w-full sm:max-w-lg md:max-w-xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-[#3B2657] text-cream shadow-[0_40px_120px_-30px_rgba(0,0,0,0.8)] border border-white/10">
+      {/* panel — warm, light, on-brand */}
+      <div className="relative w-full sm:max-w-lg md:max-w-xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FCF8F1] to-[#F3EBDD] text-ink shadow-[0_40px_120px_-24px_rgba(43,36,32,0.55)] ring-1 ring-black/[0.06] border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)]">
+        {/* soft coral glow accent */}
+        <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-coral/25 blur-3xl" />
+
         {/* header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 md:px-8 py-5 bg-[#3B2657]/95 backdrop-blur border-b border-white/10">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 md:px-8 py-5 bg-[#FCF8F1]/85 backdrop-blur border-b border-line">
           <div className="flex items-center gap-3">
             {(step === 1 || step === 2) && (
               <button
                 onClick={() => setStep(step === 2 ? (scheduled ? 1 : 0) : 0)}
                 aria-label="Back"
-                className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-white/15 text-cream/70 hover:text-cream hover:border-white/40 transition-colors"
+                className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-line bg-white/70 text-ink-soft hover:text-ink hover:border-ink/25 hover:bg-white transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
             )}
             <div>
-              <div className="text-[0.62rem] uppercase tracking-[0.24em] text-coral font-semibold">{t('Pesan Sesi', 'Book a Session')}</div>
-              {step < 3 && <div className="mt-1 text-sm text-cream/60">{t('Langkah', 'Step')} {displayStep} / {totalSteps} · {stepLabels[step]}</div>}
+              <div className="text-[0.62rem] uppercase tracking-[0.24em] text-coral-deep font-semibold">{t('Pesan Sesi', 'Book a Session')}</div>
+              {step < 3 && <div className="mt-1 text-sm text-taupe">{t('Langkah', 'Step')} {displayStep} / {totalSteps} · {stepLabels[step]}</div>}
             </div>
           </div>
-          <button onClick={close} aria-label="Close" className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-white/15 text-cream/70 hover:text-cream hover:border-white/40 transition-colors">
+          <button onClick={close} aria-label="Close" className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-line bg-white/70 text-ink-soft hover:text-ink hover:border-ink/25 hover:bg-white transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -159,29 +162,29 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         {/* progress */}
         {step < 3 && (
           <div className="px-6 md:px-8 pt-4">
-            <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-              <div className="h-full bg-coral transition-all duration-300" style={{ width: `${(displayStep / totalSteps) * 100}%` }} />
+            <div className="h-1 rounded-full bg-ink/[0.08] overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-coral to-coral-deep transition-all duration-300" style={{ width: `${(displayStep / totalSteps) * 100}%` }} />
             </div>
           </div>
         )}
 
-        <div className="px-6 md:px-8 py-6">
+        <div className="relative px-6 md:px-8 py-6">
           {/* STEP 0 — service */}
           {step === 0 && (
             <div className="space-y-3">
-              <h3 className="font-serif font-semibold text-2xl text-cream mb-1">{t('Pilih jenis layanan', 'Choose a service type')}</h3>
-              <p className="text-sm text-cream/60 mb-4">{t('Mau sesi yang seperti apa?', 'What kind of session are you after?')}</p>
+              <h3 className="font-serif font-semibold text-2xl text-plum mb-1">{t('Pilih jenis layanan', 'Choose a service type')}</h3>
+              <p className="text-sm text-ink-soft mb-4">{t('Mau sesi yang seperti apa?', 'What kind of session are you after?')}</p>
               {services.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => { setService(s); setStep(s.scheduled ? 1 : 2); }}
-                  className="w-full flex items-center justify-between gap-4 text-left rounded-xl border border-white/10 bg-white/[0.07] hover:bg-white/[0.08] hover:border-white/25 transition-all px-5 py-4"
+                  className="group w-full flex items-center justify-between gap-4 text-left rounded-2xl border border-line bg-white hover:border-coral/50 hover:shadow-[0_14px_34px_-18px_rgba(218,134,54,0.55)] hover:-translate-y-0.5 transition-all px-5 py-4"
                 >
                   <span>
-                    <span className="block font-serif font-semibold text-cream">{s.name}</span>
-                    <span className="block text-xs text-cream/55 mt-0.5">{s.meta}</span>
+                    <span className="block font-serif font-semibold text-plum">{s.name}</span>
+                    <span className="block text-xs text-taupe mt-0.5">{s.meta}</span>
                   </span>
-                  <ChevronRight className="w-5 h-5 text-cream/40 shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-coral-deep/40 group-hover:text-coral-deep group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
               ))}
             </div>
@@ -190,13 +193,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 1 — date & time */}
           {step === 1 && (
             <div>
-              <h3 className="font-serif font-semibold text-2xl text-cream mb-1">{t('Pilih tanggal & waktu', 'Pick a date & time')}</h3>
-              <p className="text-sm text-cream/60 mb-5">{service?.name}</p>
+              <h3 className="font-serif font-semibold text-2xl text-plum mb-1">{t('Pilih tanggal & waktu', 'Pick a date & time')}</h3>
+              <p className="text-sm text-ink-soft mb-5">{service?.name}</p>
 
-              {error && <div className="mb-4 text-sm text-coral bg-coral/10 border border-coral/25 rounded-lg px-4 py-2.5">{error}</div>}
+              {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-2.5">{error}</div>}
 
-              {/* calendar on a light sub-panel */}
-              <div className="rounded-2xl bg-cream text-ink p-2 sm:p-3 flex justify-center [--rdp-accent-color:#DA8636] [--rdp-accent-background-color:#F1E6D8]">
+              {/* calendar */}
+              <div className="rounded-2xl bg-white border border-line shadow-sm text-ink p-2 sm:p-3 flex justify-center [--rdp-accent-color:#DA8636] [--rdp-accent-background-color:#F5E7D6]">
                 <DayPicker
                   mode="single"
                   selected={date}
@@ -208,7 +211,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               {date && (
                 <div className="mt-5">
-                  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-cream/60 mb-3">
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-taupe mb-3">
                     <Clock className="w-3.5 h-3.5" /> {t('Pilih jam', 'Choose a time')}
                   </div>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -220,12 +223,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                           key={slot}
                           disabled={isTaken}
                           onClick={() => setTime(slot)}
-                          className={`py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+                          className={`py-2.5 rounded-lg text-sm font-medium border transition-all ${
                             isTaken
-                              ? 'border-white/5 text-cream/25 line-through cursor-not-allowed'
+                              ? 'border-line text-taupe/40 line-through bg-ink/[0.03] cursor-not-allowed'
                               : active
-                                ? 'bg-coral text-ink border-coral'
-                                : 'border-white/15 text-cream hover:border-coral/60'
+                                ? 'bg-coral text-ink border-coral shadow-[0_8px_18px_-9px_rgba(241,159,88,0.9)]'
+                                : 'border-line bg-white text-ink hover:border-coral hover:text-coral-deep'
                           }`}
                         >
                           {slot}
@@ -240,7 +243,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 <button
                   onClick={() => setStep(2)}
                   disabled={!date || !time}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
                 >
                   {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
                 </button>
@@ -251,23 +254,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 2 — details */}
           {step === 2 && (
             <div>
-              <h3 className="font-serif font-semibold text-2xl text-cream mb-1">{t('Detail kamu', 'Your details')}</h3>
-              <p className="text-sm text-cream/60 mb-5 flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-coral" />
+              <h3 className="font-serif font-semibold text-2xl text-plum mb-1">{t('Detail kamu', 'Your details')}</h3>
+              <p className="text-sm text-ink-soft mb-5 flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-coral-deep" />
                 {service?.name}{scheduled && date ? ` · ${toISODate(date)} · ${time}` : ''}
               </p>
 
               <div className="space-y-4">
                 {service?.packages && (
                   <div>
-                    <span className="block text-xs uppercase tracking-[0.16em] text-cream/60 mb-2">{t('Pilih paket', 'Choose a package')}</span>
+                    <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-2">{t('Pilih paket', 'Choose a package')}</span>
                     <div className="grid gap-2">
                       {service.packages.map((p) => (
                         <button
                           key={p}
                           type="button"
                           onClick={() => setPkg(p)}
-                          className={`text-left rounded-lg border px-4 py-3 text-sm transition-colors ${pkg === p ? 'border-coral bg-coral/10 text-cream' : 'border-white/15 text-cream/80 hover:border-white/30'}`}
+                          className={`text-left rounded-lg border px-4 py-3 text-sm transition-colors ${pkg === p ? 'border-coral bg-coral/10 text-plum font-medium' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
                         >
                           {p}
                         </button>
@@ -276,21 +279,21 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   </div>
                 )}
                 <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-cream/60 mb-1.5">{t('Nama', 'Name')}</span>
+                  <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">{t('Nama', 'Name')}</span>
                   <input value={name} onChange={(e) => setName(e.target.value)} type="text"
-                    className="w-full rounded-lg bg-white/[0.1] border border-white/15 px-4 py-3 text-cream placeholder-cream/30 focus:border-coral/60 focus:outline-none transition-colors"
+                    className="w-full rounded-lg bg-white border border-line px-4 py-3 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
                     placeholder={t('Nama kamu', 'Your name')} />
                 </label>
                 <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-cream/60 mb-1.5">WhatsApp</span>
+                  <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">WhatsApp</span>
                   <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} type="tel" inputMode="tel"
-                    className="w-full rounded-lg bg-white/[0.1] border border-white/15 px-4 py-3 text-cream placeholder-cream/30 focus:border-coral/60 focus:outline-none transition-colors"
+                    className="w-full rounded-lg bg-white border border-line px-4 py-3 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
                     placeholder={t('cth. 0812 3456 7890', 'e.g. +62 812 3456 7890')} />
                 </label>
                 <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-cream/60 mb-1.5">Email <span className="text-cream/40 normal-case tracking-normal">({t('opsional', 'optional')})</span></span>
+                  <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">Email <span className="text-taupe/70 normal-case tracking-normal">({t('opsional', 'optional')})</span></span>
                   <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email"
-                    className="w-full rounded-lg bg-white/[0.1] border border-white/15 px-4 py-3 text-cream placeholder-cream/30 focus:border-coral/60 focus:outline-none transition-colors"
+                    className="w-full rounded-lg bg-white border border-line px-4 py-3 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
                     placeholder={t('nama@email.com', 'you@email.com')} />
                 </label>
               </div>
@@ -299,7 +302,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 <button
                   onClick={submit}
                   disabled={!detailsValid || submitting}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
                 >
                   {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', 'Confirm booking')}
                 </button>
@@ -310,19 +313,19 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 3 — done */}
           {step === 3 && (
             <div className="text-center py-6">
-              <div className="mx-auto w-16 h-16 rounded-full bg-coral/15 grid place-items-center text-coral mb-5">
+              <div className="mx-auto w-16 h-16 rounded-full bg-coral/15 ring-4 ring-coral/10 grid place-items-center text-coral-deep mb-5">
                 <Check className="w-8 h-8" />
               </div>
-              <h3 className="font-serif font-semibold text-2xl text-cream">{t('Booking diterima!', 'You’re booked!')}</h3>
-              <p className="mt-3 text-cream/70 leading-relaxed max-w-sm mx-auto">
+              <h3 className="font-serif font-semibold text-2xl text-plum">{t('Booking diterima!', 'You’re booked!')}</h3>
+              <p className="mt-3 text-ink-soft leading-relaxed max-w-sm mx-auto">
                 {t('Terima kasih, ', 'Thank you, ')}{name || t('kamu', 'friend')}. {t('Aku akan menghubungimu via WhatsApp', 'I’ll reach out on WhatsApp')} ({whatsapp}) {t('untuk konfirmasi.', 'to confirm.')}
               </p>
-              <div className="mt-5 inline-flex items-center gap-2 text-sm text-cream/60 bg-white/[0.05] rounded-full px-4 py-2">
-                <CalendarDays className="w-4 h-4 text-coral" />
+              <div className="mt-5 inline-flex items-center gap-2 text-sm text-ink-soft bg-white border border-line rounded-full px-4 py-2">
+                <CalendarDays className="w-4 h-4 text-coral-deep" />
                 {service?.name}{scheduled && date ? ` · ${toISODate(date)} · ${time}` : ''}
               </div>
               <div className="mt-8">
-                <button onClick={close} className="px-8 py-3 rounded-full bg-cream text-ink text-sm font-semibold hover:bg-white transition-colors">
+                <button onClick={close} className="px-8 py-3 rounded-full bg-plum text-cream text-sm font-semibold hover:bg-plum-deep transition-colors">
                   {t('Selesai', 'Done')}
                 </button>
               </div>
