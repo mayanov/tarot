@@ -303,7 +303,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 </div>
               )}
 
-              <div className="mt-7 flex items-center justify-end gap-3">
+              <div className="sticky bottom-0 z-10 -mx-6 md:-mx-8 -mb-6 mt-6 px-6 md:px-8 py-4 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-end gap-3">
                 <button
                   onClick={() => setStep(2)}
                   disabled={!date || !time || (needsPackage && !pkg)}
@@ -362,7 +362,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 </label>
               </div>
 
-              <div className="mt-7 flex items-center justify-end gap-3">
+              <div className="sticky bottom-0 z-10 -mx-6 md:-mx-8 -mb-6 mt-6 px-6 md:px-8 py-4 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-end gap-3">
                 <button
                   onClick={() => setStep(3)}
                   disabled={!detailsValid}
@@ -415,7 +415,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 )}
               </div>
 
-              <div className="mt-7 flex items-center justify-between gap-3">
+              <div className="sticky bottom-0 z-10 -mx-6 md:-mx-8 -mb-6 mt-6 px-6 md:px-8 py-4 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-between gap-3">
                 <button
                   onClick={() => setStep(2)}
                   className="text-sm text-ink-soft hover:text-ink underline underline-offset-4 transition-colors"
