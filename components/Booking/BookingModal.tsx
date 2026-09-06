@@ -130,7 +130,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
       {/* backdrop */}
-      <div className="absolute inset-0 bg-plum-deep/50 backdrop-blur-md" onClick={close} />
+      <div className="absolute inset-0 bg-plum-deep/60 backdrop-blur-2xl" onClick={close} />
 
       {/* panel — warm, light, on-brand */}
       <div className="relative w-full sm:max-w-lg md:max-w-xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FCF8F1] to-[#F3EBDD] text-ink shadow-[0_40px_120px_-24px_rgba(43,36,32,0.55)] ring-1 ring-black/[0.06] border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)]">
