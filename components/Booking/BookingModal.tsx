@@ -133,11 +133,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       <div className="absolute inset-0 bg-plum-deep/60 backdrop-blur-2xl" onClick={close} />
 
       {/* panel — warm, light, on-brand with a plum undertone */}
-      <div className="relative w-full sm:max-w-lg md:max-w-xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)]">
-        {/* soft glow accents — coral + plum */}
+      <div className="relative w-full sm:max-w-lg md:max-w-xl max-h-[92vh] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)]">
+        {/* soft glow accents — coral + plum (clipped, so they never add scroll) */}
         <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-coral/25 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-plum/20 blur-3xl" />
 
+        {/* scroll only the content, not the decorations */}
+        <div className="relative max-h-[92vh] overflow-y-auto">
         {/* header */}
         <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 md:px-8 py-5 bg-[#FCF8F1]/85 backdrop-blur border-b border-line">
           <div className="flex items-center gap-3">
@@ -332,6 +334,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </div>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>
