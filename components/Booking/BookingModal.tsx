@@ -201,6 +201,27 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-2.5">{error}</div>}
 
+              {/* duration / package — choose before the time slot */}
+              {service?.packages && (
+                <div className="mb-5">
+                  <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-2">
+                    {service.id === 'call' ? t('Pilih durasi', 'Choose duration') : t('Pilih paket', 'Choose a package')}
+                  </span>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {service.packages.map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPkg(p)}
+                        className={`text-left rounded-lg border px-4 py-3 text-sm transition-colors ${pkg === p ? 'border-coral bg-coral/10 text-plum font-medium' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* calendar */}
               <div className="rounded-2xl bg-white border border-line shadow-sm text-ink p-2 sm:p-3 flex justify-center [--rdp-accent-color:#DA8636] [--rdp-accent-background-color:#F5E7D6]">
                 <DayPicker
@@ -245,7 +266,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               <div className="mt-7 flex items-center justify-end gap-3">
                 <button
                   onClick={() => setStep(2)}
-                  disabled={!date || !time}
+                  disabled={!date || !time || (needsPackage && !pkg)}
                   className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
                 >
                   {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
@@ -260,11 +281,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               <h3 className="font-serif font-semibold text-2xl text-plum mb-1">{t('Detail kamu', 'Your details')}</h3>
               <p className="text-sm text-ink-soft mb-5 flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-coral-deep" />
-                {service?.name}{scheduled && date ? ` · ${toISODate(date)} · ${time}` : ''}
+                {service?.name}{pkg ? ` · ${pkg}` : ''}{scheduled && date ? ` · ${toISODate(date)} · ${time}` : ''}
               </p>
 
               <div className="space-y-4">
-                {service?.packages && (
+                {service?.packages && !scheduled && (
                   <div>
                     <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-2">{t('Pilih paket', 'Choose a package')}</span>
                     <div className="grid gap-2">
@@ -325,7 +346,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </p>
               <div className="mt-5 inline-flex items-center gap-2 text-sm text-ink-soft bg-white border border-line rounded-full px-4 py-2">
                 <CalendarDays className="w-4 h-4 text-coral-deep" />
-                {service?.name}{scheduled && date ? ` · ${toISODate(date)} · ${time}` : ''}
+                {service?.name}{pkg ? ` · ${pkg}` : ''}{scheduled && date ? ` · ${toISODate(date)} · ${time}` : ''}
               </div>
               <div className="mt-8">
                 <button onClick={close} className="px-8 py-3 rounded-full bg-plum text-cream text-sm font-semibold hover:bg-plum-deep transition-colors">
