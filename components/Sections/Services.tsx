@@ -338,8 +338,8 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 <div className="md:text-right shrink-0">
                                     {o.oldPrice && <span className="text-sm text-ink/45 line-through block">{o.oldPrice}</span>}
                                     <div className="text-2xl md:text-3xl font-serif font-semibold text-blue leading-none whitespace-nowrap">{o.price}</div>
-                                    <div className="mt-5 md:w-60 md:ml-auto">
-                                        <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={`${btnCard} w-full`}>
+                                    <div className="mt-5 flex md:justify-end">
+                                        <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={btnCard}>
                                             {label} <ChevronRight className="w-4 h-4" />
                                         </button>
                                     </div>
