@@ -8,7 +8,7 @@ interface ServicesProps {
 }
 
 // One full-width dark order button per category card.
-const btnCard = "inline-flex w-full items-center justify-center gap-1.5 px-6 py-3 rounded-full bg-ink text-cream text-sm font-medium hover:bg-charcoal-deep transition-colors";
+const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-full bg-ink text-cream text-sm font-medium hover:bg-charcoal-deep transition-colors";
 
 // Film-grain noise (shared with the rest of the site) — keeps colour blocks from feeling flat.
 const GRAIN =
@@ -79,7 +79,7 @@ const OfferRow: React.FC<{ o: any }> = ({ o }) => (
                 <span className="text-lg md:text-xl font-serif font-semibold text-blue leading-none whitespace-nowrap">{o.price}</span>
             </div>
         </div>
-        {o.desc && <p className="mt-2 text-sm text-ink/65 font-light leading-relaxed">{o.desc}</p>}
+        {o.desc && <p className="mt-2 text-sm text-ink font-light leading-relaxed">{o.desc}</p>}
         {o.features && <p className="mt-1.5 text-xs text-ink/50 leading-relaxed">{o.features}</p>}
     </div>
 );
@@ -127,7 +127,7 @@ const CategoryCard: React.FC<{ g: any; mesh: string; isIndonesian: boolean; dela
                     ))}
                 </div>
             </div>
-            <p className="mt-2.5 text-sm text-ink/65 font-light leading-relaxed">{g.blurb}</p>
+            <p className="mt-2.5 text-sm text-ink font-light leading-relaxed">{g.blurb}</p>
         </div>
         <div className="relative border-t border-ink/12">
             {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
@@ -331,7 +331,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                         {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-full ${o.badgeTone || 'bg-ink/10 text-ink'}`}>{o.badge}</span>}
                                     </div>
                                     <h3 className="mt-3 text-2xl md:text-3xl font-serif font-semibold text-ink leading-tight tracking-tight">{o.name}</h3>
-                                    <p className="mt-2.5 text-sm text-ink/65 font-light leading-relaxed max-w-xl">{g.blurb}</p>
+                                    <p className="mt-2.5 text-sm text-ink font-light leading-relaxed max-w-xl">{g.blurb}</p>
                                     {o.features && <p className="mt-2 text-xs text-ink/55 leading-relaxed max-w-xl">{o.features}</p>}
                                 </div>
                                 {/* right — price + button */}
@@ -339,7 +339,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     {o.oldPrice && <span className="text-sm text-ink/45 line-through block">{o.oldPrice}</span>}
                                     <div className="text-2xl md:text-3xl font-serif font-semibold text-blue leading-none whitespace-nowrap">{o.price}</div>
                                     <div className="mt-5 md:w-60 md:ml-auto">
-                                        <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={btnCard}>
+                                        <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={`${btnCard} w-full`}>
                                             {label} <ChevronRight className="w-4 h-4" />
                                         </button>
                                     </div>
