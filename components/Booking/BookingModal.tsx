@@ -24,6 +24,24 @@ const toISODate = (d: Date) => {
   return `${y}-${m}-${day}`;
 };
 
+// Add minutes to a 'HH:mm' string → 'HH:mm'.
+const addMinutes = (hhmm: string, mins: number) => {
+  const [h, m] = hhmm.split(':').map(Number);
+  const total = h * 60 + m + mins;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+};
+
+// Read a duration in minutes out of a package/meta string ('30 Menit', '1 jam', 'Google Meet · 30 min').
+const durationFromText = (s?: string | null): number | null => {
+  if (!s) return null;
+  const min = s.match(/(\d+)\s*(menit|min)/i);
+  if (min) return parseInt(min[1], 10);
+  const jam = s.match(/(\d+)\s*(jam|hour|hr)/i);
+  if (jam) return parseInt(jam[1], 10) * 60;
+  if (/jam|hour/i.test(s)) return 60;
+  return null;
+};
+
 const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0); // 0 service · 1 date/time · 2 details · 3 done
@@ -136,7 +154,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
     return h * 60 + m >= nowCutoffMin;
   });
 
-  const summaryLine = `${service?.name || ''}${pkg ? ` · ${pkg}` : ''}${scheduled && date ? ` · ${toISODate(date)} · ${time}` : ''}`;
+  // Duration for the chosen option — drives the "start–end" slot labels.
+  const durationMin = service?.packages ? durationFromText(pkg) : durationFromText(service?.meta);
+  const timeRange = (start: string) => (durationMin ? `${start}–${addMinutes(start, durationMin)}` : start);
+
+  const summaryLine = `${service?.name || ''}${pkg ? ` · ${pkg}` : ''}${scheduled && date ? ` · ${toISODate(date)} · ${time ? timeRange(time) : ''}` : ''}`;
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
@@ -149,8 +171,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-coral/25 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-plum/20 blur-3xl" />
 
-        {/* scroll only the content, not the decorations */}
-        <div className="relative max-h-[92vh] overflow-y-auto">
+        {/* scroll only the content, not the decorations (data-lenis-prevent lets this
+            scroll natively instead of the page's smooth-scroll hijacking the wheel) */}
+        <div className="relative max-h-[92vh] overflow-y-auto overscroll-contain" data-lenis-prevent>
         {/* header */}
         <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 md:px-8 py-5 bg-[#FCF8F1]/85 backdrop-blur border-b border-line">
           <div className="flex items-center gap-3">
@@ -254,7 +277,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                       {t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}
                     </p>
                   ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {visibleSlots.map((slot) => {
                       const isTaken = taken.includes(slot);
                       const active = time === slot;
@@ -263,7 +286,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                           key={slot}
                           disabled={isTaken}
                           onClick={() => setTime(slot)}
-                          className={`py-2.5 rounded-lg text-sm font-medium border transition-all ${
+                          className={`py-2.5 rounded-lg text-sm font-medium border transition-all tabular-nums ${
                             isTaken
                               ? 'border-line text-taupe/40 line-through bg-ink/[0.03] cursor-not-allowed'
                               : active
@@ -271,7 +294,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                                 : 'border-line bg-white text-ink hover:border-coral hover:text-coral-deep'
                           }`}
                         >
-                          {slot}
+                          {timeRange(slot)}
                         </button>
                       );
                     })}
@@ -373,7 +396,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 {scheduled && date && (
                   <div className="flex items-start justify-between gap-4 px-4 py-3">
                     <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Jadwal', 'Schedule')}</span>
-                    <span className="text-sm text-ink font-medium text-right">{toISODate(date)} · {time}</span>
+                    <span className="text-sm text-ink font-medium text-right">{toISODate(date)} · {time && timeRange(time)}</span>
                   </div>
                 )}
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
