@@ -107,7 +107,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         market: isIndonesian ? 'ID' : 'Global',
       });
       trackEvent('purchase', { item_name: service.name, market: isIndonesian ? 'ID' : 'Global' }, 'Schedule', { content_name: service.name });
-      setStep(3);
+      setStep(4);
     } catch (err) {
       setError(err instanceof Error && err.message === 'SLOT_TAKEN'
         ? t('Maaf, slot itu baru saja terisi. Pilih waktu lain ya.', 'Sorry, that slot was just taken. Please pick another time.')
@@ -120,12 +120,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   if (!open) return null;
 
-  const stepLabels = [t('Jenis Layanan', 'Service Type'), t('Jadwal', 'Schedule'), t('Detail', 'Details')];
+  const stepLabels = [t('Jenis Layanan', 'Service Type'), t('Jadwal', 'Schedule'), t('Detail', 'Details'), t('Konfirmasi', 'Review')];
   const needsPackage = !!service?.packages?.length;
   const detailsValid = name.trim().length > 1 && whatsapp.trim().length > 3 && (!needsPackage || !!pkg);
   const scheduled = service?.scheduled ?? true;
-  const totalSteps = scheduled ? 3 : 2;
-  const displayStep = scheduled ? step + 1 : (step === 0 ? 1 : 2);
+  const totalSteps = scheduled ? 4 : 3;
+  const displayStep = scheduled ? step + 1 : (step === 0 ? 1 : step);
+
+  // Time slots: on the current day, the earliest bookable slot is 2 hours out.
+  const isTodaySelected = !!date && toISODate(date) === toISODate(new Date());
+  const nowCutoffMin = (() => { const n = new Date(); return n.getHours() * 60 + n.getMinutes() + 120; })();
+  const visibleSlots = SLOT_TIMES.filter((slot) => {
+    if (!isTodaySelected) return true;
+    const [h, m] = slot.split(':').map(Number);
+    return h * 60 + m >= nowCutoffMin;
+  });
+
+  const summaryLine = `${service?.name || ''}${pkg ? ` · ${pkg}` : ''}${scheduled && date ? ` · ${toISODate(date)} · ${time}` : ''}`;
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
@@ -143,9 +154,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         {/* header */}
         <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 md:px-8 py-5 bg-[#FCF8F1]/85 backdrop-blur border-b border-line">
           <div className="flex items-center gap-3">
-            {(step === 1 || step === 2) && (
+            {(step === 1 || step === 2 || step === 3) && (
               <button
-                onClick={() => setStep(step === 2 ? (scheduled ? 1 : 0) : 0)}
+                onClick={() => setStep(step === 3 ? 2 : step === 2 ? (scheduled ? 1 : 0) : 0)}
                 aria-label="Back"
                 className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-line bg-white/70 text-ink-soft hover:text-ink hover:border-ink/25 hover:bg-white transition-colors"
               >
@@ -154,7 +165,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
             )}
             <div>
               <div className="text-[0.62rem] uppercase tracking-[0.24em] text-coral-deep font-semibold">{t('Pesan Sesi', 'Book a Session')}</div>
-              {step < 3 && <div className="mt-1 text-sm text-taupe">{t('Langkah', 'Step')} {displayStep} / {totalSteps} · {stepLabels[step]}</div>}
+              {step < 4 && <div className="mt-1 text-sm text-taupe">{t('Langkah', 'Step')} {displayStep} / {totalSteps} · {stepLabels[step]}</div>}
             </div>
           </div>
           <button onClick={close} aria-label="Close" className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-line bg-white/70 text-ink-soft hover:text-ink hover:border-ink/25 hover:bg-white transition-colors">
@@ -163,7 +174,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         </div>
 
         {/* progress */}
-        {step < 3 && (
+        {step < 4 && (
           <div className="px-6 md:px-8 pt-4">
             <div className="h-1 rounded-full bg-ink/[0.08] overflow-hidden">
               <div className="h-full bg-gradient-to-r from-plum via-mauve to-coral transition-all duration-300" style={{ width: `${(displayStep / totalSteps) * 100}%` }} />
@@ -238,8 +249,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-taupe mb-3">
                     <Clock className="w-3.5 h-3.5" /> {t('Pilih jam', 'Choose a time')}
                   </div>
+                  {visibleSlots.length === 0 ? (
+                    <p className="text-sm text-ink-soft bg-ink/[0.04] border border-line rounded-lg px-4 py-3">
+                      {t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}
+                    </p>
+                  ) : (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {SLOT_TIMES.map((slot) => {
+                    {visibleSlots.map((slot) => {
                       const isTaken = taken.includes(slot);
                       const active = time === slot;
                       return (
@@ -260,6 +276,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                       );
                     })}
                   </div>
+                  )}
                 </div>
               )}
 
@@ -281,7 +298,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               <h3 className="font-serif font-semibold text-2xl text-plum mb-1">{t('Detail kamu', 'Your details')}</h3>
               <p className="text-sm text-ink-soft mb-5 flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-coral-deep" />
-                {service?.name}{pkg ? ` · ${pkg}` : ''}{scheduled && date ? ` · ${toISODate(date)} · ${time}` : ''}
+                {summaryLine}
               </p>
 
               <div className="space-y-4">
@@ -324,8 +341,67 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               <div className="mt-7 flex items-center justify-end gap-3">
                 <button
+                  onClick={() => setStep(3)}
+                  disabled={!detailsValid}
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
+                >
+                  {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3 — review & confirm */}
+          {step === 3 && (
+            <div>
+              <h3 className="font-serif font-semibold text-2xl text-plum mb-1">{t('Konfirmasi booking', 'Confirm your booking')}</h3>
+              <p className="text-sm text-ink-soft mb-5">{t('Cek dulu ya, sudah benar?', 'Please review before confirming.')}</p>
+
+              {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-2.5">{error}</div>}
+
+              <div className="rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden">
+                <div className="flex items-start justify-between gap-4 px-4 py-3">
+                  <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Layanan', 'Service')}</span>
+                  <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
+                </div>
+                {pkg && (
+                  <div className="flex items-start justify-between gap-4 px-4 py-3">
+                    <span className="text-xs uppercase tracking-[0.16em] text-taupe">{scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package')}</span>
+                    <span className="text-sm text-ink font-medium text-right">{pkg}</span>
+                  </div>
+                )}
+                {scheduled && date && (
+                  <div className="flex items-start justify-between gap-4 px-4 py-3">
+                    <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Jadwal', 'Schedule')}</span>
+                    <span className="text-sm text-ink font-medium text-right">{toISODate(date)} · {time}</span>
+                  </div>
+                )}
+                <div className="flex items-start justify-between gap-4 px-4 py-3">
+                  <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Nama', 'Name')}</span>
+                  <span className="text-sm text-ink font-medium text-right">{name}</span>
+                </div>
+                <div className="flex items-start justify-between gap-4 px-4 py-3">
+                  <span className="text-xs uppercase tracking-[0.16em] text-taupe">WhatsApp</span>
+                  <span className="text-sm text-ink font-medium text-right break-all">{whatsapp}</span>
+                </div>
+                {email.trim() && (
+                  <div className="flex items-start justify-between gap-4 px-4 py-3">
+                    <span className="text-xs uppercase tracking-[0.16em] text-taupe">Email</span>
+                    <span className="text-sm text-ink font-medium text-right break-all">{email}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-7 flex items-center justify-between gap-3">
+                <button
+                  onClick={() => setStep(2)}
+                  className="text-sm text-ink-soft hover:text-ink underline underline-offset-4 transition-colors"
+                >
+                  {t('Ubah detail', 'Edit details')}
+                </button>
+                <button
                   onClick={submit}
-                  disabled={!detailsValid || submitting}
+                  disabled={submitting}
                   className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
                 >
                   {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', 'Confirm booking')}
@@ -334,8 +410,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
             </div>
           )}
 
-          {/* STEP 3 — done */}
-          {step === 3 && (
+          {/* STEP 4 — done */}
+          {step === 4 && (
             <div className="text-center py-6">
               <div className="mx-auto w-16 h-16 rounded-full bg-coral/15 ring-4 ring-coral/10 grid place-items-center text-coral-deep mb-5">
                 <Check className="w-8 h-8" />
