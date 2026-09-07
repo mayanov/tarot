@@ -301,7 +301,7 @@ const BookingsView: React.FC = () => {
                             {/* details */}
                             <div className="p-5 grid grid-cols-2 gap-x-4 gap-y-4">
                                 <Field label="Name" value={b.name} />
-                                {b.dob && <Field label="Date of Birth" value={b.dob} />}
+                                {b.dob && <Field label="Date of Birth" value={fmtDate(b.dob)} />}
                                 <div className="col-span-2"><Field label="Contact" value={b.contact} /></div>
                                 {b.question && <div className="col-span-2"><Field label="Question" value={b.question} italic /></div>}
                             </div>
@@ -361,7 +361,7 @@ const BookingsView: React.FC = () => {
                                                 {price && <div className="text-sm text-lilac mb-1">{price}</div>}
                                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-subtle">
                                                     <span className="flex items-center gap-1.5"><User size={13} /> {b.name}</span>
-                                                    {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {b.dob}</span>}
+                                                    {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {fmtDate(b.dob)}</span>}
                                                     <span className="truncate">{b.contact}</span>
                                                 </div>
                                                 {b.question && (
