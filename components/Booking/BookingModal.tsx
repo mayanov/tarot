@@ -15,6 +15,7 @@ interface ServiceOption {
   meta: string;
   scheduled: boolean; // needs a date & time slot?
   packages?: string[]; // if set, the visitor must pick one
+  price?: string; // fixed price when there are no packages
 }
 
 const toISODate = (d: Date) => {
@@ -31,6 +32,13 @@ const addMinutes = (hhmm: string, mins: number) => {
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 };
 
+// Pull the price token out of a package/service string ('· Rp 315K', '$20').
+const priceFromText = (s?: string | null): string => {
+  if (!s) return '';
+  const m = s.match(/Rp\s?[\d.,]+\s?(?:K|JT|jt|rb)?|\$\s?[\d.,]+/i);
+  return m ? m[0].trim() : '';
+};
+
 // Read a duration in minutes out of a package/meta string ('30 Menit', '1 jam', 'Google Meet · 30 min').
 const durationFromText = (s?: string | null): number | null => {
   if (!s) return null;
@@ -40,6 +48,17 @@ const durationFromText = (s?: string | null): number | null => {
   if (jam) return parseInt(jam[1], 10) * 60;
   if (/jam|hour/i.test(s)) return 60;
   return null;
+};
+
+// Payment details shown on the success step (Indonesian market).
+// TODO: replace these placeholders with the real values, and drop the QRIS
+// image at public/payment-qris.png.
+const PAYMENT = {
+  bankName: 'BCA',
+  accountNumber: '0000000000',
+  accountHolder: 'Mayanov Tarot',
+  qrSrc: '/payment-qris.png',
+  waNumber: '', // e.g. '628123456789' — used for the "send proof" note
 };
 
 const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => {
@@ -64,12 +83,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         { id: 'chat', name: 'Konsultasi via Chat', meta: 'WhatsApp · per pertanyaan', scheduled: false, packages: ['1 Pertanyaan · Rp 140K', '3 Pertanyaan · Rp 315K', 'Beli 3 Dapat 5 · Rp 315K (Promo)'] },
         { id: 'call', name: 'Call / Video Call', meta: 'Real-time · pilih durasi', scheduled: true, packages: ['30 Menit · Rp 220K', '60 Menit · Rp 360K'] },
         { id: 'meetup', name: 'Sesi Tatap Muka', meta: 'Jakarta Selatan', scheduled: true, packages: ['1 Jam · Rp 450K', '2 Jam · Rp 810K', '3 Jam · Rp 1,17JT'] },
-        { id: 'special', name: 'Edisi Spesial', meta: 'Bacaan tematik (PDF)', scheduled: false },
+        { id: 'special', name: 'Edisi Spesial', meta: 'Bacaan tematik (PDF)', scheduled: false, price: 'Rp 250K' },
       ]
     : [
-        { id: '3card', name: '3-Card Spread', meta: 'Email · within 24h', scheduled: false },
-        { id: '5card', name: '5-Card Deep', meta: 'Email · in-depth', scheduled: false },
-        { id: 'live', name: 'Live Session', meta: 'Google Meet · 30 min', scheduled: true },
+        { id: '3card', name: '3-Card Spread', meta: 'Email · within 24h', scheduled: false, price: '$12' },
+        { id: '5card', name: '5-Card Deep', meta: 'Email · in-depth', scheduled: false, price: '$20' },
+        { id: 'live', name: 'Live Session', meta: 'Google Meet · 30 min', scheduled: true, price: '$45' },
       ];
 
   const reset = useCallback(() => {
@@ -167,6 +186,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   const timeRange = (start: string) => (durationMin ? `${start}–${addMinutes(start, durationMin)}` : start);
 
   const summaryLine = `${service?.name || ''}${pkg ? ` · ${pkg}` : ''}${scheduled && date ? ` · ${toISODate(date)} · ${time ? timeRange(time) : ''}` : ''}`;
+  const totalPrice = pkg ? priceFromText(pkg) : (service?.price || '');
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
@@ -438,6 +458,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                     <span className="text-sm text-ink font-medium text-right break-all">{email}</span>
                   </div>
                 )}
+                <div className="flex items-center justify-between gap-4 px-4 py-3.5 bg-coral/[0.06]">
+                  <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Total', 'Total')}</span>
+                  <span className="text-lg text-plum font-serif font-bold text-right">{totalPrice || '—'}</span>
+                </div>
               </div>
 
               <div className="sticky bottom-0 z-10 -mx-6 md:-mx-8 -mb-6 mt-6 px-6 md:px-8 py-4 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-between gap-3">
@@ -470,8 +494,37 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </p>
               <div className="mt-5 inline-flex items-center gap-2 text-sm text-ink-soft bg-white border border-line rounded-full px-4 py-2">
                 <CalendarDays className="w-4 h-4 text-coral-deep" />
-                {service?.name}{pkg ? ` · ${pkg}` : ''}{scheduled && date ? ` · ${toISODate(date)} · ${time}` : ''}
+                {service?.name}{pkg ? ` · ${pkg}` : ''}{scheduled && date ? ` · ${toISODate(date)} · ${time ? timeRange(time) : ''}` : ''}
               </div>
+
+              {/* Payment (Indonesian market) */}
+              {isIndonesian && (
+                <div className="mt-6 text-left rounded-2xl bg-white border border-line overflow-hidden">
+                  <div className="flex items-center justify-between gap-4 px-5 py-4 bg-coral/[0.06] border-b border-line">
+                    <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Total pembayaran', 'Amount due')}</span>
+                    <span className="text-xl font-serif font-bold text-plum">{totalPrice || '—'}</span>
+                  </div>
+                  <div className="p-5 grid sm:grid-cols-2 gap-5">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Scan QRIS', 'Scan QRIS')}</span>
+                      <div className="w-40 h-40 rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative">
+                        <span className="text-[11px] text-taupe text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
+                        <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={(e) => { e.currentTarget.remove(); }} />
+                      </div>
+                    </div>
+                    <div className="flex flex-col justify-center gap-1.5">
+                      <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Transfer Bank', 'Bank transfer')}</span>
+                      <div className="font-serif font-semibold text-lg text-plum leading-tight">{PAYMENT.bankName}</div>
+                      <div className="text-base text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
+                      <div className="text-xs text-ink-soft">a.n. {PAYMENT.accountHolder}</div>
+                    </div>
+                  </div>
+                  <div className="px-5 pb-4 text-xs text-ink-soft leading-relaxed">
+                    {t('Setelah transfer, kirim bukti pembayaran ke WhatsApp kami untuk konfirmasi. Booking kamu sudah tercatat.', 'After paying, send your payment proof to our WhatsApp to confirm. Your booking is recorded.')}
+                  </div>
+                </div>
+              )}
+
               <div className="mt-8">
                 <button onClick={close} className="px-8 py-3 rounded-full bg-plum text-cream text-sm font-semibold hover:bg-plum-deep transition-colors">
                   {t('Selesai', 'Done')}

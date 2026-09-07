@@ -94,7 +94,7 @@ export async function createBooking(input: BookingInput): Promise<Booking> {
       ...input,
       id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `bk_${Date.now()}`,
       createdAt: new Date().toISOString(),
-      status: 'pending',
+      status: 'confirmed',
     };
     all.push(booking);
     writeLocal(all);

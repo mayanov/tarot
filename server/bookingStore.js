@@ -84,7 +84,7 @@ export async function createBooking(input) {
   const id = hasSlot
     ? slotId(input.date, input.time)
     : 'bk_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-  const booking = { ...input, id, createdAt: new Date().toISOString(), status: 'pending' };
+  const booking = { ...input, id, createdAt: new Date().toISOString(), status: 'confirmed' };
 
   // A scheduled booking blocks every 30-min slot it spans; reject if any overlap.
   const wanted = hasSlot ? occupiedSlots(input.time, input.durationMin) : [];
