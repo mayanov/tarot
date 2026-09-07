@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, Calendar as CalIcon, User, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X, Clock } from 'lucide-react';
+import { RefreshCcw, Calendar as CalIcon, User, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
 
 const STATUSES: Booking['status'][] = ['pending', 'confirmed', 'done', 'cancelled'];
@@ -36,6 +36,11 @@ const startOfWeek = (d: Date) => {
 const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const toMin = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
 const fmtHour = (h: number) => `${String(h).padStart(2, '0')}:00`;
+// 'YYYY-MM-DD' → 'dd Mon YYYY' (e.g. 08 Sep 2026)
+const fmtDate = (iso: string) => {
+    const d = parseISO(iso);
+    return `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('en-US', { month: 'short' })} ${d.getFullYear()}`;
+};
 
 // Grid window: 11:00–20:00 covers all bookable slots (11:00–19:00) and their durations.
 const DAY_START = 11 * 60;
@@ -115,16 +120,23 @@ const BookingsView: React.FC = () => {
     const todayISO = toISO(new Date());
     const weekLabel = `${weekDays[0].toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} – ${weekDays[6].toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
+    // Click a status to set it — active chip uses its colour, the rest are muted.
     const StatusControl: React.FC<{ b: Booking }> = ({ b }) => (
-        <div className="shrink-0 flex items-center gap-2">
-            <span className={`text-[0.65rem] uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full border ${STATUS_STYLE[b.status]}`}>{b.status}</span>
-            <select
-                value={b.status}
-                onChange={(e) => changeStatus(b.id, e.target.value as Booking['status'])}
-                className="bg-bg-dark border border-white/10 text-white text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-lilac/50"
-            >
-                {STATUSES.map((s) => (<option key={s} value={s}>{s}</option>))}
-            </select>
+        <div className="flex flex-wrap gap-1.5">
+            {STATUSES.map((s) => {
+                const active = b.status === s;
+                return (
+                    <button
+                        key={s}
+                        onClick={() => !active && changeStatus(b.id, s)}
+                        className={`px-2.5 py-1 rounded-full text-[0.65rem] uppercase tracking-wider font-semibold border transition-colors ${
+                            active ? STATUS_STYLE[s] : 'border-white/10 text-text-subtle hover:text-white hover:border-white/25'
+                        }`}
+                    >
+                        {s}
+                    </button>
+                );
+            })}
         </div>
     );
 
@@ -275,8 +287,7 @@ const BookingsView: React.FC = () => {
                             <div className="p-5 border-b border-white/5">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex flex-wrap items-center gap-2 text-sm text-text-light">
-                                        <Clock size={15} className="text-lilac" />
-                                        <span className="font-semibold tabular-nums">{b.date} · {b.time}{endStr && `–${endStr}`}</span>
+                                        <span className="font-semibold tabular-nums">{fmtDate(b.date)} · {b.time}{endStr && `–${endStr}`}</span>
                                         <span className="px-1.5 py-0.5 rounded bg-white/10 text-[0.6rem] uppercase tracking-wider text-text-subtle">{b.market}</span>
                                     </div>
                                     <button aria-label="Close" onClick={() => setSelectedId(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-white hover:bg-white/10 transition-colors">
@@ -296,8 +307,8 @@ const BookingsView: React.FC = () => {
                             </div>
 
                             {/* status footer */}
-                            <div className="px-5 py-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between gap-3">
-                                <span className="text-xs uppercase tracking-wider text-text-subtle">Status</span>
+                            <div className="px-5 py-4 border-t border-white/5 bg-white/[0.02]">
+                                <div className="text-xs uppercase tracking-wider text-text-subtle mb-2">Update status</div>
                                 <StatusControl b={b} />
                             </div>
                         </div>
