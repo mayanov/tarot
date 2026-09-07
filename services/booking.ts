@@ -10,12 +10,26 @@ export interface BookingInput {
   serviceName: string;
   date: string; // 'YYYY-MM-DD'
   time: string; // 'HH:mm'
+  durationMin: number; // session length in minutes (drives slot blocking)
   name: string;
   dob: string; // date of birth 'YYYY-MM-DD'
   contact: string;
   question: string;
   market: 'ID' | 'Global';
 }
+
+// The 30-min grid slots a booking occupies, from its start time and duration.
+export const slotSpan = (start: string, durationMin: number): string[] => {
+  if (!start) return [];
+  const [h, m] = start.split(':').map(Number);
+  const base = h * 60 + m;
+  const dur = durationMin && durationMin > 0 ? durationMin : 30;
+  const out: string[] = [];
+  for (let t = base; t < base + dur; t += 30) {
+    out.push(`${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`);
+  }
+  return out;
+};
 
 export interface Booking extends BookingInput {
   id: string;
@@ -47,7 +61,10 @@ export async function getTakenSlots(date: string): Promise<string[]> {
     return Array.isArray(data.taken) ? data.taken : [];
   } catch (e) {
     console.warn('[booking] availability API unavailable, using local fallback', e);
-    return readLocal().filter((b) => b.date === date && b.status !== 'cancelled').map((b) => b.time);
+    return [...new Set(
+      readLocal().filter((b) => b.date === date && b.status !== 'cancelled')
+        .flatMap((b) => slotSpan(b.time, b.durationMin)),
+    )];
   }
 }
 
@@ -66,7 +83,11 @@ export async function createBooking(input: BookingInput): Promise<Booking> {
     // network/other error → local fallback
     console.warn('[booking] create API unavailable, using local fallback', e);
     const all = readLocal();
-    if (all.some((b) => b.date === input.date && b.time === input.time && b.status !== 'cancelled')) {
+    const takenSet = new Set(
+      all.filter((b) => b.date === input.date && b.status !== 'cancelled')
+        .flatMap((b) => slotSpan(b.time, b.durationMin)),
+    );
+    if (input.date && input.time && slotSpan(input.time, input.durationMin).some((s) => takenSet.has(s))) {
       throw new Error('SLOT_TAKEN');
     }
     const booking: Booking = {

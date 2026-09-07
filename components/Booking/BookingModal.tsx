@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock } from 'lucide-react';
-import { SLOT_TIMES, getTakenSlots, createBooking } from '../../services/booking';
+import { SLOT_TIMES, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
 import { trackEvent } from '../../services/analytics';
 
 interface BookingModalProps {
@@ -120,6 +120,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         serviceName: pkg ? `${service.name} · ${pkg}` : service.name,
         date: service.scheduled && date ? toISODate(date) : '',
         time: service.scheduled ? (time || '') : '',
+        durationMin: service.scheduled ? (durationFromText(pkg) ?? durationFromText(service.meta) ?? 30) : 0,
         name: name.trim(),
         dob: dob,
         contact: [whatsapp.trim() && `WA: ${whatsapp.trim()}`, email.trim() && `Email: ${email.trim()}`].filter(Boolean).join(' · '),
@@ -253,7 +254,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                       <button
                         key={p}
                         type="button"
-                        onClick={() => setPkg(p)}
+                        onClick={() => { setPkg(p); setTime(null); }}
                         className={`text-left rounded-lg border px-4 py-3 text-sm transition-colors ${pkg === p ? 'border-coral bg-coral/10 text-plum font-medium' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
                       >
                         {p}
@@ -286,7 +287,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   ) : (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {visibleSlots.map((slot) => {
-                      const isTaken = taken.includes(slot);
+                      // Block this start if the whole session span isn't free / doesn't fit the day.
+                      const span = slotSpan(slot, durationMin || 30);
+                      const isTaken = !span.every((s) => SLOT_TIMES.includes(s)) || span.some((s) => taken.includes(s));
                       const active = time === slot;
                       return (
                         <button

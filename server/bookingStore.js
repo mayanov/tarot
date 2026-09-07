@@ -15,6 +15,18 @@ const COLLECTION = 'bookings';
 
 const slotId = (date, time) => `${date}_${time}`;
 
+// The 30-min grid slots a booking occupies, from its start time + duration.
+const toMin = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
+const toHHMM = (min) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+const occupiedSlots = (time, durationMin) => {
+  if (!time) return [];
+  const start = toMin(time);
+  const dur = durationMin && durationMin > 0 ? durationMin : 30;
+  const out = [];
+  for (let t = start; t < start + dur; t += 30) out.push(toHHMM(t));
+  return out;
+};
+
 // ---- Firestore init (only if a service account is provided) ----
 let db = null;
 try {
@@ -53,11 +65,17 @@ function writeAll(list) {
 }
 
 export async function getTakenSlots(date) {
+  let rows;
   if (db) {
     const snap = await db.collection(COLLECTION).where('date', '==', date).get();
-    return snap.docs.map((d) => d.data()).filter((b) => b.status !== 'cancelled').map((b) => b.time);
+    rows = snap.docs.map((d) => d.data());
+  } else {
+    rows = readAll().filter((b) => b.date === date);
   }
-  return readAll().filter((b) => b.date === date && b.status !== 'cancelled').map((b) => b.time);
+  const set = new Set();
+  rows.filter((b) => b.status !== 'cancelled')
+    .forEach((b) => occupiedSlots(b.time, b.durationMin).forEach((s) => set.add(s)));
+  return [...set];
 }
 
 export async function createBooking(input) {
@@ -68,11 +86,14 @@ export async function createBooking(input) {
     : 'bk_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   const booking = { ...input, id, createdAt: new Date().toISOString(), status: 'pending' };
 
+  // A scheduled booking blocks every 30-min slot it spans; reject if any overlap.
+  const wanted = hasSlot ? occupiedSlots(input.time, input.durationMin) : [];
+
   if (db) {
     const ref = db.collection(COLLECTION).doc(id);
     if (hasSlot) {
-      const existing = await ref.get();
-      if (existing.exists && existing.data().status !== 'cancelled') {
+      const taken = new Set(await getTakenSlots(input.date));
+      if (wanted.some((s) => taken.has(s))) {
         const err = new Error('SLOT_TAKEN'); err.code = 'SLOT_TAKEN'; throw err;
       }
     }
@@ -81,8 +102,14 @@ export async function createBooking(input) {
   }
 
   const all = readAll();
-  if (hasSlot && all.some((b) => b.date === input.date && b.time === input.time && b.status !== 'cancelled')) {
-    const err = new Error('SLOT_TAKEN'); err.code = 'SLOT_TAKEN'; throw err;
+  if (hasSlot) {
+    const taken = new Set(
+      all.filter((b) => b.date === input.date && b.status !== 'cancelled')
+        .flatMap((b) => occupiedSlots(b.time, b.durationMin)),
+    );
+    if (wanted.some((s) => taken.has(s))) {
+      const err = new Error('SLOT_TAKEN'); err.code = 'SLOT_TAKEN'; throw err;
+    }
   }
   const cleaned = hasSlot ? all.filter((b) => b.id !== id) : all;
   cleaned.push(booking);

@@ -344,7 +344,7 @@ app.get('/api/availability', async (req, res) => {
 
 // Public: create a booking.
 app.post('/api/bookings', async (req, res) => {
-    const { serviceId, serviceName, date, time, name, contact, question, market } = req.body || {};
+    const { serviceId, serviceName, date, time, durationMin, name, dob, contact, question, market } = req.body || {};
     if (!serviceId || !name || !contact) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -360,7 +360,9 @@ app.post('/api/bookings', async (req, res) => {
             serviceName: String(serviceName || '').slice(0, 120),
             date,
             time,
+            durationMin: Number.isFinite(+durationMin) ? Math.max(0, Math.min(600, Math.round(+durationMin))) : 0,
             name: String(name).slice(0, 120),
+            dob: /^\d{4}-\d{2}-\d{2}$/.test(String(dob || '')) ? String(dob) : '',
             contact: String(contact).slice(0, 160),
             question: String(question || '').slice(0, 2000),
             market: market === 'ID' ? 'ID' : 'Global',
