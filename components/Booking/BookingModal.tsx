@@ -188,6 +188,33 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   const summaryLine = `${service?.name || ''}${pkg ? ` · ${pkg}` : ''}${scheduled && date ? ` · ${toISODate(date)} · ${time ? timeRange(time) : ''}` : ''}`;
   const totalPrice = pkg ? priceFromText(pkg) : (service?.price || '');
 
+  // Payment methods card (Indonesian market) — shown on both the review and done steps.
+  const paymentPanel = isIndonesian ? (
+    <div className="text-left rounded-2xl bg-white border border-line overflow-hidden">
+      <div className="px-5 py-3 bg-coral/[0.06] border-b border-line">
+        <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Cara pembayaran', 'How to pay')}</span>
+      </div>
+      <div className="p-5 grid sm:grid-cols-2 gap-5">
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Scan QRIS', 'Scan QRIS')}</span>
+          <div className="w-40 h-40 rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative">
+            <span className="text-[11px] text-taupe text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
+            <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={(e) => { e.currentTarget.remove(); }} />
+          </div>
+        </div>
+        <div className="flex flex-col justify-center gap-1.5">
+          <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Transfer Bank', 'Bank transfer')}</span>
+          <div className="font-serif font-semibold text-lg text-plum leading-tight">{PAYMENT.bankName}</div>
+          <div className="text-base text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
+          <div className="text-xs text-ink-soft">a.n. {PAYMENT.accountHolder}</div>
+        </div>
+      </div>
+      <div className="px-5 pb-4 text-xs text-ink-soft leading-relaxed">
+        {t('Setelah transfer, kirim bukti pembayaran ke WhatsApp kami untuk konfirmasi.', 'After paying, send your payment proof to our WhatsApp to confirm.')}
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
       {/* backdrop */}
@@ -464,6 +491,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 </div>
               </div>
 
+              {paymentPanel && <div className="mt-4">{paymentPanel}</div>}
+
               <div className="sticky bottom-0 z-10 -mx-6 md:-mx-8 -mb-6 mt-6 px-6 md:px-8 py-4 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-between gap-3">
                 <button
                   onClick={() => setStep(2)}
@@ -516,33 +545,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                     </div>
                   </>
                 )}
+                <div className="flex items-center justify-between gap-4 px-4 py-3.5 bg-coral/[0.06]">
+                  <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Total', 'Total')}</span>
+                  <span className="text-lg text-plum font-serif font-bold text-right">{totalPrice || '—'}</span>
+                </div>
               </div>
 
               {/* Payment (Indonesian market) */}
-              {isIndonesian && (
-                <div className="mt-6 text-left rounded-2xl bg-white border border-line overflow-hidden">
-                  <div className="flex items-center justify-between gap-4 px-5 py-4 bg-coral/[0.06] border-b border-line">
-                    <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Total pembayaran', 'Amount due')}</span>
-                    <span className="text-xl font-serif font-bold text-plum">{totalPrice || '—'}</span>
-                  </div>
-                  <div className="p-5 grid sm:grid-cols-2 gap-5">
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Scan QRIS', 'Scan QRIS')}</span>
-                      <div className="w-40 h-40 rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative">
-                        <span className="text-[11px] text-taupe text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
-                        <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={(e) => { e.currentTarget.remove(); }} />
-                      </div>
-                    </div>
-                    <div className="flex flex-col justify-center gap-1.5">
-                      <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Transfer Bank', 'Bank transfer')}</span>
-                      <div className="font-serif font-semibold text-lg text-plum leading-tight">{PAYMENT.bankName}</div>
-                      <div className="text-base text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
-                      <div className="text-xs text-ink-soft">a.n. {PAYMENT.accountHolder}</div>
-                    </div>
-                  </div>
-                  <div className="px-5 pb-4 text-xs text-ink-soft leading-relaxed">
-                    {t('Setelah transfer, kirim bukti pembayaran ke WhatsApp kami untuk konfirmasi. Booking kamu sudah tercatat.', 'After paying, send your payment proof to our WhatsApp to confirm. Your booking is recorded.')}
-                  </div>
+              {paymentPanel && (
+                <div className="mt-6">
+                  {paymentPanel}
                 </div>
               )}
 
