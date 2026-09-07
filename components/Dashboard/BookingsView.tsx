@@ -4,19 +4,20 @@ import { getAllBookings, Booking } from '../../services/booking';
 
 const STATUSES: Booking['status'][] = ['pending', 'confirmed', 'done', 'cancelled'];
 
+// Status pills — mapped to the brand jewel palette (coral / sage / blue / mauve).
 const STATUS_STYLE: Record<Booking['status'], string> = {
-    pending: 'bg-amber-400/15 text-amber-300 border-amber-400/25',
-    confirmed: 'bg-emerald-400/15 text-emerald-300 border-emerald-400/25',
-    done: 'bg-sky-400/15 text-sky-300 border-sky-400/25',
-    cancelled: 'bg-red-400/15 text-red-300 border-red-400/25',
+    pending: 'bg-coral/20 text-[#f4c79c] border-coral/40',
+    confirmed: 'bg-sage/25 text-[#a9d6b5] border-sage/55',
+    done: 'bg-blue/30 text-[#a9caea] border-blue/55',
+    cancelled: 'bg-mauve/20 text-[#ddb8d6] border-mauve/50',
 };
 
-// Calendar block colours per status.
+// Calendar block colours per status (same palette, a touch stronger).
 const BLOCK_STYLE: Record<Booking['status'], string> = {
-    pending: 'bg-amber-400/20 border-amber-300/50 text-amber-50 hover:bg-amber-400/30',
-    confirmed: 'bg-emerald-400/20 border-emerald-300/50 text-emerald-50 hover:bg-emerald-400/30',
-    done: 'bg-sky-400/20 border-sky-300/50 text-sky-50 hover:bg-sky-400/30',
-    cancelled: 'bg-red-400/15 border-red-300/40 text-red-100 line-through opacity-70 hover:opacity-90',
+    pending: 'bg-coral/25 border-coral/55 text-[#fbe1c8] hover:bg-coral/35',
+    confirmed: 'bg-sage/25 border-sage/55 text-[#c6e7cf] hover:bg-sage/35',
+    done: 'bg-blue/30 border-blue/55 text-[#c4ddf3] hover:bg-blue/40',
+    cancelled: 'bg-mauve/20 border-mauve/50 text-[#e6cbe1] line-through opacity-70 hover:opacity-90',
 };
 
 const toISO = (d: Date) =>

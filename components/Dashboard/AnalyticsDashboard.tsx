@@ -265,7 +265,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         <div className="flex h-screen bg-bg-deep text-text-light font-sans overflow-hidden">
             {/* SIDEBAR */}
             {/* SIDEBAR */}
-            <aside className="w-72 bg-surface-1 border-r border-white/5 flex flex-col hidden md:flex">
+            <aside className="w-72 bg-gradient-to-b from-surface-1 via-[#332F54] to-[#2B3654] border-r border-white/5 flex flex-col hidden md:flex">
                 <div className="p-6 border-b border-white/5">
                     <h2 className="text-xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
                         Mayanov Admin
@@ -317,7 +317,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
             </aside>
 
             {/* MAIN CONTENT AREA */}
-            <main className="flex-1 overflow-y-auto relative bg-bg-deep" data-lenis-prevent>
+            <main className="flex-1 overflow-y-auto relative bg-gradient-to-br from-bg-deep via-bg-deep to-[#26314C]" data-lenis-prevent>
                 {/* Mobile Header (Hamburger would go here if we were doing mobile fully, keeping simple for now) */}
                 {/* MAIN CONTENT SWITCHER */}
                 {activeView === 'bookings' ? (
