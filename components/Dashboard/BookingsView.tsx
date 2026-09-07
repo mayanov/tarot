@@ -1,7 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, Calendar as CalIcon, User, MessageSquare, Clock, ShoppingBag, Cake } from 'lucide-react';
-import { DayPicker } from 'react-day-picker';
-import 'react-day-picker/style.css';
+import { RefreshCcw, Calendar as CalIcon, User, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
 
 const STATUSES: Booking['status'][] = ['pending', 'confirmed', 'done', 'cancelled'];
@@ -13,21 +11,46 @@ const STATUS_STYLE: Record<Booking['status'], string> = {
     cancelled: 'bg-red-400/15 text-red-300 border-red-400/25',
 };
 
+// Calendar block colours per status.
+const BLOCK_STYLE: Record<Booking['status'], string> = {
+    pending: 'bg-amber-400/20 border-amber-300/50 text-amber-50 hover:bg-amber-400/30',
+    confirmed: 'bg-emerald-400/20 border-emerald-300/50 text-emerald-50 hover:bg-emerald-400/30',
+    done: 'bg-sky-400/20 border-sky-300/50 text-sky-50 hover:bg-sky-400/30',
+    cancelled: 'bg-red-400/15 border-red-300/40 text-red-100 line-through opacity-70 hover:opacity-90',
+};
+
 const toISO = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const parseISO = (s: string) => {
     const [y, m, d] = s.split('-').map(Number);
     return new Date(y, (m || 1) - 1, d || 1);
 };
-const prettyDay = (s: string) =>
-    parseISO(s).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+const startOfWeek = (d: Date) => {
+    const x = new Date(d);
+    const dow = (x.getDay() + 6) % 7; // Monday = 0
+    x.setDate(x.getDate() - dow);
+    x.setHours(0, 0, 0, 0);
+    return x;
+};
+const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const toMin = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
+const fmtHour = (h: number) => `${String(h).padStart(2, '0')}:00`;
+
+// Grid window: 11:00–20:00 covers all bookable slots (11:00–19:00) and their durations.
+const DAY_START = 11 * 60;
+const DAY_END = 20 * 60;
+const HOUR_H = 56; // px per hour
+const GRID_H = ((DAY_END - DAY_START) / 60) * HOUR_H;
+const HOURS = Array.from({ length: (DAY_END - DAY_START) / 60 + 1 }, (_, i) => 11 + i);
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const BookingsView: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [tab, setTab] = useState<'calendar' | 'orders'>('calendar');
-    const [selected, setSelected] = useState<Date>(new Date());
+    const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
+    const [selectedId, setSelectedId] = useState<string | null>(null);
 
     const load = async () => {
         setLoading(true);
@@ -36,7 +59,6 @@ const BookingsView: React.FC = () => {
             const token = localStorage.getItem('authToken') || undefined;
             setBookings(await getAllBookings(token));
         } catch (e) {
-            // Token expired or invalid → send the admin back to the login screen.
             if (e instanceof Error && e.message === 'HTTP_401') {
                 try { localStorage.removeItem('admin_session'); localStorage.removeItem('authToken'); } catch { /* ignore */ }
                 window.location.reload();
@@ -62,28 +84,30 @@ const BookingsView: React.FC = () => {
         } catch { /* ignore */ }
     };
 
-    // Scheduled = has a real date + time slot (Call, Meetup, Live). Orders = async (Chat, Special, card spreads).
     const scheduled = useMemo(() => bookings.filter((b) => b.date && b.time), [bookings]);
     const orders = useMemo(
         () => bookings.filter((b) => !(b.date && b.time)).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')),
         [bookings],
     );
 
-    const bookedDates = useMemo(() => scheduled.map((b) => parseISO(b.date)), [scheduled]);
-
-    // When data loads, jump to the nearest upcoming day that has a session (nicer default than "today").
+    // Jump to the week of the nearest upcoming session once data loads.
     useEffect(() => {
         if (!scheduled.length) return;
         const todayISO = toISO(new Date());
         const upcoming = [...new Set(scheduled.map((b) => b.date))].filter((d) => d >= todayISO).sort();
-        if (upcoming.length) setSelected(parseISO(upcoming[0]));
+        if (upcoming.length) setWeekStart(startOfWeek(parseISO(upcoming[0])));
     }, [scheduled.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const selectedISO = toISO(selected);
-    const daySessions = useMemo(
-        () => scheduled.filter((b) => b.date === selectedISO).sort((a, b) => a.time.localeCompare(b.time)),
-        [scheduled, selectedISO],
-    );
+    const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+    const byDay = useMemo(() => {
+        const map: Record<string, Booking[]> = {};
+        scheduled.forEach((b) => { (map[b.date] ||= []).push(b); });
+        return map;
+    }, [scheduled]);
+
+    const selectedBooking = useMemo(() => bookings.find((b) => b.id === selectedId) || null, [bookings, selectedId]);
+    const todayISO = toISO(new Date());
+    const weekLabel = `${weekDays[0].toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} – ${weekDays[6].toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
     const StatusControl: React.FC<{ b: Booking }> = ({ b }) => (
         <div className="shrink-0 flex items-center gap-2">
@@ -110,6 +134,8 @@ const BookingsView: React.FC = () => {
         </button>
     );
 
+    const navBtn = 'grid place-items-center w-9 h-9 rounded-lg bg-white/5 text-text-subtle hover:text-white hover:bg-white/10 transition-colors';
+
     return (
         <div className="space-y-6 pt-24 md:pt-12 p-6 md:p-12 max-w-6xl mx-auto">
             <div className="pb-6 border-b border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -132,60 +158,120 @@ const BookingsView: React.FC = () => {
                 <TabButton id="orders" icon={<ShoppingBag size={15} />} label="Orders" count={orders.length} />
             </div>
 
-            {/* ---------------- CALENDAR (scheduled sessions) ---------------- */}
+            {/* ---------------- CALENDAR — weekly time grid ---------------- */}
             {tab === 'calendar' && (
-                <div className="grid lg:grid-cols-[auto,1fr] gap-6 items-start">
-                    <div className="rounded-2xl bg-cream text-ink p-3 flex justify-center [--rdp-accent-color:#DA8636] [--rdp-accent-background-color:#F1E6D8]">
-                        <DayPicker
-                            mode="single"
-                            selected={selected}
-                            onSelect={(d) => d && setSelected(d)}
-                            weekStartsOn={1}
-                            modifiers={{ booked: bookedDates }}
-                            modifiersClassNames={{ booked: 'day-booked' }}
-                        />
-                    </div>
-
-                    <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-4">
-                            <CalIcon size={16} className="text-lilac" />
-                            <h2 className="text-white font-serif font-semibold">{prettyDay(selectedISO)}</h2>
+                <div className="space-y-5">
+                    <div className="rounded-2xl bg-surface-1 border border-white/5 overflow-hidden">
+                        {/* week nav */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                            <div className="flex items-center gap-2">
+                                <button aria-label="Previous week" className={navBtn} onClick={() => setWeekStart(addDays(weekStart, -7))}><ChevronLeft size={16} /></button>
+                                <button className="px-3 h-9 rounded-lg bg-white/5 text-white text-sm font-medium hover:bg-white/10 transition-colors" onClick={() => setWeekStart(startOfWeek(new Date()))}>Today</button>
+                                <button aria-label="Next week" className={navBtn} onClick={() => setWeekStart(addDays(weekStart, 7))}><ChevronRight size={16} /></button>
+                            </div>
+                            <h2 className="text-white font-serif font-semibold text-sm">{weekLabel}</h2>
                         </div>
 
-                        {daySessions.length === 0 ? (
-                            <div className="text-center py-16 text-text-subtle bg-surface-1 border border-white/5 rounded-2xl">
-                                <Clock size={32} className="mx-auto mb-3 opacity-40" />
-                                <p className="text-sm">No sessions scheduled this day.</p>
-                                <p className="text-xs opacity-60 mt-1">Days with a dot on the calendar have sessions.</p>
-                            </div>
-                        ) : (
-                            <div className="grid gap-3">
-                                {daySessions.map((b) => (
-                                    <div key={b.id} className="bg-surface-1 border border-white/5 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-                                        <div className="sm:w-20 shrink-0 flex sm:flex-col items-baseline sm:items-start gap-2 sm:gap-0">
-                                            <div className="text-2xl font-serif font-bold text-white leading-none">{b.time}</div>
-                                            <div className="text-[0.6rem] uppercase tracking-wider text-text-subtle">{b.market}</div>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="text-white font-medium">{b.serviceName}</div>
-                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-text-subtle">
-                                                <span className="flex items-center gap-1.5"><User size={13} /> {b.name}</span>
-                                                {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {b.dob}</span>}
-                                                <span className="truncate">{b.contact}</span>
+                        {/* grid */}
+                        <div className="overflow-x-auto">
+                            <div className="min-w-[760px]">
+                                {/* day headers */}
+                                <div className="grid border-b border-white/5" style={{ gridTemplateColumns: '3.5rem repeat(7, minmax(0,1fr))' }}>
+                                    <div />
+                                    {weekDays.map((d, i) => {
+                                        const isToday = toISO(d) === todayISO;
+                                        return (
+                                            <div key={i} className={`py-2 text-center border-l border-white/5 ${isToday ? 'bg-lilac/10' : ''}`}>
+                                                <div className="text-[0.65rem] uppercase tracking-wider text-text-subtle">{WEEKDAYS[i]}</div>
+                                                <div className={`text-lg font-serif font-bold ${isToday ? 'text-lilac' : 'text-white'}`}>{d.getDate()}</div>
                                             </div>
-                                            {b.question && (
-                                                <div className="mt-2 flex items-start gap-1.5 text-sm text-text-subtle/80">
-                                                    <MessageSquare size={13} className="mt-0.5 shrink-0" />
-                                                    <span className="italic">{b.question}</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <StatusControl b={b} />
+                                        );
+                                    })}
+                                </div>
+
+                                {/* body: time gutter + 7 day columns */}
+                                <div className="grid" style={{ gridTemplateColumns: '3.5rem repeat(7, minmax(0,1fr))' }}>
+                                    {/* time gutter */}
+                                    <div className="relative" style={{ height: GRID_H }}>
+                                        {HOURS.map((h) => (
+                                            <div key={h} className="absolute right-2 -translate-y-1/2 text-[0.65rem] text-text-subtle tabular-nums" style={{ top: (h - 11) * HOUR_H }}>{fmtHour(h)}</div>
+                                        ))}
                                     </div>
-                                ))}
+
+                                    {/* day columns */}
+                                    {weekDays.map((day, di) => {
+                                        const dayISO = toISO(day);
+                                        const isToday = dayISO === todayISO;
+                                        const sessions = (byDay[dayISO] || []);
+                                        return (
+                                            <div key={di} className={`relative border-l border-white/5 ${isToday ? 'bg-lilac/[0.04]' : ''}`} style={{ height: GRID_H }}>
+                                                {/* hour lines */}
+                                                {HOURS.map((h) => (
+                                                    <div key={h} className="absolute left-0 right-0 border-t border-white/5" style={{ top: (h - 11) * HOUR_H }} />
+                                                ))}
+                                                {/* session blocks */}
+                                                {sessions.map((b) => {
+                                                    const start = toMin(b.time);
+                                                    const dur = b.durationMin && b.durationMin > 0 ? b.durationMin : 30;
+                                                    const top = Math.max(0, ((start - DAY_START) / 60) * HOUR_H);
+                                                    const height = Math.max(22, (dur / 60) * HOUR_H - 3);
+                                                    const endMin = start + dur;
+                                                    const endStr = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`;
+                                                    return (
+                                                        <button
+                                                            key={b.id}
+                                                            onClick={() => setSelectedId(b.id)}
+                                                            title={`${b.time}–${endStr} · ${b.serviceName} · ${b.name}`}
+                                                            className={`absolute left-1 right-1 rounded-md border px-1.5 py-1 text-left overflow-hidden transition-colors ${BLOCK_STYLE[b.status]} ${selectedId === b.id ? 'ring-2 ring-white/60' : ''}`}
+                                                            style={{ top, height }}
+                                                        >
+                                                            <div className="text-[9px] font-semibold leading-none tabular-nums opacity-90">{b.time}–{endStr}</div>
+                                                            <div className="text-[11px] font-semibold leading-tight truncate mt-0.5">{b.serviceName.split(' · ')[0]}</div>
+                                                            {height > 40 && <div className="text-[10px] leading-tight truncate opacity-90">{b.name}</div>}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        )}
+                        </div>
                     </div>
+
+                    {scheduled.length === 0 && !loading && !error && (
+                        <p className="text-center text-text-subtle text-sm py-4">No scheduled sessions yet.</p>
+                    )}
+
+                    {/* selected booking detail */}
+                    {selectedBooking && (
+                        <div className="bg-surface-1 border border-white/5 rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center gap-4">
+                            <div className="lg:w-44 shrink-0">
+                                <div className="flex items-center gap-2 text-white font-serif font-semibold">
+                                    <CalIcon size={15} className="text-lilac shrink-0" /> {selectedBooking.date}
+                                </div>
+                                <div className="text-text-subtle text-sm mt-0.5 pl-6">{selectedBooking.time} · <span className="uppercase text-[0.65rem] tracking-wider">{selectedBooking.market}</span></div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="text-white font-medium">{selectedBooking.serviceName}</div>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-text-subtle">
+                                    <span className="flex items-center gap-1.5"><User size={13} /> {selectedBooking.name}</span>
+                                    {selectedBooking.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {selectedBooking.dob}</span>}
+                                    <span className="truncate">{selectedBooking.contact}</span>
+                                </div>
+                                {selectedBooking.question && (
+                                    <div className="mt-2 flex items-start gap-1.5 text-sm text-text-subtle/80">
+                                        <MessageSquare size={13} className="mt-0.5 shrink-0" />
+                                        <span className="italic">{selectedBooking.question}</span>
+                                    </div>
+                                )}
+                            </div>
+                            <StatusControl b={selectedBooking} />
+                            <button aria-label="Close" onClick={() => setSelectedId(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-white hover:bg-white/10 transition-colors">
+                                <X size={16} />
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
