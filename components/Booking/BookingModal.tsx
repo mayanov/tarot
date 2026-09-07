@@ -188,21 +188,22 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   const summaryLine = `${service?.name || ''}${pkg ? ` · ${pkg}` : ''}${scheduled && date ? ` · ${toISODate(date)} · ${time ? timeRange(time) : ''}` : ''}`;
   const totalPrice = pkg ? priceFromText(pkg) : (service?.price || '');
 
-  // Payment methods card (Indonesian market) — shown on both the review and done steps.
-  const paymentPanel = isIndonesian ? (
+  // Payment methods card (Indonesian market). `compact` stacks QRIS above bank
+  // so it fits in a narrow side-by-side column on the confirmation step.
+  const paymentPanel = (compact: boolean) => !isIndonesian ? null : (
     <div className="text-left rounded-2xl bg-white border border-line overflow-hidden">
       <div className="px-5 py-3 bg-coral/[0.06] border-b border-line">
         <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Cara pembayaran', 'How to pay')}</span>
       </div>
-      <div className="p-5 grid sm:grid-cols-2 gap-5">
+      <div className={compact ? 'p-5 flex flex-col items-center gap-4 text-center' : 'p-5 grid sm:grid-cols-2 gap-5'}>
         <div className="flex flex-col items-center gap-2">
           <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Scan QRIS', 'Scan QRIS')}</span>
-          <div className="w-40 h-40 rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative">
+          <div className={`${compact ? 'w-36 h-36' : 'w-40 h-40'} rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative`}>
             <span className="text-[11px] text-taupe text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
             <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={(e) => { e.currentTarget.remove(); }} />
           </div>
         </div>
-        <div className="flex flex-col justify-center gap-1.5">
+        <div className={`flex flex-col gap-1.5 ${compact ? 'items-center' : 'justify-center'}`}>
           <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Transfer Bank', 'Bank transfer')}</span>
           <div className="font-serif font-semibold text-lg text-plum leading-tight">{PAYMENT.bankName}</div>
           <div className="text-base text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
@@ -213,7 +214,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         {t('Setelah transfer, kirim bukti pembayaran ke WhatsApp kami untuk konfirmasi.', 'After paying, send your payment proof to our WhatsApp to confirm.')}
       </div>
     </div>
-  ) : null;
+  );
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
@@ -221,7 +222,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       <div className="absolute inset-0 bg-plum-deep/60 backdrop-blur-2xl" onClick={close} />
 
       {/* panel — warm, light, on-brand with a plum undertone */}
-      <div className="relative w-full sm:max-w-lg md:max-w-xl max-h-[92vh] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)]">
+      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${step === 3 && isIndonesian ? 'sm:max-w-2xl md:max-w-3xl' : 'sm:max-w-lg md:max-w-xl'}`}>
         {/* soft glow accents — coral + plum (clipped, so they never add scroll) */}
         <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-coral/25 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-plum/20 blur-3xl" />
@@ -450,7 +451,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-2.5">{error}</div>}
 
-              <div className="rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden">
+              <div className={`grid gap-4 items-start ${isIndonesian ? 'md:grid-cols-2' : ''}`}>
+              <div className="rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden self-start">
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Layanan', 'Service')}</span>
                   <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
@@ -491,7 +493,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 </div>
               </div>
 
-              {paymentPanel && <div className="mt-4">{paymentPanel}</div>}
+              {paymentPanel(true)}
+              </div>
 
               <div className="sticky bottom-0 z-10 -mx-6 md:-mx-8 -mb-6 mt-6 px-6 md:px-8 py-4 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-between gap-3">
                 <button
@@ -552,9 +555,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </div>
 
               {/* Payment (Indonesian market) */}
-              {paymentPanel && (
+              {isIndonesian && (
                 <div className="mt-6">
-                  {paymentPanel}
+                  {paymentPanel(false)}
                 </div>
               )}
 
