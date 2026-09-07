@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, Calendar as CalIcon, User, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { RefreshCcw, Calendar as CalIcon, User, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X, Clock } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
 
 const STATUSES: Booking['status'][] = ['pending', 'confirmed', 'done', 'cancelled'];
@@ -253,37 +253,58 @@ const BookingsView: React.FC = () => {
             )}
 
             {/* selected booking detail — modal popover */}
-            {selectedBooking && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
-                    <div className="relative w-full max-w-md bg-surface-1 border border-white/10 rounded-2xl p-6 shadow-2xl">
-                        <button aria-label="Close" onClick={() => setSelectedId(null)} className="absolute top-4 right-4 grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-white hover:bg-white/10 transition-colors">
-                            <X size={16} />
-                        </button>
-                        <div className="flex items-center gap-2 text-lilac text-[0.65rem] uppercase tracking-[0.18em] font-semibold mb-2"><CalIcon size={14} /> Session</div>
-                        <h3 className="text-xl font-serif font-bold text-white pr-8">{selectedBooking.serviceName}</h3>
-                        <div className="mt-1 text-sm text-text-subtle">
-                            {selectedBooking.date} · {selectedBooking.time}
-                            {selectedBooking.durationMin ? `–${(() => { const e = toMin(selectedBooking.time) + selectedBooking.durationMin; return `${String(Math.floor(e / 60)).padStart(2, '0')}:${String(e % 60).padStart(2, '0')}`; })()}` : ''}
-                            <span className="ml-2 uppercase text-[0.6rem] tracking-wider">{selectedBooking.market}</span>
-                        </div>
+            {selectedBooking && (() => {
+                const b = selectedBooking;
+                const parts = b.serviceName.split(' · ');
+                const svcBase = parts[0];
+                const svcRest = parts.slice(1).join(' · ');
+                const endStr = b.durationMin
+                    ? (() => { const e = toMin(b.time) + b.durationMin; return `${String(Math.floor(e / 60)).padStart(2, '0')}:${String(e % 60).padStart(2, '0')}`; })()
+                    : '';
+                const Field: React.FC<{ label: string; value: string; italic?: boolean }> = ({ label, value, italic }) => (
+                    <div>
+                        <div className="text-[0.6rem] uppercase tracking-[0.18em] text-text-subtle mb-1">{label}</div>
+                        <div className={`text-sm text-white break-words ${italic ? 'italic text-text-light' : ''}`}>{value}</div>
+                    </div>
+                );
+                return (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
+                        <div className="relative w-full max-w-md bg-surface-1 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+                            {/* header */}
+                            <div className="p-5 border-b border-white/5">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-center gap-2 text-lilac text-[0.65rem] uppercase tracking-[0.18em] font-semibold"><CalIcon size={14} /> Session</div>
+                                    <button aria-label="Close" onClick={() => setSelectedId(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-white hover:bg-white/10 transition-colors">
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                                <h3 className="mt-2 text-lg font-serif font-bold text-white leading-snug">{svcBase}</h3>
+                                {svcRest && <div className="text-sm text-lilac mt-0.5">{svcRest}</div>}
+                                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-text-light">
+                                    <Clock size={14} className="text-text-subtle" />
+                                    <span className="tabular-nums">{b.date} · {b.time}{endStr && `–${endStr}`}</span>
+                                    <span className="px-1.5 py-0.5 rounded bg-white/10 text-[0.6rem] uppercase tracking-wider text-text-subtle">{b.market}</span>
+                                </div>
+                            </div>
 
-                        <div className="mt-5 space-y-2.5 text-sm">
-                            <div className="flex items-center gap-2 text-white"><User size={14} className="text-text-subtle" /> {selectedBooking.name}</div>
-                            {selectedBooking.dob && <div className="flex items-center gap-2 text-white"><Cake size={14} className="text-text-subtle" /> {selectedBooking.dob}</div>}
-                            <div className="flex items-center gap-2 text-white break-all"><span className="text-text-subtle text-xs uppercase tracking-wider w-14 shrink-0">Contact</span> {selectedBooking.contact}</div>
-                            {selectedBooking.question && (
-                                <div className="flex items-start gap-2 text-text-subtle/90 italic"><MessageSquare size={14} className="mt-0.5 shrink-0 text-text-subtle" /> {selectedBooking.question}</div>
-                            )}
-                        </div>
+                            {/* details */}
+                            <div className="p-5 grid grid-cols-2 gap-x-4 gap-y-4">
+                                <Field label="Name" value={b.name} />
+                                {b.dob && <Field label="Date of Birth" value={b.dob} />}
+                                <div className="col-span-2"><Field label="Contact" value={b.contact} /></div>
+                                {b.question && <div className="col-span-2"><Field label="Question" value={b.question} italic /></div>}
+                            </div>
 
-                        <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-between">
-                            <span className="text-xs uppercase tracking-wider text-text-subtle">Status</span>
-                            <StatusControl b={selectedBooking} />
+                            {/* status footer */}
+                            <div className="px-5 py-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between gap-3">
+                                <span className="text-xs uppercase tracking-wider text-text-subtle">Status</span>
+                                <StatusControl b={b} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
 
             {/* ---------------- ORDERS (async services) ---------------- */}
             {tab === 'orders' && (
