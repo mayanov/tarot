@@ -11,6 +11,7 @@ export interface BookingInput {
   date: string; // 'YYYY-MM-DD'
   time: string; // 'HH:mm'
   name: string;
+  dob: string; // date of birth 'YYYY-MM-DD'
   contact: string;
   question: string;
   market: 'ID' | 'Global';

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, Calendar as CalIcon, User, MessageSquare, Clock, ShoppingBag } from 'lucide-react';
+import { RefreshCcw, Calendar as CalIcon, User, MessageSquare, Clock, ShoppingBag, Cake } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { getAllBookings, Booking } from '../../services/booking';
@@ -164,6 +164,7 @@ const BookingsView: React.FC = () => {
                                             <div className="text-white font-medium">{b.serviceName}</div>
                                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-text-subtle">
                                                 <span className="flex items-center gap-1.5"><User size={13} /> {b.name}</span>
+                                                {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {b.dob}</span>}
                                                 <span className="truncate">{b.contact}</span>
                                             </div>
                                             {b.question && (
@@ -206,6 +207,7 @@ const BookingsView: React.FC = () => {
                                     )}
                                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-subtle">
                                         <span className="flex items-center gap-1.5"><User size={13} /> {b.name}</span>
+                                        {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {b.dob}</span>}
                                         <span className="truncate">{b.contact}</span>
                                     </div>
                                     {b.question && (

@@ -51,6 +51,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   const [taken, setTaken] = useState<string[]>([]);
   const [pkg, setPkg] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [dob, setDob] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -73,7 +74,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   const reset = useCallback(() => {
     setStep(0); setService(null); setDate(undefined); setTime(null); setPkg(null);
-    setName(''); setWhatsapp(''); setEmail(''); setError(''); setSubmitting(false);
+    setName(''); setDob(''); setWhatsapp(''); setEmail(''); setError(''); setSubmitting(false);
   }, []);
 
   const close = useCallback(() => { setOpen(false); }, []);
@@ -120,6 +121,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         date: service.scheduled && date ? toISODate(date) : '',
         time: service.scheduled ? (time || '') : '',
         name: name.trim(),
+        dob: dob,
         contact: [whatsapp.trim() && `WA: ${whatsapp.trim()}`, email.trim() && `Email: ${email.trim()}`].filter(Boolean).join(' · '),
         question: '',
         market: isIndonesian ? 'ID' : 'Global',
@@ -145,7 +147,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   const whatsappValid = waDigits.length >= 8;
   // Email is optional, but if given it must look like name@domain.tld
   const emailValid = email.trim() === '' || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
-  const detailsValid = name.trim().length > 1 && whatsappValid && emailValid && (!needsPackage || !!pkg);
+  const detailsValid = name.trim().length > 1 && dob.trim() !== '' && whatsappValid && emailValid && (!needsPackage || !!pkg);
   const scheduled = service?.scheduled ?? true;
   const totalSteps = scheduled ? 4 : 3;
   const displayStep = scheduled ? step + 1 : (step === 0 ? 1 : step);
@@ -354,6 +356,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                     placeholder={t('Nama kamu', 'Your name')} />
                 </label>
                 <label className="block">
+                  <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">{t('Tanggal Lahir', 'Date of Birth')}</span>
+                  <input value={dob} onChange={(e) => setDob(e.target.value)} type="date" max={toISODate(new Date())}
+                    className="w-full rounded-lg bg-white border border-line px-4 py-3 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all" />
+                </label>
+                <label className="block">
                   <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">WhatsApp</span>
                   <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value.replace(/[^\d+\s-]/g, ''))} type="tel" inputMode="tel"
                     className="w-full rounded-lg bg-white border border-line px-4 py-3 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
@@ -413,6 +420,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Nama', 'Name')}</span>
                   <span className="text-sm text-ink font-medium text-right">{name}</span>
+                </div>
+                <div className="flex items-start justify-between gap-4 px-4 py-3">
+                  <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Tanggal Lahir', 'Date of Birth')}</span>
+                  <span className="text-sm text-ink font-medium text-right">{dob}</span>
                 </div>
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">WhatsApp</span>
