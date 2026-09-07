@@ -360,7 +360,15 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-taupe mb-3">
                     <Clock className="w-3.5 h-3.5" /> {t('Pilih jam', 'Choose a time')}
                   </div>
-                  {visibleSlots.length === 0 ? (
+                  {time ? (
+                    // Selected slot(s) merged into the full booked range.
+                    <div className="flex items-center justify-between gap-3 rounded-lg border-2 border-coral bg-coral/10 px-4 py-3.5">
+                      <span className="flex items-center gap-2 text-lg font-serif font-bold text-plum tabular-nums">
+                        <Clock className="w-4 h-4 text-coral-deep" /> {time} – {addMinutes(time, durationMin || 30)}
+                      </span>
+                      <button type="button" onClick={() => setTime(null)} className="text-xs uppercase tracking-wider text-ink-soft hover:text-ink underline underline-offset-2">{t('Ubah', 'Change')}</button>
+                    </div>
+                  ) : visibleSlots.length === 0 ? (
                     <p className="text-sm text-ink-soft bg-ink/[0.04] border border-line rounded-lg px-4 py-3">
                       {t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}
                     </p>
