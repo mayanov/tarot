@@ -271,21 +271,20 @@ const BookingsView: React.FC = () => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
                         <div className="relative w-full max-w-md bg-surface-1 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
-                            {/* header */}
+                            {/* header — date & time first */}
                             <div className="p-5 border-b border-white/5">
                                 <div className="flex items-start justify-between gap-3">
-                                    <div className="flex items-center gap-2 text-lilac text-[0.65rem] uppercase tracking-[0.18em] font-semibold"><CalIcon size={14} /> Session</div>
+                                    <div className="flex flex-wrap items-center gap-2 text-sm text-text-light">
+                                        <Clock size={15} className="text-lilac" />
+                                        <span className="font-semibold tabular-nums">{b.date} · {b.time}{endStr && `–${endStr}`}</span>
+                                        <span className="px-1.5 py-0.5 rounded bg-white/10 text-[0.6rem] uppercase tracking-wider text-text-subtle">{b.market}</span>
+                                    </div>
                                     <button aria-label="Close" onClick={() => setSelectedId(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-white hover:bg-white/10 transition-colors">
                                         <X size={16} />
                                     </button>
                                 </div>
-                                <h3 className="mt-2 text-lg font-serif font-bold text-white leading-snug">{svcBase}</h3>
+                                <h3 className="mt-3 text-lg font-serif font-bold text-white leading-snug">{svcBase}</h3>
                                 {svcRest && <div className="text-sm text-lilac mt-0.5">{svcRest}</div>}
-                                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-text-light">
-                                    <Clock size={14} className="text-text-subtle" />
-                                    <span className="tabular-nums">{b.date} · {b.time}{endStr && `–${endStr}`}</span>
-                                    <span className="px-1.5 py-0.5 rounded bg-white/10 text-[0.6rem] uppercase tracking-wider text-text-subtle">{b.market}</span>
-                                </div>
                             </div>
 
                             {/* details */}
