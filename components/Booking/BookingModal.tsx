@@ -63,7 +63,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
     ? [
         { id: 'chat', name: 'Konsultasi via Chat', meta: 'WhatsApp · per pertanyaan', scheduled: false, packages: ['1 Pertanyaan · Rp 140K', '3 Pertanyaan · Rp 315K', 'Beli 3 Dapat 5 · Rp 315K (Promo)'] },
         { id: 'call', name: 'Call / Video Call', meta: 'Real-time · pilih durasi', scheduled: true, packages: ['30 Menit · Rp 220K', '60 Menit · Rp 360K'] },
-        { id: 'meetup', name: 'Sesi Tatap Muka', meta: 'Jakarta Selatan · 1 jam', scheduled: true },
+        { id: 'meetup', name: 'Sesi Tatap Muka', meta: 'Jakarta Selatan', scheduled: true, packages: ['1 Jam · Rp 450K', '2 Jam · Rp 810K', '3 Jam · Rp 1,17JT'] },
         { id: 'special', name: 'Edisi Spesial', meta: 'Bacaan tematik (PDF)', scheduled: false },
       ]
     : [
@@ -246,7 +246,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               {service?.packages && (
                 <div className="mb-5">
                   <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-2">
-                    {service.id === 'call' ? t('Pilih durasi', 'Choose duration') : t('Pilih paket', 'Choose a package')}
+                    {t('Pilih durasi', 'Choose duration')}
                   </span>
                   <div className="grid gap-2 sm:grid-cols-2">
                     {service.packages.map((p) => (
