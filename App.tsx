@@ -242,7 +242,13 @@ function App() {
   // ------------------------------------------------------------
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
     try {
-      return localStorage.getItem('admin_session') === 'true';
+      if (localStorage.getItem('admin_session') !== 'true') return false;
+      // Only stay "logged in" while the JWT is still present and unexpired,
+      // otherwise the dashboard shows but every admin API call 401s.
+      const tok = localStorage.getItem('authToken');
+      if (!tok) return false;
+      const payload = JSON.parse(atob(tok.split('.')[1]));
+      return typeof payload.exp === 'number' && payload.exp * 1000 > Date.now();
     } catch {
       return false;
     }
@@ -260,12 +266,13 @@ function App() {
     };
 
     const handleAdminLogout = async () => {
+      const base = import.meta.env.DEV ? 'http://localhost:3001' : '';
       try {
-        await fetch('http://localhost:3001/api/logout', { method: 'POST' });
-        localStorage.removeItem('authToken');
+        await fetch(`${base}/api/logout`, { method: 'POST', credentials: 'include' });
       } catch (e) {
         console.error("Logout failed", e);
       }
+      localStorage.removeItem('authToken');
       localStorage.removeItem('admin_session');
       setIsAdminLoggedIn(false);
       // Optional: Reset other states if needed, but unmounting Dashboard does it.

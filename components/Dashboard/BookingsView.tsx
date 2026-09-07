@@ -36,6 +36,12 @@ const BookingsView: React.FC = () => {
             const token = localStorage.getItem('authToken') || undefined;
             setBookings(await getAllBookings(token));
         } catch (e) {
+            // Token expired or invalid → send the admin back to the login screen.
+            if (e instanceof Error && e.message === 'HTTP_401') {
+                try { localStorage.removeItem('admin_session'); localStorage.removeItem('authToken'); } catch { /* ignore */ }
+                window.location.reload();
+                return;
+            }
             setError('Could not load bookings. Make sure you are logged in and the server is reachable.');
         } finally {
             setLoading(false);
