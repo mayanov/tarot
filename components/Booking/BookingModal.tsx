@@ -140,7 +140,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   const stepLabels = [t('Jenis Layanan', 'Service Type'), t('Jadwal', 'Schedule'), t('Detail', 'Details'), t('Konfirmasi', 'Review')];
   const needsPackage = !!service?.packages?.length;
-  const detailsValid = name.trim().length > 1 && whatsapp.trim().length > 3 && (!needsPackage || !!pkg);
+  // WhatsApp: digits only (with optional +/spaces/hyphens), at least 8 digits.
+  const waDigits = whatsapp.replace(/\D/g, '');
+  const whatsappValid = waDigits.length >= 8;
+  // Email is optional, but if given it must look like name@domain.tld
+  const emailValid = email.trim() === '' || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+  const detailsValid = name.trim().length > 1 && whatsappValid && emailValid && (!needsPackage || !!pkg);
   const scheduled = service?.scheduled ?? true;
   const totalSteps = scheduled ? 4 : 3;
   const displayStep = scheduled ? step + 1 : (step === 0 ? 1 : step);
@@ -277,7 +282,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                       {t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}
                     </p>
                   ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {visibleSlots.map((slot) => {
                       const isTaken = taken.includes(slot);
                       const active = time === slot;
@@ -294,7 +299,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                                 : 'border-line bg-white text-ink hover:border-coral hover:text-coral-deep'
                           }`}
                         >
-                          {timeRange(slot)}
+                          {slot}
                         </button>
                       );
                     })}
@@ -350,15 +355,21 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 </label>
                 <label className="block">
                   <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">WhatsApp</span>
-                  <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} type="tel" inputMode="tel"
+                  <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value.replace(/[^\d+\s-]/g, ''))} type="tel" inputMode="tel"
                     className="w-full rounded-lg bg-white border border-line px-4 py-3 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
                     placeholder={t('cth. 0812 3456 7890', 'e.g. +62 812 3456 7890')} />
+                  {whatsapp.trim() !== '' && !whatsappValid && (
+                    <span className="block mt-1.5 text-xs text-coral-deep">{t('Masukkan nomor telepon yang valid (min. 8 angka).', 'Enter a valid phone number (at least 8 digits).')}</span>
+                  )}
                 </label>
                 <label className="block">
                   <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">Email <span className="text-taupe/70 normal-case tracking-normal">({t('opsional', 'optional')})</span></span>
                   <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email"
                     className="w-full rounded-lg bg-white border border-line px-4 py-3 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
                     placeholder={t('nama@email.com', 'you@email.com')} />
+                  {!emailValid && (
+                    <span className="block mt-1.5 text-xs text-coral-deep">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
+                  )}
                 </label>
               </div>
 
