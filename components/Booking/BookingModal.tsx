@@ -252,8 +252,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </button>
             )}
             <div>
-              <div className="text-[0.62rem] uppercase tracking-[0.24em] text-coral-deep font-semibold">{t('Pesan Sesi', 'Book a Session')}</div>
-              {step < 4 && <div className="mt-1 text-sm text-taupe">{t('Langkah', 'Step')} {displayStep} / {totalSteps} · {stepLabels[step]}</div>}
+              <div className="text-[0.62rem] uppercase tracking-[0.24em] text-coral-deep font-semibold">{t('Booking Sesi', 'Book a Session')}</div>
+              {step < 4 && <div className="mt-1 text-base font-serif font-semibold text-plum leading-tight">{stepLabels[step]}</div>}
             </div>
           </div>
           <button onClick={close} aria-label="Close" className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-line bg-white/70 text-ink-soft hover:text-ink hover:border-ink/25 hover:bg-white transition-colors">
@@ -261,14 +261,40 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           </button>
         </div>
 
-        {/* progress */}
-        {step < 4 && (
-          <div className="px-6 md:px-8 pt-4">
-            <div className="h-1 rounded-full bg-ink/[0.08] overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-plum via-mauve to-coral transition-all duration-300" style={{ width: `${(displayStep / totalSteps) * 100}%` }} />
+        {/* stepper */}
+        {step < 4 && (() => {
+          const seq = scheduled ? [0, 1, 2, 3] : [0, 2, 3];
+          const cur = seq.indexOf(step);
+          return (
+            <div className="px-6 md:px-8 pt-5">
+              <div className="flex items-start">
+                {seq.map((s, i) => {
+                  const done = i < cur;
+                  const active = i === cur;
+                  return (
+                    <React.Fragment key={s}>
+                      <div className="flex flex-col items-center gap-1.5 shrink-0 w-16">
+                        <div className={`w-7 h-7 rounded-full grid place-items-center text-xs font-bold border-2 transition-colors ${
+                          done ? 'bg-coral border-coral text-ink'
+                            : active ? 'bg-coral/15 border-coral text-coral-deep'
+                              : 'bg-white border-line text-taupe'
+                        }`}>
+                          {done ? <Check className="w-3.5 h-3.5" /> : i + 1}
+                        </div>
+                        <span className={`text-[9px] uppercase tracking-wide text-center leading-tight ${active ? 'text-plum font-semibold' : 'text-taupe'}`}>
+                          {stepLabels[s]}
+                        </span>
+                      </div>
+                      {i < seq.length - 1 && (
+                        <div className={`flex-1 h-0.5 mt-3.5 rounded transition-colors ${i < cur ? 'bg-coral' : 'bg-line'}`} />
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         <div className="relative px-6 md:px-8 py-6">
           {/* STEP 0 — service */}
