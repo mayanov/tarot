@@ -300,7 +300,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 0 — service */}
           {step === 0 && (
             <div className="space-y-3">
-              <h3 className="font-serif font-semibold text-2xl text-plum mb-4">{t('Pilih jenis layanan', 'Choose a service type')}</h3>
               {services.map((s) => (
                 <button
                   key={s.id}
@@ -320,7 +319,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 1 — date & time */}
           {step === 1 && (
             <div>
-              <h3 className="font-serif font-semibold text-2xl text-plum mb-1">{t('Pilih tanggal & waktu', 'Pick a date & time')}</h3>
               <p className="text-sm text-ink-soft mb-5">{service?.name}</p>
 
               {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-2.5">{error}</div>}
@@ -410,7 +408,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 2 — details */}
           {step === 2 && (
             <div>
-              <h3 className="font-serif font-semibold text-2xl text-plum mb-1">{t('Detail kamu', 'Your details')}</h3>
               <p className="text-sm text-ink-soft mb-5 flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-coral-deep" />
                 {summaryLine}
@@ -480,7 +477,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 3 — review & confirm */}
           {step === 3 && (
             <div>
-              <h3 className="font-serif font-semibold text-2xl text-plum mb-1">{t('Konfirmasi booking', 'Confirm your booking')}</h3>
               <p className="text-sm text-ink-soft mb-5">{t('Cek dulu ya, sudah benar?', 'Please review before confirming.')}</p>
 
               {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-2.5">{error}</div>}
