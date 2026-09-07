@@ -300,8 +300,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 0 — service */}
           {step === 0 && (
             <div className="space-y-3">
-              <h3 className="font-serif font-semibold text-2xl text-plum mb-1">{t('Pilih jenis layanan', 'Choose a service type')}</h3>
-              <p className="text-sm text-ink-soft mb-4">{t('Mau sesi yang seperti apa?', 'What kind of session are you after?')}</p>
+              <h3 className="font-serif font-semibold text-2xl text-plum mb-4">{t('Pilih jenis layanan', 'Choose a service type')}</h3>
               {services.map((s) => (
                 <button
                   key={s.id}
