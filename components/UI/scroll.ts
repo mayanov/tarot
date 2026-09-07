@@ -29,6 +29,10 @@ export function getLenis(): Lenis | null {
     return lenis;
 }
 
+// Pause / resume inertia scrolling — used to fully lock the page behind a modal.
+export function stopLenis() { lenis?.stop(); }
+export function startLenis() { lenis?.start(); }
+
 // Smoothly scroll to an absolute Y (falls back to native if Lenis is absent).
 export function smoothScrollTo(top: number) {
     if (lenis) lenis.scrollTo(top, { duration: 1.1 });

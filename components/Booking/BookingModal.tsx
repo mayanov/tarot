@@ -5,6 +5,7 @@ import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock } from 'lucide-r
 import { FaWhatsapp } from 'react-icons/fa';
 import { SLOT_TIMES, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
 import { trackEvent } from '../../services/analytics';
+import { stopLenis, startLenis } from '../UI/scroll';
 
 interface BookingModalProps {
   isIndonesian?: boolean;
@@ -116,10 +117,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isIndonesian]);
 
-  // Lock scroll while open.
+  // Lock scroll while open — stop Lenis too, or it keeps scrolling the page behind.
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    if (open) stopLenis(); else startLenis();
+    return () => { document.body.style.overflow = ''; startLenis(); };
   }, [open]);
 
   // Load taken slots when a date is picked.
