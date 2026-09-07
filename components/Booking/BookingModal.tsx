@@ -492,9 +492,30 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               <p className="mt-3 text-ink-soft leading-relaxed max-w-sm mx-auto">
                 {t('Terima kasih, ', 'Thank you, ')}{name || t('kamu', 'friend')}. {t('Aku akan menghubungimu via WhatsApp', 'I’ll reach out on WhatsApp')} ({whatsapp}) {t('untuk konfirmasi.', 'to confirm.')}
               </p>
-              <div className="mt-5 inline-flex items-center gap-2 text-sm text-ink-soft bg-white border border-line rounded-full px-4 py-2">
-                <CalendarDays className="w-4 h-4 text-coral-deep" />
-                {service?.name}{pkg ? ` · ${pkg}` : ''}{scheduled && date ? ` · ${toISODate(date)} · ${time ? timeRange(time) : ''}` : ''}
+              {/* booking details — labelled rows for easy reading */}
+              <div className="mt-6 text-left rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden">
+                <div className="flex items-start justify-between gap-4 px-4 py-3">
+                  <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Layanan', 'Service')}</span>
+                  <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
+                </div>
+                {pkg && (
+                  <div className="flex items-start justify-between gap-4 px-4 py-3">
+                    <span className="text-xs uppercase tracking-[0.16em] text-taupe">{scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package')}</span>
+                    <span className="text-sm text-ink font-medium text-right">{pkg.split(' · ')[0]}</span>
+                  </div>
+                )}
+                {scheduled && date && (
+                  <>
+                    <div className="flex items-start justify-between gap-4 px-4 py-3">
+                      <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Tanggal', 'Date')}</span>
+                      <span className="text-sm text-ink font-medium text-right">{toISODate(date)}</span>
+                    </div>
+                    <div className="flex items-start justify-between gap-4 px-4 py-3">
+                      <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Waktu', 'Time')}</span>
+                      <span className="text-sm text-ink font-medium text-right">{time ? timeRange(time) : ''}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Payment (Indonesian market) */}
