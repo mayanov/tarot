@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import { SLOT_TIMES, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
 import { trackEvent } from '../../services/analytics';
 
@@ -58,7 +59,7 @@ const PAYMENT = {
   accountNumber: '0000000000',
   accountHolder: 'Mayanov Tarot',
   qrSrc: '/payment-qris.png',
-  waNumber: '', // e.g. '628123456789' — used for the "send proof" note
+  waNumber: '6287786280310', // business WhatsApp (same as the footer / floating button)
 };
 
 const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => {
@@ -187,6 +188,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   const summaryLine = `${service?.name || ''}${pkg ? ` · ${pkg}` : ''}${scheduled && date ? ` · ${toISODate(date)} · ${time ? timeRange(time) : ''}` : ''}`;
   const totalPrice = pkg ? priceFromText(pkg) : (service?.price || '');
+
+  // WhatsApp deep link for the success step — prefilled with the booking so the
+  // customer just attaches their payment proof.
+  const waServiceLine = `${service?.name || ''}${pkg ? ` · ${pkg.split(' · ')[0]}` : ''}${scheduled && date ? ` · ${toISODate(date)} ${time ? timeRange(time) : ''}` : ''}`;
+  const waMessage = isIndonesian
+    ? `Halo Mayanov, saya sudah booking:\n• ${waServiceLine}\n• Nama: ${name}\n• Total: ${totalPrice}\n\nIni bukti pembayaran saya 🙏`
+    : `Hi Mayanov, I've just booked:\n• ${waServiceLine}\n• Name: ${name}\n• Total: ${totalPrice}\n\nHere's my payment proof 🙏`;
+  const waLink = `https://wa.me/${PAYMENT.waNumber}?text=${encodeURIComponent(waMessage)}`;
 
   // Payment methods card (Indonesian market). `compact` stacks QRIS above bank
   // so it fits in a narrow side-by-side column on the confirmation step.
@@ -554,15 +563,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 </div>
               </div>
 
-              {/* Payment (Indonesian market) */}
-              {isIndonesian && (
-                <div className="mt-6">
-                  {paymentPanel(false)}
-                </div>
-              )}
+              <p className="mt-5 text-sm text-ink-soft max-w-sm mx-auto leading-relaxed">
+                {t('Klik tombol di bawah untuk kirim bukti pembayaran ke WhatsApp kami — detail booking sudah otomatis terisi.', 'Tap the button below to send your payment proof on WhatsApp — your booking details are pre-filled.')}
+              </p>
 
-              <div className="mt-8">
-                <button onClick={close} className="px-8 py-3 rounded-full bg-plum text-cream text-sm font-semibold hover:bg-plum-deep transition-colors">
+              <div className="mt-6 flex flex-col items-center gap-3">
+                <a
+                  href={waLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-[#25D366] text-white text-sm font-semibold hover:brightness-95 shadow-[0_12px_26px_-12px_rgba(37,211,102,0.9)] transition"
+                >
+                  <FaWhatsapp className="w-5 h-5" /> {t('Kirim Bukti Pembayaran', 'Send Payment Proof')}
+                </a>
+                <button onClick={close} className="text-sm text-ink-soft hover:text-ink underline underline-offset-4 transition-colors">
                   {t('Selesai', 'Done')}
                 </button>
               </div>
