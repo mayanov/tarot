@@ -51,6 +51,7 @@ const BookingsView: React.FC = () => {
     const [tab, setTab] = useState<'calendar' | 'orders'>('calendar');
     const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
     const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [orderView, setOrderView] = useState<'active' | 'done'>('active');
 
     const load = async () => {
         setLoading(true);
@@ -85,25 +86,29 @@ const BookingsView: React.FC = () => {
     };
 
     const scheduled = useMemo(() => bookings.filter((b) => b.date && b.time), [bookings]);
+    // Cancelled sessions are dropped from the calendar entirely.
+    const calendarSessions = useMemo(() => scheduled.filter((b) => b.status !== 'cancelled'), [scheduled]);
     const orders = useMemo(
         () => bookings.filter((b) => !(b.date && b.time)).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')),
         [bookings],
     );
+    const activeOrders = useMemo(() => orders.filter((b) => b.status !== 'done' && b.status !== 'cancelled'), [orders]);
+    const doneOrders = useMemo(() => orders.filter((b) => b.status === 'done' || b.status === 'cancelled'), [orders]);
 
     // Jump to the week of the nearest upcoming session once data loads.
     useEffect(() => {
-        if (!scheduled.length) return;
+        if (!calendarSessions.length) return;
         const todayISO = toISO(new Date());
-        const upcoming = [...new Set(scheduled.map((b) => b.date))].filter((d) => d >= todayISO).sort();
+        const upcoming = [...new Set(calendarSessions.map((b) => b.date))].filter((d) => d >= todayISO).sort();
         if (upcoming.length) setWeekStart(startOfWeek(parseISO(upcoming[0])));
-    }, [scheduled.length]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [calendarSessions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
     const byDay = useMemo(() => {
         const map: Record<string, Booking[]> = {};
-        scheduled.forEach((b) => { (map[b.date] ||= []).push(b); });
+        calendarSessions.forEach((b) => { (map[b.date] ||= []).push(b); });
         return map;
-    }, [scheduled]);
+    }, [calendarSessions]);
 
     const selectedBooking = useMemo(() => bookings.find((b) => b.id === selectedId) || null, [bookings, selectedId]);
     const todayISO = toISO(new Date());
@@ -154,7 +159,7 @@ const BookingsView: React.FC = () => {
             {error && <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/25 rounded-xl px-4 py-3">{error}</div>}
 
             <div className="flex gap-2">
-                <TabButton id="calendar" icon={<CalIcon size={15} />} label="Calendar" count={scheduled.length} />
+                <TabButton id="calendar" icon={<CalIcon size={15} />} label="Calendar" count={calendarSessions.length} />
                 <TabButton id="orders" icon={<ShoppingBag size={15} />} label="Orders" count={orders.length} />
             </div>
 
@@ -239,80 +244,108 @@ const BookingsView: React.FC = () => {
                         </div>
                     </div>
 
-                    {scheduled.length === 0 && !loading && !error && (
+                    {calendarSessions.length === 0 && !loading && !error && (
                         <p className="text-center text-text-subtle text-sm py-4">No scheduled sessions yet.</p>
                     )}
 
-                    {/* selected booking detail */}
-                    {selectedBooking && (
-                        <div className="bg-surface-1 border border-white/5 rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center gap-4">
-                            <div className="lg:w-44 shrink-0">
-                                <div className="flex items-center gap-2 text-white font-serif font-semibold">
-                                    <CalIcon size={15} className="text-lilac shrink-0" /> {selectedBooking.date}
-                                </div>
-                                <div className="text-text-subtle text-sm mt-0.5 pl-6">{selectedBooking.time} · <span className="uppercase text-[0.65rem] tracking-wider">{selectedBooking.market}</span></div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="text-white font-medium">{selectedBooking.serviceName}</div>
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-text-subtle">
-                                    <span className="flex items-center gap-1.5"><User size={13} /> {selectedBooking.name}</span>
-                                    {selectedBooking.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {selectedBooking.dob}</span>}
-                                    <span className="truncate">{selectedBooking.contact}</span>
-                                </div>
-                                {selectedBooking.question && (
-                                    <div className="mt-2 flex items-start gap-1.5 text-sm text-text-subtle/80">
-                                        <MessageSquare size={13} className="mt-0.5 shrink-0" />
-                                        <span className="italic">{selectedBooking.question}</span>
-                                    </div>
-                                )}
-                            </div>
-                            <StatusControl b={selectedBooking} />
-                            <button aria-label="Close" onClick={() => setSelectedId(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-white hover:bg-white/10 transition-colors">
-                                <X size={16} />
-                            </button>
+                </div>
+            )}
+
+            {/* selected booking detail — modal popover */}
+            {selectedBooking && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
+                    <div className="relative w-full max-w-md bg-surface-1 border border-white/10 rounded-2xl p-6 shadow-2xl">
+                        <button aria-label="Close" onClick={() => setSelectedId(null)} className="absolute top-4 right-4 grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-white hover:bg-white/10 transition-colors">
+                            <X size={16} />
+                        </button>
+                        <div className="flex items-center gap-2 text-lilac text-[0.65rem] uppercase tracking-[0.18em] font-semibold mb-2"><CalIcon size={14} /> Session</div>
+                        <h3 className="text-xl font-serif font-bold text-white pr-8">{selectedBooking.serviceName}</h3>
+                        <div className="mt-1 text-sm text-text-subtle">
+                            {selectedBooking.date} · {selectedBooking.time}
+                            {selectedBooking.durationMin ? `–${(() => { const e = toMin(selectedBooking.time) + selectedBooking.durationMin; return `${String(Math.floor(e / 60)).padStart(2, '0')}:${String(e % 60).padStart(2, '0')}`; })()}` : ''}
+                            <span className="ml-2 uppercase text-[0.6rem] tracking-wider">{selectedBooking.market}</span>
                         </div>
-                    )}
+
+                        <div className="mt-5 space-y-2.5 text-sm">
+                            <div className="flex items-center gap-2 text-white"><User size={14} className="text-text-subtle" /> {selectedBooking.name}</div>
+                            {selectedBooking.dob && <div className="flex items-center gap-2 text-white"><Cake size={14} className="text-text-subtle" /> {selectedBooking.dob}</div>}
+                            <div className="flex items-center gap-2 text-white break-all"><span className="text-text-subtle text-xs uppercase tracking-wider w-14 shrink-0">Contact</span> {selectedBooking.contact}</div>
+                            {selectedBooking.question && (
+                                <div className="flex items-start gap-2 text-text-subtle/90 italic"><MessageSquare size={14} className="mt-0.5 shrink-0 text-text-subtle" /> {selectedBooking.question}</div>
+                            )}
+                        </div>
+
+                        <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-between">
+                            <span className="text-xs uppercase tracking-wider text-text-subtle">Status</span>
+                            <StatusControl b={selectedBooking} />
+                        </div>
+                    </div>
                 </div>
             )}
 
             {/* ---------------- ORDERS (async services) ---------------- */}
             {tab === 'orders' && (
                 <>
-                    {!error && !loading && orders.length === 0 && (
-                        <div className="text-center py-20 text-text-subtle">
-                            <ShoppingBag size={40} className="mx-auto mb-4 opacity-40" />
-                            <p>No orders yet.</p>
-                        </div>
-                    )}
-                    <div className="grid gap-3">
-                        {orders.map((b) => (
-                            <div key={b.id} className="bg-surface-1 border border-white/5 rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center gap-4">
-                                <div className="lg:w-44 shrink-0">
-                                    <div className="text-white font-medium truncate">{b.serviceName.split(' · ')[0]}</div>
-                                    <div className="text-text-subtle text-xs mt-0.5">
-                                        {b.createdAt ? new Date(b.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : ''} · <span className="uppercase">{b.market}</span>
-                                    </div>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    {b.serviceName.includes(' · ') && (
-                                        <div className="text-sm text-lilac mb-1">{b.serviceName.split(' · ').slice(1).join(' · ')}</div>
-                                    )}
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-subtle">
-                                        <span className="flex items-center gap-1.5"><User size={13} /> {b.name}</span>
-                                        {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {b.dob}</span>}
-                                        <span className="truncate">{b.contact}</span>
-                                    </div>
-                                    {b.question && (
-                                        <div className="mt-2 flex items-start gap-1.5 text-sm text-text-subtle/80">
-                                            <MessageSquare size={13} className="mt-0.5 shrink-0" />
-                                            <span className="italic">{b.question}</span>
-                                        </div>
-                                    )}
-                                </div>
-                                <StatusControl b={b} />
-                            </div>
+                    {/* active / done sub-tabs */}
+                    <div className="inline-flex rounded-xl bg-white/5 p-1">
+                        {([['active', 'Active', activeOrders.length], ['done', 'Done', doneOrders.length]] as const).map(([id, label, count]) => (
+                            <button
+                                key={id}
+                                onClick={() => setOrderView(id)}
+                                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${orderView === id ? 'bg-lilac text-bg-dark' : 'text-text-subtle hover:text-white'}`}
+                            >
+                                {label}
+                                <span className={`text-[0.7rem] px-1.5 py-0.5 rounded-full ${orderView === id ? 'bg-black/15' : 'bg-white/10'}`}>{count}</span>
+                            </button>
                         ))}
                     </div>
+
+                    {(() => {
+                        const list = orderView === 'active' ? activeOrders : doneOrders;
+                        if (!error && !loading && list.length === 0) {
+                            return (
+                                <div className="text-center py-20 text-text-subtle">
+                                    <ShoppingBag size={40} className="mx-auto mb-4 opacity-40" />
+                                    <p>{orderView === 'active' ? 'No active orders.' : 'No completed orders.'}</p>
+                                </div>
+                            );
+                        }
+                        return (
+                            <div className="grid gap-3">
+                                {list.map((b) => {
+                                    const parts = b.serviceName.split(' · ');
+                                    const title = parts.length > 1 ? parts[1] : parts[0]; // chat → "3 Pertanyaan"
+                                    const price = parts.length > 2 ? parts.slice(2).join(' · ') : '';
+                                    return (
+                                        <div key={b.id} className="bg-surface-1 border border-white/5 rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center gap-4">
+                                            <div className="lg:w-44 shrink-0">
+                                                <div className="text-white font-medium truncate">{title}</div>
+                                                <div className="text-text-subtle text-xs mt-0.5">
+                                                    {b.createdAt ? new Date(b.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : ''} · <span className="uppercase">{b.market}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                {price && <div className="text-sm text-lilac mb-1">{price}</div>}
+                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-subtle">
+                                                    <span className="flex items-center gap-1.5"><User size={13} /> {b.name}</span>
+                                                    {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {b.dob}</span>}
+                                                    <span className="truncate">{b.contact}</span>
+                                                </div>
+                                                {b.question && (
+                                                    <div className="mt-2 flex items-start gap-1.5 text-sm text-text-subtle/80">
+                                                        <MessageSquare size={13} className="mt-0.5 shrink-0" />
+                                                        <span className="italic">{b.question}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <StatusControl b={b} />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })()}
                 </>
             )}
         </div>
