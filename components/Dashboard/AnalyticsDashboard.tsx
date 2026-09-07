@@ -317,7 +317,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
             </aside>
 
             {/* MAIN CONTENT AREA */}
-            <main className="flex-1 overflow-y-auto relative bg-bg-deep">
+            <main className="flex-1 overflow-y-auto relative bg-bg-deep" data-lenis-prevent>
                 {/* Mobile Header (Hamburger would go here if we were doing mobile fully, keeping simple for now) */}
                 {/* MAIN CONTENT SWITCHER */}
                 {activeView === 'bookings' ? (
