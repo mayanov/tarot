@@ -34,6 +34,14 @@ const addMinutes = (hhmm: string, mins: number) => {
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 };
 
+// 'YYYY-MM-DD' → 'dd Mon YYYY' (e.g. 29 Aug 1994)
+const fmtLongDate = (iso: string) => {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  const mon = new Date(y, (m || 1) - 1, d || 1).toLocaleDateString('en-US', { month: 'short' });
+  return `${String(d).padStart(2, '0')} ${mon} ${y}`;
+};
+
 // Pull the price token out of a package/service string ('· Rp 315K', '$20').
 const priceFromText = (s?: string | null): string => {
   if (!s) return '';
@@ -220,9 +228,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           <div className="text-base text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
           <div className="text-xs text-ink-soft">a.n. {PAYMENT.accountHolder}</div>
         </div>
-      </div>
-      <div className="px-5 pb-4 text-xs text-ink-soft leading-relaxed">
-        {t('Setelah transfer, kirim bukti pembayaran ke WhatsApp kami untuk konfirmasi.', 'After paying, send your payment proof to our WhatsApp to confirm.')}
       </div>
     </div>
   );
@@ -492,7 +497,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-2.5">{error}</div>}
 
               <div className={`grid gap-4 items-start ${isIndonesian ? 'md:grid-cols-2' : ''}`}>
-              <div className="rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden self-start">
+              <div className="space-y-4">
+              <div className="rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden">
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Layanan', 'Service')}</span>
                   <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
@@ -515,7 +521,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 </div>
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Tanggal Lahir', 'Date of Birth')}</span>
-                  <span className="text-sm text-ink font-medium text-right">{dob}</span>
+                  <span className="text-sm text-ink font-medium text-right">{fmtLongDate(dob)}</span>
                 </div>
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">WhatsApp</span>
@@ -531,6 +537,25 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Total', 'Total')}</span>
                   <span className="text-lg text-plum font-serif font-bold text-right">{totalPrice || '—'}</span>
                 </div>
+              </div>
+
+              {isIndonesian && (
+                <div className="rounded-2xl bg-white border border-line p-5">
+                  <div className="text-xs uppercase tracking-[0.16em] text-plum font-semibold mb-3">{t('Cara & Ketentuan', 'How it works')}</div>
+                  <ol className="space-y-3">
+                    {[
+                      t('Bayar via scan QRIS atau transfer bank.', 'Pay by scanning QRIS or bank transfer.'),
+                      t('Kirim bukti pembayaran ke WhatsApp kami untuk konfirmasi.', 'Send your payment proof to our WhatsApp to confirm.'),
+                      t('Tanpa pembayaran, booking otomatis dibatalkan dalam 1×24 jam.', 'Without payment, your booking is auto-cancelled within 24 hours.'),
+                    ].map((txt, i) => (
+                      <li key={i} className="flex gap-3 text-sm text-ink-soft leading-snug">
+                        <span className={`shrink-0 grid place-items-center w-5 h-5 rounded-full text-[0.65rem] font-bold ${i === 2 ? 'bg-coral-deep/15 text-coral-deep' : 'bg-coral/15 text-coral-deep'}`}>{i + 1}</span>
+                        <span className={i === 2 ? 'text-coral-deep font-medium' : ''}>{txt}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
               </div>
 
               {paymentPanel(true)}
