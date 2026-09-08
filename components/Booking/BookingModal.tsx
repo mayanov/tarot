@@ -496,8 +496,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-2.5">{error}</div>}
 
-              <div className={`grid gap-4 items-start ${isIndonesian ? 'md:grid-cols-2' : ''}`}>
               <div className="space-y-4">
+              <div className={`grid gap-4 items-start ${isIndonesian ? 'md:grid-cols-2' : ''}`}>
               <div className="rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden">
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Layanan', 'Service')}</span>
@@ -539,26 +539,26 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 </div>
               </div>
 
+              {paymentPanel(true)}
+              </div>
+
               {isIndonesian && (
                 <div className="rounded-2xl bg-white border border-line p-5">
-                  <div className="text-xs uppercase tracking-[0.16em] text-plum font-semibold mb-3">{t('Cara & Ketentuan', 'How it works')}</div>
-                  <ol className="space-y-3">
+                  <div className="text-xs uppercase tracking-[0.16em] text-plum font-semibold mb-4">{t('Cara & Ketentuan', 'How it works')}</div>
+                  <ol className="grid gap-4 sm:grid-cols-3">
                     {[
                       t('Bayar via scan QRIS atau transfer bank.', 'Pay by scanning QRIS or bank transfer.'),
                       t('Kirim bukti pembayaran ke WhatsApp kami untuk konfirmasi.', 'Send your payment proof to our WhatsApp to confirm.'),
                       t('Tanpa pembayaran, booking otomatis dibatalkan dalam 1×24 jam.', 'Without payment, your booking is auto-cancelled within 24 hours.'),
                     ].map((txt, i) => (
                       <li key={i} className="flex gap-3 text-sm text-ink-soft leading-snug">
-                        <span className={`shrink-0 grid place-items-center w-5 h-5 rounded-full text-[0.65rem] font-bold ${i === 2 ? 'bg-coral-deep/15 text-coral-deep' : 'bg-coral/15 text-coral-deep'}`}>{i + 1}</span>
+                        <span className={`shrink-0 grid place-items-center w-6 h-6 rounded-full text-xs font-bold ${i === 2 ? 'bg-coral-deep/15 text-coral-deep' : 'bg-coral/15 text-coral-deep'}`}>{i + 1}</span>
                         <span className={i === 2 ? 'text-coral-deep font-medium' : ''}>{txt}</span>
                       </li>
                     ))}
                   </ol>
                 </div>
               )}
-              </div>
-
-              {paymentPanel(true)}
               </div>
 
               <div className="sticky bottom-0 z-10 -mx-6 md:-mx-8 -mb-6 mt-6 px-6 md:px-8 py-4 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-between gap-3">
