@@ -218,7 +218,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       <div className={compact ? 'p-5 flex flex-col items-center gap-3 text-center' : 'p-5 grid sm:grid-cols-2 gap-5'}>
         <div className="flex flex-col items-center gap-2">
           <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Scan QRIS', 'Scan QRIS')}</span>
-          <div className={`${compact ? 'w-36 h-36' : 'w-40 h-40'} rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative`}>
+          <div className={`${compact ? 'w-28 h-28' : 'w-40 h-40'} rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative`}>
             <span className="text-[11px] text-taupe text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
             <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={(e) => { e.currentTarget.remove(); }} />
           </div>
@@ -230,8 +230,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         </div>
         <div className={`flex flex-col gap-1.5 ${compact ? 'items-center' : 'justify-center'}`}>
           <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Transfer Bank', 'Bank transfer')}</span>
-          <div className="font-serif font-semibold text-lg text-plum leading-tight">{PAYMENT.bankName}</div>
-          <div className="text-base text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
+          <div className="font-serif font-semibold text-base text-plum leading-tight">{PAYMENT.bankName}</div>
+          <div className="text-sm text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
           <div className="text-xs text-ink-soft">a.n. {PAYMENT.accountHolder}</div>
         </div>
       </div>
@@ -244,7 +244,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       <div className="absolute inset-0 bg-plum-deep/60 backdrop-blur-2xl" onClick={close} />
 
       {/* panel — warm, light, on-brand with a plum undertone */}
-      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${step === 3 && isIndonesian ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
+      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${step === 3 && isIndonesian ? 'sm:max-w-lg md:max-w-xl' : 'sm:max-w-md md:max-w-lg'}`}>
         {/* soft glow accents — coral + plum (clipped, so they never add scroll) */}
         <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-coral/25 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-plum/20 blur-3xl" />
