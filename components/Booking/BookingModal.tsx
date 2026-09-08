@@ -218,7 +218,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       <div className={compact ? 'p-5 flex flex-col items-center gap-3 text-center' : 'p-5 grid sm:grid-cols-2 gap-5'}>
         <div className="flex flex-col items-center gap-2">
           <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Scan QRIS', 'Scan QRIS')}</span>
-          <div className={`${compact ? 'w-28 h-28' : 'w-40 h-40'} rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative`}>
+          <div className={`${compact ? 'w-32 h-32' : 'w-40 h-40'} rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative`}>
             <span className="text-[11px] text-taupe text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
             <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={(e) => { e.currentTarget.remove(); }} />
           </div>
@@ -244,7 +244,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       <div className="absolute inset-0 bg-plum-deep/60 backdrop-blur-2xl" onClick={close} />
 
       {/* panel — warm, light, on-brand with a plum undertone */}
-      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${step === 3 && isIndonesian ? 'sm:max-w-lg md:max-w-xl' : 'sm:max-w-md md:max-w-lg'}`}>
+      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${step === 3 && isIndonesian ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
         {/* soft glow accents — coral + plum (clipped, so they never add scroll) */}
         <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-coral/25 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-plum/20 blur-3xl" />
@@ -334,7 +334,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
             <div>
               <p className="text-sm text-ink-soft mb-5">{service?.name}</p>
 
-              {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-2.5">{error}</div>}
+              {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-3">{error}</div>}
 
               {/* duration / package — choose before the time slot */}
               {service?.packages && (
@@ -382,7 +382,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                       <button type="button" onClick={() => setTime(null)} className="text-xs uppercase tracking-wider text-ink-soft hover:text-ink underline underline-offset-2">{t('Ubah', 'Change')}</button>
                     </div>
                   ) : visibleSlots.length === 0 ? (
-                    <p className="text-sm text-ink-soft bg-ink/[0.04] border border-line rounded-lg px-4 py-2.5">
+                    <p className="text-sm text-ink-soft bg-ink/[0.04] border border-line rounded-lg px-4 py-3">
                       {t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}
                     </p>
                   ) : (
@@ -498,41 +498,41 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 3 — review & confirm */}
           {step === 3 && (
             <div>
-              {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-2.5">{error}</div>}
+              {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-3">{error}</div>}
 
               <div className="space-y-4">
               <div className={`grid gap-4 items-stretch ${isIndonesian ? 'md:grid-cols-2' : ''}`}>
               <div className="rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden flex flex-col">
-                <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Layanan', 'Service')}</span>
                   <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
                 </div>
                 {pkg && (
-                  <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                  <div className="flex items-start justify-between gap-4 px-4 py-3">
                     <span className="text-xs uppercase tracking-[0.16em] text-taupe">{scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package')}</span>
                     <span className="text-sm text-ink font-medium text-right">{pkg}</span>
                   </div>
                 )}
                 {scheduled && date && (
-                  <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                  <div className="flex items-start justify-between gap-4 px-4 py-3">
                     <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Jadwal', 'Schedule')}</span>
                     <span className="text-sm text-ink font-medium text-right">{toISODate(date)} · {time && timeRange(time)}</span>
                   </div>
                 )}
-                <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Nama', 'Name')}</span>
                   <span className="text-sm text-ink font-medium text-right">{name}</span>
                 </div>
-                <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Tanggal Lahir', 'Date of Birth')}</span>
                   <span className="text-sm text-ink font-medium text-right">{fmtLongDate(dob)}</span>
                 </div>
-                <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">WhatsApp</span>
                   <span className="text-sm text-ink font-medium text-right break-all">{whatsapp}</span>
                 </div>
                 {email.trim() && (
-                  <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                  <div className="flex items-start justify-between gap-4 px-4 py-3">
                     <span className="text-xs uppercase tracking-[0.16em] text-taupe">Email</span>
                     <span className="text-sm text-ink font-medium text-right break-all">{email}</span>
                   </div>
@@ -591,23 +591,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </p>
               {/* booking details — labelled rows for easy reading */}
               <div className="mt-6 text-left rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden">
-                <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Layanan', 'Service')}</span>
                   <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
                 </div>
                 {pkg && (
-                  <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                  <div className="flex items-start justify-between gap-4 px-4 py-3">
                     <span className="text-xs uppercase tracking-[0.16em] text-taupe">{scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package')}</span>
                     <span className="text-sm text-ink font-medium text-right">{pkg.split(' · ')[0]}</span>
                   </div>
                 )}
                 {scheduled && date && (
                   <>
-                    <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                    <div className="flex items-start justify-between gap-4 px-4 py-3">
                       <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Tanggal', 'Date')}</span>
                       <span className="text-sm text-ink font-medium text-right">{toISODate(date)}</span>
                     </div>
-                    <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                    <div className="flex items-start justify-between gap-4 px-4 py-3">
                       <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Waktu', 'Time')}</span>
                       <span className="text-sm text-ink font-medium text-right">{time ? timeRange(time) : ''}</span>
                     </div>
