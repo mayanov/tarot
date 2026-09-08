@@ -646,9 +646,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                     {showPay ? t('Sembunyikan detail pembayaran', 'Hide payment details') : t('Lihat detail pembayaran', 'View payment details')}
                   </button>
                 )}
-                <button onClick={close} className="text-sm text-ink-soft hover:text-ink underline underline-offset-4 transition-colors">
-                  {t('Selesai', 'Done')}
-                </button>
               </div>
             </div>
           )}
