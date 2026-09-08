@@ -265,8 +265,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         <div className="flex h-screen bg-bg-deep text-text-light font-sans overflow-hidden">
             {/* SIDEBAR */}
             {/* SIDEBAR */}
-            <aside className="w-72 bg-surface-1 border-r border-white/5 flex flex-col hidden md:flex">
-                <div className="p-6 border-b border-white/5">
+            <aside className="w-72 bg-surface-1 border-r border-black/5 flex flex-col hidden md:flex">
+                <div className="p-6 border-b border-black/5">
                     <h2 className="text-xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
                         Mayanov Admin
                     </h2>
@@ -276,21 +276,21 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     {/* Active Menu */}
                     <button
                         onClick={() => setActiveView('analytics')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'analytics' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-white hover:bg-white/5'}`}>
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'analytics' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-ink hover:bg-black/5'}`}>
                         <BarChart2 size={18} />
                         <span>Analytics</span>
                     </button>
 
                     <button
                         onClick={() => setActiveView('users')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'users' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-white hover:bg-white/5'}`}>
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'users' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-ink hover:bg-black/5'}`}>
                         <Users size={18} />
                         <span>Manage Users</span>
                     </button>
 
                     <button
                         onClick={() => setActiveView('bookings')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'bookings' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-white hover:bg-white/5'}`}>
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'bookings' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-ink hover:bg-black/5'}`}>
                         <Calendar size={18} />
                         <span>Bookings</span>
                     </button>
@@ -299,11 +299,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     <button className="w-full flex items-center gap-3 px-4 py-3 text-text-subtle/50 cursor-not-allowed rounded-xl font-medium text-sm">
                         <RefreshCcw size={18} />
                         <span>Content Updates</span>
-                        <span className="ml-auto text-[10px] uppercase bg-white/5 text-text-subtle px-1.5 py-0.5 rounded">Soon</span>
+                        <span className="ml-auto text-[10px] uppercase bg-black/5 text-text-subtle px-1.5 py-0.5 rounded">Soon</span>
                     </button>
                 </nav>
 
-                <div className="p-4 border-t border-white/5">
+                <div className="p-4 border-t border-black/5">
                     {onLogout && (
                         <button
                             onClick={onLogout}
@@ -325,14 +325,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 ) : activeView === 'users' ? (
                     /* USER MANAGEMENT VIEW (Full Page) */
                     <div className="space-y-6 pt-24 md:pt-12 p-6 md:p-12 max-w-5xl mx-auto">
-                        <div className="pb-6 border-b border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="pb-6 border-b border-black/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
-                                <h1 className="text-3xl font-serif font-bold text-white mb-2">User Management</h1>
+                                <h1 className="text-3xl font-serif font-bold text-ink mb-2">User Management</h1>
                                 <p className="text-text-subtle text-sm">Control who has access to the admin dashboard.</p>
                             </div>
                             <button
                                 onClick={() => setShowAddUserModal(true)}
-                                className="px-4 py-2 bg-lilac text-bg-dark font-bold rounded-xl hover:bg-white hover:scale-105 transition-all text-sm flex items-center gap-2 shadow-lg shadow-lilac/20"
+                                className="px-4 py-2 bg-lilac text-ink font-bold rounded-xl hover:bg-white hover:scale-105 transition-all text-sm flex items-center gap-2 shadow-lg shadow-lilac/20"
                             >
                                 <Plus size={18} />
                                 <span>Add Access</span>
@@ -342,28 +342,28 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         <div className="grid grid-cols-1 gap-8">
                             {/* LIST SECTION */}
                             <div className="space-y-4">
-                                <div className="bg-surface-1 border border-white/5 rounded-2xl overflow-hidden shadow-lg">
-                                    <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-                                        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                <div className="bg-surface-1 border border-black/5 rounded-2xl overflow-hidden shadow-lg">
+                                    <div className="p-4 border-b border-black/5 flex justify-between items-center bg-black/5">
+                                        <h3 className="text-sm font-bold text-ink uppercase tracking-wider flex items-center gap-2">
                                             <Users size={16} className="text-lilac" /> Current Admins
                                         </h3>
                                         <span className="text-xs text-text-subtle font-mono">{userList.length} users</span>
                                     </div>
 
-                                    <div className="divide-y divide-white/5">
+                                    <div className="divide-y divide-black/5">
                                         {isLoadingUsers ? (
                                             <div className="p-8 flex justify-center">
                                                 <RefreshCcw className="animate-spin text-lilac" size={24} />
                                             </div>
                                         ) : userList.length > 0 ? (
                                             userList.map((u) => (
-                                                <div key={u} className="flex justify-between items-center p-4 hover:bg-white/5 transition-colors group">
+                                                <div key={u} className="flex justify-between items-center p-4 hover:bg-black/5 transition-colors group">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-lilac/20 to-teal-accent/20 flex items-center justify-center text-xs font-bold text-white border border-white/10">
+                                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-lilac/20 to-teal-accent/20 flex items-center justify-center text-xs font-bold text-ink border border-black/10">
                                                             {u.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-medium text-white">{u}</p>
+                                                            <p className="text-sm font-medium text-ink">{u}</p>
                                                             {u === currentUserEmail && <span className="text-[10px] text-teal-accent uppercase font-bold tracking-wider">It's You</span>}
                                                         </div>
                                                     </div>
@@ -390,15 +390,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         {/* ADD USER MODAL */}
                         {showAddUserModal && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                                <div className="bg-surface-1 border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 relative">
+                                <div className="bg-surface-1 border border-black/10 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 relative">
                                     <button
                                         onClick={() => setShowAddUserModal(false)}
-                                        className="absolute top-4 right-4 text-text-subtle hover:text-white transition-colors"
+                                        className="absolute top-4 right-4 text-text-subtle hover:text-ink transition-colors"
                                     >
                                         <X size={20} />
                                     </button>
 
-                                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                    <h3 className="text-xl font-bold text-ink mb-6 flex items-center gap-2">
                                         <Users size={20} className="text-lilac" /> Grant New Access
                                     </h3>
 
@@ -410,7 +410,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                 required
                                                 value={newUserEmail}
                                                 onChange={(e) => setNewUserEmail(e.target.value)}
-                                                className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-lilac focus:ring-1 focus:ring-lilac outline-none transition-all"
+                                                className="w-full bg-bg-dark border border-black/10 rounded-xl px-4 py-2.5 text-ink text-sm focus:border-lilac focus:ring-1 focus:ring-lilac outline-none transition-all"
                                                 placeholder="new.admin@example.com"
                                             />
                                         </div>
@@ -421,7 +421,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                 required
                                                 value={newUserPassword}
                                                 onChange={(e) => setNewUserPassword(e.target.value)}
-                                                className="w-full bg-bg-dark border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-lilac focus:ring-1 focus:ring-lilac outline-none transition-all"
+                                                className="w-full bg-bg-dark border border-black/10 rounded-xl px-4 py-2.5 text-ink text-sm focus:border-lilac focus:ring-1 focus:ring-lilac outline-none transition-all"
                                                 placeholder="Create specific password"
                                             />
                                         </div>
@@ -430,13 +430,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             <button
                                                 type="button"
                                                 onClick={() => setShowAddUserModal(false)}
-                                                className="flex-1 py-3 text-text-subtle hover:text-white transition-colors text-sm font-bold"
+                                                className="flex-1 py-3 text-text-subtle hover:text-ink transition-colors text-sm font-bold"
                                             >
                                                 Cancel
                                             </button>
                                             <button
                                                 type="submit"
-                                                className="flex-1 py-3 bg-lilac text-bg-dark font-bold rounded-xl hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-all text-sm shadow-lg shadow-lilac/20"
+                                                className="flex-1 py-3 bg-lilac text-ink font-bold rounded-xl hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-all text-sm shadow-lg shadow-lilac/20"
                                             >
                                                 Add Admin
                                             </button>
@@ -457,7 +457,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         <Lock size={20} />
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-bold text-white">Google Authorization Required</h3>
+                                        <h3 className="text-sm font-bold text-ink">Google Authorization Required</h3>
                                         <p className="text-xs text-text-subtle">
                                             {apiError.includes('popup_closed')
                                                 ? "Pop-up was closed. Please authorize to view data."
@@ -467,7 +467,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                 </div>
                                 <button
                                     onClick={handleConnect}
-                                    className="px-4 py-2 bg-lilac text-bg-dark text-xs font-bold rounded-lg hover:bg-white transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 bg-lilac text-ink text-xs font-bold rounded-lg hover:bg-white transition-colors flex items-center gap-2"
                                 >
                                     <LogIn size={14} />
                                     Authorize Access
@@ -476,10 +476,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         )}
 
                         {/* Header Area */}
-                        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 pb-6 border-b border-white/5">
+                        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 pb-6 border-b border-black/5">
                             <div>
                                 <div className="flex items-center gap-3">
-                                    <h1 className="text-3xl font-serif font-bold text-white">
+                                    <h1 className="text-3xl font-serif font-bold text-ink">
                                         Analytics Overview
                                     </h1>
                                     {isConnected && (
@@ -489,12 +489,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                     )}
                                 </div>
                                 <p className="text-text-subtle mt-1 text-sm">
-                                    Performance metrics for <span className="text-white font-medium">{startDate}</span> to <span className="text-white font-medium">{endDate}</span>
+                                    Performance metrics for <span className="text-ink font-medium">{startDate}</span> to <span className="text-ink font-medium">{endDate}</span>
                                 </p>
                             </div>
 
                             {/* Enhanced Controls Toolbar */}
-                            <div className="flex flex-col sm:flex-row gap-3 bg-surface-1 p-1.5 rounded-xl border border-white/10 shadow-lg">
+                            <div className="flex flex-col sm:flex-row gap-3 bg-surface-1 p-1.5 rounded-xl border border-black/10 shadow-lg">
                                 {/* Quick Filters */}
                                 <div className="flex bg-bg-dark/50 rounded-lg p-1">
                                     {(['7D', '30D', 'THIS_MONTH'] as DateRangePreset[]).map((preset) => (
@@ -502,8 +502,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             key={preset}
                                             onClick={() => applyPreset(preset)}
                                             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${activePreset === preset
-                                                ? 'bg-lilac text-bg-dark shadow-md'
-                                                : 'text-text-subtle hover:text-white hover:bg-white/5'
+                                                ? 'bg-lilac text-ink shadow-md'
+                                                : 'text-text-subtle hover:text-ink hover:bg-black/5'
                                                 }`}
                                         >
                                             {preset === '7D' ? 'Last 7 Days' : preset === '30D' ? 'Last 30 Days' : 'This Month'}
@@ -511,7 +511,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                     ))}
                                 </div>
 
-                                <div className="w-[1px] bg-white/10 hidden sm:block my-1" />
+                                <div className="w-[1px] bg-black/10 hidden sm:block my-1" />
 
                                 {/* Custom Range Trigger */}
                                 <div className="flex items-center gap-2 relative">
@@ -519,7 +519,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         onClick={() => applyPreset('CUSTOM')}
                                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all border ${activePreset === 'CUSTOM'
                                             ? 'bg-surface-2 border-lilac text-lilac'
-                                            : 'bg-transparent border-transparent text-text-subtle hover:bg-white/5'
+                                            : 'bg-transparent border-transparent text-text-subtle hover:bg-black/5'
                                             }`}
                                     >
                                         <Calendar size={14} />
@@ -529,7 +529,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                                     {/* Popover Date Inputs */}
                                     {showCustomPicker && (
-                                        <div className="absolute top-full right-0 mt-3 p-3 bg-surface-1 border border-white/10 rounded-xl shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200 min-w-max date-picker-popup">
+                                        <div className="absolute top-full right-0 mt-3 p-3 bg-surface-1 border border-black/10 rounded-xl shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200 min-w-max date-picker-popup">
                                             <div className="rdp-custom-wrapper">
                                                 <DayPicker
                                                     mode="range"
@@ -550,10 +550,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                     defaultMonth={startDate ? parseISO(startDate) : new Date()}
                                                 />
                                             </div>
-                                            <div className="pt-2 border-t border-white/5 flex justify-between items-center px-2">
+                                            <div className="pt-2 border-t border-black/5 flex justify-between items-center px-2">
                                                 <button
                                                     onClick={() => setShowCustomPicker(false)}
-                                                    className="text-xs text-text-subtle hover:text-white transition-colors"
+                                                    className="text-xs text-text-subtle hover:text-ink transition-colors"
                                                 >
                                                     Cancel
                                                 </button>
@@ -562,7 +562,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                         if (startDate && endDate) setShowCustomPicker(false);
                                                     }}
                                                     disabled={!startDate || !endDate}
-                                                    className="px-3 py-1.5 bg-lilac text-bg-dark text-xs font-bold rounded hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className="px-3 py-1.5 bg-lilac text-ink text-xs font-bold rounded hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     Apply Range
                                                 </button>
@@ -573,7 +573,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                                 <button
                                     onClick={() => loadData()}
-                                    className="p-2 bg-lilac/10 text-lilac hover:bg-lilac hover:text-bg-dark rounded-lg transition-colors flex items-center justify-center"
+                                    className="p-2 bg-lilac/10 text-lilac hover:bg-lilac hover:text-ink rounded-lg transition-colors flex items-center justify-center"
                                     title="Refresh Data"
                                 >
                                     <RefreshCcw size={16} className={`${isLoading ? 'animate-spin' : ''}`} />
@@ -583,7 +583,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                         {/* ERROR STATE */}
                         {apiError && !data ? (
-                            <div className="flex flex-col items-center justify-center p-12 border border-white/10 rounded-xl bg-surface-1">
+                            <div className="flex flex-col items-center justify-center p-12 border border-black/10 rounded-xl bg-surface-1">
                                 <Lock className="w-12 h-12 text-red-400 mb-4" />
                                 <h3 className="text-xl font-bold mb-2">Access Denied / Error</h3>
                                 <p className="text-text-subtle text-center max-w-md">{apiError}</p>
@@ -627,14 +627,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                 <div className="flex flex-col gap-6">
 
                                     {/* 1. Visual Traffic Trend */}
-                                    <div className="bg-surface-1 p-6 rounded-2xl border border-white/5 shadow-xl relative min-h-[400px]">
+                                    <div className="bg-surface-1 p-6 rounded-2xl border border-black/5 shadow-xl relative min-h-[400px]">
                                         <h3 className="text-xl font-serif mb-6 flex items-center gap-2">
                                             <Calendar size={20} className="text-lilac" />
                                             Visual Traffic Trend
                                         </h3>
 
                                         {isLoading ? (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-surface-1/50 backdrop-blur-sm rounded-2xl z-10 border border-white/5">
+                                            <div className="absolute inset-0 flex items-center justify-center bg-surface-1/50 backdrop-blur-sm rounded-2xl z-10 border border-black/5">
                                                 <RefreshCcw className="animate-spin text-lilac" size={32} />
                                             </div>
                                         ) : (
@@ -643,27 +643,27 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                     <AreaChart data={data?.dailyVisits} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                                         <defs>
                                                             <linearGradient id="colorID" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#C0A0FF" stopOpacity={0.3} />
-                                                                <stop offset="95%" stopColor="#C0A0FF" stopOpacity={0} />
+                                                                <stop offset="5%" stopColor="#DA8636" stopOpacity={0.28} />
+                                                                <stop offset="95%" stopColor="#DA8636" stopOpacity={0} />
                                                             </linearGradient>
                                                             <linearGradient id="colorGlobal" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#81F4FF" stopOpacity={0.3} />
-                                                                <stop offset="95%" stopColor="#81F4FF" stopOpacity={0} />
+                                                                <stop offset="5%" stopColor="#29527B" stopOpacity={0.28} />
+                                                                <stop offset="95%" stopColor="#29527B" stopOpacity={0} />
                                                             </linearGradient>
                                                         </defs>
-                                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" vertical={false} />
                                                         <XAxis
                                                             dataKey="date"
-                                                            stroke="#B4B4C5"
-                                                            tick={{ fill: '#B4B4C5', fontSize: 10 }}
+                                                            stroke="#8A879360"
+                                                            tick={{ fill: '#6E6B77', fontSize: 10 }}
                                                             tickLine={false}
                                                             axisLine={false}
                                                             interval="preserveStartEnd"
                                                             dy={10}
                                                         />
                                                         <YAxis
-                                                            stroke="#B4B4C5"
-                                                            tick={{ fill: '#B4B4C5', fontSize: 10 }}
+                                                            stroke="#8A879360"
+                                                            tick={{ fill: '#6E6B77', fontSize: 10 }}
                                                             tickLine={false}
                                                             axisLine={false}
                                                         />
@@ -672,7 +672,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                             type="monotone"
                                                             dataKey="visitsID"
                                                             name="Indonesia"
-                                                            stroke="#C0A0FF"
+                                                            stroke="#DA8636"
                                                             strokeWidth={3}
                                                             fillOpacity={1}
                                                             fill="url(#colorID)"
@@ -682,7 +682,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                             type="monotone"
                                                             dataKey="visitsGlobal"
                                                             name="Global (Others)"
-                                                            stroke="#81F4FF"
+                                                            stroke="#29527B"
                                                             strokeWidth={3}
                                                             fillOpacity={1}
                                                             fill="url(#colorGlobal)"
@@ -695,18 +695,18 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                     </div>
 
                                     {/* 2. Service Engagement Section */}
-                                    <div className="bg-surface-1 rounded-2xl border border-white/5 shadow-xl overflow-hidden relative min-h-[300px]">
-                                        <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <div className="bg-surface-1 rounded-2xl border border-black/5 shadow-xl overflow-hidden relative min-h-[300px]">
+                                        <div className="p-6 border-b border-black/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                             <h3 className="text-xl font-serif flex items-center gap-2">
                                                 <BarChart2 size={20} className="text-gold-accent" />
                                                 Service Engagement
                                             </h3>
-                                            <div className="flex bg-bg-dark rounded-lg p-1 border border-white/10">
+                                            <div className="flex bg-bg-dark rounded-lg p-1 border border-black/10">
                                                 <button
                                                     onClick={() => setServiceTab('ID')}
                                                     className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${serviceTab === 'ID'
-                                                        ? 'bg-lilac text-bg-dark shadow'
-                                                        : 'text-text-subtle hover:text-white'
+                                                        ? 'bg-lilac text-ink shadow'
+                                                        : 'text-text-subtle hover:text-ink'
                                                         }`}
                                                 >
                                                     Indonesia (IDR)
@@ -714,8 +714,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                 <button
                                                     onClick={() => setServiceTab('Global')}
                                                     className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${serviceTab === 'Global'
-                                                        ? 'bg-lilac text-bg-dark shadow'
-                                                        : 'text-text-subtle hover:text-white'
+                                                        ? 'bg-lilac text-ink shadow'
+                                                        : 'text-text-subtle hover:text-ink'
                                                         }`}
                                                 >
                                                     Global (USD)
@@ -724,14 +724,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         </div>
 
                                         {isLoading ? (
-                                            <div className="absolute inset-0 top-[80px] flex items-center justify-center bg-surface-1/50 backdrop-blur-sm z-10 border-t border-white/5">
+                                            <div className="absolute inset-0 top-[80px] flex items-center justify-center bg-surface-1/50 backdrop-blur-sm z-10 border-t border-black/5">
                                                 <RefreshCcw className="animate-spin text-gold-accent" size={32} />
                                             </div>
                                         ) : (
                                             <div className="p-6 overflow-x-auto">
                                                 <table className="w-full text-left border-collapse">
                                                     <thead>
-                                                        <tr className="text-xs text-text-subtle uppercase border-b border-white/5">
+                                                        <tr className="text-xs text-text-subtle uppercase border-b border-black/5">
                                                             <th className="py-3 font-semibold pb-4">Service Name</th>
                                                             <th className="py-3 font-semibold pb-4 text-right">Click Count</th>
                                                             <th className="py-3 font-semibold pb-4 text-right">Est. Revenue Potential</th>
@@ -739,7 +739,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                     </thead>
                                                     <tbody className="text-sm">
                                                         {(serviceTab === 'ID' ? data?.topServicesID : data?.topServicesGlobal)?.map((service, idx) => (
-                                                            <tr key={idx} className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors group">
+                                                            <tr key={idx} className="border-b border-black/5 last:border-0 hover:bg-black/5 transition-colors group">
                                                                 <td className="py-4 font-medium text-text-light group-hover:text-lilac transition-colors">
                                                                     {service.name}
                                                                 </td>
@@ -759,14 +759,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                     </div>
 
                                     {/* 3. Geography Breakdown (Moved Bottom) */}
-                                    <div className="bg-surface-1 p-6 rounded-2xl border border-white/5 shadow-xl flex flex-col relative min-h-[400px]">
+                                    <div className="bg-surface-1 p-6 rounded-2xl border border-black/5 shadow-xl flex flex-col relative min-h-[400px]">
                                         <h3 className="text-xl font-serif mb-6 flex items-center gap-2">
                                             <Globe size={20} className="text-teal-accent" />
                                             Geography
                                         </h3>
 
                                         {isLoading ? (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-surface-1/50 backdrop-blur-sm rounded-2xl z-10 border border-white/5">
+                                            <div className="absolute inset-0 flex items-center justify-center bg-surface-1/50 backdrop-blur-sm rounded-2xl z-10 border border-black/5">
                                                 <RefreshCcw className="animate-spin text-teal-accent" size={32} />
                                             </div>
                                         ) : (
@@ -810,19 +810,19 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 };
 
 const SummaryCard = ({ icon, label, value, trend, isNegative, loading }: any) => (
-    <div className="bg-surface-1 p-5 rounded-xl border border-white/5 flex flex-col gap-2 hover:border-lilac/30 transition-all group min-h-[140px] relative overflow-hidden">
+    <div className="bg-surface-1 p-5 rounded-xl border border-black/5 flex flex-col gap-2 hover:border-lilac/30 transition-all group min-h-[140px] relative overflow-hidden">
         {loading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-surface-1 z-10">
                 <div className="flex flex-col gap-3 w-full px-5">
-                    <div className="w-8 h-8 bg-white/5 rounded-lg animate-pulse" />
-                    <div className="h-3 w-20 bg-white/5 rounded animate-pulse" />
-                    <div className="h-8 w-32 bg-white/5 rounded animate-pulse" />
+                    <div className="w-8 h-8 bg-black/5 rounded-lg animate-pulse" />
+                    <div className="h-3 w-20 bg-black/5 rounded animate-pulse" />
+                    <div className="h-8 w-32 bg-black/5 rounded animate-pulse" />
                 </div>
             </div>
         ) : (
             <>
                 <div className="flex justify-between items-start">
-                    <div className="p-2 rounded-lg bg-surface-2 group-hover:bg-white/5 transition-colors">
+                    <div className="p-2 rounded-lg bg-surface-2 group-hover:bg-black/5 transition-colors">
                         {icon}
                     </div>
                     {trend && (
@@ -833,7 +833,7 @@ const SummaryCard = ({ icon, label, value, trend, isNegative, loading }: any) =>
                 </div>
                 <div>
                     <h4 className="text-text-subtle text-xs uppercase tracking-wider font-bold mb-1">{label}</h4>
-                    <p className="text-2xl font-bold font-serif text-white">{value}</p>
+                    <p className="text-2xl font-bold font-serif text-ink">{value}</p>
                 </div>
             </>
         )}
@@ -846,19 +846,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         const total = payload.reduce((sum: number, entry: any) => sum + (entry.value || 0), 0);
 
         return (
-            <div className="bg-[#20202A] border border-white/10 p-4 rounded-xl shadow-2xl backdrop-blur-md">
-                <p className="text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">{label}</p>
+            <div className="bg-white border border-black/10 p-4 rounded-xl shadow-xl">
+                <p className="text-text-subtle text-xs font-bold mb-3 uppercase tracking-wider">{label}</p>
                 <div className="space-y-2">
                     {payload.slice(0).reverse().map((entry: any, index: number) => (
                         <div key={index} className="flex items-center justify-between gap-6 text-sm">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                                <span className="text-gray-300">{entry.name}</span>
+                                <span className="text-ink-soft">{entry.name}</span>
                             </div>
-                            <span className="font-bold text-white font-mono">{entry.value}</span>
+                            <span className="font-bold text-ink font-mono">{entry.value}</span>
                         </div>
                     ))}
-                    <div className="pt-2 border-t border-white/10 flex justify-between items-center gap-6 mt-2">
+                    <div className="pt-2 border-t border-black/10 flex justify-between items-center gap-6 mt-2">
                         <span className="text-lilac font-bold text-xs uppercase">Total Visits</span>
                         <span className="text-lilac font-bold text-base font-mono">{total}</span>
                     </div>
