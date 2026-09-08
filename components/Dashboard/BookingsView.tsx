@@ -4,6 +4,13 @@ import { getAllBookings, Booking } from '../../services/booking';
 
 const STATUSES: Booking['status'][] = ['pending', 'confirmed', 'done', 'cancelled'];
 
+// Orders whose serviceName carries no package/price — supply a display name + price.
+const ORDER_OVERRIDE: Record<string, { title?: string; price?: string }> = {
+    'Edisi Spesial': { title: 'New Year Reading', price: 'Rp 250K' },
+    '3-Card Spread': { price: '$12' },
+    '5-Card Deep': { price: '$20' },
+};
+
 // Status pills — brand jewel palette, dark text on a light tint (light theme).
 const STATUS_STYLE: Record<Booking['status'], string> = {
     pending: 'bg-coral/15 text-coral-deep border-coral/40',
@@ -347,17 +354,16 @@ const BookingsView: React.FC = () => {
                             <div className="grid gap-3">
                                 {list.map((b) => {
                                     const parts = b.serviceName.split(' · ');
-                                    const item = parts.length > 1 ? parts[1] : parts[0]; // chat → "3 Pertanyaan"
-                                    const price = parts.length > 2 ? parts.slice(2).join(' · ') : '';
+                                    const override = ORDER_OVERRIDE[parts[0]] || {};
+                                    const item = override.title || (parts.length > 1 ? parts[1] : parts[0]); // chat → "3 Pertanyaan"
+                                    const price = (parts.length > 2 ? parts.slice(2).join(' · ') : '') || override.price || '';
                                     const created = b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                                     return (
                                         <div key={b.id} className="bg-surface-1 border border-black/5 rounded-2xl p-5 flex flex-col lg:flex-row lg:items-start gap-4">
                                             {/* customer + order */}
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-lg font-serif font-bold text-ink leading-tight">{b.name}</div>
-                                                <div className="text-text-subtle text-xs mt-1">
-                                                    <span className="text-ink-soft font-medium">{item}</span> · {created} · <span className="uppercase">{b.market}</span>
-                                                </div>
+                                                <div className="text-text-subtle text-xs mb-1.5">{created} · <span className="uppercase">{b.market}</span></div>
+                                                <div className="text-lg font-serif font-bold text-ink leading-tight">{b.name} - {item}</div>
                                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-text-subtle">
                                                     {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {fmtDate(b.dob)}</span>}
                                                     <span className="truncate">{b.contact}</span>
