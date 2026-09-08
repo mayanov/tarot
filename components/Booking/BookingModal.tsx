@@ -211,11 +211,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   // so it fits in a narrow side-by-side column on the confirmation step.
   const paymentPanel = (compact: boolean) => !isIndonesian ? null : (
     <div className="text-left rounded-2xl bg-white border border-line overflow-hidden">
-      <div className="px-5 py-3 bg-coral/[0.06] border-b border-line">
+      <div className="px-4 py-3 bg-coral/[0.06] border-b border-line">
         <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Cara pembayaran', 'How to pay')}</span>
         <p className="text-[0.7rem] text-taupe mt-0.5">{t('Scan QRIS atau transfer bank — pilih salah satu.', 'Scan the QRIS or transfer to the bank — either one.')}</p>
       </div>
-      <div className={compact ? 'p-5 flex flex-col items-center gap-3 text-center' : 'p-5 grid sm:grid-cols-2 gap-5'}>
+      <div className={compact ? 'p-5 flex flex-col items-center gap-4 text-center' : 'p-5 grid sm:grid-cols-2 gap-5'}>
         <div className="flex flex-col items-center gap-2">
           <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Scan QRIS', 'Scan QRIS')}</span>
           <div className={`${compact ? 'w-32 h-32' : 'w-40 h-40'} rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative`}>
@@ -500,9 +500,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
             <div>
               {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-3">{error}</div>}
 
-              <div className="space-y-4">
-              <div className={`grid gap-4 items-stretch ${isIndonesian ? 'md:grid-cols-2' : ''}`}>
-              <div className="rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden flex flex-col">
+              <div className="space-y-5">
+              <div className={`grid gap-5 items-start ${isIndonesian ? 'md:grid-cols-2' : ''}`}>
+              <div className="rounded-2xl bg-white border border-line overflow-hidden">
+                <div className="px-4 py-3 bg-coral/[0.06] border-b border-line">
+                  <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Ringkasan', 'Summary')}</span>
+                </div>
+                <div className="divide-y divide-line">
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Layanan', 'Service')}</span>
                   <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
@@ -537,7 +541,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                     <span className="text-sm text-ink font-medium text-right break-all">{email}</span>
                   </div>
                 )}
-                <div className="flex items-center justify-between gap-4 px-4 py-3.5 bg-coral/[0.06] mt-auto border-t border-line">
+                </div>
+                <div className="flex items-center justify-between gap-4 px-4 py-3.5 bg-coral/[0.06] border-t border-line">
                   <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Total', 'Total')}</span>
                   <span className="text-base text-plum font-serif font-bold text-right">{totalPrice || '—'}</span>
                 </div>
