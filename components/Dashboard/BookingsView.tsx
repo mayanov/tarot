@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, Calendar as CalIcon, User, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { RefreshCcw, Calendar as CalIcon, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
 
 const STATUSES: Booking['status'][] = ['pending', 'confirmed', 'done', 'cancelled'];
@@ -347,20 +347,18 @@ const BookingsView: React.FC = () => {
                             <div className="grid gap-3">
                                 {list.map((b) => {
                                     const parts = b.serviceName.split(' · ');
-                                    const title = parts.length > 1 ? parts[1] : parts[0]; // chat → "3 Pertanyaan"
+                                    const item = parts.length > 1 ? parts[1] : parts[0]; // chat → "3 Pertanyaan"
                                     const price = parts.length > 2 ? parts.slice(2).join(' · ') : '';
+                                    const created = b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                                     return (
-                                        <div key={b.id} className="bg-surface-1 border border-black/5 rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center gap-4">
-                                            <div className="lg:w-44 shrink-0">
-                                                <div className="text-ink font-medium truncate">{title}</div>
-                                                <div className="text-text-subtle text-xs mt-0.5">
-                                                    {b.createdAt ? new Date(b.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : ''} · <span className="uppercase">{b.market}</span>
-                                                </div>
-                                            </div>
+                                        <div key={b.id} className="bg-surface-1 border border-black/5 rounded-2xl p-5 flex flex-col lg:flex-row lg:items-start gap-4">
+                                            {/* customer + order */}
                                             <div className="flex-1 min-w-0">
-                                                {price && <div className="text-sm text-lilac mb-1">{price}</div>}
-                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-subtle">
-                                                    <span className="flex items-center gap-1.5"><User size={13} /> {b.name}</span>
+                                                <div className="text-lg font-serif font-bold text-ink leading-tight">{b.name}</div>
+                                                <div className="text-text-subtle text-xs mt-1">
+                                                    <span className="text-ink-soft font-medium">{item}</span> · {created} · <span className="uppercase">{b.market}</span>
+                                                </div>
+                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-text-subtle">
                                                     {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {fmtDate(b.dob)}</span>}
                                                     <span className="truncate">{b.contact}</span>
                                                 </div>
@@ -371,7 +369,11 @@ const BookingsView: React.FC = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            <StatusControl b={b} />
+                                            {/* price + status */}
+                                            <div className="shrink-0 flex flex-col items-start lg:items-end gap-2.5">
+                                                {price && <div className="text-base font-serif font-bold text-coral-deep whitespace-nowrap">{price}</div>}
+                                                <StatusControl b={b} />
+                                            </div>
                                         </div>
                                     );
                                 })}
