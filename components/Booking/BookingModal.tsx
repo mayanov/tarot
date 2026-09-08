@@ -213,14 +213,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
     <div className="text-left rounded-2xl bg-white border border-line overflow-hidden">
       <div className="px-5 py-3 bg-coral/[0.06] border-b border-line">
         <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Cara pembayaran', 'How to pay')}</span>
+        <p className="text-[0.7rem] text-taupe mt-0.5">{t('Scan QRIS atau transfer bank — pilih salah satu.', 'Scan the QRIS or transfer to the bank — either one.')}</p>
       </div>
-      <div className={compact ? 'p-5 flex flex-col items-center gap-4 text-center' : 'p-5 grid sm:grid-cols-2 gap-5'}>
+      <div className={compact ? 'p-5 flex flex-col items-center gap-3 text-center' : 'p-5 grid sm:grid-cols-2 gap-5'}>
         <div className="flex flex-col items-center gap-2">
           <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Scan QRIS', 'Scan QRIS')}</span>
           <div className={`${compact ? 'w-36 h-36' : 'w-40 h-40'} rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative`}>
             <span className="text-[11px] text-taupe text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
             <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={(e) => { e.currentTarget.remove(); }} />
           </div>
+        </div>
+        <div className={`flex items-center gap-3 w-full ${compact ? '' : 'hidden'}`}>
+          <div className="h-px flex-1 bg-line" />
+          <span className="text-[0.65rem] uppercase tracking-widest text-taupe">{t('atau', 'or')}</span>
+          <div className="h-px flex-1 bg-line" />
         </div>
         <div className={`flex flex-col gap-1.5 ${compact ? 'items-center' : 'justify-center'}`}>
           <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Transfer Bank', 'Bank transfer')}</span>
@@ -543,17 +549,19 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               {isIndonesian && (
                 <div className="rounded-2xl bg-white border border-line p-5">
                   <div className="text-xs uppercase tracking-[0.16em] text-plum font-semibold mb-4">{t('Cara & Ketentuan', 'How it works')}</div>
-                  <ol className="grid gap-4 sm:grid-cols-3">
+                  <ol className="grid gap-4 sm:grid-cols-2">
                     {[
-                      t('Bayar via scan QRIS atau transfer bank.', 'Pay by scanning QRIS or bank transfer.'),
-                      t('Kirim bukti pembayaran ke WhatsApp kami untuk konfirmasi.', 'Send your payment proof to our WhatsApp to confirm.'),
-                      t('Tanpa pembayaran, booking otomatis dibatalkan dalam 1×24 jam.', 'Without payment, your booking is auto-cancelled within 24 hours.'),
-                    ].map((txt, i) => (
-                      <li key={i} className="flex gap-2.5 text-xs text-ink-soft leading-relaxed">
-                        <span className={`shrink-0 grid place-items-center w-5 h-5 rounded-full text-[0.6rem] font-bold ${i === 2 ? 'bg-coral-deep/15 text-coral-deep' : 'bg-coral/15 text-coral-deep'}`}>{i + 1}</span>
-                        <span className={i === 2 ? 'text-coral-deep font-medium' : ''}>{txt}</span>
-                      </li>
-                    ))}
+                      t('Setelah konfirmasi, kirim bukti pembayaran melalui WhatsApp.', 'After confirming, send your payment proof via WhatsApp.'),
+                      t('Tanpa pembayaran, booking akan otomatis dibatalkan.', 'Without payment, your booking will be auto-cancelled.'),
+                    ].map((txt, i, arr) => {
+                      const warn = i === arr.length - 1;
+                      return (
+                        <li key={i} className="flex gap-2.5 text-xs text-ink-soft leading-relaxed">
+                          <span className={`shrink-0 grid place-items-center w-5 h-5 rounded-full text-[0.6rem] font-bold ${warn ? 'bg-coral-deep/15 text-coral-deep' : 'bg-coral/15 text-coral-deep'}`}>{i + 1}</span>
+                          <span className={warn ? 'text-coral-deep font-medium' : ''}>{txt}</span>
+                        </li>
+                      );
+                    })}
                   </ol>
                 </div>
               )}
