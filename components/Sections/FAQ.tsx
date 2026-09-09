@@ -100,7 +100,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="faq"
-      className="py-16 md:py-24 relative overflow-hidden isolate"
+      className="pt-16 md:pt-24 pb-6 md:pb-10 relative overflow-hidden isolate"
     >
       <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
         <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16">
