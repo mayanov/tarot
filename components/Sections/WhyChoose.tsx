@@ -81,7 +81,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             {/* header — title left, subtitle right */}
             <div className="grid lg:grid-cols-12 gap-y-5 lg:gap-x-16 items-end mb-10 md:mb-14">
               <h2 className="lg:col-span-7 font-serif font-semibold text-cream text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
-                {isIndonesian ? 'Kenapa baca tarot sama Mayanov?' : 'Why work with me?'}
+                {isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}
               </h2>
               <p className="lg:col-span-4 lg:col-start-9 text-cream/70 font-light leading-relaxed lg:pb-2">
                 {isIndonesian
@@ -96,7 +96,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
                 const Icon = ICONS[index % ICONS.length];
                 return (
                   <FadeIn key={index} delay={index * 70} dir="up">
-                    <div className="group h-full rounded-2xl bg-white/[0.08] p-6 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.12]">
+                    <div className="group h-full rounded-lg bg-[#262528] p-6 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:bg-[#2E2D31]">
                       <Icon className="w-7 h-7 text-coral transition-transform duration-300 group-hover:scale-110" strokeWidth={1.75} />
                       <h3 className="mt-5 text-lg md:text-xl font-serif font-semibold text-cream leading-snug tracking-tight">
                         {reason.title}
