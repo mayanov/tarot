@@ -96,12 +96,12 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
                 const Icon = ICONS[index % ICONS.length];
                 return (
                   <FadeIn key={index} delay={index * 70} dir="up">
-                    <div className="group h-full rounded-lg bg-[#262528] p-6 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:bg-[#2E2D31]">
-                      <Icon className="w-7 h-7 text-coral transition-transform duration-300 group-hover:scale-110" strokeWidth={1.75} />
-                      <h3 className="mt-5 text-lg md:text-xl font-serif font-semibold text-cream leading-snug tracking-tight">
+                    <div className="group h-full rounded-lg bg-[#F2F1EF] p-6 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:bg-[#EAE9E6]">
+                      <Icon className="w-7 h-7 text-coral-deep transition-transform duration-300 group-hover:scale-110" strokeWidth={1.75} />
+                      <h3 className="mt-5 text-lg md:text-xl font-serif font-semibold text-ink leading-snug tracking-tight">
                         {reason.title}
                       </h3>
-                      <p className="mt-2.5 text-sm md:text-[0.95rem] text-cream font-light leading-relaxed">
+                      <p className="mt-2.5 text-sm md:text-[0.95rem] text-ink-soft font-light leading-relaxed">
                         {reason.description}
                       </p>
                     </div>
