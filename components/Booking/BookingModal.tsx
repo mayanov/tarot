@@ -434,7 +434,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 {summaryLine}
               </p>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {service?.packages && !scheduled && (
                   <div>
                     <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-2">{t('Pilih paket', 'Choose a package')}</span>
@@ -444,7 +444,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                           key={p}
                           type="button"
                           onClick={() => setPkg(p)}
-                          className={`text-left rounded-lg border px-4 py-2.5 text-sm transition-colors ${pkg === p ? 'border-coral bg-coral/10 text-plum font-medium' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
+                          className={`text-left rounded-lg border px-3.5 py-2 text-sm transition-colors ${pkg === p ? 'border-coral bg-coral/10 text-plum font-medium' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
                         >
                           {p}
                         </button>
@@ -455,18 +455,18 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 <label className="block">
                   <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">{t('Nama', 'Name')}</span>
                   <input value={name} onChange={(e) => setName(e.target.value)} type="text"
-                    className="w-full rounded-lg bg-white border border-line px-4 py-2.5 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
+                    className="w-full rounded-lg bg-white border border-line px-3.5 py-2 text-sm text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
                     placeholder={t('Nama kamu', 'Your name')} />
                 </label>
                 <label className="block">
                   <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">{t('Tanggal Lahir', 'Date of Birth')}</span>
                   <input value={dob} onChange={(e) => setDob(e.target.value)} type="date" max={toISODate(new Date())}
-                    className="w-full rounded-lg bg-white border border-line px-4 py-2.5 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all" />
+                    className="w-full rounded-lg bg-white border border-line px-3.5 py-2 text-sm text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all" />
                 </label>
                 <label className="block">
                   <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">WhatsApp</span>
                   <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value.replace(/[^\d+\s-]/g, ''))} type="tel" inputMode="tel"
-                    className="w-full rounded-lg bg-white border border-line px-4 py-2.5 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
+                    className="w-full rounded-lg bg-white border border-line px-3.5 py-2 text-sm text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
                     placeholder={t('cth. 0812 3456 7890', 'e.g. +62 812 3456 7890')} />
                   {whatsapp.trim() !== '' && !whatsappValid && (
                     <span className="block mt-1.5 text-xs text-coral-deep">{t('Masukkan nomor telepon yang valid (min. 8 angka).', 'Enter a valid phone number (at least 8 digits).')}</span>
@@ -475,7 +475,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 <label className="block">
                   <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">Email <span className="text-taupe/70 normal-case tracking-normal">({t('opsional', 'optional')})</span></span>
                   <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email"
-                    className="w-full rounded-lg bg-white border border-line px-4 py-2.5 text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
+                    className="w-full rounded-lg bg-white border border-line px-3.5 py-2 text-sm text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
                     placeholder={t('nama@email.com', 'you@email.com')} />
                   {!emailValid && (
                     <span className="block mt-1.5 text-xs text-coral-deep">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
