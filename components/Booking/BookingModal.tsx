@@ -438,17 +438,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 {service?.packages && !scheduled && (
                   <div>
                     <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-2">{t('Pilih paket', 'Choose a package')}</span>
-                    <div className="grid gap-2">
-                      {service.packages.map((p) => (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => setPkg(p)}
-                          className={`text-left rounded-lg border px-3.5 py-2 text-sm transition-colors ${pkg === p ? 'border-coral bg-coral/10 text-plum font-medium' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
-                        >
-                          {p}
-                        </button>
-                      ))}
+                    <div className="grid grid-cols-3 gap-2">
+                      {service.packages.map((p) => {
+                        const [pName, ...pRest] = p.split(' · ');
+                        const pPrice = pRest.join(' · ');
+                        const active = pkg === p;
+                        return (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setPkg(p)}
+                            className={`flex flex-col text-center rounded-lg border px-2 py-2.5 transition-colors ${active ? 'border-coral bg-coral/10 text-plum' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
+                          >
+                            <span className="text-xs font-medium leading-snug">{pName}</span>
+                            {pPrice && <span className={`mt-1 text-[0.7rem] leading-snug ${active ? 'text-plum/80' : 'text-taupe'}`}>{pPrice}</span>}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
