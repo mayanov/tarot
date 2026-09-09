@@ -20,7 +20,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
     <section id="about" className="py-10 md:py-16 relative overflow-hidden isolate">
       <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
         <FadeIn>
-          <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-[#F5F1EA] shadow-[0_40px_120px_-55px_rgba(0,0,0,0.7)] grid lg:grid-cols-12">
+          <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-[#F5F1EA] shadow-[0_14px_44px_-26px_rgba(0,0,0,0.45)] grid lg:grid-cols-12">
             {/* LEFT — full-bleed portrait */}
             <div className="lg:col-span-5 relative min-h-[24rem] lg:min-h-0">
               <img

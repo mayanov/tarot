@@ -114,7 +114,7 @@ const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndones
 const CategoryCard: React.FC<{ g: any; mesh: string; isIndonesian: boolean; delay?: number }> = ({ g, mesh, isIndonesian, delay = 0 }) => (
     <div
         id={g.id || undefined}
-        className="animate-fade-up scroll-mt-28 relative overflow-hidden isolate rounded-2xl border border-black/5 p-6 md:p-7 lg:p-8 flex flex-col shadow-[0_30px_70px_-40px_rgba(0,0,0,0.75)]"
+        className="animate-fade-up scroll-mt-28 relative overflow-hidden isolate rounded-2xl border border-black/5 p-6 md:p-7 lg:p-8 flex flex-col shadow-[0_14px_44px_-26px_rgba(0,0,0,0.5)]"
         style={{ background: mesh, animationDelay: `${delay}ms` }}
     >
         <div className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-[0.14]" style={{ backgroundImage: GRAIN, backgroundSize: '130px 130px' }} />
@@ -319,7 +319,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         <div
                             key={g.type}
                             id={g.id || undefined}
-                            className="animate-fade-up scroll-mt-28 relative overflow-hidden isolate rounded-2xl border border-black/5 p-6 md:p-8 lg:p-10 mt-5 lg:mt-6 shadow-[0_30px_70px_-40px_rgba(0,0,0,0.75)]"
+                            className="animate-fade-up scroll-mt-28 relative overflow-hidden isolate rounded-2xl border border-black/5 p-6 md:p-8 lg:p-10 mt-5 lg:mt-6 shadow-[0_14px_44px_-26px_rgba(0,0,0,0.5)]"
                             style={{ background: MESHES[3], animationDelay: '320ms' }}
                         >
                             <div className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-[0.14]" style={{ backgroundImage: GRAIN, backgroundSize: '130px 130px' }} />

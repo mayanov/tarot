@@ -24,7 +24,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
         <section id="disclaimer" className="py-14 md:py-20 relative overflow-hidden isolate">
             <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
                 <FadeIn>
-                    <div className="rounded-2xl md:rounded-[1.75rem] border border-white/10 bg-plum-deep/80 backdrop-blur-md shadow-[0_40px_100px_-60px_rgba(0,0,0,0.8)] p-7 md:p-10 lg:p-12">
+                    <div className="rounded-2xl md:rounded-[1.75rem] border border-white/10 bg-plum-deep/80 backdrop-blur-md shadow-[0_14px_44px_-26px_rgba(0,0,0,0.5)] p-7 md:p-10 lg:p-12">
                         <div className="grid lg:grid-cols-12 gap-y-9 lg:gap-x-16">
                             {/* LEFT — title + subtitle */}
                             <div className="lg:col-span-4">

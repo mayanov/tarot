@@ -76,7 +76,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
       className="py-10 md:py-16 relative overflow-hidden text-cream isolate"
     >
       <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
-        <div className="relative overflow-hidden rounded-xl md:rounded-2xl border border-white/10 bg-plum-deep/80 backdrop-blur-md shadow-[0_40px_120px_-55px_rgba(0,0,0,0.85)] px-6 sm:px-10 md:px-14 lg:px-16 py-14 md:py-20">
+        <div className="relative overflow-hidden rounded-xl md:rounded-2xl border border-white/10 bg-plum-deep/80 backdrop-blur-md shadow-[0_14px_44px_-26px_rgba(0,0,0,0.55)] px-6 sm:px-10 md:px-14 lg:px-16 py-14 md:py-20">
           <FadeIn>
             {/* header — title left, subtitle right */}
             <div className="grid lg:grid-cols-12 gap-y-5 lg:gap-x-16 items-end mb-10 md:mb-14">
