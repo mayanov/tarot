@@ -105,10 +105,8 @@ export async function createBooking(input) {
       }
     }
     await ref.set(booking);
-    if (hasSlot) {
-      const eventId = await gcal.createEvent(booking);
-      if (eventId) { booking.gcalEventId = eventId; await ref.update({ gcalEventId: eventId }); }
-    }
+    const eventId = await gcal.createEvent(booking);
+    if (eventId) { booking.gcalEventId = eventId; await ref.update({ gcalEventId: eventId }); }
     return booking;
   }
 
@@ -125,10 +123,8 @@ export async function createBooking(input) {
   const cleaned = hasSlot ? all.filter((b) => b.id !== id) : all;
   cleaned.push(booking);
   writeAll(cleaned);
-  if (hasSlot) {
-    const eventId = await gcal.createEvent(booking);
-    if (eventId) { booking.gcalEventId = eventId; writeAll(cleaned); }
-  }
+  const eventId = await gcal.createEvent(booking);
+  if (eventId) { booking.gcalEventId = eventId; writeAll(cleaned); }
   return booking;
 }
 

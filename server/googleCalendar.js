@@ -26,6 +26,12 @@ for (let m = 11 * 60; m <= 20 * 60; m += 30) GRID.push(m);
 const toMin = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
 const toHHMM = (min) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 const rfc3339 = (date, hhmm) => `${date}T${hhmm}:00${OFFSET}`;
+const todayISO = () => new Date().toISOString().slice(0, 10);
+const nextDay = (isoDate) => {
+  const d = new Date(`${isoDate}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+};
 
 let jwtClient = null;
 let disabledReason = null;
@@ -63,13 +69,14 @@ async function accessToken() {
 const eventsUrl = () =>
   `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events`;
 
-// Create an event for a scheduled booking. Returns the Google event id, or null.
+// Create a calendar item for a booking. Returns the Google event id, or null.
+// - Scheduled bookings (date + time) -> a timed event that blocks the slot.
+// - Async bookings (chat/email/special, no time) -> an all-day reminder "task" on the
+//   day it came in, marked free so it never blocks bookable slots.
 export async function createEvent(booking) {
   const c = getClient();
-  if (!c || !booking?.date || !booking?.time) return null;
-  const dur = booking.durationMin && booking.durationMin > 0 ? booking.durationMin : 60;
-  const start = rfc3339(booking.date, booking.time);
-  const end = rfc3339(booking.date, toHHMM(toMin(booking.time) + dur));
+  if (!c) return null;
+
   const description = [
     `Client: ${booking.name}`,
     `Contact: ${booking.contact}`,
@@ -78,12 +85,29 @@ export async function createEvent(booking) {
     `Market: ${booking.market || 'Global'}`,
     `Booking ID: ${booking.id}`,
   ].filter(Boolean).join('\n');
-  const body = {
-    summary: `${booking.serviceName || booking.serviceId} — ${booking.name}`,
-    description,
-    start: { dateTime: start, timeZone: TZ },
-    end: { dateTime: end, timeZone: TZ },
-  };
+
+  const scheduled = Boolean(booking.date && booking.time);
+  let body;
+  if (scheduled) {
+    const dur = booking.durationMin && booking.durationMin > 0 ? booking.durationMin : 60;
+    body = {
+      summary: `${booking.serviceName || booking.serviceId} — ${booking.name}`,
+      description,
+      start: { dateTime: rfc3339(booking.date, booking.time), timeZone: TZ },
+      end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur)), timeZone: TZ },
+    };
+  } else {
+    // Reminder task: all-day, on the booking's date if any, else the day it arrived.
+    const day = booking.date || (booking.createdAt || '').slice(0, 10) || todayISO();
+    body = {
+      summary: `🔔 ${booking.serviceName || booking.serviceId} — ${booking.name}`,
+      description: `To fulfill (no fixed time)\n\n${description}`,
+      start: { date: day },
+      end: { date: nextDay(day) },
+      transparency: 'transparent', // shows as Free -> won't block bookable slots
+    };
+  }
+
   try {
     const r = await fetch(eventsUrl(), {
       method: 'POST',
