@@ -389,6 +389,8 @@ app.get('/api/admin/calendar/test', verifyToken, async (req, res) => {
 // Admin: list all bookings (JWT-protected, same auth as the dashboard).
 app.get('/api/admin/bookings', verifyToken, async (req, res) => {
     try {
+        // Reverse-sync deletions made directly in Google Calendar, then return fresh list.
+        try { await bookingStore.reconcileWithCalendar(); } catch (e) { console.error('reconcile failed:', e.message); }
         res.json(await bookingStore.getAllBookings());
     } catch (e) {
         console.error('list bookings failed:', e);

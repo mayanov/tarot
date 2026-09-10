@@ -146,6 +146,25 @@ export async function deleteEvent(eventId) {
   }
 }
 
+// Whether a previously-created event still exists on the calendar.
+// Returns 'exists' | 'deleted' | 'unknown' (unknown = don't touch the booking).
+export async function eventStatus(eventId) {
+  const c = getClient();
+  if (!c || !eventId) return 'unknown';
+  try {
+    const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}`, {
+      headers: { Authorization: `Bearer ${await accessToken()}` },
+    });
+    if (r.status === 404 || r.status === 410) return 'deleted';
+    if (!r.ok) return 'unknown';
+    const ev = await r.json();
+    return ev.status === 'cancelled' ? 'deleted' : 'exists';
+  } catch (e) {
+    console.error('[gcal] eventStatus error:', e.message);
+    return 'unknown';
+  }
+}
+
 // Diagnostic: try to create then delete a throwaway event, returning Google's raw
 // response so setup problems (API disabled / not shared / wrong id) are visible.
 export async function selfTest() {

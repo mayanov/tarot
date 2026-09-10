@@ -131,6 +131,25 @@ export async function createBooking(input) {
   return booking;
 }
 
+// Reverse sync: if the owner deleted an event in Google Calendar, cancel the matching
+// booking here too. Runs on admin dashboard load. Only touches active bookings that
+// carry a Google event id; returns the number of bookings cancelled.
+export async function reconcileWithCalendar() {
+  if (!gcal.calendarStatus().enabled) return 0;
+  const all = await getAllBookings();
+  let changed = 0;
+  for (const b of all) {
+    if (!b.gcalEventId) continue;
+    if (b.status !== 'confirmed' && b.status !== 'pending') continue;
+    const st = await gcal.eventStatus(b.gcalEventId);
+    if (st === 'deleted') {
+      await updateStatus(b.id, 'cancelled');
+      changed++;
+    }
+  }
+  return changed;
+}
+
 export async function getAllBookings() {
   if (db) {
     const snap = await db.collection(COLLECTION).orderBy('createdAt', 'desc').get();
