@@ -247,6 +247,36 @@ export async function selfTest() {
   }
 }
 
+// List the owner's calendar events between two dates (inclusive), in business-local
+// time, so the admin grid can show the real schedule around bookings.
+export async function listEvents(startISO, endISO) {
+  const c = getClient();
+  if (!c) return [];
+  try {
+    const params = new URLSearchParams({
+      singleEvents: 'true', orderBy: 'startTime', maxResults: '250',
+      timeMin: rfc3339(startISO, '00:00'),
+      timeMax: rfc3339(nextDay(endISO), '00:00'),
+    });
+    const r = await fetch(`${eventsUrl()}?${params}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
+    if (!r.ok) { console.error('[gcal] listEvents failed', r.status, await r.text()); return []; }
+    const data = await r.json();
+    return (data.items || [])
+      .filter((ev) => ev.status !== 'cancelled')
+      .map((ev) => {
+        const busy = ev.transparency !== 'transparent';
+        if (ev.start?.dateTime && ev.end?.dateTime) {
+          const s = toLocal(ev.start.dateTime), e = toLocal(ev.end.dateTime);
+          return { id: ev.id, title: ev.summary || '(busy)', allDay: false, busy, date: s?.date, time: s?.time, endDate: e?.date, endTime: e?.time };
+        }
+        return { id: ev.id, title: ev.summary || '(busy)', allDay: true, busy, date: ev.start?.date, endDate: ev.end?.date };
+      });
+  } catch (e) {
+    console.error('[gcal] listEvents error:', e.message);
+    return [];
+  }
+}
+
 // The 30-min booking-grid slots that are busy on `date` according to Google Calendar.
 export async function getBusySlots(date) {
   const c = getClient();

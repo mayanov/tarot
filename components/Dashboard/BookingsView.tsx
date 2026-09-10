@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { getAllBookings, rescheduleBooking, Booking } from '../../services/booking';
+import { getAllBookings, rescheduleBooking, getCalendarEvents, Booking, CalEvent } from '../../services/booking';
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const toHHMM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
@@ -69,6 +69,7 @@ const BookingsView: React.FC = () => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [orderView, setOrderView] = useState<'active' | 'done'>('active');
     const [notice, setNotice] = useState<{ text: string; kind: 'ok' | 'err' } | null>(null);
+    const [calEvents, setCalEvents] = useState<CalEvent[]>([]);
     // Drag-to-reschedule state for the weekly grid.
     const [drag, setDrag] = useState<null | { id: string; originDay: number; originStart: number; dur: number; curDay: number; curStart: number; moved: boolean }>(null);
     const gridRef = useRef<HTMLDivElement | null>(null);
@@ -91,10 +92,20 @@ const BookingsView: React.FC = () => {
             setError('Could not load bookings. Make sure you are logged in and the server is reachable.');
         } finally {
             setLoading(false);
+            fetchEvents(weekStart);
         }
     };
 
     useEffect(() => { load(); }, []);
+
+    // Pull the owner's Google Calendar events for the visible week (context around bookings).
+    const fetchEvents = async (ws: Date) => {
+        try {
+            const token = localStorage.getItem('authToken') || undefined;
+            setCalEvents(await getCalendarEvents(toISO(ws), toISO(addDays(ws, 6)), token));
+        } catch { setCalEvents([]); }
+    };
+    useEffect(() => { fetchEvents(weekStart); }, [weekStart]);
 
     const changeStatus = async (id: string, status: Booking['status']) => {
         try {
@@ -180,6 +191,17 @@ const BookingsView: React.FC = () => {
         calendarSessions.forEach((b) => { (map[b.date] ||= []).push(b); });
         return map;
     }, [calendarSessions]);
+
+    // External Google Calendar events (timed, busy) — excluding our own booking events,
+    // which are already drawn as session blocks. Grouped by day for the grid.
+    const gcalByDay = useMemo(() => {
+        const bookingEventIds = new Set(bookings.map((b) => b.gcalEventId).filter(Boolean));
+        const map: Record<string, CalEvent[]> = {};
+        calEvents
+            .filter((e) => !e.allDay && e.busy && e.time && !bookingEventIds.has(e.id))
+            .forEach((e) => { (map[e.date] ||= []).push(e); });
+        return map;
+    }, [calEvents, bookings]);
 
     const selectedBooking = useMemo(() => bookings.find((b) => b.id === selectedId) || null, [bookings, selectedId]);
     const todayISO = toISO(new Date());
@@ -299,6 +321,23 @@ const BookingsView: React.FC = () => {
                                                 {HOURS.map((h) => (
                                                     <div key={h} className="absolute left-0 right-0 border-t border-adm-line" style={{ top: (h - 11) * HOUR_H }} />
                                                 ))}
+                                                {/* Google Calendar events (read-only context, behind sessions) */}
+                                                {(gcalByDay[dayISO] || []).map((e) => {
+                                                    const s = toMin(e.time!);
+                                                    const en = (e.endTime && e.endDate === dayISO) ? toMin(e.endTime) : (e.endTime ? DAY_END : s + 30);
+                                                    const top = clamp(((s - DAY_START) / 60) * HOUR_H, 0, GRID_H);
+                                                    const bottom = clamp(((en - DAY_START) / 60) * HOUR_H, 0, GRID_H);
+                                                    if (bottom <= 0 || top >= GRID_H) return null;
+                                                    const height = Math.max(16, bottom - top - 2);
+                                                    return (
+                                                        <div key={e.id} title={`${e.time}${e.endTime ? `–${e.endTime}` : ''} · ${e.title} (Google Calendar)`}
+                                                            className="absolute left-1 right-1 rounded-md bg-text-subtle/10 border border-dashed border-adm-line-3 px-1.5 py-0.5 overflow-hidden pointer-events-none z-0"
+                                                            style={{ top, height }}>
+                                                            <div className="text-[8px] uppercase tracking-wider text-text-subtle leading-none">Busy</div>
+                                                            {height > 22 && <div className="text-[10px] text-text-subtle truncate leading-tight mt-0.5">{e.title}</div>}
+                                                        </div>
+                                                    );
+                                                })}
                                                 {/* session blocks */}
                                                 {sessions.map((b) => {
                                                     const start = toMin(b.time);

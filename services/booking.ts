@@ -35,6 +35,7 @@ export interface Booking extends BookingInput {
   id: string;
   createdAt: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'done';
+  gcalEventId?: string;
 }
 
 export const SLOT_TIMES = [
@@ -125,4 +126,25 @@ export async function rescheduleBooking(
   if (res.status === 409) throw new Error('SLOT_TAKEN');
   if (!res.ok) throw new Error(`HTTP_${res.status}`);
   return await res.json();
+}
+
+export interface CalEvent {
+  id: string;
+  title: string;
+  allDay: boolean;
+  busy: boolean;
+  date: string;
+  time?: string;
+  endDate?: string;
+  endTime?: string;
+}
+
+// Admin — the owner's Google Calendar events between two dates (inclusive).
+export async function getCalendarEvents(start: string, end: string, token?: string): Promise<CalEvent[]> {
+  const res = await fetch(`${API_BASE}/api/admin/calendar/events?start=${start}&end=${end}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error(`HTTP_${res.status}`);
+  return (await res.json()).events || [];
 }

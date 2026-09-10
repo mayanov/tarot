@@ -386,6 +386,21 @@ app.get('/api/admin/calendar/test', verifyToken, async (req, res) => {
     res.json(await gcal.selfTest());
 });
 
+// Admin: the owner's Google Calendar events in a date range (for the schedule grid).
+app.get('/api/admin/calendar/events', verifyToken, async (req, res) => {
+    const start = String(req.query.start || '');
+    const end = String(req.query.end || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end)) {
+        return res.status(400).json({ error: 'Invalid start or end' });
+    }
+    try {
+        res.json({ events: await gcal.listEvents(start, end) });
+    } catch (e) {
+        console.error('list calendar events failed:', e);
+        res.status(500).json({ error: 'Failed to load events' });
+    }
+});
+
 // Admin: list all bookings (JWT-protected, same auth as the dashboard).
 app.get('/api/admin/bookings', verifyToken, async (req, res) => {
     try {
