@@ -231,9 +231,9 @@ const RevenueView: React.FC = () => {
     );
 
     const KPI: React.FC<{ icon: React.ReactNode; label: string; value: string; sub?: string }> = ({ icon, label, value, sub }) => (
-        <div className="rounded-2xl bg-surface-1 border border-adm-line p-5">
+        <div className="rounded-2xl bg-surface-1 border border-adm-line p-4">
             <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider">{icon}<span>{label}</span></div>
-            <div className="mt-2 text-2xl font-serif font-bold text-text-light tabular-nums">{value}</div>
+            <div className="mt-2 text-xl font-serif font-bold text-text-light tabular-nums">{value}</div>
             {sub && <div className="mt-1 text-xs text-text-subtle">{sub}</div>}
         </div>
     );
@@ -252,10 +252,10 @@ const RevenueView: React.FC = () => {
     const granLabel = gran === 'day' ? 'Daily' : 'Weekly';
 
     return (
-        <div className="space-y-6 pt-24 md:pt-12 p-6 md:p-12 max-w-6xl mx-auto">
-            <div className="pb-6 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-5 pt-20 md:pt-8 p-4 md:p-8 max-w-6xl mx-auto">
+            <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-serif font-bold text-text-light mb-2">Revenue</h1>
+                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Revenue</h1>
                     <p className="text-text-subtle text-sm">Realized revenue from confirmed &amp; completed bookings, by order date.</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -288,7 +288,7 @@ const RevenueView: React.FC = () => {
                 </div>
             </div>
 
-            {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-4 py-3">{error}</div>}
+            {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <KPI icon={<Wallet size={14} />} label="Total revenue" value={fmtMoney(total, currency)}
@@ -299,7 +299,7 @@ const RevenueView: React.FC = () => {
             </div>
 
             {/* Daily / weekly stacked chart */}
-            <div className="rounded-2xl bg-surface-1 border border-adm-line p-5">
+            <div className="rounded-2xl bg-surface-1 border border-adm-line p-4">
                 <h2 className="text-sm font-semibold text-text-light mb-3">{granLabel} revenue by source · {currency}</h2>
                 {series.length === 0 ? (
                     <p className="text-sm text-text-subtle py-12 text-center">No {currency} revenue in this range.</p>
@@ -307,7 +307,7 @@ const RevenueView: React.FC = () => {
             </div>
 
             {/* Monthly stacked chart — always shown */}
-            <div className="rounded-2xl bg-surface-1 border border-adm-line p-5">
+            <div className="rounded-2xl bg-surface-1 border border-adm-line p-4">
                 <h2 className="text-sm font-semibold text-text-light mb-3">Monthly revenue by source · {currency}</h2>
                 {monthlySeries.length === 0 ? (
                     <p className="text-sm text-text-subtle py-12 text-center">No {currency} revenue yet.</p>

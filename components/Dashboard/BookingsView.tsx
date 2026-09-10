@@ -235,10 +235,10 @@ const BookingsView: React.FC = () => {
     const navBtn = 'grid place-items-center w-9 h-9 rounded-lg bg-adm-hover text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors';
 
     return (
-        <div className="space-y-6 pt-24 md:pt-12 p-6 md:p-12 max-w-6xl mx-auto">
-            <div className="pb-6 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-5 pt-20 md:pt-8 p-4 md:p-8 max-w-6xl mx-auto">
+            <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-serif font-bold text-text-light mb-2">Bookings</h1>
+                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Bookings</h1>
                     <p className="text-text-subtle text-sm">{scheduled.length} scheduled · {orders.length} orders</p>
                 </div>
                 <button
@@ -249,10 +249,10 @@ const BookingsView: React.FC = () => {
                 </button>
             </div>
 
-            {error && <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/25 rounded-xl px-4 py-3">{error}</div>}
+            {error && <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
 
             {notice && (
-                <div className={`fixed bottom-6 right-6 z-[60] px-4 py-3 rounded-xl shadow-lg text-sm border ${notice.kind === 'ok' ? 'bg-sage/15 border-sage/40 text-sage' : 'bg-coral/15 border-coral/40 text-coral-deep'}`}>
+                <div className={`fixed bottom-6 right-6 z-[60] px-3 py-2.5 rounded-xl shadow-lg text-sm border ${notice.kind === 'ok' ? 'bg-sage/15 border-sage/40 text-sage' : 'bg-coral/15 border-coral/40 text-coral-deep'}`}>
                     {notice.text}
                 </div>
             )}
@@ -275,7 +275,7 @@ const BookingsView: React.FC = () => {
                 <div className="space-y-5">
                     <div className="rounded-2xl bg-surface-1 border border-adm-line overflow-hidden">
                         {/* week nav */}
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-adm-line">
+                        <div className="flex items-center justify-between px-3 py-2.5 border-b border-adm-line">
                             <div className="flex items-center gap-2">
                                 <button aria-label="Previous week" className={navBtn} onClick={() => setWeekStart(addDays(weekStart, -7))}><ChevronLeft size={16} /></button>
                                 <button className="px-3 h-9 rounded-lg bg-adm-hover text-text-light text-sm font-medium hover:bg-adm-hover-2 transition-colors" onClick={() => setWeekStart(startOfWeek(new Date()))}>Today</button>
@@ -409,7 +409,7 @@ const BookingsView: React.FC = () => {
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
                         <div className="relative w-full max-w-md bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl overflow-hidden">
                             {/* header — date & time first */}
-                            <div className="p-5 border-b border-adm-line">
+                            <div className="p-4 border-b border-adm-line">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex flex-wrap items-center gap-2 text-sm text-text-light">
                                         <span className="font-semibold tabular-nums">{fmtDate(b.date)} · {b.time}{endStr && `–${endStr}`}</span>
@@ -424,7 +424,7 @@ const BookingsView: React.FC = () => {
                             </div>
 
                             {/* details */}
-                            <div className="p-5 grid grid-cols-2 gap-x-4 gap-y-4">
+                            <div className="p-4 grid grid-cols-2 gap-x-4 gap-y-4">
                                 <Field label="Name" value={b.name} />
                                 {b.dob && <Field label="Date of Birth" value={fmtDate(b.dob)} />}
                                 <div className="col-span-2"><Field label="Contact" value={b.contact} /></div>
@@ -477,7 +477,7 @@ const BookingsView: React.FC = () => {
                                     const price = (parts.length > 2 ? parts.slice(2).join(' · ') : '') || override.price || '';
                                     const created = b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                                     return (
-                                        <div key={b.id} className="bg-surface-1 border border-adm-line rounded-2xl p-5 flex flex-col lg:flex-row lg:items-start gap-4">
+                                        <div key={b.id} className="bg-surface-1 border border-adm-line rounded-2xl p-4 flex flex-col lg:flex-row lg:items-start gap-4">
                                             {/* customer + order */}
                                             <div className="flex-1 min-w-0">
                                                 <div className="text-text-subtle text-xs mb-1.5">{created} · <span className="uppercase">{b.market}</span></div>

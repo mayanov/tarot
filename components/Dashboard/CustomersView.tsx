@@ -135,10 +135,10 @@ const CustomersView: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6 pt-24 md:pt-12 p-6 md:p-12 max-w-6xl mx-auto">
-            <div className="pb-6 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-5 pt-20 md:pt-8 p-4 md:p-8 max-w-6xl mx-auto">
+            <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-serif font-bold text-text-light mb-2">Customers</h1>
+                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Customers</h1>
                     <p className="text-text-subtle text-sm">{customers.length} unique clients · {repeatCount} returning · grouped by phone number.</p>
                 </div>
                 <button onClick={load} className="p-2.5 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light hover:border-adm-line-3 transition-colors" title="Refresh">
@@ -146,7 +146,7 @@ const CustomersView: React.FC = () => {
                 </button>
             </div>
 
-            {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-4 py-3">{error}</div>}
+            {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
 
             {/* toolbar */}
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">

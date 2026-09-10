@@ -272,7 +272,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
             {/* SIDEBAR */}
             {/* SIDEBAR */}
             <aside className="w-72 bg-surface-1 border-r border-adm-line flex flex-col hidden md:flex">
-                <div className="p-6 border-b border-adm-line">
+                <div className="p-5 border-b border-adm-line">
                     <h2 className="text-xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
                         Mayanov Admin
                     </h2>
@@ -282,41 +282,41 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     {/* Active Menu */}
                     <button
                         onClick={() => setActiveView('analytics')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'analytics' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'analytics' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
                         <BarChart2 size={18} />
                         <span>Analytics</span>
                     </button>
 
                     <button
                         onClick={() => setActiveView('users')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'users' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'users' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
                         <Users size={18} />
                         <span>Manage Users</span>
                     </button>
 
                     <button
                         onClick={() => setActiveView('bookings')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'bookings' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'bookings' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
                         <Calendar size={18} />
                         <span>Bookings</span>
                     </button>
 
                     <button
                         onClick={() => setActiveView('revenue')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'revenue' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'revenue' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
                         <Wallet size={18} />
                         <span>Revenue</span>
                     </button>
 
                     <button
                         onClick={() => setActiveView('customers')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'customers' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'customers' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
                         <Contact size={18} />
                         <span>Customers</span>
                     </button>
 
                     {/* Disabled Menu */}
-                    <button className="w-full flex items-center gap-3 px-4 py-3 text-text-subtle/50 cursor-not-allowed rounded-xl font-medium text-sm">
+                    <button className="w-full flex items-center gap-3 px-3 py-2.5 text-text-subtle/50 cursor-not-allowed rounded-xl font-medium text-sm">
                         <RefreshCcw size={18} />
                         <span>Content Updates</span>
                         <span className="ml-auto text-[10px] uppercase bg-adm-hover text-text-subtle px-1.5 py-0.5 rounded">Soon</span>
@@ -326,7 +326,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 <div className="p-4 border-t border-adm-line space-y-1">
                     <button
                         onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-text-subtle hover:text-text-light hover:bg-adm-hover rounded-xl transition-all"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-text-subtle hover:text-text-light hover:bg-adm-hover rounded-xl transition-all"
                     >
                         {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                         <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
@@ -334,7 +334,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     {onLogout && (
                         <button
                             onClick={onLogout}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-text-subtle hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all"
+                            className="w-full flex items-center gap-3 px-3 py-2.5 text-text-subtle hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all"
                         >
                             <LogOut size={18} />
                             <span>Logout</span>
@@ -355,10 +355,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     <CustomersView />
                 ) : activeView === 'users' ? (
                     /* USER MANAGEMENT VIEW (Full Page) */
-                    <div className="space-y-6 pt-24 md:pt-12 p-6 md:p-12 max-w-5xl mx-auto">
-                        <div className="pb-6 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="space-y-5 pt-20 md:pt-8 p-4 md:p-8 max-w-5xl mx-auto">
+                        <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
-                                <h1 className="text-3xl font-serif font-bold text-text-light mb-2">User Management</h1>
+                                <h1 className="text-2xl font-serif font-bold text-text-light mb-2">User Management</h1>
                                 <p className="text-text-subtle text-sm">Control who has access to the admin dashboard.</p>
                             </div>
                             <button
@@ -421,7 +421,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         {/* ADD USER MODAL */}
                         {showAddUserModal && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                                <div className="bg-surface-1 border border-adm-line-2 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 relative">
+                                <div className="bg-surface-1 border border-adm-line-2 rounded-2xl w-full max-w-md p-5 shadow-2xl animate-in zoom-in-95 relative">
                                     <button
                                         onClick={() => setShowAddUserModal(false)}
                                         className="absolute top-4 right-4 text-text-subtle hover:text-text-light transition-colors"
@@ -479,7 +479,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     </div>
                 ) : (
                     /* ANALYTICS VIEW (Default) */
-                    <div className="p-6 md:p-12 space-y-8 max-w-7xl mx-auto pt-24 md:pt-12">
+                    <div className="p-5 md:p-12 space-y-8 max-w-7xl mx-auto pt-24 md:pt-12">
                         {/* Configuration Panel (Only show if error or explicit disconnected state) */}
                         {(!isConnected && !isAuthorizing && apiError) && (
                             <div className="bg-surface-1 border border-lilac/30 p-4 rounded-xl mb-6 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
@@ -507,10 +507,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         )}
 
                         {/* Header Area */}
-                        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 pb-6 border-b border-adm-line">
+                        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 pb-4 border-b border-adm-line">
                             <div>
                                 <div className="flex items-center gap-3">
-                                    <h1 className="text-3xl font-serif font-bold text-text-light">
+                                    <h1 className="text-2xl font-serif font-bold text-text-light">
                                         Analytics Overview
                                     </h1>
                                     {isConnected && (
@@ -658,7 +658,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                 <div className="flex flex-col gap-6">
 
                                     {/* 1. Visual Traffic Trend */}
-                                    <div className="bg-surface-1 p-6 rounded-2xl border border-adm-line shadow-xl relative min-h-[400px]">
+                                    <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl relative min-h-[400px]">
                                         <h3 className="text-xl font-serif mb-6 flex items-center gap-2">
                                             <Calendar size={20} className="text-lilac" />
                                             Visual Traffic Trend
@@ -727,7 +727,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                                     {/* 2. Service Engagement Section */}
                                     <div className="bg-surface-1 rounded-2xl border border-adm-line shadow-xl overflow-hidden relative min-h-[300px]">
-                                        <div className="p-6 border-b border-adm-line flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <div className="p-5 border-b border-adm-line flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                             <h3 className="text-xl font-serif flex items-center gap-2">
                                                 <BarChart2 size={20} className="text-gold-accent" />
                                                 Service Engagement
@@ -759,7 +759,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                 <RefreshCcw className="animate-spin text-gold-accent" size={32} />
                                             </div>
                                         ) : (
-                                            <div className="p-6 overflow-x-auto">
+                                            <div className="p-5 overflow-x-auto">
                                                 <table className="w-full text-left border-collapse">
                                                     <thead>
                                                         <tr className="text-xs text-text-subtle uppercase border-b border-adm-line">
@@ -790,7 +790,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                     </div>
 
                                     {/* 3. Geography Breakdown (Moved Bottom) */}
-                                    <div className="bg-surface-1 p-6 rounded-2xl border border-adm-line shadow-xl flex flex-col relative min-h-[400px]">
+                                    <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative min-h-[400px]">
                                         <h3 className="text-xl font-serif mb-6 flex items-center gap-2">
                                             <Globe size={20} className="text-teal-accent" />
                                             Geography
@@ -841,7 +841,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 };
 
 const SummaryCard = ({ icon, label, value, trend, isNegative, loading }: any) => (
-    <div className="bg-surface-1 p-5 rounded-xl border border-adm-line flex flex-col gap-2 hover:border-lilac/30 transition-all group min-h-[140px] relative overflow-hidden">
+    <div className="bg-surface-1 p-4 rounded-xl border border-adm-line flex flex-col gap-2 hover:border-lilac/30 transition-all group min-h-[140px] relative overflow-hidden">
         {loading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-surface-1 z-10">
                 <div className="flex flex-col gap-3 w-full px-5">
