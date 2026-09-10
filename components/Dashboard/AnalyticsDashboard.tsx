@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, CheckCircle, AlertCircle, Wallet } from 'lucide-react';
 import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance } from '../../services/mockAnalytics';
 import { initGoogleAPI, loginToGoogle, fetchGA4Data } from '../../services/ga4';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { format, parseISO } from 'date-fns';
 import BookingsView from './BookingsView';
+import RevenueView from './RevenueView';
 
 type DateRangePreset = '7D' | '30D' | 'THIS_MONTH' | 'CUSTOM';
 
@@ -156,7 +157,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     // User Management State
     // User Management State
     // View State
-    const [activeView, setActiveView] = useState<'analytics' | 'users' | 'bookings'>('analytics');
+    const [activeView, setActiveView] = useState<'analytics' | 'users' | 'bookings' | 'revenue'>('analytics');
     const [showAddUserModal, setShowAddUserModal] = useState(false); // New state for Add User Popup
     const [userList, setUserList] = useState<string[]>([]);
     const [isLoadingUsers, setIsLoadingUsers] = useState(false);
@@ -295,6 +296,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         <span>Bookings</span>
                     </button>
 
+                    <button
+                        onClick={() => setActiveView('revenue')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${activeView === 'revenue' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-ink hover:bg-black/5'}`}>
+                        <Wallet size={18} />
+                        <span>Revenue</span>
+                    </button>
+
                     {/* Disabled Menu */}
                     <button className="w-full flex items-center gap-3 px-4 py-3 text-text-subtle/50 cursor-not-allowed rounded-xl font-medium text-sm">
                         <RefreshCcw size={18} />
@@ -322,6 +330,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 {/* MAIN CONTENT SWITCHER */}
                 {activeView === 'bookings' ? (
                     <BookingsView />
+                ) : activeView === 'revenue' ? (
+                    <RevenueView />
                 ) : activeView === 'users' ? (
                     /* USER MANAGEMENT VIEW (Full Page) */
                     <div className="space-y-6 pt-24 md:pt-12 p-6 md:p-12 max-w-5xl mx-auto">
