@@ -7,6 +7,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as gcal from './googleCalendar.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -75,6 +76,12 @@ export async function getTakenSlots(date) {
   const set = new Set();
   rows.filter((b) => b.status !== 'cancelled')
     .forEach((b) => occupiedSlots(b.time, b.durationMin).forEach((s) => set.add(s)));
+  // Two-way sync: also block slots the owner is busy in Google Calendar.
+  try {
+    (await gcal.getBusySlots(date)).forEach((s) => set.add(s));
+  } catch (e) {
+    console.error('[bookings] calendar busy merge failed:', e.message);
+  }
   return [...set];
 }
 
@@ -98,6 +105,10 @@ export async function createBooking(input) {
       }
     }
     await ref.set(booking);
+    if (hasSlot) {
+      const eventId = await gcal.createEvent(booking);
+      if (eventId) { booking.gcalEventId = eventId; await ref.update({ gcalEventId: eventId }); }
+    }
     return booking;
   }
 
@@ -114,6 +125,10 @@ export async function createBooking(input) {
   const cleaned = hasSlot ? all.filter((b) => b.id !== id) : all;
   cleaned.push(booking);
   writeAll(cleaned);
+  if (hasSlot) {
+    const eventId = await gcal.createEvent(booking);
+    if (eventId) { booking.gcalEventId = eventId; writeAll(cleaned); }
+  }
   return booking;
 }
 
@@ -130,13 +145,23 @@ export async function updateStatus(id, status) {
     const ref = db.collection(COLLECTION).doc(id);
     const snap = await ref.get();
     if (!snap.exists) return null;
+    const prev = snap.data();
     await ref.update({ status });
-    return { ...snap.data(), status };
+    // Cancelling frees the slot — remove the Google Calendar event too.
+    if (status === 'cancelled' && prev.gcalEventId) {
+      await gcal.deleteEvent(prev.gcalEventId);
+      await ref.update({ gcalEventId: null });
+    }
+    return { ...prev, status };
   }
   const all = readAll();
   const b = all.find((x) => x.id === id);
   if (!b) return null;
   b.status = status;
+  if (status === 'cancelled' && b.gcalEventId) {
+    await gcal.deleteEvent(b.gcalEventId);
+    b.gcalEventId = null;
+  }
   writeAll(all);
   return b;
 }

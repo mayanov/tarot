@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { verifyPassword } from './auth.js';
 import * as bookingStore from './bookingStore.js';
+import * as gcal from './googleCalendar.js';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 
@@ -373,6 +374,11 @@ app.post('/api/bookings', async (req, res) => {
         console.error('Booking create failed:', e);
         res.status(500).json({ error: 'Failed to create booking' });
     }
+});
+
+// Admin: Google Calendar sync status (for setup verification).
+app.get('/api/admin/calendar/status', verifyToken, (req, res) => {
+    res.json(gcal.calendarStatus());
 });
 
 // Admin: list all bookings (JWT-protected, same auth as the dashboard).
