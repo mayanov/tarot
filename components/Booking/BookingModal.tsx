@@ -322,8 +322,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 >
                   <span className="min-w-0">
                     <span className="block font-serif font-semibold text-plum">{s.name}</span>
-                    <span className="block text-[0.7rem] uppercase tracking-wide text-coral-deep/70 mt-0.5">{s.meta}</span>
-                    <span className="block text-xs text-ink-soft leading-snug mt-1">{s.desc}</span>
+                    <span className="flex flex-wrap gap-1.5 mt-1.5">
+                      {s.meta.split(' · ').map((t) => (
+                        <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
+                      ))}
+                    </span>
+                    <span className="block text-xs text-ink-soft leading-snug mt-1.5">{s.desc}</span>
                   </span>
                   <ChevronRight className="w-5 h-5 text-coral-deep/40 group-hover:text-coral-deep group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
