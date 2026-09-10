@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, Calendar as CalIcon, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { RefreshCcw, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
 
 const STATUSES: Booking['status'][] = ['pending', 'confirmed', 'done', 'cancelled'];
@@ -147,17 +147,10 @@ const BookingsView: React.FC = () => {
         </div>
     );
 
-    const TabButton: React.FC<{ id: 'calendar' | 'orders'; icon: React.ReactNode; label: string; count: number }> = ({ id, icon, label, count }) => (
-        <button
-            onClick={() => setTab(id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                tab === id ? 'bg-lilac text-[#26242B]' : 'bg-adm-hover text-text-subtle hover:text-text-light hover:bg-adm-hover-2'
-            }`}
-        >
-            {icon} {label}
-            <span className={`text-[0.7rem] px-1.5 py-0.5 rounded-full ${tab === id ? 'bg-adm-hover-3' : 'bg-adm-hover-2'}`}>{count}</span>
-        </button>
-    );
+    const TABS: { id: 'calendar' | 'orders'; label: string; count: number }[] = [
+        { id: 'calendar', label: 'Schedule', count: calendarSessions.length },
+        { id: 'orders', label: 'Orders', count: orders.length },
+    ];
 
     const navBtn = 'grid place-items-center w-9 h-9 rounded-lg bg-adm-hover text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors';
 
@@ -178,9 +171,17 @@ const BookingsView: React.FC = () => {
 
             {error && <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/25 rounded-xl px-4 py-3">{error}</div>}
 
-            <div className="flex gap-2">
-                <TabButton id="calendar" icon={<CalIcon size={15} />} label="Calendar" count={calendarSessions.length} />
-                <TabButton id="orders" icon={<ShoppingBag size={15} />} label="Orders" count={orders.length} />
+            <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
+                {TABS.map((t) => (
+                    <button
+                        key={t.id}
+                        onClick={() => setTab(t.id)}
+                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ${tab === t.id ? 'bg-lilac text-[#26242B]' : 'text-text-subtle hover:text-text-light'}`}
+                    >
+                        {t.label}
+                        <span className={`text-[0.7rem] tabular-nums ${tab === t.id ? 'text-[#26242B]/70' : 'text-text-subtle'}`}>{t.count}</span>
+                    </button>
+                ))}
             </div>
 
             {/* ---------------- CALENDAR — weekly time grid ---------------- */}
