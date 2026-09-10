@@ -163,6 +163,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         try { return (localStorage.getItem('admin_theme') as 'light' | 'dark') || 'light'; } catch { return 'light'; }
     });
     useEffect(() => { try { localStorage.setItem('admin_theme', theme); } catch { /* ignore */ } }, [theme]);
+    // Scale the whole admin down a touch (rem-based text + padding shrink uniformly;
+    // the pixel-based calendar grid and pointer math are unaffected).
+    useEffect(() => {
+        const html = document.documentElement;
+        const prev = html.style.fontSize;
+        html.style.fontSize = '90%';
+        return () => { html.style.fontSize = prev; };
+    }, []);
     const [showAddUserModal, setShowAddUserModal] = useState(false); // New state for Add User Popup
     const [userList, setUserList] = useState<string[]>([]);
     const [isLoadingUsers, setIsLoadingUsers] = useState(false);
