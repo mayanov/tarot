@@ -224,6 +224,44 @@ html.lenis body {
 }
 
 /* =========================================
+   Admin dashboard theme tokens (light default; .admin-shell[data-theme=dark] flips)
+   ========================================= */
+:root {
+  --adm-bg-deep: #F4F4F6;
+  --adm-bg-dark: #F5F5F7;
+  --adm-surface-1: #FFFFFF;
+  --adm-surface-2: #F1F1F4;
+  --adm-surface-highlight: #E9E9EE;
+  --adm-text-light: #26242B;
+  --adm-text-subtle: #6E6B77;
+  --adm-line: rgba(0, 0, 0, 0.05);
+  --adm-line-2: rgba(0, 0, 0, 0.10);
+  --adm-line-3: rgba(0, 0, 0, 0.25);
+  --adm-hover: rgba(0, 0, 0, 0.05);
+  --adm-hover-2: rgba(0, 0, 0, 0.10);
+  --adm-hover-3: rgba(0, 0, 0, 0.15);
+  --adm-axis: #6E6B77;
+}
+.admin-shell[data-theme="dark"] {
+  --adm-bg-deep: #141118;
+  --adm-bg-dark: #262330;
+  --adm-surface-1: #211E29;
+  --adm-surface-2: #2A2733;
+  --adm-surface-highlight: #332F3D;
+  --adm-text-light: #ECEAF0;
+  --adm-text-subtle: #A29CB0;
+  --adm-line: rgba(255, 255, 255, 0.08);
+  --adm-line-2: rgba(255, 255, 255, 0.14);
+  --adm-line-3: rgba(255, 255, 255, 0.28);
+  --adm-hover: rgba(255, 255, 255, 0.06);
+  --adm-hover-2: rgba(255, 255, 255, 0.10);
+  --adm-hover-3: rgba(255, 255, 255, 0.16);
+  --adm-axis: #A29CB0;
+}
+/* Native date inputs inside dark admin — keep the picker icon visible. */
+.admin-shell[data-theme="dark"] input[type="date"] { color-scheme: dark; }
+
+/* =========================================
    Booking modal calendar — light coral theme (react-day-picker v9)
    Scoped to .booking-cal so it never touches the admin/dark calendars
    ========================================= */
