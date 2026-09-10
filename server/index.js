@@ -381,6 +381,11 @@ app.get('/api/admin/calendar/status', verifyToken, (req, res) => {
     res.json(gcal.calendarStatus());
 });
 
+// Admin: actively test the calendar connection (creates + deletes a throwaway event).
+app.get('/api/admin/calendar/test', verifyToken, async (req, res) => {
+    res.json(await gcal.selfTest());
+});
+
 // Admin: list all bookings (JWT-protected, same auth as the dashboard).
 app.get('/api/admin/bookings', verifyToken, async (req, res) => {
     try {

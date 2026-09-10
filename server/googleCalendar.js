@@ -141,6 +141,33 @@ export async function deleteEvent(eventId) {
   }
 }
 
+// Diagnostic: try to create then delete a throwaway event, returning Google's raw
+// response so setup problems (API disabled / not shared / wrong id) are visible.
+export async function selfTest() {
+  const c = getClient();
+  if (!c) return { ok: false, stage: 'config', error: disabledReason };
+  try {
+    const day = todayISO();
+    const r = await fetch(eventsUrl(), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        summary: 'Mayanov sync self-test (auto-deleted)',
+        start: { date: day },
+        end: { date: nextDay(day) },
+        transparency: 'transparent',
+      }),
+    });
+    const text = await r.text();
+    if (!r.ok) return { ok: false, stage: 'insert', status: r.status, error: text.slice(0, 600) };
+    const ev = JSON.parse(text);
+    await deleteEvent(ev.id);
+    return { ok: true, calendarId: CALENDAR_ID, createdAndDeletedEventId: ev.id };
+  } catch (e) {
+    return { ok: false, stage: 'exception', error: e.message };
+  }
+}
+
 // The 30-min booking-grid slots that are busy on `date` according to Google Calendar.
 export async function getBusySlots(date) {
   const c = getClient();
