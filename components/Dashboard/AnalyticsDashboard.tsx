@@ -363,7 +363,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     <CustomersView />
                 ) : activeView === 'users' ? (
                     /* USER MANAGEMENT VIEW (Full Page) */
-                    <div className="space-y-5 pt-20 md:pt-8 p-4 md:p-8 max-w-5xl mx-auto">
+                    <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
                         <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
                                 <h1 className="text-2xl font-serif font-bold text-text-light mb-2">User Management</h1>
@@ -487,7 +487,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     </div>
                 ) : (
                     /* ANALYTICS VIEW (Default) */
-                    <div className="p-5 md:p-12 space-y-8 max-w-7xl mx-auto pt-24 md:pt-12">
+                    <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
                         {/* Configuration Panel (Only show if error or explicit disconnected state) */}
                         {(!isConnected && !isAuthorizing && apiError) && (
                             <div className="bg-surface-1 border border-lilac/30 p-4 rounded-xl mb-6 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">

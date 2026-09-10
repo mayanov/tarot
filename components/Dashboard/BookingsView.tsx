@@ -235,7 +235,7 @@ const BookingsView: React.FC = () => {
     const navBtn = 'grid place-items-center w-9 h-9 rounded-lg bg-adm-hover text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors';
 
     return (
-        <div className="space-y-5 pt-20 md:pt-8 p-4 md:p-8 max-w-6xl mx-auto">
+        <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Bookings</h1>
