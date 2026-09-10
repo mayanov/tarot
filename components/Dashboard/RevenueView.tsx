@@ -110,20 +110,49 @@ const RevenueView: React.FC = () => {
     const total = useMemo(() => rows.reduce((s, r) => s + r.amount, 0), [rows]);
     const avg = rows.length ? total / rows.length : 0;
 
-    // Time series bucketed by the selected granularity.
+    // Time series bucketed by the selected granularity — every bucket across the range
+    // is emitted (missing periods show as zero), so a 90-day daily view shows 90 bars.
     const series = useMemo(() => {
         if (rows.length === 0) return [];
         const bucketOf = (iso: string) =>
             gran === 'month' ? iso.slice(0, 7)
                 : gran === 'week' ? toISO(startOfWeek(parseISO(iso)))
                     : iso;
-        const labelOf = (key: string) => gran === 'month' ? monthLabel(key) : dayLabel(key);
         const map = new Map<string, number>();
         rows.forEach((r) => map.set(bucketOf(r.day), (map.get(bucketOf(r.day)) || 0) + r.amount));
-        return [...map.entries()]
-            .sort((a, b) => a[0].localeCompare(b[0]))
-            .map(([key, value]) => ({ key, label: labelOf(key), value }));
-    }, [rows, gran]);
+
+        // Effective continuous window: preset dates when set, else the data's own span.
+        const daysSorted = rows.map((r) => r.day).sort();
+        const todayISO = toISO(new Date());
+        const sISO = startISO === '0000-01-01' ? daysSorted[0] : startISO;
+        const eISO = endISO === '9999-12-31' ? todayISO : endISO;
+        if (!sISO || eISO < sISO) {
+            return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([key, value]) => ({ key, label: gran === 'month' ? monthLabel(key) : dayLabel(key), value }));
+        }
+
+        const out: { key: string; label: string; value: number }[] = [];
+        let guard = 0;
+        if (gran === 'month') {
+            let d = new Date(parseISO(sISO).getFullYear(), parseISO(sISO).getMonth(), 1);
+            const end = new Date(parseISO(eISO).getFullYear(), parseISO(eISO).getMonth(), 1);
+            while (d <= end && guard++ < 600) {
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                out.push({ key, label: monthLabel(key), value: map.get(key) || 0 });
+                d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+            }
+        } else {
+            const step = gran === 'week' ? 7 : 1;
+            let d = gran === 'week' ? startOfWeek(parseISO(sISO)) : parseISO(sISO);
+            const end = parseISO(eISO);
+            while (d <= end && guard++ < 600) {
+                const key = toISO(d);
+                out.push({ key, label: dayLabel(key), value: map.get(key) || 0 });
+                d = addDays(d, step);
+            }
+        }
+        return out;
+    }, [rows, gran, startISO, endISO]);
 
     const best = useMemo(() => series.reduce((m, s) => (s.value > m.value ? s : m), { label: '—', value: 0 }), [series]);
 
