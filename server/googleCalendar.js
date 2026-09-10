@@ -86,21 +86,26 @@ export async function createEvent(booking) {
     `Booking ID: ${booking.id}`,
   ].filter(Boolean).join('\n');
 
+  // Clean title: drop the package suffix ("· 60 Menit · Rp 360K") — no price/duration.
+  const serviceLabel = (booking.serviceName || booking.serviceId || '').split(' · ')[0].trim();
+
   const scheduled = Boolean(booking.date && booking.time);
   let body;
   if (scheduled) {
     const dur = booking.durationMin && booking.durationMin > 0 ? booking.durationMin : 60;
+    // Add a 15-min buffer after the session so there's rest time before the next one.
+    const REST_BUFFER_MIN = 15;
     body = {
-      summary: `${booking.serviceName || booking.serviceId} — ${booking.name}`,
+      summary: `${serviceLabel} — ${booking.name}`,
       description,
       start: { dateTime: rfc3339(booking.date, booking.time), timeZone: TZ },
-      end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur)), timeZone: TZ },
+      end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur + REST_BUFFER_MIN)), timeZone: TZ },
     };
   } else {
     // Reminder task: all-day, on the booking's date if any, else the day it arrived.
     const day = booking.date || (booking.createdAt || '').slice(0, 10) || todayISO();
     body = {
-      summary: `🔔 ${booking.serviceName || booking.serviceId} — ${booking.name}`,
+      summary: `🔔 ${serviceLabel} — ${booking.name}`,
       description: `To fulfill (no fixed time)\n\n${description}`,
       start: { date: day },
       end: { date: nextDay(day) },
