@@ -398,6 +398,26 @@ app.get('/api/admin/bookings', verifyToken, async (req, res) => {
     }
 });
 
+// Admin: move a booking to a new date/time (drag-and-drop reschedule).
+app.post('/api/admin/bookings/:id/reschedule', verifyToken, async (req, res) => {
+    const { date, time, durationMin } = req.body || {};
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || '')) || !/^\d{2}:\d{2}$/.test(String(time || ''))) {
+        return res.status(400).json({ error: 'Invalid date or time' });
+    }
+    try {
+        const updated = await bookingStore.rescheduleBooking(req.params.id, {
+            date, time,
+            durationMin: Number.isFinite(+durationMin) ? Math.max(0, Math.min(600, Math.round(+durationMin))) : undefined,
+        });
+        if (!updated) return res.status(404).json({ error: 'Not found' });
+        res.json(updated);
+    } catch (e) {
+        if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
+        console.error('reschedule failed:', e);
+        res.status(500).json({ error: 'Failed to reschedule' });
+    }
+});
+
 // Admin: update a booking's status (pending | confirmed | cancelled | done).
 app.post('/api/admin/bookings/:id/status', verifyToken, async (req, res) => {
     const { status } = req.body || {};

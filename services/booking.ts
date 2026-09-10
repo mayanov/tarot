@@ -111,3 +111,18 @@ export async function getAllBookings(token?: string): Promise<Booking[]> {
   if (!res.ok) throw new Error(`HTTP_${res.status}`);
   return await res.json();
 }
+
+// Admin — move a booking to a new date/time (drag-and-drop reschedule).
+export async function rescheduleBooking(
+  id: string, date: string, time: string, durationMin: number | undefined, token?: string,
+): Promise<Booking> {
+  const res = await fetch(`${API_BASE}/api/admin/bookings/${encodeURIComponent(id)}/reschedule`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    credentials: 'include',
+    body: JSON.stringify({ date, time, durationMin }),
+  });
+  if (res.status === 409) throw new Error('SLOT_TAKEN');
+  if (!res.ok) throw new Error(`HTTP_${res.status}`);
+  return await res.json();
+}

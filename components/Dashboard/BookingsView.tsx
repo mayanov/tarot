@@ -1,6 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { getAllBookings, Booking } from '../../services/booking';
+import { getAllBookings, rescheduleBooking, Booking } from '../../services/booking';
+
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+const toHHMM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
 const STATUSES: Booking['status'][] = ['pending', 'confirmed', 'done', 'cancelled'];
 
@@ -65,6 +68,13 @@ const BookingsView: React.FC = () => {
     const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [orderView, setOrderView] = useState<'active' | 'done'>('active');
+    const [notice, setNotice] = useState<{ text: string; kind: 'ok' | 'err' } | null>(null);
+    // Drag-to-reschedule state for the weekly grid.
+    const [drag, setDrag] = useState<null | { id: string; originDay: number; originStart: number; dur: number; curDay: number; curStart: number; moved: boolean }>(null);
+    const gridRef = useRef<HTMLDivElement | null>(null);
+    const dragStart = useRef({ x: 0, y: 0, colW: 100 });
+
+    const flash = (text: string, kind: 'ok' | 'err') => { setNotice({ text, kind }); setTimeout(() => setNotice(null), 3000); };
 
     const load = async () => {
         setLoading(true);
@@ -97,6 +107,54 @@ const BookingsView: React.FC = () => {
             setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
         } catch { /* ignore */ }
     };
+
+    // ---- drag-to-reschedule (weekly grid) ----
+    const beginDrag = (e: React.PointerEvent, b: Booking, di: number) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        const body = gridRef.current;
+        const colW = body ? (body.getBoundingClientRect().width - 56) / 7 : 100;
+        dragStart.current = { x: e.clientX, y: e.clientY, colW };
+        const start = toMin(b.time);
+        setDrag({ id: b.id, originDay: di, originStart: start, dur: b.durationMin && b.durationMin > 0 ? b.durationMin : 30, curDay: di, curStart: start, moved: false });
+    };
+
+    useEffect(() => {
+        if (!drag) return;
+        const onMove = (e: PointerEvent) => {
+            const { x, y, colW } = dragStart.current;
+            const dMin = Math.round(((e.clientY - y) / HOUR_H) * 60 / 30) * 30;
+            const dCol = Math.round((e.clientX - x) / colW);
+            const curStart = clamp(drag.originStart + dMin, DAY_START, DAY_END - drag.dur);
+            const curDay = clamp(drag.originDay + dCol, 0, 6);
+            const moved = curStart !== drag.originStart || curDay !== drag.originDay;
+            if (curStart !== drag.curStart || curDay !== drag.curDay || moved !== drag.moved) {
+                setDrag((d) => d && ({ ...d, curStart, curDay, moved }));
+            }
+        };
+        const onUp = () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+            const d = drag;
+            if (!d.moved) { setSelectedId(d.id); setDrag(null); return; }
+            const newDate = toISO(addDays(weekStart, d.curDay));
+            const newTime = toHHMM(d.curStart);
+            setBookings((prev) => prev.map((b) => (b.id === d.id ? { ...b, date: newDate, time: newTime } : b)));
+            setDrag(null);
+            (async () => {
+                try {
+                    const token = localStorage.getItem('authToken') || undefined;
+                    await rescheduleBooking(d.id, newDate, newTime, undefined, token);
+                    flash('Booking moved.', 'ok');
+                } catch (err) {
+                    flash(err instanceof Error && err.message === 'SLOT_TAKEN' ? 'That slot is taken — reverted.' : 'Move failed — reverted.', 'err');
+                } finally { load(); }
+            })();
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        return () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+    }, [drag, weekStart]);
 
     const scheduled = useMemo(() => bookings.filter((b) => b.date && b.time), [bookings]);
     // Cancelled sessions are dropped from the calendar entirely.
@@ -171,6 +229,12 @@ const BookingsView: React.FC = () => {
 
             {error && <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/25 rounded-xl px-4 py-3">{error}</div>}
 
+            {notice && (
+                <div className={`fixed bottom-6 right-6 z-[60] px-4 py-3 rounded-xl shadow-lg text-sm border ${notice.kind === 'ok' ? 'bg-sage/15 border-sage/40 text-sage' : 'bg-coral/15 border-coral/40 text-coral-deep'}`}>
+                    {notice.text}
+                </div>
+            )}
+
             <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
                 {TABS.map((t) => (
                     <button
@@ -216,7 +280,7 @@ const BookingsView: React.FC = () => {
                                 </div>
 
                                 {/* body: time gutter + 7 day columns */}
-                                <div className="grid" style={{ gridTemplateColumns: '3.5rem repeat(7, minmax(0,1fr))' }}>
+                                <div ref={gridRef} className="grid relative select-none" style={{ gridTemplateColumns: '3.5rem repeat(7, minmax(0,1fr))' }}>
                                     {/* time gutter */}
                                     <div className="relative" style={{ height: GRID_H }}>
                                         {HOURS.map((h) => (
@@ -244,27 +308,41 @@ const BookingsView: React.FC = () => {
                                                     const endMin = start + dur;
                                                     const endStr = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`;
                                                     return (
-                                                        <button
+                                                        <div
                                                             key={b.id}
-                                                            onClick={() => setSelectedId(b.id)}
-                                                            title={`${b.time}–${endStr} · ${b.serviceName} · ${b.name}`}
-                                                            className={`absolute left-1 right-1 rounded-md border px-1.5 py-1 text-left overflow-hidden transition-colors ${BLOCK_STYLE[b.status]} ${selectedId === b.id ? 'ring-2 ring-black/60' : ''}`}
+                                                            onPointerDown={(e) => beginDrag(e, b, di)}
+                                                            title={`${b.time}–${endStr} · ${b.serviceName} · ${b.name} — drag to reschedule`}
+                                                            className={`absolute left-1 right-1 rounded-md border px-1.5 py-1 text-left overflow-hidden transition-shadow cursor-grab active:cursor-grabbing touch-none ${BLOCK_STYLE[b.status]} ${selectedId === b.id ? 'ring-2 ring-black/60' : ''} ${drag?.id === b.id ? 'opacity-30' : ''}`}
                                                             style={{ top, height }}
                                                         >
                                                             <div className="text-[9px] font-semibold leading-none tabular-nums opacity-90">{b.time}–{endStr}</div>
                                                             <div className="text-[11px] font-semibold leading-tight truncate mt-0.5">{b.serviceName.split(' · ')[0]}</div>
                                                             {height > 40 && <div className="text-[10px] leading-tight truncate opacity-90">{b.name}</div>}
-                                                        </button>
+                                                        </div>
                                                     );
                                                 })}
                                             </div>
                                         );
                                     })}
+                                    {drag && drag.moved && (
+                                        <div className="absolute z-30 pointer-events-none rounded-md border-2 border-lilac bg-lilac/25 px-1.5 py-1 overflow-hidden shadow-lg"
+                                            style={{
+                                                left: `calc(3.5rem + (100% - 3.5rem) * ${drag.curDay} / 7 + 2px)`,
+                                                width: `calc((100% - 3.5rem) / 7 - 8px)`,
+                                                top: ((drag.curStart - DAY_START) / 60) * HOUR_H,
+                                                height: Math.max(22, (drag.dur / 60) * HOUR_H - 3),
+                                            }}>
+                                            <div className="text-[9px] font-bold tabular-nums text-lilac leading-none">{toHHMM(drag.curStart)}–{toHHMM(drag.curStart + drag.dur)}</div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    {drag && (
+                        <p className="text-center text-lilac text-xs">Drop to move to {WEEKDAYS[drag.curDay]} {toHHMM(drag.curStart)}</p>
+                    )}
                     {calendarSessions.length === 0 && !loading && !error && (
                         <p className="text-center text-text-subtle text-sm py-4">No scheduled sessions yet.</p>
                     )}

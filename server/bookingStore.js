@@ -68,7 +68,8 @@ function writeAll(list) {
   fs.writeFileSync(FILE, JSON.stringify(list, null, 2));
 }
 
-export async function getTakenSlots(date) {
+// Slots occupied by bookings in our own store (no Google Calendar).
+export async function dbTakenSlots(date) {
   let rows;
   if (db) {
     const snap = await db.collection(COLLECTION).where('date', '==', date).get();
@@ -79,6 +80,11 @@ export async function getTakenSlots(date) {
   const set = new Set();
   rows.filter((b) => b.status !== 'cancelled')
     .forEach((b) => occupiedSlots(b.time, b.durationMin).forEach((s) => set.add(s)));
+  return set;
+}
+
+export async function getTakenSlots(date) {
+  const set = await dbTakenSlots(date);
   // Two-way sync: also block slots the owner is busy in Google Calendar.
   try {
     (await gcal.getBusySlots(date)).forEach((s) => set.add(s));
@@ -86,6 +92,46 @@ export async function getTakenSlots(date) {
     console.error('[bookings] calendar busy merge failed:', e.message);
   }
   return [...set];
+}
+
+// Move a scheduled booking to a new date/time (and optionally duration).
+// Availability is checked against our own store only (excluding this booking),
+// so the owner can freely rearrange even over their own calendar event.
+// opts.skipCalendar avoids pushing back to Google (used when the change CAME from Google).
+export async function rescheduleBooking(id, { date, time, durationMin }, opts = {}) {
+  const all = await getAllBookings();
+  const booking = all.find((b) => b.id === id);
+  if (!booking) return null;
+  if (!date || !time) { const e = new Error('BAD_TARGET'); e.code = 'BAD_TARGET'; throw e; }
+
+  const dur = durationMin && durationMin > 0 ? Math.round(durationMin) : (booking.durationMin || 30);
+  const newId = slotId(date, time);
+  const wanted = occupiedSlots(time, dur);
+
+  // Availability from our store, minus this booking's current footprint.
+  const taken = await dbTakenSlots(date);
+  if (booking.date === date) occupiedSlots(booking.time, booking.durationMin || 30).forEach((s) => taken.delete(s));
+  if (wanted.some((s) => taken.has(s))) { const e = new Error('SLOT_TAKEN'); e.code = 'SLOT_TAKEN'; throw e; }
+
+  const updated = { ...booking, id: newId, date, time, durationMin: dur };
+
+  if (db) {
+    if (newId !== booking.id) {
+      await db.collection(COLLECTION).doc(newId).set(updated);
+      await db.collection(COLLECTION).doc(booking.id).delete();
+    } else {
+      await db.collection(COLLECTION).doc(newId).update({ date, time, durationMin: dur });
+    }
+  } else {
+    const list = readAll().filter((b) => b.id !== booking.id && b.id !== newId);
+    list.push(updated);
+    writeAll(list);
+  }
+
+  if (!opts.skipCalendar && updated.gcalEventId) {
+    try { await gcal.updateEvent(updated.gcalEventId, updated); } catch (e) { console.error('[bookings] calendar update failed:', e.message); }
+  }
+  return updated;
 }
 
 export async function createBooking(input) {
@@ -131,9 +177,11 @@ export async function createBooking(input) {
   return booking;
 }
 
-// Reverse sync: if the owner deleted an event in Google Calendar, cancel the matching
-// booking here too. Runs on admin dashboard load. Only touches active bookings that
-// carry a Google event id; returns the number of bookings cancelled.
+// Reverse sync from Google Calendar (runs on admin dashboard load). For each active
+// booking that carries a Google event id:
+//   - event deleted  -> cancel the booking (timed sessions only)
+//   - event moved     -> reschedule the booking to the event's new time
+// Returns the number of bookings changed.
 export async function reconcileWithCalendar() {
   if (!gcal.calendarStatus().enabled) return 0;
   const all = await getAllBookings();
@@ -141,11 +189,19 @@ export async function reconcileWithCalendar() {
   for (const b of all) {
     if (!b.gcalEventId) continue;
     if (b.status !== 'confirmed' && b.status !== 'pending') continue;
-    const st = await gcal.eventStatus(b.gcalEventId);
-    if (st === 'deleted') {
-      // Only timed sessions reverse-sync on deletion (deleting the event = cancelled).
-      // Async reminders (chat/pdf/special) are just visual; their status is managed in admin.
+    const info = await gcal.eventInfo(b.gcalEventId);
+    if (info.status === 'deleted') {
+      // Deleting a timed session cancels it; async reminders are managed in admin.
       if (b.date && b.time) { await updateStatus(b.id, 'cancelled'); changed++; }
+    } else if (info.status === 'exists' && info.scheduled && b.date && b.time) {
+      const movedTime = info.date !== b.date || info.time !== b.time;
+      const movedDur = info.durationMin && Math.abs(info.durationMin - (b.durationMin || 0)) >= 5;
+      if (movedTime || movedDur) {
+        try {
+          await rescheduleBooking(b.id, { date: info.date, time: info.time, durationMin: info.durationMin || b.durationMin }, { skipCalendar: true });
+          changed++;
+        } catch (e) { console.error('[bookings] reverse reschedule skipped:', e.message); }
+      }
     }
   }
   return changed;
