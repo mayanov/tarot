@@ -241,12 +241,24 @@ const BookingsView: React.FC = () => {
                     <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Bookings</h1>
                     <p className="text-text-subtle text-sm">{scheduled.length} scheduled · {orders.length} orders</p>
                 </div>
-                <button
-                    onClick={load}
-                    className="px-4 py-2 bg-adm-hover hover:bg-adm-hover-2 text-text-light font-medium rounded-xl transition-all text-sm flex items-center gap-2"
-                >
-                    <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
-                </button>
+                <div className="flex items-center gap-2.5 shrink-0">
+                    <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
+                        {TABS.map((t) => (
+                            <button
+                                key={t.id}
+                                onClick={() => setTab(t.id)}
+                                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ${tab === t.id ? 'bg-lilac text-[#26242B]' : 'text-text-subtle hover:text-text-light'}`}
+                            >
+                                {t.label}
+                                <span className={`text-[0.7rem] tabular-nums ${tab === t.id ? 'text-[#26242B]/70' : 'text-text-subtle'}`}>{t.count}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <button onClick={load} title="Refresh"
+                        className="p-2.5 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light hover:border-adm-line-3 transition-colors">
+                        <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
+                    </button>
+                </div>
             </div>
 
             {error && <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
@@ -256,19 +268,6 @@ const BookingsView: React.FC = () => {
                     {notice.text}
                 </div>
             )}
-
-            <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
-                {TABS.map((t) => (
-                    <button
-                        key={t.id}
-                        onClick={() => setTab(t.id)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ${tab === t.id ? 'bg-lilac text-[#26242B]' : 'text-text-subtle hover:text-text-light'}`}
-                    >
-                        {t.label}
-                        <span className={`text-[0.7rem] tabular-nums ${tab === t.id ? 'text-[#26242B]/70' : 'text-text-subtle'}`}>{t.count}</span>
-                    </button>
-                ))}
-            </div>
 
             {/* ---------------- CALENDAR — weekly time grid ---------------- */}
             {tab === 'calendar' && (
