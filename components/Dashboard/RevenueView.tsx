@@ -239,10 +239,10 @@ const RevenueView: React.FC = () => {
     );
 
     const Seg = <T extends string>({ value, options, onChange }: { value: T; options: { id: T; label: string }[]; onChange: (v: T) => void }) => (
-        <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1 flex-wrap">
+        <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
             {options.map((o) => (
                 <button key={o.id} onClick={() => onChange(o.id)}
-                    className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors ${value === o.id ? 'bg-lilac text-[#26242B]' : 'text-text-subtle hover:text-text-light'}`}>
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors whitespace-nowrap ${value === o.id ? 'bg-lilac text-[#26242B]' : 'text-text-subtle hover:text-text-light'}`}>
                     {o.label}
                 </button>
             ))}
@@ -266,33 +266,28 @@ const RevenueView: React.FC = () => {
                 </div>
             </div>
 
-            <div className="rounded-2xl bg-surface-1 border border-adm-line p-3 md:p-4 space-y-3">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                        <span className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Range</span>
-                        <Seg value={preset} options={[
-                            { id: '7d', label: '7D' }, { id: '30d', label: '30D' }, { id: '90d', label: '90D' },
-                            { id: 'thisMonth', label: 'This month' }, { id: 'year', label: 'This year' },
-                            { id: 'all', label: 'All' }, { id: 'custom', label: 'Custom' },
-                        ]} onChange={setPreset} />
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                        <span className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Group by</span>
-                        <Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGran} />
-                    </div>
-                </div>
+            <div className="rounded-2xl bg-surface-1 border border-adm-line px-3 py-2.5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                <span className="text-[0.65rem] uppercase tracking-wider text-text-subtle">Range</span>
+                <Seg value={preset} options={[
+                    { id: '7d', label: '7D' }, { id: '30d', label: '30D' }, { id: '90d', label: '90D' },
+                    { id: 'thisMonth', label: 'This month' }, { id: 'year', label: 'This year' },
+                    { id: 'all', label: 'All' }, { id: 'custom', label: 'Custom' },
+                ]} onChange={setPreset} />
                 {preset === 'custom' && (
-                    <div className="flex items-center gap-2 flex-wrap justify-end pt-1 border-t border-adm-line -mx-1 px-1">
-                        <span className="text-xs text-text-subtle">From</span>
+                    <div className="flex items-center gap-1.5">
                         <input type="date" value={customStart} max={customEnd || undefined}
                             onChange={(e) => setCustomStart(e.target.value)}
-                            className="rounded-lg border border-adm-line-2 bg-bg-dark px-3 py-1.5 text-sm text-text-light focus:border-lilac focus:outline-none" />
-                        <span className="text-xs text-text-subtle">to</span>
+                            className="rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-1 text-xs text-text-light focus:border-lilac focus:outline-none" />
+                        <span className="text-xs text-text-subtle">–</span>
                         <input type="date" value={customEnd} min={customStart || undefined}
                             onChange={(e) => setCustomEnd(e.target.value)}
-                            className="rounded-lg border border-adm-line-2 bg-bg-dark px-3 py-1.5 text-sm text-text-light focus:border-lilac focus:outline-none" />
+                            className="rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-1 text-xs text-text-light focus:border-lilac focus:outline-none" />
                     </div>
                 )}
+                <div className="ml-auto flex items-center gap-2">
+                    <span className="text-[0.65rem] uppercase tracking-wider text-text-subtle">Group by</span>
+                    <Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGran} />
+                </div>
             </div>
 
             {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-4 py-3">{error}</div>}
