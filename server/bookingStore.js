@@ -143,11 +143,9 @@ export async function reconcileWithCalendar() {
     if (b.status !== 'confirmed' && b.status !== 'pending') continue;
     const st = await gcal.eventStatus(b.gcalEventId);
     if (st === 'deleted') {
-      // Deleting a timed session in Google Calendar = cancelled;
-      // deleting an async reminder (chat/pdf/special) = done (task fulfilled).
-      const scheduled = Boolean(b.date && b.time);
-      await updateStatus(b.id, scheduled ? 'cancelled' : 'done');
-      changed++;
+      // Only timed sessions reverse-sync on deletion (deleting the event = cancelled).
+      // Async reminders (chat/pdf/special) are just visual; their status is managed in admin.
+      if (b.date && b.time) { await updateStatus(b.id, 'cancelled'); changed++; }
     }
   }
   return changed;

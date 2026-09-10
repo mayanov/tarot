@@ -106,7 +106,7 @@ export async function createEvent(booking) {
     const day = booking.date || (booking.createdAt || '').slice(0, 10) || todayISO();
     body = {
       summary: `🔔 ${serviceLabel} — ${booking.name}`,
-      description: `To fulfill (no fixed time). ✔️ Delete this reminder when done — it marks the booking Done.\n\n${description}`,
+      description: `To fulfill (no fixed time).\n\n${description}`,
       start: { date: day },
       end: { date: nextDay(day) },
       transparency: 'transparent', // shows as Free -> won't block bookable slots
