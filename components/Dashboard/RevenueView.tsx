@@ -282,7 +282,7 @@ const RevenueView: React.FC = () => {
                     </div>
                 </div>
                 {preset === 'custom' && (
-                    <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-adm-line -mx-1 px-1">
+                    <div className="flex items-center gap-2 flex-wrap justify-end pt-1 border-t border-adm-line -mx-1 px-1">
                         <span className="text-xs text-text-subtle">From</span>
                         <input type="date" value={customStart} max={customEnd || undefined}
                             onChange={(e) => setCustomStart(e.target.value)}
