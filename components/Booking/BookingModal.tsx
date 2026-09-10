@@ -367,7 +367,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               {(!needsPackage || pkg) && (
               <div className="md:grid md:grid-cols-2 md:gap-4 md:items-start">
               {/* calendar */}
-              <div className="rounded-2xl bg-white border border-line shadow-sm text-ink p-2 sm:p-3 flex justify-center [--rdp-accent-color:#DA8636] [--rdp-accent-background-color:#F5E7D6]">
+              <div className="booking-cal rounded-2xl bg-white border border-line shadow-sm text-ink p-2 sm:p-3 flex justify-center">
                 <DayPicker
                   mode="single"
                   selected={date}

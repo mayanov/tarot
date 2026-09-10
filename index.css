@@ -222,3 +222,74 @@ html.lenis body {
   border-radius: 9999px;
   background: #DA8636;
 }
+
+/* =========================================
+   Booking modal calendar — light coral theme (react-day-picker v9)
+   Scoped to .booking-cal so it never touches the admin/dark calendars
+   ========================================= */
+.booking-cal {
+  --rdp-accent-color: #DA8636;
+  --rdp-accent-background-color: #F5E7D6;
+  --rdp-today-color: #DA8636;
+}
+.booking-cal .rdp-root {
+  --rdp-day-width: 40px;
+  --rdp-day-height: 40px;
+  --rdp-day_button-width: 38px;
+  --rdp-day_button-height: 38px;
+  --rdp-day_button-border-radius: 10px;
+  margin: 0;
+}
+.booking-cal .rdp-month_caption {
+  font-weight: 700;
+  color: #2B2426;
+  font-size: 1rem;
+}
+.booking-cal .rdp-weekday {
+  color: #8A7D7D;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: none;
+}
+.booking-cal .rdp-chevron {
+  fill: #DA8636;
+}
+.booking-cal .rdp-button_previous,
+.booking-cal .rdp-button_next {
+  border-radius: 9999px;
+}
+.booking-cal .rdp-button_previous:hover:not([disabled]),
+.booking-cal .rdp-button_next:hover:not([disabled]) {
+  background-color: #F5E7D6;
+}
+.booking-cal .rdp-day_button {
+  color: #2B2426;
+  border: none;
+  font-weight: 500;
+}
+.booking-cal .rdp-day_button:hover:not([disabled]) {
+  background-color: #F5E7D6;
+  color: #DA8636;
+}
+.booking-cal .rdp-today:not(.rdp-selected) .rdp-day_button {
+  color: #DA8636;
+  font-weight: 700;
+  background-color: transparent;
+}
+.booking-cal .rdp-selected .rdp-day_button,
+.booking-cal .rdp-selected:hover .rdp-day_button,
+.booking-cal .rdp-selected:focus .rdp-day_button {
+  background-color: #DA8636 !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  font-weight: 700;
+}
+.booking-cal .rdp-disabled .rdp-day_button,
+.booking-cal .rdp-outside .rdp-day_button {
+  color: #C9C4C0;
+  opacity: 1;
+}
+.booking-cal .rdp-day_button:focus-visible {
+  outline: 2px solid #DA8636;
+  outline-offset: 1px;
+}
