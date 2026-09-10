@@ -270,7 +270,7 @@ const RevenueView: React.FC = () => {
                 <span className="text-[0.65rem] uppercase tracking-wider text-text-subtle">Range</span>
                 <Seg value={preset} options={[
                     { id: '7d', label: '7D' }, { id: '30d', label: '30D' }, { id: '90d', label: '90D' },
-                    { id: 'thisMonth', label: 'This month' }, { id: 'year', label: 'This year' },
+                    { id: 'thisMonth', label: 'Month' }, { id: 'year', label: 'Year' },
                     { id: 'all', label: 'All' }, { id: 'custom', label: 'Custom' },
                 ]} onChange={setPreset} />
                 {preset === 'custom' && (
@@ -284,8 +284,7 @@ const RevenueView: React.FC = () => {
                             className="rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-1 text-xs text-text-light focus:border-lilac focus:outline-none" />
                     </div>
                 )}
-                <div className="ml-auto flex items-center gap-2">
-                    <span className="text-[0.65rem] uppercase tracking-wider text-text-subtle">Group by</span>
+                <div className="ml-auto">
                     <Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGran} />
                 </div>
             </div>
