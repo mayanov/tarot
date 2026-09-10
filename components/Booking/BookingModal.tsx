@@ -15,6 +15,7 @@ interface ServiceOption {
   id: string;
   name: string;
   meta: string;
+  desc: string; // one-line explanation shown on the service picker
   scheduled: boolean; // needs a date & time slot?
   packages?: string[]; // if set, the visitor must pick one
   price?: string; // fixed price when there are no packages
@@ -91,15 +92,15 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   const services: ServiceOption[] = isIndonesian
     ? [
-        { id: 'chat', name: 'Konsultasi via Chat', meta: 'WhatsApp · per pertanyaan', scheduled: false, packages: ['1 Pertanyaan · Rp 140K', '3 Pertanyaan · Rp 315K', 'Beli 3 Dapat 5 · Rp 315K (Promo)'] },
-        { id: 'call', name: 'Call / Video Call', meta: 'Real-time · pilih durasi', scheduled: true, packages: ['30 Menit · Rp 220K', '60 Menit · Rp 360K'] },
-        { id: 'meetup', name: 'Sesi Tatap Muka', meta: 'Jakarta Selatan', scheduled: true, packages: ['1 Jam · Rp 450K', '2 Jam · Rp 810K', '3 Jam · Rp 1,17JT'] },
-        { id: 'special', name: 'Edisi Spesial', meta: 'Bacaan tematik (PDF)', scheduled: false, price: 'Rp 250K' },
+        { id: 'chat', name: 'Konsultasi via Chat', meta: 'WhatsApp · per pertanyaan', desc: 'Tanya-jawab santai lewat WhatsApp, dijawab dalam bentuk teks. Fleksibel untuk pertanyaan spesifik.', scheduled: false, packages: ['1 Pertanyaan · Rp 140K', '3 Pertanyaan · Rp 315K', 'Beli 3 Dapat 5 · Rp 315K (Promo)'] },
+        { id: 'call', name: 'Call / Video Call', meta: 'Real-time · pilih durasi', desc: 'Ngobrol langsung via suara atau video. Lebih interaktif, tanya sepuasnya selama durasi.', scheduled: true, packages: ['30 Menit · Rp 220K', '60 Menit · Rp 360K'] },
+        { id: 'meetup', name: 'Sesi Tatap Muka', meta: 'Jakarta Selatan', desc: 'Ketemu langsung di Jakarta Selatan — pengalaman paling personal dan mendalam.', scheduled: true, packages: ['1 Jam · Rp 450K', '2 Jam · Rp 810K', '3 Jam · Rp 1,17JT'] },
+        { id: 'special', name: 'Edisi Spesial', meta: 'Bacaan tematik (PDF)', desc: 'Bacaan tematik khusus (mis. New Year Reading), dikirim rapi dalam bentuk PDF.', scheduled: false, price: 'Rp 250K' },
       ]
     : [
-        { id: '3card', name: '3-Card Spread', meta: 'Email · within 24h', scheduled: false, price: '$12' },
-        { id: '5card', name: '5-Card Deep', meta: 'Email · in-depth', scheduled: false, price: '$20' },
-        { id: 'live', name: 'Live Session', meta: 'Google Meet · 30 min', scheduled: true, price: '$45' },
+        { id: '3card', name: '3-Card Spread', meta: 'Email · within 24h', desc: 'A focused three-card reading for a clear question, delivered by email within 24 hours.', scheduled: false, price: '$12' },
+        { id: '5card', name: '5-Card Deep', meta: 'Email · in-depth', desc: 'A deeper five-card spread with more detail and nuance, delivered by email.', scheduled: false, price: '$20' },
+        { id: 'live', name: 'Live Session', meta: 'Google Meet · 30 min', desc: 'A real-time 30-minute session over Google Meet — interactive and personal.', scheduled: true, price: '$45' },
       ];
 
   const reset = useCallback(() => {
@@ -319,9 +320,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   onClick={() => { setService(s); setStep(s.scheduled ? 1 : 2); }}
                   className="group w-full flex items-center justify-between gap-4 text-left rounded-2xl border border-line bg-white hover:border-coral/50 hover:shadow-[0_14px_34px_-18px_rgba(218,134,54,0.55)] hover:-translate-y-0.5 transition-all px-4 py-3.5"
                 >
-                  <span>
+                  <span className="min-w-0">
                     <span className="block font-serif font-semibold text-plum">{s.name}</span>
-                    <span className="block text-xs text-taupe mt-0.5">{s.meta}</span>
+                    <span className="block text-[0.7rem] uppercase tracking-wide text-coral-deep/70 mt-0.5">{s.meta}</span>
+                    <span className="block text-xs text-ink-soft leading-snug mt-1">{s.desc}</span>
                   </span>
                   <ChevronRight className="w-5 h-5 text-coral-deep/40 group-hover:text-coral-deep group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
