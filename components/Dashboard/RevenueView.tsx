@@ -266,19 +266,33 @@ const RevenueView: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <Seg value={preset} options={[
-                    { id: '7d', label: '7D' }, { id: '30d', label: '30D' }, { id: '90d', label: '90D' },
-                    { id: 'thisMonth', label: 'This month' }, { id: 'year', label: 'This year' }, { id: 'all', label: 'All' },
-                ]} onChange={setPreset} />
-                <div className="flex items-center gap-2 flex-wrap">
-                    <input type="date" value={customStart} onChange={(e) => { setCustomStart(e.target.value); setPreset('custom'); }}
-                        className="rounded-lg border border-adm-line-2 bg-surface-1 px-3 py-1.5 text-sm text-text-light" />
-                    <span className="text-text-subtle text-sm">→</span>
-                    <input type="date" value={customEnd} onChange={(e) => { setCustomEnd(e.target.value); setPreset('custom'); }}
-                        className="rounded-lg border border-adm-line-2 bg-surface-1 px-3 py-1.5 text-sm text-text-light" />
-                    <Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGran} />
+            <div className="rounded-2xl bg-surface-1 border border-adm-line p-3 md:p-4 space-y-3">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                        <span className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Range</span>
+                        <Seg value={preset} options={[
+                            { id: '7d', label: '7D' }, { id: '30d', label: '30D' }, { id: '90d', label: '90D' },
+                            { id: 'thisMonth', label: 'This month' }, { id: 'year', label: 'This year' },
+                            { id: 'all', label: 'All' }, { id: 'custom', label: 'Custom' },
+                        ]} onChange={setPreset} />
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                        <span className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Group by</span>
+                        <Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGran} />
+                    </div>
                 </div>
+                {preset === 'custom' && (
+                    <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-adm-line -mx-1 px-1">
+                        <span className="text-xs text-text-subtle">From</span>
+                        <input type="date" value={customStart} max={customEnd || undefined}
+                            onChange={(e) => setCustomStart(e.target.value)}
+                            className="rounded-lg border border-adm-line-2 bg-bg-dark px-3 py-1.5 text-sm text-text-light focus:border-lilac focus:outline-none" />
+                        <span className="text-xs text-text-subtle">to</span>
+                        <input type="date" value={customEnd} min={customStart || undefined}
+                            onChange={(e) => setCustomEnd(e.target.value)}
+                            className="rounded-lg border border-adm-line-2 bg-bg-dark px-3 py-1.5 text-sm text-text-light focus:border-lilac focus:outline-none" />
+                    </div>
+                )}
             </div>
 
             {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-4 py-3">{error}</div>}
