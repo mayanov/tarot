@@ -42,6 +42,9 @@ try {
     const serviceAccount = JSON.parse(raw);
     if (!getApps().length) initializeApp({ credential: cert(serviceAccount) });
     db = getFirestore();
+    // Async bookings (chat/email/special) have no date/time — let Firestore skip
+    // undefined fields instead of throwing.
+    db.settings({ ignoreUndefinedProperties: true });
     console.log('[bookings] Using Firestore');
   } else {
     console.log('[bookings] FIREBASE_SERVICE_ACCOUNT not set — using local JSON file store');
