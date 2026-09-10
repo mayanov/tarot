@@ -365,9 +365,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               {/* calendar + time — revealed only after a duration is chosen */}
               {(!needsPackage || pkg) && (
-              <div className="md:grid md:grid-cols-2 md:gap-4 md:items-start">
+              <div className="md:grid md:grid-cols-2 md:gap-4 md:items-stretch">
               {/* calendar */}
-              <div className="booking-cal rounded-2xl bg-white border border-line shadow-sm text-ink p-2 sm:p-3 flex justify-center">
+              <div className="booking-cal rounded-2xl bg-white border border-line shadow-sm text-ink p-2 sm:p-3 flex items-center justify-center md:h-full">
                 <DayPicker
                   mode="single"
                   selected={date}
@@ -378,7 +378,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </div>
 
               {/* time */}
-              <div className="mt-5 md:mt-0">
+              <div className="mt-5 md:mt-0 md:h-full">
                   <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-taupe mb-3">
                     <Clock className="w-3.5 h-3.5" /> {t('Pilih jam', 'Choose a time')}
                   </div>

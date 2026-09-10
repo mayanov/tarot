@@ -244,6 +244,7 @@ html.lenis body {
   font-weight: 700;
   color: #2B2426;
   font-size: 1rem;
+  padding-left: 0.6rem;
 }
 .booking-cal .rdp-weekday {
   color: #8A7D7D;
