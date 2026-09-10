@@ -342,17 +342,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-2">
                     {t('Pilih durasi', 'Choose duration')}
                   </span>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {service.packages.map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => { setPkg(p); setTime(null); }}
-                        className={`text-left rounded-lg border px-4 py-2.5 text-sm transition-colors ${pkg === p ? 'border-coral bg-coral/10 text-plum font-medium' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
-                      >
-                        {p}
-                      </button>
-                    ))}
+                  <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
+                    {service.packages.map((p) => {
+                      const [pName, ...pRest] = p.split(' · ');
+                      const pPrice = pRest.join(' · ');
+                      const active = pkg === p;
+                      return (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => { setPkg(p); setTime(null); }}
+                          className={`flex flex-col text-center rounded-lg border px-2 py-2.5 transition-colors ${active ? 'border-coral bg-coral/10 text-plum' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
+                        >
+                          <span className="text-xs font-medium leading-snug">{pName}</span>
+                          {pPrice && <span className={`mt-1 text-[0.7rem] leading-snug ${active ? 'text-plum/80' : 'text-taupe'}`}>{pPrice}</span>}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
