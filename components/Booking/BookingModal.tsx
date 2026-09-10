@@ -244,7 +244,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       <div className="absolute inset-0 bg-plum-deep/60 backdrop-blur-2xl" onClick={close} />
 
       {/* panel — warm, light, on-brand with a plum undertone */}
-      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${step === 3 && isIndonesian ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
+      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${(step === 3 && isIndonesian) || step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
         {/* soft glow accents — coral + plum (clipped, so they never add scroll) */}
         <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-coral/25 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-plum/20 blur-3xl" />
@@ -365,7 +365,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               {/* calendar + time — revealed only after a duration is chosen */}
               {(!needsPackage || pkg) && (
-              <>
+              <div className="md:grid md:grid-cols-2 md:gap-4 md:items-start">
               {/* calendar */}
               <div className="rounded-2xl bg-white border border-line shadow-sm text-ink p-2 sm:p-3 flex justify-center [--rdp-accent-color:#DA8636] [--rdp-accent-background-color:#F5E7D6]">
                 <DayPicker
@@ -377,12 +377,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 />
               </div>
 
-              {date && (
-                <div className="mt-5">
+              {/* time */}
+              <div className="mt-5 md:mt-0">
                   <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-taupe mb-3">
                     <Clock className="w-3.5 h-3.5" /> {t('Pilih jam', 'Choose a time')}
                   </div>
-                  {time ? (
+                  {!date ? (
+                    <p className="text-sm text-ink-soft bg-ink/[0.04] border border-line rounded-lg px-4 py-3">
+                      {t('Pilih tanggal dulu untuk melihat jam.', 'Pick a date to see available times.')}
+                    </p>
+                  ) : time ? (
                     // Selected slot(s) merged into the full booked range.
                     <div className="flex items-center justify-between gap-3 rounded-lg border-2 border-coral bg-coral/10 px-4 py-3.5">
                       <span className="flex items-center gap-2 text-lg font-serif font-bold text-plum tabular-nums">
@@ -395,7 +399,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                       {t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}
                     </p>
                   ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     {visibleSlots.map((slot) => {
                       // Block this start if the whole session span isn't free / doesn't fit the day.
                       const span = slotSpan(slot, durationMin || 30);
@@ -420,9 +424,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                     })}
                   </div>
                   )}
-                </div>
-              )}
-              </>
+              </div>
+              </div>
               )}
 
               <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-end gap-3">
