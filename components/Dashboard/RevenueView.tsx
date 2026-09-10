@@ -266,8 +266,7 @@ const RevenueView: React.FC = () => {
                 </div>
             </div>
 
-            <div className="rounded-2xl bg-surface-1 border border-adm-line px-3 py-2.5 flex flex-wrap items-center gap-x-3 gap-y-2">
-                <span className="text-[0.65rem] uppercase tracking-wider text-text-subtle">Range</span>
+            <div className="rounded-2xl bg-surface-1 border border-adm-line px-3 py-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-2">
                 <Seg value={preset} options={[
                     { id: '7d', label: '7D' }, { id: '30d', label: '30D' }, { id: '90d', label: '90D' },
                     { id: 'thisMonth', label: 'Month' }, { id: 'year', label: 'Year' },
