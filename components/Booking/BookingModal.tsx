@@ -363,6 +363,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 </div>
               )}
 
+              {/* calendar + time — revealed only after a duration is chosen */}
+              {(!needsPackage || pkg) && (
+              <>
               {/* calendar */}
               <div className="rounded-2xl bg-white border border-line shadow-sm text-ink p-2 sm:p-3 flex justify-center [--rdp-accent-color:#DA8636] [--rdp-accent-background-color:#F5E7D6]">
                 <DayPicker
@@ -418,6 +421,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   </div>
                   )}
                 </div>
+              )}
+              </>
               )}
 
               <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-end gap-3">
