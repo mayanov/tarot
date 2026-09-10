@@ -413,6 +413,7 @@ const BookingsView: React.FC = () => {
                                     <div className="flex flex-wrap items-center gap-2 text-sm text-text-light">
                                         <span className="font-semibold tabular-nums">{fmtDate(b.date)} · {b.time}{endStr && `–${endStr}`}</span>
                                         <span className="px-1.5 py-0.5 rounded bg-adm-hover-2 text-[0.6rem] uppercase tracking-wider text-text-subtle">{b.market}</span>
+                                        {b.ref && <span className="font-mono text-[0.6rem] px-1.5 py-0.5 rounded bg-adm-hover text-text-subtle">{b.ref}</span>}
                                     </div>
                                     <button aria-label="Close" onClick={() => setSelectedId(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors">
                                         <X size={16} />
@@ -479,7 +480,10 @@ const BookingsView: React.FC = () => {
                                         <div key={b.id} className="bg-surface-1 border border-adm-line rounded-2xl p-4 flex flex-col lg:flex-row lg:items-start gap-4">
                                             {/* customer + order */}
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-text-subtle text-xs mb-1.5">{created} · <span className="uppercase">{b.market}</span></div>
+                                                <div className="text-text-subtle text-xs mb-1.5 flex flex-wrap items-center gap-x-2">
+                                                    <span>{created} · <span className="uppercase">{b.market}</span></span>
+                                                    {b.ref && <span className="font-mono text-[0.65rem] px-1.5 py-0.5 rounded bg-adm-hover text-text-subtle">{b.ref}</span>}
+                                                </div>
                                                 <div className="text-lg font-serif font-bold text-text-light leading-tight">{b.name} - {item}</div>
                                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-text-subtle">
                                                     {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {fmtDate(b.dob)}</span>}

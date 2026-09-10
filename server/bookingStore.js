@@ -6,6 +6,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'url';
 import * as gcal from './googleCalendar.js';
 
@@ -15,6 +16,9 @@ const FILE = path.join(DATA_DIR, 'bookings.json');
 const COLLECTION = 'bookings';
 
 const slotId = (date, time) => `${date}_${time}`;
+// Stable, opaque public reference for a booking — random (not derived from date/time),
+// so it never leaks schedule info and survives reschedules. e.g. "MYV-3F9A2C7B1D".
+const genRef = () => 'MYV-' + crypto.randomBytes(5).toString('hex').toUpperCase();
 
 // The 30-min grid slots a booking occupies, from its start time + duration.
 const toMin = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
@@ -140,7 +144,7 @@ export async function createBooking(input) {
   const id = hasSlot
     ? slotId(input.date, input.time)
     : 'bk_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-  const booking = { ...input, id, createdAt: new Date().toISOString(), status: 'confirmed' };
+  const booking = { ...input, id, ref: genRef(), createdAt: new Date().toISOString(), status: 'confirmed' };
 
   // A scheduled booking blocks every 30-min slot it spans; reject if any overlap.
   const wanted = hasSlot ? occupiedSlots(input.time, input.durationMin) : [];
@@ -207,12 +211,35 @@ export async function reconcileWithCalendar() {
   return changed;
 }
 
+// Give any legacy booking that predates the ref field a stable ref (persisted once).
+async function backfillRefs(rows) {
+  const missing = rows.filter((r) => !r.ref);
+  if (!missing.length) return rows;
+  missing.forEach((r) => { r.ref = genRef(); });
+  try {
+    if (db) {
+      const batch = db.batch();
+      missing.forEach((r) => batch.update(db.collection(COLLECTION).doc(r.id), { ref: r.ref }));
+      await batch.commit();
+    } else {
+      const all = readAll();
+      const byId = new Map(missing.map((r) => [r.id, r.ref]));
+      all.forEach((b) => { if (byId.has(b.id)) b.ref = byId.get(b.id); });
+      writeAll(all);
+    }
+  } catch (e) { console.error('[bookings] ref backfill failed:', e.message); }
+  return rows;
+}
+
 export async function getAllBookings() {
+  let rows;
   if (db) {
     const snap = await db.collection(COLLECTION).orderBy('createdAt', 'desc').get();
-    return snap.docs.map((d) => d.data());
+    rows = snap.docs.map((d) => d.data());
+  } else {
+    rows = readAll().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   }
-  return readAll().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  return backfillRefs(rows);
 }
 
 export async function updateStatus(id, status) {

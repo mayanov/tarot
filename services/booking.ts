@@ -33,6 +33,7 @@ export const slotSpan = (start: string, durationMin: number): string[] => {
 
 export interface Booking extends BookingInput {
   id: string;
+  ref?: string; // stable, opaque public reference (e.g. "MYV-3F9A2C7B1D")
   createdAt: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'done';
   gcalEventId?: string;

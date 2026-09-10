@@ -40,6 +40,21 @@ const normPhone = (raw: string) => {
 };
 const extractEmail = (contact?: string) => contact?.match(/[\w.+-]+@[\w-]+\.[\w.-]+/)?.[0] || '';
 
+// Stable, opaque client id derived from the identity key (phone/email) — same client
+// always gets the same id, and it never exposes the raw phone number.
+const clientIdFor = (key: string) => {
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < key.length; i++) {
+        const ch = key.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    const n = (h2 >>> 0) * 4294967296 + (h1 >>> 0);
+    return 'CL-' + n.toString(36).toUpperCase().padStart(9, '0').slice(0, 9);
+};
+
 const STATUS_STYLE: Record<Booking['status'], string> = {
     pending: 'bg-coral/15 text-coral-deep border-coral/40',
     confirmed: 'bg-sage/15 text-sage border-sage/45',
@@ -49,6 +64,7 @@ const STATUS_STYLE: Record<Booking['status'], string> = {
 
 interface Customer {
     key: string;
+    clientId: string;
     name: string;
     phone: string;
     email: string;
@@ -96,7 +112,7 @@ const CustomersView: React.FC = () => {
             const key = normPhone(phone) || email.toLowerCase() || `id:${b.id}`;
             let c = map.get(key);
             if (!c) {
-                c = { key, name: b.name || '—', phone, email, bookings: [], totalIDR: 0, totalUSD: 0, lastSeen: '', firstSeen: '', services: [] };
+                c = { key, clientId: clientIdFor(key), name: b.name || '—', phone, email, bookings: [], totalIDR: 0, totalUSD: 0, lastSeen: '', firstSeen: '', services: [] };
                 map.set(key, c);
             }
             c.bookings.push(b);
@@ -189,7 +205,10 @@ const CustomersView: React.FC = () => {
                                     {c.name}
                                     {active > 1 && <span className="inline-flex items-center gap-1 text-[0.65rem] text-lilac"><Repeat size={11} />{active}×</span>}
                                 </div>
-                                {c.email && <div className="text-xs text-text-subtle truncate">{c.email}</div>}
+                                <div className="text-xs text-text-subtle truncate flex items-center gap-1.5">
+                                    <span className="font-mono text-[0.65rem] text-text-subtle/80">{c.clientId}</span>
+                                    {c.email && <span className="truncate">· {c.email}</span>}
+                                </div>
                             </div>
                             <div className="col-span-1 md:col-span-3 text-sm text-text-subtle tabular-nums truncate">{c.phone || '—'}</div>
                             <div className="col-span-1 md:col-span-2 md:text-center text-sm text-text-light tabular-nums">{c.bookings.length}</div>
@@ -207,6 +226,7 @@ const CustomersView: React.FC = () => {
                         <div className="sticky top-0 bg-surface-1 border-b border-adm-line px-6 py-4 flex items-start justify-between gap-4">
                             <div>
                                 <h3 className="text-xl font-serif font-bold text-text-light">{selected.name}</h3>
+                                <div className="font-mono text-xs text-text-subtle mt-0.5">{selected.clientId}</div>
                                 <div className="mt-1 flex flex-col gap-0.5 text-sm text-text-subtle">
                                     {selected.phone && <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-lilac"><Phone size={13} />{selected.phone}</a>}
                                     {selected.email && <span className="inline-flex items-center gap-1.5"><Mail size={13} />{selected.email}</span>}
