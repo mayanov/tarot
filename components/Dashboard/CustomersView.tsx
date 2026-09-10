@@ -85,8 +85,11 @@ const CustomersView: React.FC = () => {
 
     const customers = useMemo<Customer[]>(() => {
         const map = new Map<string, Customer>();
+        // Only real clients: build the directory from confirmed/done bookings.
+        // Pending & cancelled are excluded (they may not be genuine).
+        const realBookings = bookings.filter((b) => b.status === 'confirmed' || b.status === 'done');
         // Newest first so "name/phone" reflects the latest booking.
-        const sorted = [...bookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        const sorted = [...realBookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         for (const b of sorted) {
             const phone = extractPhone(b.contact);
             const email = extractEmail(b.contact);
