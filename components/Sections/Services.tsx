@@ -287,8 +287,17 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     return (
         <section
             id="services"
-            className="py-16 md:py-24 relative overflow-hidden isolate"
+            className="py-20 md:py-28 relative overflow-hidden isolate"
         >
+            {/* teal color zone — a distinct band that fades in/out of the sky */}
+            <div
+                className="absolute inset-0 -z-10 pointer-events-none"
+                aria-hidden
+                style={{
+                    background:
+                        'linear-gradient(180deg, rgba(13,74,86,0) 0%, rgba(14,78,90,0.85) 12%, rgba(17,92,105,0.9) 50%, rgba(14,78,90,0.85) 88%, rgba(13,74,86,0) 100%)',
+                }}
+            />
             <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
                 {/* Header — asymmetric */}
                 <FadeIn>

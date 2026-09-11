@@ -232,7 +232,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         aria-hidden
         style={{
           background:
-            'linear-gradient(180deg, rgba(58,32,52,0) 0%, rgba(96,52,64,0.55) 16%, rgba(120,66,72,0.6) 50%, rgba(96,52,64,0.55) 84%, rgba(58,32,52,0) 100%)',
+            'linear-gradient(180deg, rgba(130,78,80,0) 0%, rgba(150,88,86,0.82) 12%, rgba(166,98,94,0.88) 50%, rgba(150,88,86,0.82) 88%, rgba(130,78,80,0) 100%)',
         }}
       />
       <FadeIn>
