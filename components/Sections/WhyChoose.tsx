@@ -1,5 +1,6 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
+import { Compass, HeartHandshake, Globe, Lock, Award, Zap } from 'lucide-react';
 
 interface WhyChooseProps {
   isIndonesian?: boolean;
@@ -9,6 +10,8 @@ interface ReasonItem {
   title: string;
   description: string;
 }
+
+const ICONS = [Compass, HeartHandshake, Globe, Lock, Award, Zap];
 
 const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   const reasonsGlobal: ReasonItem[] = [
@@ -74,49 +77,39 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
     >
       <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
         <div className="relative overflow-hidden rounded-xl md:rounded-2xl border border-white/10 bg-plum-deep/80 backdrop-blur-md shadow-[0_14px_44px_-26px_rgba(0,0,0,0.55)] px-6 sm:px-10 md:px-14 lg:px-16 py-14 md:py-20">
-          <div className="grid lg:grid-cols-12 gap-y-12 lg:gap-x-16">
-            {/* LEFT — sticky editorial title */}
-            <div className="lg:col-span-4">
-              <div className="lg:sticky lg:top-28">
-                <FadeIn>
-                  <span className="inline-block text-[0.66rem] uppercase tracking-[0.3em] text-coral mb-6">
-                    {isIndonesian ? 'Kenapa Mayanov' : 'Why me'}
-                  </span>
-                  <h2 className="font-serif font-semibold text-cream text-[2.6rem] md:text-[3.6rem] xl:text-[4.4rem] leading-[0.96] tracking-[-0.03em]">
-                    {isIndonesian
-                      ? <>Kenapa tarot<br />sama <span className="text-coral">Mayanov?</span></>
-                      : <>Why work<br />with <span className="text-coral">me?</span></>}
-                  </h2>
-                  <p className="mt-6 text-cream/65 font-light leading-relaxed max-w-xs">
-                    {isIndonesian
-                      ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan sesi curhat yang penuh insight.'
-                      : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, centered on you.'}
-                  </p>
-                </FadeIn>
-              </div>
+          <FadeIn>
+            {/* header — title left, subtitle right */}
+            <div className="grid lg:grid-cols-12 gap-y-5 lg:gap-x-16 items-end mb-10 md:mb-14">
+              <h2 className="lg:col-span-7 font-serif font-semibold text-cream text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
+                {isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}
+              </h2>
+              <p className="lg:col-span-4 lg:col-start-9 text-cream/70 font-light leading-relaxed lg:pb-2">
+                {isIndonesian
+                  ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan sesi curhat yang penuh insight.'
+                  : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
+              </p>
             </div>
 
-            {/* RIGHT — oversized numbered editorial list */}
-            <div className="lg:col-span-8 lg:col-start-5">
-              {reasons.map((reason, index) => (
-                <FadeIn key={index} delay={index * 55} dir="up">
-                  <div className="group grid grid-cols-[2.6rem_1fr] md:grid-cols-[6rem_1fr] gap-4 md:gap-8 items-baseline py-7 md:py-9 border-t border-cream/12 first:border-t-0 first:pt-0">
-                    <span className="font-serif font-bold tabular-nums leading-none text-[2.2rem] md:text-[4.5rem] text-transparent [-webkit-text-stroke:1.4px_rgba(255,246,240,0.5)] md:[-webkit-text-stroke:2px_rgba(255,246,240,0.5)] transition-all duration-300 group-hover:[-webkit-text-stroke-color:transparent] group-hover:text-coral">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <div className="pt-1">
-                      <h3 className="font-serif font-semibold text-cream text-xl md:text-[1.9rem] leading-[1.12] tracking-tight transition-transform duration-300 group-hover:translate-x-1.5">
+            {/* feature cards — 6 in a responsive grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+              {reasons.map((reason, index) => {
+                const Icon = ICONS[index % ICONS.length];
+                return (
+                  <FadeIn key={index} delay={index * 70} dir="up">
+                    <div className="group h-full rounded-lg bg-[#F2F1EF] p-6 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:bg-[#EAE9E6]">
+                      <Icon className="w-7 h-7 text-coral-deep transition-transform duration-300 group-hover:scale-110" strokeWidth={1.75} />
+                      <h3 className="mt-5 text-lg md:text-xl font-serif font-semibold text-ink leading-snug tracking-tight">
                         {reason.title}
                       </h3>
-                      <p className="mt-3 text-sm md:text-base text-cream/65 font-light leading-relaxed max-w-xl">
+                      <p className="mt-2.5 text-sm md:text-[0.95rem] text-ink-soft font-light leading-relaxed">
                         {reason.description}
                       </p>
                     </div>
-                  </div>
-                </FadeIn>
-              ))}
+                  </FadeIn>
+                );
+              })}
             </div>
-          </div>
+          </FadeIn>
         </div>
       </div>
     </section>
