@@ -225,16 +225,8 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
 
   return (
     <section id="testimonials" className="pt-14 md:pt-24 pb-16 md:pb-24 relative overflow-hidden isolate">
-      {/* warm color zone — condenses the sky into a distinct band, fading in at the top
-          and back out at the bottom (soft transitions, no hard cuts) */}
-      <div
-        className="absolute inset-0 -z-10 pointer-events-none"
-        aria-hidden
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(130,78,80,0) 0%, rgba(150,88,86,0.82) 12%, rgba(166,98,94,0.88) 50%, rgba(150,88,86,0.82) 88%, rgba(130,78,80,0) 100%)',
-        }}
-      />
+      {/* brick-rose color block — a bold flat field (no gradient) */}
+      <div className="absolute inset-0 -z-10 pointer-events-none bg-[#9E5A5E]" aria-hidden />
       <FadeIn>
         <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 mb-12 md:mb-14">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-8">

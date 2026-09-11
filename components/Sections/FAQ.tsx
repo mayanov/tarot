@@ -102,15 +102,8 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
       id="faq"
       className="pt-20 md:pt-28 pb-16 md:pb-24 relative overflow-hidden isolate"
     >
-      {/* ocean color zone — a distinct band that fades in/out of the sky */}
-      <div
-        className="absolute inset-0 -z-10 pointer-events-none"
-        aria-hidden
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(20,58,88,0) 0%, rgba(24,66,100,0.85) 12%, rgba(30,91,131,0.9) 50%, rgba(24,66,100,0.85) 88%, rgba(20,58,88,0) 100%)',
-        }}
-      />
+      {/* ocean color block — a bold flat field (no gradient) */}
+      <div className="absolute inset-0 -z-10 pointer-events-none bg-[#1B4E74]" aria-hidden />
       <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
         <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16">
           {/* LEFT — sticky intro */}
