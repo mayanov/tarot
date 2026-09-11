@@ -7,8 +7,6 @@ interface HeroProps {
 }
 
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
-const INK = '#302620';      // warm espresso text
-const BONE = '#F6F2EB';     // warm off-white ground
 
 // Plays the hero count-up only the first time it mounts, never again on re-render.
 let heroStatsPlayed = false;
@@ -77,64 +75,52 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex flex-col overflow-hidden isolate"
-      style={{ backgroundColor: BONE, color: INK }}
+      className="relative min-h-screen flex flex-col overflow-hidden isolate text-cream"
     >
       <div className="flex-1 w-full max-w-[1400px] mx-auto px-6 md:px-10 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center pt-28 md:pt-32 pb-12">
         {/* LEFT — editorial text */}
         <div className="order-2 lg:order-1">
-          <Rise delay={60}>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-[11px] uppercase tracking-[0.24em]" style={{ color: 'rgba(48,38,32,0.6)' }}>
-              <span>{isIndonesian ? 'Tarot Analitis' : 'Analytical Tarot'}</span>
-              <span>·</span>
-              <span>{isIndonesian ? 'Sejak 2009' : 'Since 2009'}</span>
-              <span>·</span>
-              <span>Jakarta Selatan</span>
-            </div>
-          </Rise>
-
-          <Rise delay={150}>
-            <div className="mt-6 text-[12px] uppercase tracking-[0.28em] font-medium text-coral-deep">
-              Mayanov Tarot
-            </div>
-          </Rise>
-
-          <Rise delay={230}>
-            <h1 className="mt-4 font-sans font-medium tracking-[-0.01em] leading-[1.08] text-[2.1rem] sm:text-[2.6rem] lg:text-[3.3rem] max-w-xl">
-              {isIndonesian
-                ? <>Ruang untuk <span className="font-elegant italic font-normal text-coral-deep">berpikir jernih.</span></>
-                : <>A clearer view of <span className="font-elegant italic font-normal text-coral-deep">what&rsquo;s next.</span></>}
+          <Rise delay={120}>
+            <h1 className="font-serif font-bold uppercase leading-[0.88] tracking-[-0.02em] text-[3.2rem] sm:text-[4.4rem] lg:text-[5.6rem] [text-shadow:0_4px_28px_rgba(6,4,14,0.5)]">
+              <span className="block text-coral">Mayanov</span>
+              <span className="block text-cream">Tarot</span>
             </h1>
           </Rise>
 
-          <Rise delay={320}>
-            <p className="mt-6 text-sm md:text-[15px] leading-relaxed max-w-md" style={{ color: 'rgba(48,38,32,0.7)' }}>
+          <Rise delay={260}>
+            <p className="mt-6 font-elegant italic text-xl md:text-[1.7rem] leading-snug text-coral [text-shadow:0_2px_16px_rgba(6,4,14,0.6)]">
+              {isIndonesian ? 'Ruang untuk berpikir jernih.' : 'A clearer view of what’s next.'}
+            </p>
+          </Rise>
+
+          <Rise delay={340}>
+            <p className="mt-4 text-sm md:text-[15px] leading-relaxed max-w-md text-cream/80 [text-shadow:0_1px_10px_rgba(6,4,14,0.7)]">
               {isIndonesian
                 ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi. Bukan ramalan, tapi percakapan jujur untuk melihat langkahmu lebih jelas.'
                 : 'Tarot as a space for reflection — analytical, warm, and grounded. Not fortune-telling, just an honest conversation that helps you see your next step clearly.'}
             </p>
           </Rise>
 
-          <Rise delay={400}>
+          <Rise delay={420}>
             <a
               href="#services"
               onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-              className="group mt-9 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-medium pb-1.5 transition-colors"
-              style={{ color: '#DA8636', borderBottom: '1px solid rgba(218,134,54,0.5)' }}
+              className="group mt-9 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-medium pb-1.5 text-coral transition-colors"
+              style={{ borderBottom: '1px solid rgba(241,159,88,0.5)' }}
             >
               {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </a>
           </Rise>
 
-          <Rise delay={480}>
-            <div className="mt-12 grid grid-cols-4 gap-4 max-w-lg pt-6" style={{ borderTop: '1px solid rgba(48,38,32,0.15)' }}>
+          <Rise delay={500}>
+            <div className="mt-12 grid grid-cols-4 gap-4 max-w-lg pt-6 border-t border-cream/15">
               {metrics.map((m, i) => (
                 <div key={i}>
-                  <div className="font-sans font-semibold text-lg md:text-xl tabular-nums" style={{ color: INK }}>
+                  <div className="font-sans font-semibold text-lg md:text-xl tabular-nums text-cream">
                     <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
                   </div>
-                  <div className="mt-1 text-[9px] md:text-[10px] uppercase tracking-[0.14em] leading-tight" style={{ color: 'rgba(48,38,32,0.55)' }}>
+                  <div className="mt-1 text-[9px] md:text-[10px] uppercase tracking-[0.14em] leading-tight text-cream/55">
                     {m.label}
                   </div>
                 </div>
@@ -145,7 +131,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
         {/* RIGHT — a single, quiet photograph */}
         <Rise delay={220} className="order-1 lg:order-2">
-          <div className="relative w-full overflow-hidden aspect-[4/5] lg:aspect-auto lg:h-[76vh]">
+          <div className="relative w-full overflow-hidden rounded-xl aspect-[4/5] lg:aspect-auto lg:h-[76vh] shadow-[0_40px_90px_-40px_rgba(0,0,0,0.7)]">
             <img
               src="/event-3.jpeg"
               alt={isIndonesian ? 'Sesi tarot bersama Mayanov' : 'A tarot session with Mayanov'}
