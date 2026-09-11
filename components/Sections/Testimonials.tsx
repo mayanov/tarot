@@ -224,7 +224,17 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   const review = reviews[index];
 
   return (
-    <section id="testimonials" className="pt-6 md:pt-10 pb-16 md:pb-24 relative overflow-hidden isolate">
+    <section id="testimonials" className="pt-14 md:pt-24 pb-16 md:pb-24 relative overflow-hidden isolate">
+      {/* warm color zone — condenses the sky into a distinct band, fading in at the top
+          and back out at the bottom (soft transitions, no hard cuts) */}
+      <div
+        className="absolute inset-0 -z-10 pointer-events-none"
+        aria-hidden
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(58,32,52,0) 0%, rgba(96,52,64,0.55) 16%, rgba(120,66,72,0.6) 50%, rgba(96,52,64,0.55) 84%, rgba(58,32,52,0) 100%)',
+        }}
+      />
       <FadeIn>
         <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 mb-12 md:mb-14">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-8">
