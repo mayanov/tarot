@@ -134,8 +134,9 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     { name: isIndonesian ? 'FAQ' : 'FAQ', id: 'faq' },
   ];
 
-  // The whole page is dark, so the header always uses cream ink; scrolled it gets a translucent frosted bar (same tint as the category chips).
-  const onDark = true;
+  // Clean light nav — a frosted bone bar with espresso ink and coral accents,
+  // readable over both the light hero and the sections below.
+  const onDark = false;
 
   const Wordmark = () => (
     <div className="flex items-center gap-2.5 cursor-pointer group whitespace-nowrap" onClick={handleLogoClick}>
@@ -144,7 +145,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
       </span>
       <span className={`overflow-hidden whitespace-nowrap transition-[max-width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled ? 'max-w-[220px]' : 'max-w-0'}`}>
         <span className="pl-0.5 text-lg font-serif font-bold uppercase tracking-tight text-coral">
-          Mayanov <span className="text-transparent [-webkit-text-stroke:1px_#FFFFFF]">Tarot</span>
+          Mayanov <span className="text-ink">Tarot</span>
         </span>
       </span>
     </div>
@@ -157,9 +158,9 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
       >
         <div className="max-w-[1280px] xl:max-w-[1400px] mx-auto px-4 md:px-6">
           <div
-            className={`relative flex justify-between items-center gap-3 rounded-full pl-4 pr-2 py-2 transition-all duration-300 ${isScrolled
-                ? 'bg-plum-deep/75 backdrop-blur-xl shadow-[0_22px_50px_-24px_rgba(0,0,0,0.75)]'
-                : 'bg-[#302620]/85 backdrop-blur-md shadow-[0_12px_34px_-22px_rgba(0,0,0,0.4)]'
+            className={`relative flex justify-between items-center gap-3 rounded-full pl-4 pr-2 py-2 border transition-all duration-300 ${isScrolled
+                ? 'bg-[#F6F2EB]/90 backdrop-blur-xl border-[#302620]/10 shadow-[0_16px_40px_-26px_rgba(0,0,0,0.3)]'
+                : 'bg-[#F6F2EB]/70 backdrop-blur-md border-[#302620]/10'
               }`}
           >
             {/* LEFT — brand badge (always) + nav links */}
@@ -177,7 +178,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                   >
                     <button
                       onClick={() => scrollToSection(link.id)}
-                      className="flex items-center gap-1 px-3.5 py-2 rounded-full text-sm font-medium tracking-wide whitespace-nowrap text-cream/85 hover:text-cream hover:bg-white/10 transition-colors duration-200"
+                      className="flex items-center gap-1 px-3 py-2 rounded-full text-[11px] uppercase tracking-[0.14em] font-medium whitespace-nowrap text-ink/65 hover:text-ink hover:bg-ink/[0.05] transition-colors duration-200"
                     >
                       {link.name}
                       {link.children && <ChevronDown className="w-3 h-3 group-hover/menu:rotate-180 transition-transform duration-200" />}
@@ -185,12 +186,12 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
                     {link.children && (
                       <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 transform translate-y-2 group-hover/menu:translate-y-0 w-48">
-                        <div className="bg-plum-deep/90 border border-white/10 backdrop-blur-xl rounded-2xl shadow-[0_24px_50px_-24px_rgba(0,0,0,0.8)] overflow-hidden p-2 flex flex-col gap-0.5">
+                        <div className="bg-[#F6F2EB] border border-[#302620]/10 backdrop-blur-xl rounded-2xl shadow-[0_24px_50px_-28px_rgba(0,0,0,0.4)] overflow-hidden p-2 flex flex-col gap-0.5">
                           {link.children.map(child => (
                             <button
                               key={child.name}
                               onClick={(e) => { e.stopPropagation(); scrollToSection(child.id); }}
-                              className="text-left px-4 py-2 text-sm text-cream/75 hover:text-cream hover:bg-white/10 rounded-lg transition-colors"
+                              className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.12em] text-ink/70 hover:text-ink hover:bg-ink/[0.05] rounded-lg transition-colors"
                             >
                               {child.name}
                             </button>
@@ -219,7 +220,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             {/* Mobile Menu Toggle */}
             {!isMobileMenuOpen && (
               <button
-                className="lg:hidden transition p-2 text-cream hover:text-coral"
+                className="lg:hidden transition p-2 text-ink hover:text-coral"
                 onClick={() => setIsMobileMenuOpen(true)}
               >
                 <Menu className="w-6 h-6" />

@@ -94,7 +94,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           </Rise>
 
           <Rise delay={150}>
-            <div className="mt-6 text-[12px] uppercase tracking-[0.28em] font-medium" style={{ color: 'rgba(48,38,32,0.9)' }}>
+            <div className="mt-6 text-[12px] uppercase tracking-[0.28em] font-medium text-coral-deep">
               Mayanov Tarot
             </div>
           </Rise>
@@ -102,8 +102,8 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           <Rise delay={230}>
             <h1 className="mt-4 font-sans font-medium tracking-[-0.01em] leading-[1.08] text-[2.1rem] sm:text-[2.6rem] lg:text-[3.3rem] max-w-xl">
               {isIndonesian
-                ? <>Ruang untuk <span className="font-elegant italic font-normal">berpikir jernih.</span></>
-                : <>A clearer view of <span className="font-elegant italic font-normal">what&rsquo;s next.</span></>}
+                ? <>Ruang untuk <span className="font-elegant italic font-normal text-coral-deep">berpikir jernih.</span></>
+                : <>A clearer view of <span className="font-elegant italic font-normal text-coral-deep">what&rsquo;s next.</span></>}
             </h1>
           </Rise>
 
@@ -120,7 +120,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
               href="#services"
               onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
               className="group mt-9 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-medium pb-1.5 transition-colors"
-              style={{ color: INK, borderBottom: '1px solid rgba(48,38,32,0.4)' }}
+              style={{ color: '#DA8636', borderBottom: '1px solid rgba(218,134,54,0.5)' }}
             >
               {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
