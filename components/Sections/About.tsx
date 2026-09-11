@@ -20,7 +20,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
     <section id="about" className="py-10 md:py-16 relative overflow-hidden isolate">
       <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
         <FadeIn>
-          <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-[#F5F1EA] shadow-[0_14px_44px_-26px_rgba(0,0,0,0.45)] grid lg:grid-cols-12">
+          <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-[#F6F2EB] shadow-[0_14px_44px_-26px_rgba(0,0,0,0.45)] grid lg:grid-cols-12">
             {/* LEFT — full-bleed portrait */}
             <div className="lg:col-span-5 relative min-h-[24rem] lg:min-h-0">
               <img
@@ -44,20 +44,23 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
 
             {/* RIGHT — content */}
             <div className="lg:col-span-7 p-7 sm:p-10 md:p-14 lg:p-16">
-              <h2 className="font-serif font-semibold text-ink text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
+              <span className="block text-[11px] uppercase tracking-[0.24em] text-coral-deep mb-4">
+                {isIndonesian ? 'Tentang' : 'About'}
+              </span>
+              <h2 className="font-serif font-semibold text-ink text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                 {isIndonesian ? 'Tentang Saya' : 'About Me'}
               </h2>
 
               {/* pull quote */}
-              <div className="relative mt-7 md:mt-9">
-                <p className="relative font-elegant italic text-ink text-[1.45rem] md:text-[1.8rem] xl:text-[2rem] leading-[1.3] tracking-[-0.01em]">
+              <div className="relative mt-6 md:mt-8">
+                <p className="relative font-elegant italic text-ink text-[1.2rem] md:text-[1.55rem] xl:text-[1.7rem] leading-[1.35] tracking-[-0.01em]">
                   {isIndonesian
                     ? 'Tarot, buat saya, bukan soal takdir yang menakutkan — melainkan ruang tenang untuk berhenti sejenak, mendengarkan diri, dan menemukan kejernihan di tengah hiruk-pikuk.'
                     : 'Tarot, for me, isn’t about scary fate — it’s a calm space to pause, listen to yourself, and find clarity in the middle of the noise.'}
                 </p>
               </div>
 
-              <div className="mt-7 space-y-5 text-base md:text-lg text-ink/80 font-light leading-relaxed">
+              <div className="mt-7 space-y-4 text-sm md:text-[15px] text-ink/75 font-light leading-relaxed">
                 <p>
                   {isIndonesian
                     ? 'Saya sudah mendalami seni membaca Tarot sejak 2009 — lebih dari 15 tahun menjadikannya medium untuk refleksi diri dan menemukan solusi yang nyata. Sesi bersama saya terasa seperti percakapan jujur, bukan ramalan. Kita bedah situasimu, kenali pola yang bikin stuck, lalu susun langkah konkret — analitis, hangat, tanpa menghakimi.'
@@ -71,8 +74,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
               </div>
 
               {/* closing statement */}
-              <div className="mt-9 md:mt-11 pt-8 border-t border-coral-deep/35">
-                <p className="font-serif text-ink text-[1.35rem] md:text-[1.7rem] lg:text-[1.95rem] leading-[1.2] tracking-[-0.015em]">
+              <div className="mt-8 md:mt-10 pt-7 border-t border-coral-deep/30">
+                <p className="font-serif text-ink text-[1.15rem] md:text-[1.45rem] lg:text-[1.6rem] leading-[1.25] tracking-[-0.015em]">
                   {isIndonesian
                     ? 'Tujuan saya simpel: memberi kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                     : 'My goal is simple — the clarity you need to make decisions with confidence.'}
