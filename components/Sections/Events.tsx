@@ -59,9 +59,14 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
           <FadeIn>
             {/* HEADER — title on the left, count + CTA on the right */}
             <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between mb-10 md:mb-14">
-              <h2 className="font-serif font-semibold text-cream text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
-                {isIndonesian ? "Event & collaboration" : "Community & events"}
-              </h2>
+              <div>
+                <span className="block text-[11px] uppercase tracking-[0.24em] text-coral mb-4">
+                  {isIndonesian ? "Portofolio" : "Portfolio"}
+                </span>
+                <h2 className="font-serif font-semibold text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
+                  {isIndonesian ? "Event & collaboration" : "Community & events"}
+                </h2>
+              </div>
 
               <div className="flex items-center gap-6 shrink-0">
                 <div className="flex items-baseline gap-2.5">

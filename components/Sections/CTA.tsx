@@ -54,7 +54,7 @@ const CTA: React.FC<CTAProps> = ({ isIndonesian = false }) => {
 
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10 text-center md:text-left">
               <div className="max-w-2xl">
-                <h2 className="text-[2.5rem] md:text-[3.4rem] font-serif font-semibold text-[#FBF6EF] mb-5 leading-[1.0] tracking-[-0.03em]">
+                <h2 className="text-[1.9rem] md:text-[2.5rem] font-serif font-semibold text-[#FBF6EF] mb-5 leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian
                     ? "Siap untuk kejelasan?"
                     : "Let's uncover the answers you've been looking for."}

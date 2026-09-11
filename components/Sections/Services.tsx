@@ -293,9 +293,14 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 {/* Header — asymmetric */}
                 <FadeIn>
                     <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end mb-12 md:mb-16">
-                        <h2 className="lg:col-span-7 font-serif font-semibold text-cream text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
-                            {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
-                        </h2>
+                        <div className="lg:col-span-7">
+                            <span className="block text-[11px] uppercase tracking-[0.24em] text-coral mb-4">
+                                {isIndonesian ? 'Layanan' : 'Services'}
+                            </span>
+                            <h2 className="font-serif font-semibold text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
+                                {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
+                            </h2>
+                        </div>
                         <p className="lg:col-span-4 lg:col-start-9 text-cream/70 font-light leading-relaxed lg:pb-2">
                             {isIndonesian
                                 ? 'Pilih metode yang paling nyaman — analisa tajam, solutif, tanpa basa-basi.'

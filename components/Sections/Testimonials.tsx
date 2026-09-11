@@ -228,9 +228,14 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
       <FadeIn>
         <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 mb-12 md:mb-14">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-8">
-            <h2 className="text-[2.5rem] md:text-[3.4rem] leading-[1.0] font-serif font-semibold text-cream tracking-[-0.03em]">
-              {isIndonesian ? 'Apa kata mereka' : 'What others are saying'}
-            </h2>
+            <div>
+              <span className="block text-[11px] uppercase tracking-[0.24em] text-coral mb-4">
+                {isIndonesian ? 'Testimoni' : 'Testimonials'}
+              </span>
+              <h2 className="text-[1.9rem] md:text-[2.5rem] leading-[1.05] font-serif font-semibold text-cream tracking-[-0.02em]">
+                {isIndonesian ? 'Apa kata mereka' : 'What others are saying'}
+              </h2>
+            </div>
             <div className="flex items-center gap-2 text-sm shrink-0 md:pb-2">
               <div className="flex text-coral">
                 {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}

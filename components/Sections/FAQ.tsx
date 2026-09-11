@@ -108,7 +108,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           <div className="lg:col-span-4">
             <FadeIn>
               <div className="lg:sticky lg:top-28">
-                <h2 className="font-serif font-semibold text-cream text-[2.5rem] md:text-[3.4rem] leading-[1.0] tracking-[-0.03em]">
+                <h2 className="font-serif font-semibold text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
                 </h2>
                 <p className="mt-5 text-cream font-light leading-relaxed max-w-xs">
