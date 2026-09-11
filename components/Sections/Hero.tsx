@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 
@@ -8,30 +8,16 @@ interface HeroProps {
 
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 
+// Film grain — tactile texture that makes the whole hero feel "printed", not digital-default.
+const GRAIN =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.95'/%3E%3C/svg%3E\")";
+
 // Plays the hero count-up only the first time it mounts, never again on re-render.
 let heroStatsPlayed = false;
 
 const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const [shown, setShown] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  // A scattered starfield (generated once) — makes the sky feel alive.
-  const stars = useMemo(
-    () => Array.from({ length: 185 }, () => {
-      const r = Math.random();
-      const size = r < 0.72 ? 1 : r < 0.92 ? 1.5 : r < 0.98 ? 2 : 2.5;
-      return {
-        top: Math.random() * 100,
-        left: Math.random() * 100,
-        size,
-        opacity: 0.35 + Math.random() * 0.55,
-        dur: 2.2 + Math.random() * 4.5,
-        delay: Math.random() * 6,
-        coral: Math.random() < 0.12,
-      };
-    }),
-    []
-  );
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setShown(true));
@@ -146,35 +132,46 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       id="hero"
       className="relative min-h-screen flex flex-col overflow-hidden isolate"
     >
-      {/* living sky — soft nebula auras + a scattered twinkling starfield */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
-        <div className="absolute top-[10%] right-[2%] w-[44%] h-[48%] rounded-full bg-[#6E5A9E]/[0.10] blur-[150px] animate-[blobB_34s_ease-in-out_infinite]" />
-        <div className="absolute top-[30%] left-[6%] w-[42%] h-[46%] rounded-full bg-coral/[0.06] blur-[150px] animate-[blobA_30s_ease-in-out_infinite]" />
-        {stars.map((s, i) => (
-          <span
-            key={i}
-            className={`absolute rounded-full ${s.coral ? 'bg-coral' : 'bg-white'}`}
-            style={{
-              top: `${s.top}%`,
-              left: `${s.left}%`,
-              width: `${s.size}px`,
-              height: `${s.size}px`,
-              opacity: s.opacity,
-              boxShadow: s.size >= 2 ? '0 0 6px rgba(255,246,230,0.7)' : 'none',
-              animation: `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
-              ['--tw-o' as string]: String(s.opacity),
-            } as React.CSSProperties}
-          />
-        ))}
-      </div>
+      {/* ===== Editorial ground — deep plum, warm coral glow, film grain (no starfield) ===== */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#1c1130] via-[#160e28] to-[#0f0a1c]" aria-hidden />
+      <div
+        className="absolute inset-0 -z-10 pointer-events-none"
+        aria-hidden
+        style={{
+          background:
+            'radial-gradient(66% 52% at 82% 90%, rgba(218,134,54,0.20) 0%, rgba(218,134,54,0) 60%),' +
+            'radial-gradient(58% 58% at 8% 6%, rgba(142,92,134,0.18) 0%, rgba(142,92,134,0) 62%)',
+        }}
+      />
+      <div
+        className="absolute inset-0 -z-10 pointer-events-none mix-blend-soft-light opacity-[0.55]"
+        aria-hidden
+        style={{ backgroundImage: GRAIN, backgroundSize: '170px 170px' }}
+      />
+      <div
+        className="absolute inset-0 -z-10 pointer-events-none"
+        aria-hidden
+        style={{ background: 'radial-gradient(125% 115% at 50% 26%, transparent 52%, rgba(6,4,14,0.6) 100%)' }}
+      />
 
       {/* ===== Editorial asymmetric brand hero ===== */}
       <div
         ref={contentRef}
         className="flex-1 w-full max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 flex flex-col justify-center pt-32 pb-8 will-change-transform"
       >
+        {/* editorial kicker — distributed labels */}
+        <Rise delay={60}>
+          <div className="mb-8 md:mb-12 flex items-center gap-4 sm:gap-6 max-w-3xl text-[0.58rem] md:text-[0.7rem] uppercase tracking-[0.34em] text-cream/55">
+            <span>{isIndonesian ? 'Analitis' : 'Analytical'}</span>
+            <span className="h-px flex-1 bg-cream/15" />
+            <span>{isIndonesian ? 'Hangat' : 'Warm'}</span>
+            <span className="h-px flex-1 bg-cream/15" />
+            <span>{isIndonesian ? 'Membumi' : 'Grounded'}</span>
+          </div>
+        </Rise>
+
         {/* staggered wordmark */}
-        <h1 className="font-serif font-bold uppercase text-coral leading-[0.82] tracking-[-0.015em] text-[3.4rem] sm:text-[5.2rem] md:text-[7.2rem] lg:text-[9rem] xl:text-[10.5rem] 2xl:text-[13rem] [text-shadow:0_6px_28px_rgba(6,4,14,0.65)]">
+        <h1 className="font-serif font-bold uppercase text-coral leading-[0.8] tracking-[-0.02em] text-[3.6rem] sm:text-[5.6rem] md:text-[7.8rem] lg:text-[9.8rem] xl:text-[11.5rem] 2xl:text-[14rem] [text-shadow:0_6px_28px_rgba(6,4,14,0.65)]">
           <span className="block text-coral">
             <MaskLine delay={180}>Mayanov</MaskLine>
           </span>
