@@ -53,11 +53,11 @@ const fmtDate = (iso: string) => {
 };
 
 // Grid window: 11:00–20:00 covers all bookable slots (11:00–19:00) and their durations.
-const DAY_START = 11 * 60;
-const DAY_END = 20 * 60;
+const DAY_START = 10 * 60; // 10:00 AM
+const DAY_END = 21 * 60;   // 9:00 PM
 const HOUR_H = 56; // px per hour
 const GRID_H = ((DAY_END - DAY_START) / 60) * HOUR_H;
-const HOURS = Array.from({ length: (DAY_END - DAY_START) / 60 + 1 }, (_, i) => 11 + i);
+const HOURS = Array.from({ length: (DAY_END - DAY_START) / 60 + 1 }, (_, i) => DAY_START / 60 + i);
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const BookingsView: React.FC = () => {
@@ -305,7 +305,7 @@ const BookingsView: React.FC = () => {
                                     {/* time gutter */}
                                     <div className="relative" style={{ height: GRID_H }}>
                                         {HOURS.map((h) => (
-                                            <div key={h} className="absolute right-2 -translate-y-1/2 text-[0.65rem] text-text-subtle tabular-nums" style={{ top: (h - 11) * HOUR_H }}>{fmtHour(h)}</div>
+                                            <div key={h} className="absolute right-2 -translate-y-1/2 text-[0.65rem] text-text-subtle tabular-nums" style={{ top: (h - DAY_START / 60) * HOUR_H }}>{fmtHour(h)}</div>
                                         ))}
                                     </div>
 
@@ -318,7 +318,7 @@ const BookingsView: React.FC = () => {
                                             <div key={di} className={`relative border-l border-adm-line ${isToday ? 'bg-lilac/[0.04]' : ''}`} style={{ height: GRID_H }}>
                                                 {/* hour lines */}
                                                 {HOURS.map((h) => (
-                                                    <div key={h} className="absolute left-0 right-0 border-t border-adm-line" style={{ top: (h - 11) * HOUR_H }} />
+                                                    <div key={h} className="absolute left-0 right-0 border-t border-adm-line" style={{ top: (h - DAY_START / 60) * HOUR_H }} />
                                                 ))}
                                                 {/* Google Calendar events (read-only context, behind sessions) */}
                                                 {(gcalByDay[dayISO] || []).map((e) => {
