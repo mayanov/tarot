@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import FadeIn from '../UI/FadeIn';
 import GrainyMesh from '../UI/GrainyMesh';
 import SectionPanel from '../UI/SectionPanel';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 
 interface EventsProps {
   isIndonesian?: boolean;
 }
 
+const EVENT_PHOTOS = ['/event-1.jpeg', '/event-2.jpeg', '/event-3.jpeg', '/event-4.jpeg'];
+
 const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   const [visibleCount, setVisibleCount] = useState(10);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   // Original list in chronological order (2016 -> 2025)
   const rawEventList = [
@@ -77,6 +80,34 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             </div>
           </div>
 
+          {/* PHOTO GALLERY — a few moments from past events */}
+          <div className="mb-10 md:mb-14">
+            <span className="block text-[0.66rem] uppercase tracking-[0.22em] text-ink/60 mb-4">
+              {isIndonesian ? "Momen dari beberapa event" : "Moments from past events"}
+            </span>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              {EVENT_PHOTOS.map((src, i) => (
+                <FadeIn key={src} delay={i * 60} dir="up">
+                  <button
+                    type="button"
+                    onClick={() => setLightbox(src)}
+                    className="group relative block w-full overflow-hidden rounded-xl md:rounded-2xl aspect-[3/4] bg-ink/5"
+                    aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
+                  >
+                    <img
+                      src={src}
+                      alt={isIndonesian ? `Sesi tarot Mayanov di event ${i + 1}` : `Mayanov tarot session at event ${i + 1}`}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                    />
+                    <span className="pointer-events-none absolute inset-0 rounded-xl md:rounded-2xl ring-1 ring-inset ring-ink/10 group-hover:ring-ink/25 transition-all" />
+                    <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
+
           {/* AWARD-LIST — full-width rows: year · title · venue · arrow */}
           <div className="border-t border-ink/12">
             {displayedEvents.map((event, index) => (
@@ -109,6 +140,28 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
           )}
         </FadeIn>
       </SectionPanel>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[90] flex items-center justify-center p-4 sm:p-8 bg-black/80 backdrop-blur-sm animate-[fade-up_0.2s_ease-out]"
+          onClick={() => setLightbox(null)}
+        >
+          <img
+            src={lightbox}
+            alt=""
+            className="max-h-[90vh] max-w-full rounded-2xl shadow-2xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            onClick={() => setLightbox(null)}
+            aria-label="Close"
+            className="absolute top-5 right-5 w-10 h-10 grid place-items-center rounded-full bg-white/15 text-white hover:bg-white/25 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      )}
     </section>
   );
 };
