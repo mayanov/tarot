@@ -159,7 +159,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           <div
             className={`relative flex justify-between items-center gap-3 rounded-full pl-4 pr-2 py-2 transition-all duration-300 ${isScrolled
                 ? 'bg-plum-deep/75 backdrop-blur-xl shadow-[0_22px_50px_-24px_rgba(0,0,0,0.75)]'
-                : 'bg-white/[0.06] backdrop-blur-md shadow-[0_12px_34px_-22px_rgba(0,0,0,0.55)]'
+                : 'bg-[#302620]/85 backdrop-blur-md shadow-[0_12px_34px_-22px_rgba(0,0,0,0.4)]'
               }`}
           >
             {/* LEFT — brand badge (always) + nav links */}
