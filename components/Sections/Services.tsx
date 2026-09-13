@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import { trackEvent } from '../../services/analytics';
 
@@ -10,9 +10,13 @@ interface ServicesProps {
 // One dark order pill per category — opens the on-site booking flow.
 const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-full bg-ink text-cream text-sm font-medium hover:bg-charcoal-deep transition-colors";
 
+// A soft, muted palette tint per collapsible pricelist panel — distinct but cohesive
+// (all low-saturation and similar lightness so it reads as one intentional set).
+const PANELS = ['#F4E9DE', '#EFE6EE', '#E5ECF1', '#E8EEE3'];
+
 // One offer line inside a category row: name (+ inline badge) left, price right.
 const OfferRow: React.FC<{ o: any }> = ({ o }) => (
-    <div className="py-4 border-t border-ink/10 first:border-t-0 first:pt-0">
+    <div className="py-4 border-t border-ink/10 first:border-t-0">
         <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2.5 flex-wrap min-w-0">
                 <h4 className="text-[1.05rem] font-serif font-semibold text-ink leading-tight tracking-tight">
@@ -57,6 +61,10 @@ const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndones
 };
 
 const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
+    // Accordion — one pricelist open at a time; first open by default.
+    const [openIdx, setOpenIdx] = useState<number>(0);
+    const toggle = (i: number) => setOpenIdx((cur) => (cur === i ? -1 : i));
+
     // --- Handlers for Global (USD) ---
     const handleBookBasic = () => trackEvent('initiate_checkout', { item_name: '3-Card Reading', market: 'Global' }, 'InitiateCheckout', { content_name: '3-Card Reading', value: 12.00, currency: 'USD', content_category: 'Global Service' });
     const handleBookDeep = () => trackEvent('initiate_checkout', { item_name: '5-Card Reading', market: 'Global' }, 'InitiateCheckout', { content_name: '5-Card Reading', value: 20.00, currency: 'USD', content_category: 'Global Service' });
@@ -223,46 +231,68 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         </div>
                     </FadeIn>
 
-                    {/* ===== Pricelist — each category is a full-width editorial row ===== */}
-                    <div className="mt-14 md:mt-20 border-t border-ink/15">
-                        {groups.map((g: any, i: number) => (
-                            <FadeIn key={g.type} delay={Math.min(i, 5) * 60} dir="up">
-                                <div
-                                    id={g.id || undefined}
-                                    className="scroll-mt-28 grid lg:grid-cols-12 gap-y-7 lg:gap-x-14 py-10 md:py-14 border-b border-ink/15"
-                                >
-                                    {/* LEFT — identity */}
-                                    <div className="lg:col-span-5">
-                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                                            <h3 className="font-serif font-semibold text-ink text-[1.6rem] md:text-[1.95rem] leading-none tracking-tight">
-                                                {g.type}
-                                            </h3>
-                                            {g.seasonal && (
-                                                <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-full bg-coral/15 text-coral-deep">
-                                                    {isIndonesian ? 'Musiman' : 'Seasonal'}
+                    {/* ===== Pricelist — collapsible panels, each with its own tinted container ===== */}
+                    <div className="mt-14 md:mt-20 space-y-4 md:space-y-5">
+                        {groups.map((g: any, i: number) => {
+                            const open = openIdx === i;
+                            return (
+                                <FadeIn key={g.type} delay={Math.min(i, 5) * 50} dir="up">
+                                    <div
+                                        id={g.id || undefined}
+                                        className="scroll-mt-28 rounded-2xl border border-ink/10 overflow-hidden transition-shadow duration-300"
+                                        style={{ background: PANELS[i % PANELS.length] }}
+                                    >
+                                        {/* header — always visible, toggles the panel */}
+                                        <button
+                                            type="button"
+                                            onClick={() => toggle(i)}
+                                            aria-expanded={open}
+                                            className="w-full flex items-center justify-between gap-4 px-6 md:px-9 py-6 md:py-7 text-left"
+                                        >
+                                            <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap min-w-0">
+                                                <h3 className="font-serif font-semibold text-ink text-[1.4rem] md:text-[1.85rem] leading-none tracking-tight">
+                                                    {g.type}
+                                                </h3>
+                                                {g.seasonal && (
+                                                    <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-full bg-coral/20 text-coral-deep">
+                                                        {isIndonesian ? 'Musiman' : 'Seasonal'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-4 md:gap-6 shrink-0">
+                                                <span className="hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap">
+                                                    <span className="text-ink/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
+                                                    <span className="font-serif font-semibold text-blue">{g.priceLabel}</span>
                                                 </span>
-                                            )}
-                                        </div>
-                                        <div className="mt-3.5 flex flex-wrap gap-1.5">
-                                            {g.tags.map((t: string) => (
-                                                <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
-                                            ))}
-                                        </div>
-                                        <p className="mt-4 text-sm text-ink/65 font-light leading-relaxed max-w-sm">{g.blurb}</p>
-                                    </div>
+                                                <span className={`grid place-items-center w-9 h-9 rounded-full border border-ink/25 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
+                                                    <ChevronDown className="w-4 h-4 text-ink" />
+                                                </span>
+                                            </div>
+                                        </button>
 
-                                    {/* RIGHT — offers + order */}
-                                    <div className="lg:col-span-6 lg:col-start-7">
-                                        <div>
-                                            {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
-                                        </div>
-                                        <div className="mt-6">
-                                            <OrderButton g={g} isIndonesian={isIndonesian} />
+                                        {/* body — collapses smoothly via grid-rows trick */}
+                                        <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
+                                            <div className="overflow-hidden min-h-0">
+                                                <div className="px-6 md:px-9 pb-7 md:pb-9">
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {g.tags.map((t: string) => (
+                                                            <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
+                                                        ))}
+                                                    </div>
+                                                    <p className="mt-4 text-sm text-ink/65 font-light leading-relaxed max-w-lg">{g.blurb}</p>
+                                                    <div className="mt-6 border-t border-ink/10">
+                                                        {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
+                                                    </div>
+                                                    <div className="mt-6">
+                                                        <OrderButton g={g} isIndonesian={isIndonesian} />
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </FadeIn>
-                        ))}
+                                </FadeIn>
+                            );
+                        })}
                     </div>
 
                     {/* ===== How it works — editorial numbered steps ===== */}
