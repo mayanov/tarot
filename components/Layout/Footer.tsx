@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Mail, Instagram, Clock, ArrowRight, MapPin } from 'lucide-react';
+import { Instagram, Clock, ArrowRight, MapPin } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
@@ -43,13 +43,10 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         };
     }, []);
 
-    const socialClass = "text-white hover:text-coral transition-colors duration-300";
-    const linkClass = "text-[0.82rem] text-white hover:text-coral transition-colors";
-    const labelClass = "text-sm font-bold uppercase tracking-[0.12em] text-white mb-4";
-
-    const navLinks = isIndonesian
-        ? [{ name: 'Tentang', id: 'about' }, { name: 'Layanan', id: 'services' }, { name: 'Testimoni', id: 'testimonials' }, { name: 'Event', id: 'events' }, { name: 'FAQ', id: 'faq' }]
-        : [{ name: 'About', id: 'about' }, { name: 'Services', id: 'services' }, { name: 'Reviews', id: 'testimonials' }, { name: 'Events', id: 'events' }, { name: 'FAQ', id: 'faq' }];
+    // Circular, bordered social button — fills with coral on hover.
+    const socialClass = "grid place-items-center w-11 h-11 rounded-full border border-white/20 text-white hover:text-ink hover:bg-coral hover:border-coral transition-all duration-300 hover:-translate-y-0.5";
+    const labelClass = "text-[11px] uppercase tracking-[0.24em] text-coral mb-5";
+    const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-white/80 font-light leading-relaxed";
 
     const goTo = (id: string) => smoothScrollToId(id, 80);
 
@@ -83,61 +80,35 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
-                {/* Middle — columns */}
-                <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-12 py-10 md:py-12">
+                {/* Middle — brand statement on the left, meta on the right */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-x-10 gap-y-12 py-12 md:py-16">
                     {/* Brand */}
-                    <div className="col-span-2 md:col-span-4">
-                        <div className="flex items-center gap-2.5">
-                            <span className="grid place-items-center w-9 h-9 rounded-full border border-white/40 text-white font-serif text-lg leading-none">M</span>
+                    <div className="md:col-span-6">
+                        <div className="flex items-center gap-3">
+                            <span className="grid place-items-center w-10 h-10 rounded-full border border-white/40 text-white font-serif text-lg leading-none">M</span>
                             <span className="text-xl font-serif font-semibold text-white tracking-tight">
                                 Mayanov <span className="font-normal text-white/70">Tarot</span>
                             </span>
                         </div>
-                        <p className="mt-5 text-[0.82rem] text-white/80 max-w-xs leading-relaxed font-light">
+                        <p className="mt-6 font-elegant italic text-white text-[1.35rem] md:text-[1.75rem] leading-[1.3] tracking-[-0.01em] max-w-md">
                             {isIndonesian
-                                ? 'Tarot sebagai ruang refleksi—analitis, hangat, dan membumi.'
-                                : 'Helping you find clarity in a chaotic world. Honest, kind, and strategic guidance.'}
+                                ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi.'
+                                : 'Tarot as a space for reflection — analytical, warm, and grounded.'}
                         </p>
                     </div>
 
-                    {/* Explore */}
-                    <div className="md:col-span-3">
-                        <h4 className={labelClass}>{isIndonesian ? 'Jelajahi' : 'Explore'}</h4>
-                        <ul className="space-y-3">
-                            {navLinks.map((l) => (
-                                <li key={l.id}>
-                                    <button onClick={() => goTo(l.id)} className={linkClass}>{l.name}</button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Contact */}
-                    <div className="md:col-span-3">
-                        <h4 className={labelClass}>{isIndonesian ? 'Kontak' : 'Contact'}</h4>
+                    {/* Visit — hours + location (bilingual) */}
+                    <div className="md:col-span-3 md:col-start-8">
+                        <h4 className={labelClass}>{isIndonesian ? 'Kunjungi' : 'Visit'}</h4>
                         <ul className="space-y-3.5">
-                            <li>
-                                <a
-                                    href="mailto:tarotreadingbymayanov@gmail.com"
-                                    onClick={() => trackEvent('contact', { method: 'Email', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'Email Lead', content_category: isIndonesian ? 'ID' : 'Global' })}
-                                    className={`${linkClass} flex items-start gap-2.5`}
-                                >
-                                    <Mail className="w-4 h-4 mt-0.5 text-white/70 shrink-0" />
-                                    <span className="break-all">tarotreadingbymayanov@gmail.com</span>
-                                </a>
+                            <li className={infoClass}>
+                                <Clock className="w-4 h-4 mt-0.5 text-coral shrink-0" />
+                                <span>{isIndonesian ? 'Waktu Layanan: 11:00 – 20:00' : 'Service Hours: 11:00 – 20:00'}</span>
                             </li>
-                            {isIndonesian && (
-                                <>
-                                    <li className="flex items-start gap-2.5 text-[0.82rem] text-white/80">
-                                        <Clock className="w-4 h-4 mt-0.5 text-white/70 shrink-0" />
-                                        <span>Waktu Layanan: 11:00 – 20:00</span>
-                                    </li>
-                                    <li className="flex items-start gap-2.5 text-[0.82rem] text-white/80">
-                                        <MapPin className="w-4 h-4 mt-0.5 text-white/70 shrink-0" />
-                                        <span>Jakarta Selatan</span>
-                                    </li>
-                                </>
-                            )}
+                            <li className={infoClass}>
+                                <MapPin className="w-4 h-4 mt-0.5 text-coral shrink-0" />
+                                <span>{isIndonesian ? 'Jakarta Selatan' : 'South Jakarta'}</span>
+                            </li>
                         </ul>
                     </div>
 
@@ -150,32 +121,38 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                                 className={socialClass} aria-label="Instagram">
                                 <Instagram className="w-5 h-5" />
                             </a>
-                            <a href="mailto:tarotreadingbymayanov@gmail.com"
-                                onClick={() => trackEvent('contact', { method: 'Email', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'Email Lead', content_category: isIndonesian ? 'ID' : 'Global' })}
-                                className={socialClass} aria-label="Email">
-                                <Mail className="w-5 h-5" />
+                            <a href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
+                                onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
+                                className={socialClass} aria-label="TikTok">
+                                <FaTiktok size={16} />
                             </a>
-                            {isIndonesian && (
-                                <>
-                                    <a href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
-                                        onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: 'ID' }, 'ViewContent', { content_name: 'TikTok', content_category: 'ID' })}
-                                        className={socialClass} aria-label="TikTok">
-                                        <FaTiktok size={16} />
-                                    </a>
-                                    <a href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
-                                        onClick={() => trackEvent('contact', { method: 'WhatsApp', market: 'ID' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: 'ID' })}
-                                        className={socialClass} aria-label="WhatsApp">
-                                        <FaWhatsapp size={20} />
-                                    </a>
-                                </>
-                            )}
+                            <a href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
+                                onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
+                                className={socialClass} aria-label="WhatsApp">
+                                <FaWhatsapp size={20} />
+                            </a>
                         </div>
                     </div>
                 </div>
 
+                {/* Signature — oversized wordmark that bleeds off the bottom edge */}
+                <div className="pointer-events-none select-none -mb-[2vw] md:-mb-[2.4vw]">
+                    <div className="font-serif font-semibold leading-[0.78] tracking-[-0.04em] whitespace-nowrap text-[19vw] md:text-[13vw]">
+                        <span className="text-coral/90">Mayanov</span>{' '}
+                        <span className="text-white/[0.07]">Tarot</span>
+                    </div>
+                </div>
+
                 {/* Bottom bar */}
-                <div className="pt-6 border-t border-white/10 text-center text-xs text-white/60 tracking-wide">
-                    &copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}
+                <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10 text-xs text-white/55 tracking-wide">
+                    <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
+                    <button
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        className="group inline-flex items-center gap-2 uppercase tracking-[0.2em] text-[10px] text-white/60 hover:text-coral transition-colors"
+                    >
+                        {isIndonesian ? 'Kembali ke atas' : 'Back to top'}
+                        <ArrowRight className="w-3.5 h-3.5 -rotate-90 group-hover:-translate-y-0.5 transition-transform" />
+                    </button>
                 </div>
             </FadeIn>
         </footer>
