@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronRight, ChevronDown, ExternalLink, Plus } from 'lucide-react';
+import React from 'react';
+import { ChevronRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import { trackEvent } from '../../services/analytics';
 
@@ -7,69 +7,15 @@ interface ServicesProps {
     isIndonesian?: boolean;
 }
 
-// One full-width dark order button per category card.
+// One dark order pill per category — opens the on-site booking flow.
 const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-full bg-ink text-cream text-sm font-medium hover:bg-charcoal-deep transition-colors";
 
-// Film-grain noise (shared with the rest of the site) — keeps colour blocks from feeling flat.
-const GRAIN =
-    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.95'/%3E%3C/svg%3E\")";
-
-// Light grainy mesh-gradient card surfaces — soft pastel sunrise (peach → pink → lavender)
-// over a cream base, so the cards read bright and pop against the dark page.
-// Four presets vary the blob placement so cards feel random, not identical.
-const MESHES = [
-    'radial-gradient(80% 70% at 88% 6%, rgba(246,178,132,0.60) 0%, transparent 55%), radial-gradient(75% 65% at 100% 58%, rgba(233,158,190,0.48) 0%, transparent 55%), radial-gradient(95% 92% at 4% 98%, rgba(168,178,226,0.52) 0%, transparent 60%), linear-gradient(155deg, #FBF4EC 0%, #F2E9F1 100%)',
-    'radial-gradient(80% 70% at 10% 8%, rgba(246,178,132,0.55) 0%, transparent 55%), radial-gradient(82% 72% at 92% 94%, rgba(168,185,230,0.55) 0%, transparent 58%), radial-gradient(70% 65% at 96% 16%, rgba(233,158,190,0.44) 0%, transparent 55%), linear-gradient(160deg, #FAF3EE 0%, #EFEAF3 100%)',
-    'radial-gradient(88% 70% at 50% 0%, rgba(233,158,190,0.50) 0%, transparent 55%), radial-gradient(82% 78% at 3% 42%, rgba(168,185,230,0.52) 0%, transparent 58%), radial-gradient(72% 66% at 97% 97%, rgba(246,185,140,0.52) 0%, transparent 55%), linear-gradient(155deg, #FBF3EF 0%, #F0EAF2 100%)',
-    'radial-gradient(80% 70% at 8% 8%, rgba(170,188,232,0.52) 0%, transparent 55%), radial-gradient(82% 72% at 92% 90%, rgba(246,180,134,0.52) 0%, transparent 55%), radial-gradient(78% 72% at 60% 46%, rgba(232,160,192,0.40) 0%, transparent 55%), linear-gradient(150deg, #F9F3F0 0%, #EEE9F2 100%)',
-];
-
-// One order button that opens a dropdown listing a category's booking options.
-const BookingDropdown: React.FC<{ label: string; heading: string; btnClass: string; options: { name: string; href: string; onClick?: () => void }[] }> = ({ label, heading, btnClass, options }) => {
-    const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-        const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-        document.addEventListener('mousedown', h);
-        return () => document.removeEventListener('mousedown', h);
-    }, []);
-    return (
-        <div className="relative w-full" ref={ref}>
-            <button type="button" onClick={() => setOpen((o) => !o)} aria-haspopup="true" aria-expanded={open} className={btnClass}>
-                {label}
-                <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
-            </button>
-            {open && (
-                <div className="absolute left-0 right-0 bottom-full mb-2 bg-[#20142F] border border-white/12 rounded-xl shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] p-1.5 z-30">
-                    <p className="px-3 pt-1.5 pb-2 text-[0.6rem] uppercase tracking-[0.18em] text-cream/70">{heading}</p>
-                    {options.map((o) => (
-                        <a key={o.name} href={o.href} target="_blank" rel="noopener noreferrer" onClick={o.onClick}
-                            className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-cream hover:bg-white/[0.08] transition-colors">
-                            <span>{o.name}</span> <ExternalLink className="w-3.5 h-3.5 opacity-50 shrink-0" />
-                        </a>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
-
-// Flatten a category's offers into one list of booking options (for the single order button).
-const bookingOptions = (g: any) =>
-    g.offers.flatMap((o: any) =>
-        (o.book || []).map((b: any) => ({
-            name: `${o.name}${b.platform ? ' · ' + b.platform : ''} — ${o.price}`,
-            href: b.href,
-            onClick: b.onClick,
-        }))
-    );
-
-// One offer line: name (+ inline badge) on the left, price on the right.
+// One offer line inside a category row: name (+ inline badge) left, price right.
 const OfferRow: React.FC<{ o: any }> = ({ o }) => (
-    <div className="py-4 md:py-5 border-t border-ink/10 first:border-t-0">
+    <div className="py-4 border-t border-ink/10 first:border-t-0 first:pt-0">
         <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2.5 flex-wrap min-w-0">
-                <h4 className="text-lg font-serif font-semibold text-ink leading-tight tracking-tight">
+                <h4 className="text-[1.05rem] font-serif font-semibold text-ink leading-tight tracking-tight">
                     {o.name}{o.sub && <span className="text-sm text-ink/55 font-sans font-normal ml-2">{o.sub}</span>}
                 </h4>
                 {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-full ${o.badgeTone || 'bg-ink/10 text-ink'}`}>{o.badge}</span>}
@@ -79,7 +25,7 @@ const OfferRow: React.FC<{ o: any }> = ({ o }) => (
                 <span className="text-lg md:text-xl font-serif font-semibold text-blue leading-none whitespace-nowrap">{o.price}</span>
             </div>
         </div>
-        {o.desc && <p className="mt-2 text-sm text-ink font-light leading-relaxed">{o.desc}</p>}
+        {o.desc && <p className="mt-2 text-sm text-ink/70 font-light leading-relaxed">{o.desc}</p>}
         {o.features && <p className="mt-1.5 text-xs text-ink/50 leading-relaxed">{o.features}</p>}
     </div>
 );
@@ -109,34 +55,6 @@ const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndones
         </button>
     );
 };
-
-// A standard vertical category card (used in the 3-up service row).
-const CategoryCard: React.FC<{ g: any; mesh: string; isIndonesian: boolean; delay?: number }> = ({ g, mesh, isIndonesian, delay = 0 }) => (
-    <div
-        id={g.id || undefined}
-        className="animate-fade-up scroll-mt-28 relative overflow-hidden isolate rounded-2xl border border-black/5 p-6 md:p-7 lg:p-8 flex flex-col shadow-[0_14px_44px_-26px_rgba(0,0,0,0.5)]"
-        style={{ background: mesh, animationDelay: `${delay}ms` }}
-    >
-        <div className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-[0.14]" style={{ backgroundImage: GRAIN, backgroundSize: '130px 130px' }} />
-        <div className="relative mb-5">
-            <div className="flex items-center gap-2.5 flex-wrap">
-                <h3 className="text-xl md:text-2xl font-serif font-semibold text-plum leading-none tracking-tight">{g.type}</h3>
-                <div className="flex flex-wrap gap-1.5">
-                    {g.tags.map((t: string) => (
-                        <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
-                    ))}
-                </div>
-            </div>
-            <p className="mt-2.5 text-sm text-ink font-light leading-relaxed">{g.blurb}</p>
-        </div>
-        <div className="relative border-t border-ink/12">
-            {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
-        </div>
-        <div className="relative mt-auto pt-6">
-            <OrderButton g={g} isIndonesian={isIndonesian} />
-        </div>
-    </div>
-);
 
 const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     // --- Handlers for Global (USD) ---
@@ -281,105 +199,97 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             },
         ];
 
-    const mainGroups = groups.filter((g: any) => !g.seasonal);
-    const seasonalGroups = groups.filter((g: any) => g.seasonal);
-
     return (
-        <section
-            id="services"
-            className="py-16 md:py-24 relative overflow-hidden isolate"
-        >
-            <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
-                {/* Header — asymmetric */}
-                <FadeIn>
-                    <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end mb-12 md:mb-16">
-                        <div className="lg:col-span-7">
-                            <span className="block text-[11px] uppercase tracking-[0.24em] text-coral mb-4">
-                                {isIndonesian ? 'Layanan' : 'Services'}
-                            </span>
-                            <h2 className="font-serif font-semibold text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
-                                {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
-                            </h2>
-                        </div>
-                        <p className="lg:col-span-4 lg:col-start-9 text-cream/70 font-light leading-relaxed lg:pb-2">
-                            {isIndonesian
-                                ? 'Pilih metode yang paling nyaman — analisa tajam, solutif, tanpa basa-basi.'
-                                : 'Clear options, no hidden fees. Just choose the depth you need.'}
-                        </p>
-                    </div>
-                </FadeIn>
-
-                {/* ===== Core services — three side by side ===== */}
-                <div className="grid gap-5 lg:gap-6 md:grid-cols-3">
-                    {mainGroups.map((g, i) => (
-                        <CategoryCard key={g.type} g={g} mesh={MESHES[i % MESHES.length]} isIndonesian={isIndonesian} delay={i * 90} />
-                    ))}
-                </div>
-
-                {/* ===== Seasonal / special edition — full-width feature card ===== */}
-                {seasonalGroups.map((g) => {
-                    const o = g.offers[0];
-                    const label = isIndonesian ? 'Pesan Sekarang' : 'Book a Reading';
-                    return (
-                        <div
-                            key={g.type}
-                            id={g.id || undefined}
-                            className="animate-fade-up scroll-mt-28 relative overflow-hidden isolate rounded-2xl border border-black/5 p-6 md:p-8 lg:p-10 mt-5 lg:mt-6 shadow-[0_14px_44px_-26px_rgba(0,0,0,0.5)]"
-                            style={{ background: MESHES[3], animationDelay: '320ms' }}
-                        >
-                            <div className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-[0.14]" style={{ backgroundImage: GRAIN, backgroundSize: '130px 130px' }} />
-                            <div className="relative grid md:grid-cols-[1.6fr_auto] gap-6 md:gap-12 md:items-center">
-                                {/* left — identity + offer */}
-                                <div>
-                                    <div className="flex items-center gap-2.5 flex-wrap">
-                                        <span className="text-[0.66rem] uppercase tracking-[0.24em] text-plum font-semibold">{g.type}</span>
-                                        {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-full ${o.badgeTone || 'bg-ink/10 text-ink'}`}>{o.badge}</span>}
-                                    </div>
-                                    <h3 className="mt-3 text-2xl md:text-3xl font-serif font-semibold text-ink leading-tight tracking-tight">{o.name}</h3>
-                                    <p className="mt-2.5 text-sm text-ink font-light leading-relaxed max-w-xl">{g.blurb}</p>
-                                    {o.features && <p className="mt-2 text-xs text-ink/55 leading-relaxed max-w-xl">{o.features}</p>}
-                                </div>
-                                {/* right — price + button */}
-                                <div className="md:text-right shrink-0">
-                                    {o.oldPrice && <span className="text-sm text-ink/45 line-through block">{o.oldPrice}</span>}
-                                    <div className="text-2xl md:text-3xl font-serif font-semibold text-blue leading-none whitespace-nowrap">{o.price}</div>
-                                    <div className="mt-5 flex md:justify-end">
-                                        <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={btnCard}>
-                                            {label} <ChevronRight className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
+        <section id="services" className="relative isolate">
+            {/* full-bleed bone band — a pricelist "on paper", no floating cards */}
+            <div className="bg-[#F6F2EB] text-ink">
+                <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28">
+                    {/* Header — asymmetric */}
+                    <FadeIn>
+                        <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
+                            <div className="lg:col-span-7">
+                                <span className="block text-[11px] uppercase tracking-[0.28em] text-coral-deep mb-5">
+                                    {isIndonesian ? 'Layanan' : 'Services'}
+                                </span>
+                                <h2 className="font-serif font-semibold text-ink text-[2rem] md:text-[2.6rem] leading-[1.03] tracking-[-0.02em]">
+                                    {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
+                                </h2>
                             </div>
+                            <p className="lg:col-span-4 lg:col-start-9 text-[0.95rem] text-ink/60 font-light leading-relaxed lg:pb-2">
+                                {isIndonesian
+                                    ? 'Pilih metode yang paling nyaman — analisa tajam, solutif, tanpa basa-basi.'
+                                    : 'Clear options, no hidden fees. Just choose the depth you need.'}
+                            </p>
                         </div>
-                    );
-                })}
+                    </FadeIn>
 
-                {/* ===== How it works — connected stepper ===== */}
-                <FadeIn>
-                    <div id="process" className="mt-10 md:mt-14 scroll-mt-24">
-                        <h3 className="font-serif font-semibold text-cream text-2xl md:text-[2rem] tracking-tight leading-none text-center mb-10 md:mb-14">
-                            {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
-                        </h3>
-
-                        <div className="relative">
-                            <ol className="grid gap-y-10 sm:grid-cols-2 lg:grid-cols-5 gap-x-6">
-                                {steps.map((step, i) => (
-                                    <li key={i} className="group relative text-center animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
-                                        {/* connector — sits only in the gap to the next square */}
-                                        {i < steps.length - 1 && (
-                                            <span className="hidden lg:block absolute top-6 left-[calc(50%+1.5rem)] w-[calc(100%-1.5rem)] h-px bg-plum/40" />
-                                        )}
-                                        <div className="relative z-10 mx-auto w-12 h-12 rounded-xl grid place-items-center bg-plum/30 border border-plum/50 text-cream font-serif font-bold text-lg backdrop-blur-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:bg-plum/45">
-                                            {i + 1}
+                    {/* ===== Pricelist — each category is a full-width editorial row ===== */}
+                    <div className="mt-14 md:mt-20 border-t border-ink/15">
+                        {groups.map((g: any, i: number) => (
+                            <FadeIn key={g.type} delay={Math.min(i, 5) * 60} dir="up">
+                                <div
+                                    id={g.id || undefined}
+                                    className="scroll-mt-28 grid lg:grid-cols-12 gap-y-7 lg:gap-x-14 py-10 md:py-14 border-b border-ink/15"
+                                >
+                                    {/* LEFT — identity */}
+                                    <div className="lg:col-span-5">
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                                            <h3 className="font-serif font-semibold text-ink text-[1.6rem] md:text-[1.95rem] leading-none tracking-tight">
+                                                {g.type}
+                                            </h3>
+                                            {g.seasonal && (
+                                                <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-full bg-coral/15 text-coral-deep">
+                                                    {isIndonesian ? 'Musiman' : 'Seasonal'}
+                                                </span>
+                                            )}
                                         </div>
-                                        <h4 className="mt-5 text-base md:text-lg font-serif font-semibold leading-snug text-[#E99EBE]">{step.title}</h4>
-                                        <p className="mt-2 text-sm leading-relaxed font-light text-cream max-w-[15rem] mx-auto">{step.desc}</p>
+                                        <div className="mt-3.5 flex flex-wrap gap-1.5">
+                                            {g.tags.map((t: string) => (
+                                                <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
+                                            ))}
+                                        </div>
+                                        <p className="mt-4 text-sm text-ink/65 font-light leading-relaxed max-w-sm">{g.blurb}</p>
+                                    </div>
+
+                                    {/* RIGHT — offers + order */}
+                                    <div className="lg:col-span-6 lg:col-start-7">
+                                        <div>
+                                            {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
+                                        </div>
+                                        <div className="mt-6">
+                                            <OrderButton g={g} isIndonesian={isIndonesian} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </FadeIn>
+                        ))}
+                    </div>
+
+                    {/* ===== How it works — editorial numbered steps ===== */}
+                    <FadeIn>
+                        <div id="process" className="mt-20 md:mt-28 pt-14 md:pt-16 border-t border-ink/15 scroll-mt-24">
+                            <span className="block text-[11px] uppercase tracking-[0.28em] text-coral-deep mb-5">
+                                {isIndonesian ? 'Prosesnya' : 'The process'}
+                            </span>
+                            <h3 className="font-serif font-semibold text-ink text-[1.9rem] md:text-[2.4rem] leading-[1.05] tracking-[-0.02em] max-w-xl">
+                                {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
+                            </h3>
+
+                            <ol className="mt-12 md:mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-5">
+                                {steps.map((step, i) => (
+                                    <li key={i} className="animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                                        <span className="font-serif text-coral-deep text-lg tabular-nums tracking-tight">
+                                            {String(i + 1).padStart(2, '0')}
+                                        </span>
+                                        <div className="mt-4 h-px w-full bg-ink/15" />
+                                        <h4 className="mt-4 text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
+                                        <p className="mt-2 text-sm leading-relaxed font-light text-ink/60">{step.desc}</p>
                                     </li>
                                 ))}
                             </ol>
                         </div>
-                    </div>
-                </FadeIn>
+                    </FadeIn>
+                </div>
             </div>
         </section>
     );
