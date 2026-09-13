@@ -56,9 +56,8 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
             className="relative z-20 mt-3 md:mt-6 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-44px_100px_-46px_rgba(0,0,0,0.85)]"
             style={{ background: 'linear-gradient(180deg, #1B1230 0%, #120B1E 100%)' }}
         >
-            {/* film grain — matches the site background (two layers) */}
-            <div className="pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
-            <div className="pointer-events-none absolute inset-0 opacity-[0.12] mix-blend-screen" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
+            {/* film grain — matches the site background (subtle) */}
+            <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
 
             <FadeIn className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
                 {/* Top — CTA line */}
@@ -81,7 +80,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 </div>
 
                 {/* Middle — brand statement on the left, meta on the right */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-x-10 gap-y-12 py-12 md:py-16">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-x-10 gap-y-10 py-10 md:py-12">
                     {/* Brand */}
                     <div className="md:col-span-6">
                         <div className="flex items-center gap-3">
@@ -90,7 +89,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                                 Mayanov <span className="font-normal text-white/70">Tarot</span>
                             </span>
                         </div>
-                        <p className="mt-6 font-elegant italic text-white text-[1.35rem] md:text-[1.75rem] leading-[1.3] tracking-[-0.01em] max-w-md">
+                        <p className="mt-5 text-[0.9rem] md:text-[0.95rem] text-white/60 font-light leading-relaxed max-w-sm">
                             {isIndonesian
                                 ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi.'
                                 : 'Tarot as a space for reflection — analytical, warm, and grounded.'}
@@ -132,14 +131,6 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                                 <FaWhatsapp size={20} />
                             </a>
                         </div>
-                    </div>
-                </div>
-
-                {/* Signature — oversized wordmark that bleeds off the bottom edge */}
-                <div className="pointer-events-none select-none -mb-[2vw] md:-mb-[2.4vw]">
-                    <div className="font-serif font-semibold leading-[0.78] tracking-[-0.04em] whitespace-nowrap text-[19vw] md:text-[13vw]">
-                        <span className="text-coral/90">Mayanov</span>{' '}
-                        <span className="text-white/[0.07]">Tarot</span>
                     </div>
                 </div>
 
