@@ -13,6 +13,38 @@ const MANUAL_SERVICES: { id: string; name: string }[] = [
     { id: 'live', name: 'Live Session' },
 ];
 
+// Packages per service (from the public pricelist) — picking one prefills the price.
+type SvcOpt = { label: string; amount: number; currency: 'IDR' | 'USD'; durationMin?: number };
+const SERVICE_OPTIONS: Record<string, SvcOpt[]> = {
+    chat: [
+        { label: '1 Pertanyaan', amount: 140000, currency: 'IDR' },
+        { label: '3 Pertanyaan', amount: 315000, currency: 'IDR' },
+        { label: 'Beli 3 Dapat 5 Pertanyaan', amount: 315000, currency: 'IDR' },
+    ],
+    call: [
+        { label: '30-Min Call', amount: 220000, currency: 'IDR', durationMin: 30 },
+        { label: '60-Min Call', amount: 360000, currency: 'IDR', durationMin: 60 },
+    ],
+    meetup: [
+        { label: 'Jam Pertama', amount: 450000, currency: 'IDR', durationMin: 60 },
+        { label: 'Jam Berikutnya (per jam)', amount: 360000, currency: 'IDR', durationMin: 60 },
+    ],
+    special: [{ label: 'New Year Reading 2026', amount: 250000, currency: 'IDR' }],
+    '3card': [{ label: '3-Card Spread', amount: 12, currency: 'USD' }],
+    '5card': [{ label: '5-Card Deep', amount: 20, currency: 'USD' }],
+    live: [{ label: 'Live Session (30 min)', amount: 45, currency: 'USD', durationMin: 30 }],
+};
+
+// Pull a display phone / a canonical key out of a free-text contact field
+// (matches how CustomersView groups clients, so the two stay in sync).
+const extractPhone = (contact?: string) => {
+    if (!contact) return '';
+    const m = contact.match(/WA:\s*([+\d][\d\s-]*)/i);
+    return (m ? m[1] : (contact.match(/[+]?\d[\d\s-]{6,}/)?.[0] || '')).trim();
+};
+const normPhone = (p: string) => p.replace(/\D/g, '');
+const fmtOptPrice = (o: SvcOpt) => o.currency === 'USD' ? `$${o.amount}` : `Rp ${o.amount.toLocaleString('id-ID')}`;
+
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const toHHMM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
@@ -75,9 +107,11 @@ const FLD = "w-full rounded-lg border border-adm-line-2 bg-bg-dark px-3 py-2 tex
 const LBL = "block text-xs font-medium text-text-subtle mb-1.5";
 
 // Modal to record a booking taken manually (e.g. over WhatsApp).
-const AddBookingModal: React.FC<{ onClose: () => void; onCreated: (msg: string) => void }> = ({ onClose, onCreated }) => {
+const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCreated: (msg: string) => void }> = ({ bookings, onClose, onCreated }) => {
     const today = toISO(new Date());
     const [serviceId, setServiceId] = useState(MANUAL_SERVICES[0].id);
+    const [detailIdx, setDetailIdx] = useState(0);
+    const [clientKey, setClientKey] = useState('__new__');
     const [name, setName] = useState('');
     const [contact, setContact] = useState('');
     const [amount, setAmount] = useState('');
@@ -92,6 +126,37 @@ const AddBookingModal: React.FC<{ onClose: () => void; onCreated: (msg: string) 
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState('');
 
+    // Existing clients, deduped by phone (newest name wins — bookings arrive newest-first).
+    const clients = useMemo(() => {
+        const map = new Map<string, { key: string; name: string; contact: string; phone: string }>();
+        bookings.forEach((b) => {
+            const phone = extractPhone(b.contact);
+            const key = normPhone(phone) || (b.contact || '').trim().toLowerCase();
+            if (!key) return;
+            if (!map.has(key)) map.set(key, { key, name: b.name || '', contact: b.contact || '', phone });
+        });
+        return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+    }, [bookings]);
+
+    // Picking a service/package prefills price, currency and (for timed sessions) duration.
+    const opts = SERVICE_OPTIONS[serviceId] || [];
+    useEffect(() => {
+        const opt = opts[detailIdx] || opts[0];
+        if (opt) {
+            setAmount(String(opt.amount));
+            setCurrency(opt.currency);
+            if (opt.durationMin) setDurationMin(String(opt.durationMin));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [serviceId, detailIdx]);
+
+    const pickClient = (v: string) => {
+        setClientKey(v);
+        if (v === '__new__') { setName(''); setContact(''); return; }
+        const c = clients.find((c) => c.key === v);
+        if (c) { setName(c.name); setContact(c.contact); }
+    };
+
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErr('');
@@ -102,8 +167,11 @@ const AddBookingModal: React.FC<{ onClose: () => void; onCreated: (msg: string) 
         try {
             const token = localStorage.getItem('authToken') || undefined;
             const svc = MANUAL_SERVICES.find((s) => s.id === serviceId) || MANUAL_SERVICES[0];
+            const opt = opts[detailIdx];
+            const detailLabel = opt?.label || '';
+            const serviceName = detailLabel && detailLabel !== svc.name ? `${svc.name} · ${detailLabel}` : svc.name;
             await createManualBooking({
-                serviceId, serviceName: svc.name,
+                serviceId, serviceName,
                 name: name.trim(), contact: contact.trim(), question: question.trim(),
                 amount: amt, currency, orderDate, status,
                 ...(schedule ? { date, time, durationMin: Number(durationMin) || 60 } : {}),
@@ -125,21 +193,39 @@ const AddBookingModal: React.FC<{ onClose: () => void; onCreated: (msg: string) 
                 <form onSubmit={submit} className="px-6 py-5 space-y-4">
                     <p className="text-xs text-text-subtle leading-relaxed">For orders taken manually (e.g. over WhatsApp) — they'll appear in Orders, Customers and the Revenue report.</p>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label className={LBL}>Service</label>
+                            <select value={serviceId} onChange={(e) => { setServiceId(e.target.value); setDetailIdx(0); }} className={FLD}>
+                                {MANUAL_SERVICES.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className={LBL}>Package / detail</label>
+                            <select value={detailIdx} onChange={(e) => setDetailIdx(Number(e.target.value))} className={FLD}>
+                                {opts.map((o, i) => <option key={i} value={i}>{o.label} — {fmtOptPrice(o)}</option>)}
+                            </select>
+                        </div>
+                    </div>
+
                     <div>
-                        <label className={LBL}>Service</label>
-                        <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} className={FLD}>
-                            {MANUAL_SERVICES.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        <label className={LBL}>Customer</label>
+                        <select value={clientKey} onChange={(e) => pickClient(e.target.value)} className={FLD}>
+                            <option value="__new__">＋ New customer</option>
+                            {clients.map((c) => (
+                                <option key={c.key} value={c.key}>{c.name || '(no name)'}{c.phone ? ` — ${c.phone}` : ''}</option>
+                            ))}
                         </select>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label className={LBL}>Customer name</label>
-                            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama pelanggan" className={FLD} />
+                            <input value={name} onChange={(e) => { setName(e.target.value); setClientKey('__new__'); }} placeholder="Nama pelanggan" className={FLD} />
                         </div>
                         <div>
                             <label className={LBL}>WhatsApp / contact</label>
-                            <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="0812…" className={FLD} />
+                            <input value={contact} onChange={(e) => { setContact(e.target.value); setClientKey('__new__'); }} placeholder="0812…" className={FLD} />
                         </div>
                     </div>
 
@@ -156,6 +242,7 @@ const AddBookingModal: React.FC<{ onClose: () => void; onCreated: (msg: string) 
                             </select>
                         </div>
                     </div>
+                    <p className="-mt-2 text-[0.7rem] text-text-subtle">Prefilled from the package — edit if this order had a custom price.</p>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -420,6 +507,7 @@ const BookingsView: React.FC = () => {
 
             {showAdd && (
                 <AddBookingModal
+                    bookings={bookings}
                     onClose={() => setShowAdd(false)}
                     onCreated={(msg) => { setShowAdd(false); setNotice({ text: msg, kind: 'ok' }); load(); }}
                 />
