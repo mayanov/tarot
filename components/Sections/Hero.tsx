@@ -77,69 +77,60 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       id="hero"
       className="relative min-h-screen flex flex-col overflow-hidden isolate text-cream"
     >
-      <div className="flex-1 w-full max-w-[1400px] mx-auto px-6 md:px-10 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center pt-28 md:pt-32 pb-12">
-        {/* LEFT — editorial text */}
-        <div className="order-2 lg:order-1">
-          <Rise delay={120}>
-            <h1 className="font-serif font-bold uppercase leading-[0.88] tracking-[-0.02em] text-[3.2rem] sm:text-[4.4rem] lg:text-[5.6rem] [text-shadow:0_4px_28px_rgba(6,4,14,0.5)]">
-              <span className="block text-coral">Mayanov</span>
-              <span className="block text-cream">Tarot</span>
-            </h1>
-          </Rise>
+      {/* Center — a cinematic title card over the sunrise sky */}
+      <div className="flex-1 w-full max-w-[1000px] mx-auto px-6 flex flex-col items-center justify-center text-center pt-28 pb-10">
+        <Rise delay={120}>
+          <h1 className="font-serif font-bold uppercase leading-[0.86] tracking-[-0.02em] text-[3.6rem] sm:text-[5.2rem] lg:text-[7rem] [text-shadow:0_6px_40px_rgba(6,4,14,0.55)]">
+            <span className="block text-coral">Mayanov</span>
+            <span className="block text-cream">Tarot</span>
+          </h1>
+        </Rise>
 
-          <Rise delay={260}>
-            <p className="mt-6 font-elegant italic text-xl md:text-[1.7rem] leading-snug text-coral [text-shadow:0_2px_16px_rgba(6,4,14,0.6)]">
-              {isIndonesian ? 'Ruang untuk berpikir jernih.' : 'A clearer view of what’s next.'}
-            </p>
-          </Rise>
+        <Rise delay={260}>
+          <p className="mt-7 font-elegant italic text-xl md:text-[1.9rem] leading-snug text-coral [text-shadow:0_2px_16px_rgba(6,4,14,0.6)]">
+            {isIndonesian ? 'Ruang untuk berpikir jernih.' : 'A clearer view of what’s next.'}
+          </p>
+        </Rise>
 
-          <Rise delay={340}>
-            <p className="mt-4 text-sm md:text-[15px] leading-relaxed max-w-md text-cream/80 [text-shadow:0_1px_10px_rgba(6,4,14,0.7)]">
-              {isIndonesian
-                ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi. Bukan ramalan, tapi percakapan jujur untuk melihat langkahmu lebih jelas.'
-                : 'Tarot as a space for reflection — analytical, warm, and grounded. Not fortune-telling, just an honest conversation that helps you see your next step clearly.'}
-            </p>
-          </Rise>
+        <Rise delay={340}>
+          <p className="mt-5 text-sm md:text-[15px] leading-relaxed max-w-xl mx-auto text-cream/80 [text-shadow:0_1px_10px_rgba(6,4,14,0.7)]">
+            {isIndonesian
+              ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi. Bukan ramalan, tapi percakapan jujur untuk melihat langkahmu lebih jelas.'
+              : 'Tarot as a space for reflection — analytical, warm, and grounded. Not fortune-telling, just an honest conversation that helps you see your next step clearly.'}
+          </p>
+        </Rise>
 
-          <Rise delay={420}>
-            <a
-              href="#services"
-              onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-              className="group mt-9 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-medium pb-1.5 text-coral transition-colors"
-              style={{ borderBottom: '1px solid rgba(241,159,88,0.5)' }}
-            >
-              {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </a>
-          </Rise>
-
-          <Rise delay={500}>
-            <div className="mt-12 grid grid-cols-4 gap-4 max-w-lg pt-6 border-t border-cream/15">
-              {metrics.map((m, i) => (
-                <div key={i}>
-                  <div className="font-sans font-semibold text-lg md:text-xl tabular-nums text-cream">
-                    <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
-                  </div>
-                  <div className="mt-1 text-[9px] md:text-[10px] uppercase tracking-[0.14em] leading-tight text-cream/55">
-                    {m.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Rise>
-        </div>
-
-        {/* RIGHT — a single, quiet photograph */}
-        <Rise delay={220} className="order-1 lg:order-2">
-          <div className="relative w-full overflow-hidden rounded-xl aspect-[4/5] lg:aspect-auto lg:h-[76vh] shadow-[0_40px_90px_-40px_rgba(0,0,0,0.7)]">
-            <img
-              src="/event-3.jpeg"
-              alt={isIndonesian ? 'Sesi tarot bersama Mayanov' : 'A tarot session with Mayanov'}
-              className="w-full h-full object-cover"
-            />
-          </div>
+        <Rise delay={420}>
+          <a
+            href="#services"
+            onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
+            className="group mt-9 inline-flex items-center gap-2.5 rounded-full bg-coral text-ink pl-7 pr-5 py-3.5 text-sm font-semibold hover:bg-coral-deep hover:text-cream hover:-translate-y-0.5 transition-all duration-300 shadow-[0_18px_44px_-20px_rgba(0,0,0,0.6)]"
+          >
+            {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+            <span className="grid place-items-center w-7 h-7 rounded-full bg-ink/15 group-hover:bg-cream/25 transition-colors">
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </a>
         </Rise>
       </div>
+
+      {/* Stats — a quiet row anchored to the bottom of the viewport, full width */}
+      <Rise delay={520}>
+        <div className="w-full max-w-[1000px] mx-auto px-6 pb-10 md:pb-12">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-cream/15">
+            {metrics.map((m, i) => (
+              <div key={i} className="text-center">
+                <div className="font-sans font-semibold text-xl md:text-2xl tabular-nums text-cream">
+                  <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
+                </div>
+                <div className="mt-1 text-[9px] md:text-[10px] uppercase tracking-[0.14em] leading-tight text-cream/55">
+                  {m.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Rise>
     </section>
   );
 };

@@ -20,34 +20,32 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
     <section id="about" className="relative isolate">
       {/* full-bleed warm oat band — a clean cut from the hero's sky, no floating card */}
       <div className="bg-[#EFE7DB] text-ink">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28">
-          <FadeIn>
-            <div className="grid lg:grid-cols-12 gap-y-12 lg:gap-x-16 items-center">
-              {/* LEFT — portrait */}
-              <div className="lg:col-span-5">
-                <div className="relative overflow-hidden rounded-xl aspect-[4/5]">
-                  <img
-                    src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
-                    alt="Mayanov"
-                    className="absolute inset-0 w-full h-full object-cover object-top"
-                  />
-                  {/* soft gradient + name plate */}
-                  <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(16,10,24,0.6) 0%, rgba(16,10,24,0) 42%)' }} />
-                  <div className="absolute inset-x-6 bottom-6 flex items-end justify-between gap-3">
-                    <div>
-                      <div className="font-serif font-semibold text-cream text-xl md:text-2xl tracking-tight leading-none">Mayanov</div>
-                      <div className="mt-1.5 text-white/75 text-[0.6rem] uppercase tracking-[0.24em]">{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="font-serif font-bold text-coral text-[2.2rem] md:text-[2.6rem] leading-none">15+</div>
-                      <div className="mt-1 text-white/75 text-[0.55rem] uppercase tracking-[0.2em]">{isIndonesian ? 'Tahun' : 'Years'}</div>
-                    </div>
-                  </div>
+        <FadeIn>
+          <div className="grid lg:grid-cols-2 items-stretch">
+            {/* LEFT — portrait, full-bleed to the left/top/bottom edges */}
+            <div className="relative min-h-[62vh] lg:min-h-[86vh] order-1">
+              <img
+                src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
+                alt="Mayanov"
+                className="absolute inset-0 w-full h-full object-cover object-top"
+              />
+              {/* soft gradient + name plate */}
+              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(16,10,24,0.62) 0%, rgba(16,10,24,0) 42%)' }} />
+              <div className="absolute inset-x-6 md:inset-x-10 bottom-6 md:bottom-10 flex items-end justify-between gap-3">
+                <div>
+                  <div className="font-serif font-semibold text-cream text-xl md:text-2xl tracking-tight leading-none">Mayanov</div>
+                  <div className="mt-1.5 text-white/75 text-[0.6rem] uppercase tracking-[0.24em]">{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="font-serif font-bold text-coral text-[2.2rem] md:text-[2.6rem] leading-none">15+</div>
+                  <div className="mt-1 text-white/75 text-[0.55rem] uppercase tracking-[0.2em]">{isIndonesian ? 'Tahun' : 'Years'}</div>
                 </div>
               </div>
+            </div>
 
-              {/* RIGHT — content */}
-              <div className="lg:col-span-6 lg:col-start-7">
+            {/* RIGHT — content */}
+            <div className="order-2 flex items-center">
+              <div className="w-full max-w-xl px-6 sm:px-10 md:px-14 lg:px-16 py-16 md:py-24">
                 <span className="block text-[11px] uppercase tracking-[0.28em] text-coral-deep mb-5">
                   {isIndonesian ? 'Tentang' : 'About'}
                 </span>
@@ -87,8 +85,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 </div>
               </div>
             </div>
-          </FadeIn>
-        </div>
+          </div>
+        </FadeIn>
       </div>
     </section>
   );
