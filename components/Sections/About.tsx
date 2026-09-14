@@ -17,73 +17,78 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
   }, [isIndonesian]);
 
   return (
-    <section id="about" className="py-10 md:py-16 relative overflow-hidden isolate">
-      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
-        <FadeIn>
-          <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-[#F6F2EB] shadow-[0_14px_44px_-26px_rgba(0,0,0,0.45)] grid lg:grid-cols-12">
-            {/* LEFT — full-bleed portrait */}
-            <div className="lg:col-span-5 relative min-h-[24rem] lg:min-h-0">
-              <img
-                src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
-                alt="Mayanov"
-                className="absolute inset-0 w-full h-full object-cover object-top"
-              />
-              {/* soft gradient + name plate */}
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(16,10,24,0.6) 0%, rgba(16,10,24,0) 42%)' }} />
-              <div className="absolute inset-x-6 bottom-6 flex items-end justify-between gap-3">
-                <div>
-                  <div className="font-serif font-semibold text-cream text-xl md:text-2xl tracking-tight leading-none">Mayanov</div>
-                  <div className="mt-1.5 text-white/75 text-[0.6rem] uppercase tracking-[0.24em]">{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</div>
+    <section id="about" className="relative isolate">
+      {/* full-bleed warm oat band — a clean cut from the hero's sky, no floating card */}
+      <div className="bg-[#EFE7DB] text-ink">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28">
+          <FadeIn>
+            <div className="grid lg:grid-cols-12 gap-y-12 lg:gap-x-16 items-center">
+              {/* LEFT — portrait */}
+              <div className="lg:col-span-5">
+                <div className="relative overflow-hidden rounded-xl aspect-[4/5]">
+                  <img
+                    src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
+                    alt="Mayanov"
+                    className="absolute inset-0 w-full h-full object-cover object-top"
+                  />
+                  {/* soft gradient + name plate */}
+                  <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(16,10,24,0.6) 0%, rgba(16,10,24,0) 42%)' }} />
+                  <div className="absolute inset-x-6 bottom-6 flex items-end justify-between gap-3">
+                    <div>
+                      <div className="font-serif font-semibold text-cream text-xl md:text-2xl tracking-tight leading-none">Mayanov</div>
+                      <div className="mt-1.5 text-white/75 text-[0.6rem] uppercase tracking-[0.24em]">{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="font-serif font-bold text-coral text-[2.2rem] md:text-[2.6rem] leading-none">15+</div>
+                      <div className="mt-1 text-white/75 text-[0.55rem] uppercase tracking-[0.2em]">{isIndonesian ? 'Tahun' : 'Years'}</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <div className="font-serif font-bold text-coral text-[2.2rem] md:text-[2.6rem] leading-none">15+</div>
-                  <div className="mt-1 text-white/75 text-[0.55rem] uppercase tracking-[0.2em]">{isIndonesian ? 'Tahun' : 'Years'}</div>
+              </div>
+
+              {/* RIGHT — content */}
+              <div className="lg:col-span-6 lg:col-start-7">
+                <span className="block text-[11px] uppercase tracking-[0.28em] text-coral-deep mb-5">
+                  {isIndonesian ? 'Tentang' : 'About'}
+                </span>
+                <h2 className="font-serif font-semibold text-ink text-[2rem] md:text-[2.6rem] leading-[1.03] tracking-[-0.02em]">
+                  {isIndonesian ? 'Tentang Saya' : 'About Me'}
+                </h2>
+
+                {/* pull quote */}
+                <div className="relative mt-6 md:mt-8">
+                  <p className="relative font-elegant italic text-ink text-[1.2rem] md:text-[1.55rem] xl:text-[1.7rem] leading-[1.35] tracking-[-0.01em]">
+                    {isIndonesian
+                      ? 'Tarot, buat saya, bukan soal takdir yang menakutkan — melainkan ruang tenang untuk berhenti sejenak, mendengarkan diri, dan menemukan kejernihan di tengah hiruk-pikuk.'
+                      : 'Tarot, for me, isn’t about scary fate — it’s a calm space to pause, listen to yourself, and find clarity in the middle of the noise.'}
+                  </p>
+                </div>
+
+                <div className="mt-7 space-y-4 text-sm md:text-[15px] text-ink/75 font-light leading-relaxed">
+                  <p>
+                    {isIndonesian
+                      ? 'Saya sudah mendalami seni membaca Tarot sejak 2009 — lebih dari 15 tahun menjadikannya medium untuk refleksi diri dan menemukan solusi yang nyata. Sesi bersama saya terasa seperti percakapan jujur, bukan ramalan. Kita bedah situasimu, kenali pola yang bikin stuck, lalu susun langkah konkret — analitis, hangat, tanpa menghakimi.'
+                      : 'I’ve been reading Tarot since 2009 — over 15 years using the cards as a medium for self-reflection and finding real solutions. A session feels like an honest conversation, not a prediction. We unpack your situation, spot what keeps you stuck, and map concrete next steps — analytical, warm, never judgmental.'}
+                  </p>
+                  <p>
+                    {isIndonesian
+                      ? 'Kamu tidak perlu tahu apa-apa soal Tarot. Datang saja apa adanya — dengan pertanyaan besar, kegelisahan kecil, atau sekadar butuh didengar. Yang kamu bawa pulang bukan ketakutan, tapi ketenangan dan arah yang lebih jelas untuk melangkah.'
+                      : 'You don’t need to know anything about Tarot. Just come as you are — with the big questions, the small worries, or simply the need to be heard. What you leave with isn’t fear, but calm and a clearer sense of direction for your next step.'}
+                  </p>
+                </div>
+
+                {/* closing statement */}
+                <div className="mt-8 md:mt-10 pt-7 border-t border-coral-deep/30">
+                  <p className="font-serif text-ink text-[1.15rem] md:text-[1.45rem] lg:text-[1.6rem] leading-[1.25] tracking-[-0.015em]">
+                    {isIndonesian
+                      ? 'Tujuan saya simpel: memberi kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
+                      : 'My goal is simple — the clarity you need to make decisions with confidence.'}
+                  </p>
                 </div>
               </div>
             </div>
-
-            {/* RIGHT — content */}
-            <div className="lg:col-span-7 p-7 sm:p-10 md:p-14 lg:p-16">
-              <span className="block text-[11px] uppercase tracking-[0.24em] text-coral-deep mb-4">
-                {isIndonesian ? 'Tentang' : 'About'}
-              </span>
-              <h2 className="font-serif font-semibold text-ink text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
-                {isIndonesian ? 'Tentang Saya' : 'About Me'}
-              </h2>
-
-              {/* pull quote */}
-              <div className="relative mt-6 md:mt-8">
-                <p className="relative font-elegant italic text-ink text-[1.2rem] md:text-[1.55rem] xl:text-[1.7rem] leading-[1.35] tracking-[-0.01em]">
-                  {isIndonesian
-                    ? 'Tarot, buat saya, bukan soal takdir yang menakutkan — melainkan ruang tenang untuk berhenti sejenak, mendengarkan diri, dan menemukan kejernihan di tengah hiruk-pikuk.'
-                    : 'Tarot, for me, isn’t about scary fate — it’s a calm space to pause, listen to yourself, and find clarity in the middle of the noise.'}
-                </p>
-              </div>
-
-              <div className="mt-7 space-y-4 text-sm md:text-[15px] text-ink/75 font-light leading-relaxed">
-                <p>
-                  {isIndonesian
-                    ? 'Saya sudah mendalami seni membaca Tarot sejak 2009 — lebih dari 15 tahun menjadikannya medium untuk refleksi diri dan menemukan solusi yang nyata. Sesi bersama saya terasa seperti percakapan jujur, bukan ramalan. Kita bedah situasimu, kenali pola yang bikin stuck, lalu susun langkah konkret — analitis, hangat, tanpa menghakimi.'
-                    : 'I’ve been reading Tarot since 2009 — over 15 years using the cards as a medium for self-reflection and finding real solutions. A session feels like an honest conversation, not a prediction. We unpack your situation, spot what keeps you stuck, and map concrete next steps — analytical, warm, never judgmental.'}
-                </p>
-                <p>
-                  {isIndonesian
-                    ? 'Kamu tidak perlu tahu apa-apa soal Tarot. Datang saja apa adanya — dengan pertanyaan besar, kegelisahan kecil, atau sekadar butuh didengar. Yang kamu bawa pulang bukan ketakutan, tapi ketenangan dan arah yang lebih jelas untuk melangkah.'
-                    : 'You don’t need to know anything about Tarot. Just come as you are — with the big questions, the small worries, or simply the need to be heard. What you leave with isn’t fear, but calm and a clearer sense of direction for your next step.'}
-                </p>
-              </div>
-
-              {/* closing statement */}
-              <div className="mt-8 md:mt-10 pt-7 border-t border-coral-deep/30">
-                <p className="font-serif text-ink text-[1.15rem] md:text-[1.45rem] lg:text-[1.6rem] leading-[1.25] tracking-[-0.015em]">
-                  {isIndonesian
-                    ? 'Tujuan saya simpel: memberi kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
-                    : 'My goal is simple — the clarity you need to make decisions with confidence.'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </FadeIn>
+          </FadeIn>
+        </div>
       </div>
     </section>
   );
