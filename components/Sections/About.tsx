@@ -21,48 +21,45 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       {/* full-bleed warm oat band — a clean cut from the hero's sky, no floating card */}
       <div className="bg-[#EFE7DB] text-ink">
         <FadeIn>
-          <div className="grid lg:grid-cols-2 items-stretch">
-            {/* LEFT — portrait, full-bleed to the left/top/bottom edges */}
-            <div className="relative min-h-[62vh] lg:min-h-[86vh] order-1">
+          <div className="grid lg:grid-cols-[40%_1fr] items-stretch">
+            {/* LEFT — clean portrait, full-bleed to the left/top/bottom edges */}
+            <div className="relative min-h-[52vh] lg:min-h-0 order-1">
               <img
                 src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
                 alt="Mayanov"
                 className="absolute inset-0 w-full h-full object-cover object-top"
               />
-              {/* soft gradient + name plate */}
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(16,10,24,0.62) 0%, rgba(16,10,24,0) 42%)' }} />
-              <div className="absolute inset-x-6 md:inset-x-10 bottom-6 md:bottom-10 flex items-end justify-between gap-3">
-                <div>
-                  <div className="font-serif font-semibold text-cream text-xl md:text-2xl tracking-tight leading-none">Mayanov</div>
-                  <div className="mt-1.5 text-white/75 text-[0.6rem] uppercase tracking-[0.24em]">{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</div>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="font-serif font-bold text-coral text-[2.2rem] md:text-[2.6rem] leading-none">15+</div>
-                  <div className="mt-1 text-white/75 text-[0.55rem] uppercase tracking-[0.2em]">{isIndonesian ? 'Tahun' : 'Years'}</div>
-                </div>
-              </div>
             </div>
 
             {/* RIGHT — content */}
             <div className="order-2 flex items-center">
-              <div className="w-full max-w-xl px-6 sm:px-10 md:px-14 lg:px-16 py-16 md:py-24">
+              <div className="w-full max-w-xl px-6 sm:px-10 md:px-14 lg:px-16 py-14 md:py-20">
                 <span className="block text-[11px] uppercase tracking-[0.28em] text-coral-deep mb-5">
                   {isIndonesian ? 'Tentang' : 'About'}
                 </span>
-                <h2 className="font-serif font-semibold text-ink text-[2rem] md:text-[2.6rem] leading-[1.03] tracking-[-0.02em]">
+                <h2 className="font-serif font-semibold text-ink text-[1.8rem] md:text-[2.3rem] leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian ? 'Tentang Saya' : 'About Me'}
                 </h2>
 
+                {/* credential meta line */}
+                <div className="mt-4 flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] text-ink/50">
+                  <span>{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</span>
+                  <span className="w-1 h-1 rounded-full bg-coral-deep/60" />
+                  <span>{isIndonesian ? 'Sejak 2009' : 'Since 2009'}</span>
+                  <span className="w-1 h-1 rounded-full bg-coral-deep/60" />
+                  <span>{isIndonesian ? '15+ Tahun' : '15+ Years'}</span>
+                </div>
+
                 {/* pull quote */}
-                <div className="relative mt-6 md:mt-8">
-                  <p className="relative font-elegant italic text-ink text-[1.2rem] md:text-[1.55rem] xl:text-[1.7rem] leading-[1.35] tracking-[-0.01em]">
+                <div className="relative mt-6 md:mt-7">
+                  <p className="relative font-elegant italic text-ink text-[1.1rem] md:text-[1.35rem] xl:text-[1.45rem] leading-[1.4] tracking-[-0.01em]">
                     {isIndonesian
                       ? 'Tarot, buat saya, bukan soal takdir yang menakutkan — melainkan ruang tenang untuk berhenti sejenak, mendengarkan diri, dan menemukan kejernihan di tengah hiruk-pikuk.'
                       : 'Tarot, for me, isn’t about scary fate — it’s a calm space to pause, listen to yourself, and find clarity in the middle of the noise.'}
                   </p>
                 </div>
 
-                <div className="mt-7 space-y-4 text-sm md:text-[15px] text-ink/75 font-light leading-relaxed">
+                <div className="mt-6 space-y-4 text-sm md:text-[15px] text-ink/75 font-light leading-relaxed">
                   <p>
                     {isIndonesian
                       ? 'Saya sudah mendalami seni membaca Tarot sejak 2009 — lebih dari 15 tahun menjadikannya medium untuk refleksi diri dan menemukan solusi yang nyata. Sesi bersama saya terasa seperti percakapan jujur, bukan ramalan. Kita bedah situasimu, kenali pola yang bikin stuck, lalu susun langkah konkret — analitis, hangat, tanpa menghakimi.'
@@ -76,8 +73,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 </div>
 
                 {/* closing statement */}
-                <div className="mt-8 md:mt-10 pt-7 border-t border-coral-deep/30">
-                  <p className="font-serif text-ink text-[1.15rem] md:text-[1.45rem] lg:text-[1.6rem] leading-[1.25] tracking-[-0.015em]">
+                <div className="mt-7 md:mt-9 pt-6 border-t border-coral-deep/30">
+                  <p className="font-serif text-ink text-[1.05rem] md:text-[1.3rem] lg:text-[1.4rem] leading-[1.3] tracking-[-0.015em]">
                     {isIndonesian
                       ? 'Tujuan saya simpel: memberi kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                       : 'My goal is simple — the clarity you need to make decisions with confidence.'}
