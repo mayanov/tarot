@@ -37,6 +37,38 @@ export interface Booking extends BookingInput {
   createdAt: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'done';
   gcalEventId?: string;
+  price?: string; // explicit price token for manual orders (e.g. "Rp 300000", "$20")
+  source?: string; // 'manual' for admin-entered orders (e.g. WhatsApp)
+}
+
+// Admin — manually record an order (e.g. taken over WhatsApp) so it appears in
+// the schedule, customer list and revenue report.
+export interface ManualBookingInput {
+  serviceId: string;
+  serviceName: string;
+  name: string;
+  contact: string;
+  question?: string;
+  amount: number;
+  currency: 'IDR' | 'USD';
+  orderDate: string; // 'YYYY-MM-DD' — the day the order came in (drives revenue date)
+  status: 'pending' | 'confirmed' | 'done';
+  // Optional: schedule an actual session on the calendar.
+  date?: string;
+  time?: string;
+  durationMin?: number;
+}
+
+export async function createManualBooking(input: ManualBookingInput, token?: string): Promise<Booking> {
+  const res = await fetch(`${API_BASE}/api/admin/bookings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  if (res.status === 409) throw new Error('SLOT_TAKEN');
+  if (!res.ok) throw new Error(`HTTP_${res.status}`);
+  return await res.json();
 }
 
 export const SLOT_TIMES = [

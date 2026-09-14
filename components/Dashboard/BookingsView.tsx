@@ -1,6 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshCcw, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { getAllBookings, rescheduleBooking, getCalendarEvents, Booking, CalEvent } from '../../services/booking';
+import { RefreshCcw, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
+import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, Booking, CalEvent } from '../../services/booking';
+
+// Services offered — id drives revenue colour/stacking; name is the display label.
+const MANUAL_SERVICES: { id: string; name: string }[] = [
+    { id: 'chat', name: 'Konsultasi via Chat' },
+    { id: 'call', name: 'Panggilan Suara & Video' },
+    { id: 'meetup', name: 'Sesi Tatap Muka' },
+    { id: 'special', name: 'Edisi Spesial' },
+    { id: '3card', name: '3-Card Spread' },
+    { id: '5card', name: '5-Card Deep' },
+    { id: 'live', name: 'Live Session' },
+];
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const toHHMM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
@@ -60,6 +71,147 @@ const GRID_H = ((DAY_END - DAY_START) / 60) * HOUR_H;
 const HOURS = Array.from({ length: (DAY_END - DAY_START) / 60 + 1 }, (_, i) => DAY_START / 60 + i);
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+const FLD = "w-full rounded-lg border border-adm-line-2 bg-bg-dark px-3 py-2 text-sm text-text-light focus:border-lilac focus:outline-none";
+const LBL = "block text-xs font-medium text-text-subtle mb-1.5";
+
+// Modal to record a booking taken manually (e.g. over WhatsApp).
+const AddBookingModal: React.FC<{ onClose: () => void; onCreated: (msg: string) => void }> = ({ onClose, onCreated }) => {
+    const today = toISO(new Date());
+    const [serviceId, setServiceId] = useState(MANUAL_SERVICES[0].id);
+    const [name, setName] = useState('');
+    const [contact, setContact] = useState('');
+    const [amount, setAmount] = useState('');
+    const [currency, setCurrency] = useState<'IDR' | 'USD'>('IDR');
+    const [orderDate, setOrderDate] = useState(today);
+    const [status, setStatus] = useState<'confirmed' | 'done' | 'pending'>('confirmed');
+    const [question, setQuestion] = useState('');
+    const [schedule, setSchedule] = useState(false);
+    const [date, setDate] = useState(today);
+    const [time, setTime] = useState('11:00');
+    const [durationMin, setDurationMin] = useState('60');
+    const [busy, setBusy] = useState(false);
+    const [err, setErr] = useState('');
+
+    const submit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErr('');
+        if (!name.trim()) { setErr('Customer name is required.'); return; }
+        const amt = Number(amount);
+        if (!Number.isFinite(amt) || amt < 0) { setErr('Enter a valid amount.'); return; }
+        setBusy(true);
+        try {
+            const token = localStorage.getItem('authToken') || undefined;
+            const svc = MANUAL_SERVICES.find((s) => s.id === serviceId) || MANUAL_SERVICES[0];
+            await createManualBooking({
+                serviceId, serviceName: svc.name,
+                name: name.trim(), contact: contact.trim(), question: question.trim(),
+                amount: amt, currency, orderDate, status,
+                ...(schedule ? { date, time, durationMin: Number(durationMin) || 60 } : {}),
+            }, token);
+            onCreated('Booking added');
+        } catch (e2) {
+            setErr(e2 instanceof Error && e2.message === 'SLOT_TAKEN' ? 'That time slot is already taken.' : 'Failed to add booking.');
+            setBusy(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+            <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-surface-1 border border-adm-line-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-adm-line sticky top-0 bg-surface-1">
+                    <h3 className="text-lg font-serif font-bold text-text-light">Add booking</h3>
+                    <button type="button" onClick={onClose} className="p-1.5 rounded-full text-text-subtle hover:text-text-light hover:bg-white/5"><X size={18} /></button>
+                </div>
+                <form onSubmit={submit} className="px-6 py-5 space-y-4">
+                    <p className="text-xs text-text-subtle leading-relaxed">For orders taken manually (e.g. over WhatsApp) — they'll appear in Orders, Customers and the Revenue report.</p>
+
+                    <div>
+                        <label className={LBL}>Service</label>
+                        <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} className={FLD}>
+                            {MANUAL_SERVICES.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label className={LBL}>Customer name</label>
+                            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama pelanggan" className={FLD} />
+                        </div>
+                        <div>
+                            <label className={LBL}>WhatsApp / contact</label>
+                            <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="0812…" className={FLD} />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-[1fr_7rem] gap-3">
+                        <div>
+                            <label className={LBL}>Amount paid</label>
+                            <input type="number" min="0" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={currency === 'IDR' ? '300000' : '20'} className={FLD} />
+                        </div>
+                        <div>
+                            <label className={LBL}>Currency</label>
+                            <select value={currency} onChange={(e) => setCurrency(e.target.value as 'IDR' | 'USD')} className={FLD}>
+                                <option value="IDR">IDR</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className={LBL}>Order date</label>
+                            <input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} className={FLD} />
+                        </div>
+                        <div>
+                            <label className={LBL}>Status</label>
+                            <select value={status} onChange={(e) => setStatus(e.target.value as 'confirmed' | 'done' | 'pending')} className={FLD}>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="done">Done</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className={LBL}>Notes (optional)</label>
+                        <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={2} placeholder="Pertanyaan / catatan…" className={FLD} />
+                    </div>
+
+                    <label className="flex items-center gap-2.5 text-sm text-text-light cursor-pointer select-none">
+                        <input type="checkbox" checked={schedule} onChange={(e) => setSchedule(e.target.checked)} className="accent-lilac w-4 h-4" />
+                        Also schedule a session on the calendar
+                    </label>
+                    {schedule && (
+                        <div className="grid grid-cols-3 gap-3">
+                            <div>
+                                <label className={LBL}>Date</label>
+                                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={FLD} />
+                            </div>
+                            <div>
+                                <label className={LBL}>Time</label>
+                                <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={FLD} />
+                            </div>
+                            <div>
+                                <label className={LBL}>Minutes</label>
+                                <input type="number" min="15" step="15" value={durationMin} onChange={(e) => setDurationMin(e.target.value)} className={FLD} />
+                            </div>
+                        </div>
+                    )}
+
+                    {err && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-3 py-2">{err}</div>}
+
+                    <div className="flex justify-end gap-2 pt-1">
+                        <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-sm text-text-subtle hover:text-text-light transition-colors">Cancel</button>
+                        <button type="submit" disabled={busy} className="px-5 py-2 rounded-full bg-lilac text-[#26242B] text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors disabled:opacity-60">
+                            {busy ? 'Adding…' : 'Add booking'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
 const BookingsView: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
@@ -70,6 +222,7 @@ const BookingsView: React.FC = () => {
     const [orderView, setOrderView] = useState<'active' | 'done'>('active');
     const [notice, setNotice] = useState<{ text: string; kind: 'ok' | 'err' } | null>(null);
     const [calEvents, setCalEvents] = useState<CalEvent[]>([]);
+    const [showAdd, setShowAdd] = useState(false);
     // Drag-to-reschedule state for the weekly grid.
     const [drag, setDrag] = useState<null | { id: string; originDay: number; originStart: number; dur: number; curDay: number; curStart: number; moved: boolean }>(null);
     const gridRef = useRef<HTMLDivElement | null>(null);
@@ -254,12 +407,23 @@ const BookingsView: React.FC = () => {
                             </button>
                         ))}
                     </div>
+                    <button onClick={() => setShowAdd(true)} title="Add booking"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-lilac text-[#26242B] text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors">
+                        <Plus size={16} /> <span className="hidden sm:inline">Add booking</span>
+                    </button>
                     <button onClick={load} title="Refresh"
                         className="p-2.5 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light hover:border-adm-line-3 transition-colors">
                         <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
                     </button>
                 </div>
             </div>
+
+            {showAdd && (
+                <AddBookingModal
+                    onClose={() => setShowAdd(false)}
+                    onCreated={(msg) => { setShowAdd(false); setNotice({ text: msg, kind: 'ok' }); load(); }}
+                />
+            )}
 
             {error && <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
 
@@ -474,7 +638,7 @@ const BookingsView: React.FC = () => {
                                     const parts = b.serviceName.split(' · ');
                                     const override = ORDER_OVERRIDE[parts[0]] || {};
                                     const item = override.title || (parts.length > 1 ? parts[1] : parts[0]); // chat → "3 Pertanyaan"
-                                    const price = (parts.length > 2 ? parts.slice(2).join(' · ') : '') || override.price || '';
+                                    const price = (parts.length > 2 ? parts.slice(2).join(' · ') : '') || override.price || b.price || '';
                                     const created = b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                                     return (
                                         <div key={b.id} className="bg-surface-1 border border-adm-line rounded-2xl p-4 flex flex-col lg:flex-row lg:items-start gap-4">

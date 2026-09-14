@@ -40,7 +40,7 @@ const parseAmount = (token: string | null): { amount: number; currency: Currency
     return { amount: num * mult, currency: 'IDR' };
 };
 const amountForBooking = (b: Booking) =>
-    parseAmount(priceToken(b.serviceName) || SERVICE_PRICE_FALLBACK[b.serviceId] || null);
+    parseAmount(priceToken(b.price) || priceToken(b.serviceName) || SERVICE_PRICE_FALLBACK[b.serviceId] || null);
 
 const fmtIDR = (v: number, compact = false) =>
     compact

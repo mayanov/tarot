@@ -139,34 +139,46 @@ export async function rescheduleBooking(id, { date, time, durationMin }, opts = 
 }
 
 export async function createBooking(input) {
+  // `skipCalendar` (admin manual records) and any overrides are pulled out;
+  // the rest is stored as-is. createdAt/status may be supplied (manual back-dated
+  // orders); otherwise they default to now / confirmed.
+  const { skipCalendar = false, ...data } = input;
   // Scheduled services reserve a unique slot; async ones (chat, email, special) don't.
-  const hasSlot = Boolean(input.date && input.time);
+  const hasSlot = Boolean(data.date && data.time);
   const id = hasSlot
-    ? slotId(input.date, input.time)
+    ? slotId(data.date, data.time)
     : 'bk_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-  const booking = { ...input, id, ref: genRef(), createdAt: new Date().toISOString(), status: 'confirmed' };
+  const booking = {
+    ...data,
+    id,
+    ref: genRef(),
+    createdAt: data.createdAt || new Date().toISOString(),
+    status: data.status || 'confirmed',
+  };
 
   // A scheduled booking blocks every 30-min slot it spans; reject if any overlap.
-  const wanted = hasSlot ? occupiedSlots(input.time, input.durationMin) : [];
+  const wanted = hasSlot ? occupiedSlots(data.time, data.durationMin) : [];
 
   if (db) {
     const ref = db.collection(COLLECTION).doc(id);
     if (hasSlot) {
-      const taken = new Set(await getTakenSlots(input.date));
+      const taken = new Set(await getTakenSlots(data.date));
       if (wanted.some((s) => taken.has(s))) {
         const err = new Error('SLOT_TAKEN'); err.code = 'SLOT_TAKEN'; throw err;
       }
     }
     await ref.set(booking);
-    const eventId = await gcal.createEvent(booking);
-    if (eventId) { booking.gcalEventId = eventId; await ref.update({ gcalEventId: eventId }); }
+    if (!skipCalendar) {
+      const eventId = await gcal.createEvent(booking);
+      if (eventId) { booking.gcalEventId = eventId; await ref.update({ gcalEventId: eventId }); }
+    }
     return booking;
   }
 
   const all = readAll();
   if (hasSlot) {
     const taken = new Set(
-      all.filter((b) => b.date === input.date && b.status !== 'cancelled')
+      all.filter((b) => b.date === data.date && b.status !== 'cancelled')
         .flatMap((b) => occupiedSlots(b.time, b.durationMin)),
     );
     if (wanted.some((s) => taken.has(s))) {
@@ -176,8 +188,10 @@ export async function createBooking(input) {
   const cleaned = hasSlot ? all.filter((b) => b.id !== id) : all;
   cleaned.push(booking);
   writeAll(cleaned);
-  const eventId = await gcal.createEvent(booking);
-  if (eventId) { booking.gcalEventId = eventId; writeAll(cleaned); }
+  if (!skipCalendar) {
+    const eventId = await gcal.createEvent(booking);
+    if (eventId) { booking.gcalEventId = eventId; writeAll(cleaned); }
+  }
   return booking;
 }
 
