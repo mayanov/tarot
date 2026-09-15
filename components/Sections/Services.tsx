@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import { trackEvent } from '../../services/analytics';
 
-const REVEAL_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+// Sticky-stacking pricelist: each category pins a little lower than the one above,
+// so as you scroll each band slides up and stops just below the previous (à la grigoletti.ch).
+const STACK_TOP = 84;   // where the first band pins (below the fixed nav)
+const STACK_STEP = 112; // each subsequent band pins this much lower — clears the header above (~108px)
 
 interface ServicesProps {
     isIndonesian?: boolean;
@@ -66,23 +69,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     // Accordion — one pricelist open at a time; first open by default.
     const [openIdx, setOpenIdx] = useState<number>(0);
     const toggle = (i: number) => setOpenIdx((cur) => (cur === i ? -1 : i));
-
-    // Each category band reveals as it scrolls in: the top rule draws across and
-    // the title/price rise from behind a mask (clip reveal — no opacity fade).
-    const bandRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const [shown, setShown] = useState<boolean[]>([]);
-    useEffect(() => {
-        const obs = new IntersectionObserver((entries) => {
-            entries.forEach((e) => {
-                if (!e.isIntersecting) return;
-                const idx = Number((e.target as HTMLElement).dataset.idx);
-                setShown((prev) => { if (prev[idx]) return prev; const n = [...prev]; n[idx] = true; return n; });
-                obs.unobserve(e.target);
-            });
-        }, { threshold: 0.28, rootMargin: '0px 0px -12% 0px' });
-        bandRefs.current.forEach((el) => el && obs.observe(el));
-        return () => obs.disconnect();
-    }, []);
 
     // --- Handlers for Global (USD) ---
     const handleBookBasic = () => trackEvent('initiate_checkout', { item_name: '3-Card Reading', market: 'Global' }, 'InitiateCheckout', { content_name: '3-Card Reading', value: 12.00, currency: 'USD', content_category: 'Global Service' });
@@ -251,23 +237,19 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 </div>
             </div>
 
-            {/* ===== Pricelist — full-width bands that slide up and stack under the one above.
-                 A bone base sits behind them so the transient slide gap never shows the sky. ===== */}
+            {/* ===== Pricelist — sticky-stacking bands: each slides up and pins just below the one above ===== */}
             <div className="bg-[#F6F2EB]">
                 {groups.map((g: any, i: number) => {
                     const open = openIdx === i;
-                    const on = shown[i];
                     return (
                         <div
                             key={g.type}
                             id={g.id || undefined}
-                            ref={(el) => { bandRefs.current[i] = el; }}
-                            data-idx={i}
-                            className="relative scroll-mt-28 border-t border-black/[0.06] will-change-transform"
+                            className="scroll-mt-28 border-t border-black/[0.06] shadow-[0_-16px_36px_-24px_rgba(0,0,0,0.28)]"
                             style={{
                                 background: PANELS[i % PANELS.length],
-                                transform: on ? 'translateY(0)' : 'translateY(56px)',
-                                transition: `transform 0.9s ${REVEAL_EASE} ${i * 90}ms`,
+                                position: 'sticky',
+                                top: `${STACK_TOP + i * STACK_STEP}px`,
                             }}
                         >
                             <div className="max-w-[1400px] mx-auto px-6 md:px-10">
