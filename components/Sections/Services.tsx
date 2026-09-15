@@ -243,6 +243,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         style={{ background: PANELS[i % PANELS.length] }}
                     >
                         <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+                            <FadeIn delay={i * 90} dir="up">
                             {/* header row — spans full width, toggles the band */}
                             <button
                                 type="button"
@@ -290,6 +291,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     </div>
                                 </div>
                             </div>
+                            </FadeIn>
                         </div>
                     </div>
                 );
