@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import { trackEvent } from '../../services/analytics';
+
+const REVEAL_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 interface ServicesProps {
     isIndonesian?: boolean;
@@ -64,6 +66,23 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     // Accordion — one pricelist open at a time; first open by default.
     const [openIdx, setOpenIdx] = useState<number>(0);
     const toggle = (i: number) => setOpenIdx((cur) => (cur === i ? -1 : i));
+
+    // Each category band reveals as it scrolls in: the top rule draws across and
+    // the title/price rise from behind a mask (clip reveal — no opacity fade).
+    const bandRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const [shown, setShown] = useState<boolean[]>([]);
+    useEffect(() => {
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach((e) => {
+                if (!e.isIntersecting) return;
+                const idx = Number((e.target as HTMLElement).dataset.idx);
+                setShown((prev) => { if (prev[idx]) return prev; const n = [...prev]; n[idx] = true; return n; });
+                obs.unobserve(e.target);
+            });
+        }, { threshold: 0.28, rootMargin: '0px 0px -12% 0px' });
+        bandRefs.current.forEach((el) => el && obs.observe(el));
+        return () => obs.disconnect();
+    }, []);
 
     // --- Handlers for Global (USD) ---
     const handleBookBasic = () => trackEvent('initiate_checkout', { item_name: '3-Card Reading', market: 'Global' }, 'InitiateCheckout', { content_name: '3-Card Reading', value: 12.00, currency: 'USD', content_category: 'Global Service' });
@@ -235,15 +254,27 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {/* ===== Pricelist — each category is a full-width colour band ===== */}
             {groups.map((g: any, i: number) => {
                 const open = openIdx === i;
+                const on = shown[i];
+                const base = i * 110; // stagger so clustered bands cascade one by one
+                const rise = (delay: number) => ({
+                    transform: on ? 'translateY(0)' : 'translateY(115%)',
+                    transition: `transform 0.85s ${REVEAL_EASE} ${delay}ms`,
+                });
                 return (
                     <div
                         key={g.type}
                         id={g.id || undefined}
-                        className="scroll-mt-28 border-t border-black/[0.06]"
+                        ref={(el) => { bandRefs.current[i] = el; }}
+                        data-idx={i}
+                        className="relative scroll-mt-28"
                         style={{ background: PANELS[i % PANELS.length] }}
                     >
+                        {/* top rule draws across left → right as the band enters */}
+                        <span
+                            className="absolute top-0 inset-x-0 h-px bg-black/10 origin-left"
+                            style={{ transform: on ? 'scaleX(1)' : 'scaleX(0)', transition: `transform 0.8s ${REVEAL_EASE} ${base}ms` }}
+                        />
                         <div className="max-w-[1400px] mx-auto px-6 md:px-10">
-                            <FadeIn delay={i * 90} dir="up">
                             {/* header row — spans full width, toggles the band */}
                             <button
                                 type="button"
@@ -252,9 +283,11 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 className="w-full flex items-center justify-between gap-4 py-7 md:py-9 text-left"
                             >
                                 <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap min-w-0">
-                                    <h3 className="font-serif font-semibold text-ink text-[1.5rem] md:text-[2.1rem] leading-none tracking-tight">
-                                        {g.type}
-                                    </h3>
+                                    <span className="block overflow-hidden">
+                                        <h3 className="font-serif font-semibold text-ink text-[1.5rem] md:text-[2.1rem] leading-tight tracking-tight" style={rise(base + 90)}>
+                                            {g.type}
+                                        </h3>
+                                    </span>
                                     {g.seasonal && (
                                         <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-full bg-coral/20 text-coral-deep">
                                             {isIndonesian ? 'Musiman' : 'Seasonal'}
@@ -262,9 +295,11 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     )}
                                 </div>
                                 <div className="flex items-center gap-4 md:gap-6 shrink-0">
-                                    <span className="hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap">
-                                        <span className="text-ink/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
-                                        <span className="font-serif font-semibold text-blue">{g.priceLabel}</span>
+                                    <span className="hidden sm:block overflow-hidden">
+                                        <span className="block text-sm md:text-[0.95rem] whitespace-nowrap" style={rise(base + 150)}>
+                                            <span className="text-ink/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
+                                            <span className="font-serif font-semibold text-blue">{g.priceLabel}</span>
+                                        </span>
                                     </span>
                                     <span className={`grid place-items-center w-9 h-9 rounded-full border border-ink/25 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
                                         <ChevronDown className="w-4 h-4 text-ink" />
@@ -291,7 +326,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     </div>
                                 </div>
                             </div>
-                            </FadeIn>
                         </div>
                     </div>
                 );
