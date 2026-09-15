@@ -208,11 +208,10 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
         ];
 
     return (
-        <section id="services" className="relative isolate">
-            {/* full-bleed bone band — a pricelist "on paper", no floating cards */}
-            <div className="bg-[#F6F2EB] text-ink">
-                <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28">
-                    {/* Header — asymmetric */}
+        <section id="services" className="relative isolate text-ink">
+            {/* HEADER — on a bone band */}
+            <div className="bg-[#F6F2EB]">
+                <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-10 md:pb-14">
                     <FadeIn>
                         <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
                             <div className="lg:col-span-7">
@@ -230,74 +229,77 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             </p>
                         </div>
                     </FadeIn>
+                </div>
+            </div>
 
-                    {/* ===== Pricelist — collapsible panels, each with its own tinted container ===== */}
-                    <div className="mt-14 md:mt-20 space-y-4 md:space-y-5">
-                        {groups.map((g: any, i: number) => {
-                            const open = openIdx === i;
-                            return (
-                                <FadeIn key={g.type} delay={Math.min(i, 5) * 50} dir="up">
-                                    <div
-                                        id={g.id || undefined}
-                                        className="scroll-mt-28 rounded-2xl border border-ink/10 overflow-hidden transition-shadow duration-300"
-                                        style={{ background: PANELS[i % PANELS.length] }}
-                                    >
-                                        {/* header — always visible, toggles the panel */}
-                                        <button
-                                            type="button"
-                                            onClick={() => toggle(i)}
-                                            aria-expanded={open}
-                                            className="w-full flex items-center justify-between gap-4 px-6 md:px-9 py-6 md:py-7 text-left"
-                                        >
-                                            <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap min-w-0">
-                                                <h3 className="font-serif font-semibold text-ink text-[1.4rem] md:text-[1.85rem] leading-none tracking-tight">
-                                                    {g.type}
-                                                </h3>
-                                                {g.seasonal && (
-                                                    <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-full bg-coral/20 text-coral-deep">
-                                                        {isIndonesian ? 'Musiman' : 'Seasonal'}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-4 md:gap-6 shrink-0">
-                                                <span className="hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap">
-                                                    <span className="text-ink/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
-                                                    <span className="font-serif font-semibold text-blue">{g.priceLabel}</span>
-                                                </span>
-                                                <span className={`grid place-items-center w-9 h-9 rounded-full border border-ink/25 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
-                                                    <ChevronDown className="w-4 h-4 text-ink" />
-                                                </span>
-                                            </div>
-                                        </button>
+            {/* ===== Pricelist — each category is a full-width colour band ===== */}
+            {groups.map((g: any, i: number) => {
+                const open = openIdx === i;
+                return (
+                    <div
+                        key={g.type}
+                        id={g.id || undefined}
+                        className="scroll-mt-28 border-t border-black/[0.06]"
+                        style={{ background: PANELS[i % PANELS.length] }}
+                    >
+                        <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+                            {/* header row — spans full width, toggles the band */}
+                            <button
+                                type="button"
+                                onClick={() => toggle(i)}
+                                aria-expanded={open}
+                                className="w-full flex items-center justify-between gap-4 py-7 md:py-9 text-left"
+                            >
+                                <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap min-w-0">
+                                    <h3 className="font-serif font-semibold text-ink text-[1.5rem] md:text-[2.1rem] leading-none tracking-tight">
+                                        {g.type}
+                                    </h3>
+                                    {g.seasonal && (
+                                        <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-full bg-coral/20 text-coral-deep">
+                                            {isIndonesian ? 'Musiman' : 'Seasonal'}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-4 md:gap-6 shrink-0">
+                                    <span className="hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap">
+                                        <span className="text-ink/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
+                                        <span className="font-serif font-semibold text-blue">{g.priceLabel}</span>
+                                    </span>
+                                    <span className={`grid place-items-center w-9 h-9 rounded-full border border-ink/25 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
+                                        <ChevronDown className="w-4 h-4 text-ink" />
+                                    </span>
+                                </div>
+                            </button>
 
-                                        {/* body — collapses smoothly via grid-rows trick */}
-                                        <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
-                                            <div className="overflow-hidden min-h-0">
-                                                <div className="px-6 md:px-9 pb-7 md:pb-9">
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {g.tags.map((t: string) => (
-                                                            <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
-                                                        ))}
-                                                    </div>
-                                                    <p className="mt-4 text-sm text-ink/65 font-light leading-relaxed max-w-lg">{g.blurb}</p>
-                                                    <div className="mt-6 border-t border-ink/10">
-                                                        {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
-                                                    </div>
-                                                    <div className="mt-6">
-                                                        <OrderButton g={g} isIndonesian={isIndonesian} />
-                                                    </div>
-                                                </div>
-                                            </div>
+                            {/* body — collapses smoothly via grid-rows trick */}
+                            <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
+                                <div className="overflow-hidden min-h-0">
+                                    <div className="pb-9 md:pb-12 max-w-3xl">
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {g.tags.map((t: string) => (
+                                                <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
+                                            ))}
+                                        </div>
+                                        <p className="mt-4 text-sm text-ink/65 font-light leading-relaxed max-w-lg">{g.blurb}</p>
+                                        <div className="mt-6 border-t border-ink/10">
+                                            {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
+                                        </div>
+                                        <div className="mt-6">
+                                            <OrderButton g={g} isIndonesian={isIndonesian} />
                                         </div>
                                     </div>
-                                </FadeIn>
-                            );
-                        })}
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                );
+            })}
 
-                    {/* ===== How it works — editorial numbered steps ===== */}
+            {/* ===== How it works — editorial numbered steps, on a bone band ===== */}
+            <div className="bg-[#F6F2EB] border-t border-black/[0.06]">
+                <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-24">
                     <FadeIn>
-                        <div id="process" className="mt-20 md:mt-28 pt-14 md:pt-16 border-t border-ink/15 scroll-mt-24">
+                        <div id="process" className="scroll-mt-24">
                             <span className="block text-[11px] uppercase tracking-[0.28em] text-coral-deep mb-5">
                                 {isIndonesian ? 'Prosesnya' : 'The process'}
                             </span>
