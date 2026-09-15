@@ -252,8 +252,9 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className={LBL}>Order date</label>
+                            <label className={LBL}>Booking date</label>
                             <input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} className={FLD} />
+                            <p className="mt-1 text-[0.7rem] text-text-subtle">Date the client booked — revenue is reported on this date.</p>
                         </div>
                         <div>
                             <label className={LBL}>Status</label>
