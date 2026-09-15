@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import React from 'react';
+import { ChevronRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import { trackEvent } from '../../services/analytics';
 
-const REVEAL_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+// Sticky-stacking deck (à la grigoletti.ch): each category is a tall panel that pins a
+// step below the one above; as you scroll, the next slides up and stacks on top of it.
+const STACK_TOP = 84;   // where the first panel pins (below the fixed nav)
+const STACK_STEP = 92;  // each next panel pins this much lower — the visible "peek" strip
 
 interface ServicesProps {
     isIndonesian?: boolean;
@@ -63,27 +66,6 @@ const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndones
 };
 
 const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
-    // Accordion — one pricelist open at a time; first open by default.
-    const [openIdx, setOpenIdx] = useState<number>(0);
-    const toggle = (i: number) => setOpenIdx((cur) => (cur === i ? -1 : i));
-
-    // Each category band reveals as it scrolls in: the top rule draws across and
-    // the title/price rise from behind a mask (clip reveal — no opacity fade).
-    const bandRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const [shown, setShown] = useState<boolean[]>([]);
-    useEffect(() => {
-        const obs = new IntersectionObserver((entries) => {
-            entries.forEach((e) => {
-                if (!e.isIntersecting) return;
-                const idx = Number((e.target as HTMLElement).dataset.idx);
-                setShown((prev) => { if (prev[idx]) return prev; const n = [...prev]; n[idx] = true; return n; });
-                obs.unobserve(e.target);
-            });
-        }, { threshold: 0.28, rootMargin: '0px 0px -12% 0px' });
-        bandRefs.current.forEach((el) => el && obs.observe(el));
-        return () => obs.disconnect();
-    }, []);
-
     // --- Handlers for Global (USD) ---
     const handleBookBasic = () => trackEvent('initiate_checkout', { item_name: '3-Card Reading', market: 'Global' }, 'InitiateCheckout', { content_name: '3-Card Reading', value: 12.00, currency: 'USD', content_category: 'Global Service' });
     const handleBookDeep = () => trackEvent('initiate_checkout', { item_name: '5-Card Reading', market: 'Global' }, 'InitiateCheckout', { content_name: '5-Card Reading', value: 20.00, currency: 'USD', content_category: 'Global Service' });
@@ -251,77 +233,55 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 </div>
             </div>
 
-            {/* ===== Pricelist — full-width bands that slide up and stack under the one above.
-                 A bone base sits behind them so the transient slide gap never shows the sky. ===== */}
+            {/* ===== Pricelist — sticky-stacking deck: each category is a tall panel that pins a
+                 step below the previous; the next slides up and stacks on top as you scroll. ===== */}
             <div className="bg-[#F6F2EB]">
-                {groups.map((g: any, i: number) => {
-                    const open = openIdx === i;
-                    const on = shown[i];
-                    return (
-                        <div
-                            key={g.type}
-                            id={g.id || undefined}
-                            ref={(el) => { bandRefs.current[i] = el; }}
-                            data-idx={i}
-                            className="relative scroll-mt-28 border-t border-black/[0.06] will-change-transform"
-                            style={{
-                                background: PANELS[i % PANELS.length],
-                                transform: on ? 'translateY(0)' : 'translateY(56px)',
-                                transition: `transform 0.9s ${REVEAL_EASE} ${i * 90}ms`,
-                            }}
-                        >
-                            <div className="max-w-[1400px] mx-auto px-6 md:px-10">
-                                {/* header row — spans full width, toggles the band */}
-                                <button
-                                    type="button"
-                                    onClick={() => toggle(i)}
-                                    aria-expanded={open}
-                                    className="w-full flex items-center justify-between gap-4 py-7 md:py-9 text-left"
-                                >
-                                    <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap min-w-0">
-                                        <h3 className="font-serif font-semibold text-ink text-[1.5rem] md:text-[2.1rem] leading-none tracking-tight">
-                                            {g.type}
-                                        </h3>
-                                        {g.seasonal && (
-                                            <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-full bg-coral/20 text-coral-deep">
-                                                {isIndonesian ? 'Musiman' : 'Seasonal'}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-4 md:gap-6 shrink-0">
-                                        <span className="hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap">
-                                            <span className="text-ink/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
-                                            <span className="font-serif font-semibold text-blue">{g.priceLabel}</span>
-                                        </span>
-                                        <span className={`grid place-items-center w-9 h-9 rounded-full border border-ink/25 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
-                                            <ChevronDown className="w-4 h-4 text-ink" />
-                                        </span>
-                                    </div>
-                                </button>
+                {groups.map((g: any, i: number) => (
+                    <div
+                        key={g.type}
+                        id={g.id || undefined}
+                        className="scroll-mt-28 border-t border-black/[0.06] shadow-[0_-20px_44px_-28px_rgba(0,0,0,0.32)] min-h-[85vh] flex flex-col"
+                        style={{
+                            background: PANELS[i % PANELS.length],
+                            position: 'sticky',
+                            top: `${STACK_TOP + i * STACK_STEP}px`,
+                        }}
+                    >
+                        <div className="max-w-[1400px] mx-auto w-full px-6 md:px-10 pt-9 md:pt-12 pb-16">
+                            {/* title row — the strip that stays visible when this panel is stacked under the next */}
+                            <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap">
+                                <h3 className="font-serif font-semibold text-ink text-[1.6rem] md:text-[2.4rem] leading-none tracking-tight">
+                                    {g.type}
+                                </h3>
+                                {g.seasonal && (
+                                    <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-full bg-coral/20 text-coral-deep">
+                                        {isIndonesian ? 'Musiman' : 'Seasonal'}
+                                    </span>
+                                )}
+                                <div className="ml-auto hidden sm:flex flex-wrap gap-1.5">
+                                    {g.tags.map((t: string) => (
+                                        <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
+                                    ))}
+                                </div>
+                            </div>
 
-                                {/* body — collapses smoothly via grid-rows trick */}
-                                <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
-                                    <div className="overflow-hidden min-h-0">
-                                        <div className="pb-9 md:pb-12 max-w-3xl">
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {g.tags.map((t: string) => (
-                                                    <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
-                                                ))}
-                                            </div>
-                                            <p className="mt-4 text-sm text-ink/65 font-light leading-relaxed max-w-lg">{g.blurb}</p>
-                                            <div className="mt-6 border-t border-ink/10">
-                                                {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
-                                            </div>
-                                            <div className="mt-6">
-                                                <OrderButton g={g} isIndonesian={isIndonesian} />
-                                            </div>
-                                        </div>
+                            {/* content — blurb on the left, offers + order on the right */}
+                            <div className="mt-8 md:mt-12 grid lg:grid-cols-12 gap-y-8 lg:gap-x-16">
+                                <div className="lg:col-span-5">
+                                    <p className="text-base md:text-lg text-ink/70 font-light leading-relaxed max-w-md">{g.blurb}</p>
+                                </div>
+                                <div className="lg:col-span-6 lg:col-start-7">
+                                    <div className="border-t border-ink/10">
+                                        {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
+                                    </div>
+                                    <div className="mt-7">
+                                        <OrderButton g={g} isIndonesian={isIndonesian} />
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    );
-                })}
+                    </div>
+                ))}
             </div>
 
             {/* ===== How it works — editorial numbered steps, on a bone band ===== */}
