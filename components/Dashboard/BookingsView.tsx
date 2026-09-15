@@ -24,6 +24,8 @@ const SERVICE_OPTIONS: Record<string, SvcOpt[]> = {
     call: [
         { label: '30-Min Call', amount: 220000, currency: 'IDR', durationMin: 30 },
         { label: '60-Min Call', amount: 360000, currency: 'IDR', durationMin: 60 },
+        // Admin-only add-on — intentionally NOT on the public pricelist.
+        { label: 'Tambahan 15 Menit', amount: 110000, currency: 'IDR', durationMin: 15 },
     ],
     meetup: [
         { label: 'Jam Pertama', amount: 450000, currency: 'IDR', durationMin: 60 },
@@ -43,7 +45,8 @@ const extractPhone = (contact?: string) => {
     return (m ? m[1] : (contact.match(/[+]?\d[\d\s-]{6,}/)?.[0] || '')).trim();
 };
 const normPhone = (p: string) => p.replace(/\D/g, '');
-const fmtOptPrice = (o: SvcOpt) => o.currency === 'USD' ? `$${o.amount}` : `Rp ${o.amount.toLocaleString('id-ID')}`;
+const fmtAmt = (n: number, c: 'IDR' | 'USD') => c === 'USD' ? `$${n}` : `Rp ${n.toLocaleString('id-ID')}`;
+const fmtOptPrice = (o: SvcOpt) => fmtAmt(o.amount, o.currency);
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const toHHMM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
@@ -114,8 +117,7 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
     const [clientKey, setClientKey] = useState('__new__');
     const [name, setName] = useState('');
     const [contact, setContact] = useState('');
-    const [amount, setAmount] = useState('');
-    const [currency, setCurrency] = useState<'IDR' | 'USD'>('IDR');
+    const [tip, setTip] = useState('');
     const [orderDate, setOrderDate] = useState(today);
     const [status, setStatus] = useState<'confirmed' | 'done' | 'pending'>('confirmed');
     const [question, setQuestion] = useState('');
@@ -138,15 +140,17 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
         return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
     }, [bookings]);
 
-    // Picking a service/package prefills price, currency and (for timed sessions) duration.
+    // Price/currency come straight from the chosen package (not editable).
     const opts = SERVICE_OPTIONS[serviceId] || [];
+    const opt = opts[detailIdx] || opts[0];
+    const baseAmount = opt?.amount || 0;
+    const currency: 'IDR' | 'USD' = opt?.currency || 'IDR';
+    const tipNum = Math.max(0, Number(tip) || 0);
+    const total = baseAmount + tipNum;
+
+    // Picking a timed session prefills its duration for calendar scheduling.
     useEffect(() => {
-        const opt = opts[detailIdx] || opts[0];
-        if (opt) {
-            setAmount(String(opt.amount));
-            setCurrency(opt.currency);
-            if (opt.durationMin) setDurationMin(String(opt.durationMin));
-        }
+        if (opt?.durationMin) setDurationMin(String(opt.durationMin));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [serviceId, detailIdx]);
 
@@ -161,19 +165,21 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
         e.preventDefault();
         setErr('');
         if (!name.trim()) { setErr('Customer name is required.'); return; }
-        const amt = Number(amount);
-        if (!Number.isFinite(amt) || amt < 0) { setErr('Enter a valid amount.'); return; }
+        if (!opt || baseAmount <= 0) { setErr('Pick a package.'); return; }
         setBusy(true);
         try {
             const token = localStorage.getItem('authToken') || undefined;
             const svc = MANUAL_SERVICES.find((s) => s.id === serviceId) || MANUAL_SERVICES[0];
-            const opt = opts[detailIdx];
             const detailLabel = opt?.label || '';
             const serviceName = detailLabel && detailLabel !== svc.name ? `${svc.name} · ${detailLabel}` : svc.name;
+            // Tip is folded into the recorded amount so the revenue report reflects
+            // what the client actually paid; it's also noted for reference.
+            const tipNote = tipNum > 0 ? `Tip ${fmtAmt(tipNum, currency)}` : '';
+            const notes = [question.trim(), tipNote].filter(Boolean).join(' · ');
             await createManualBooking({
                 serviceId, serviceName,
-                name: name.trim(), contact: contact.trim(), question: question.trim(),
-                amount: amt, currency, orderDate, status,
+                name: name.trim(), contact: contact.trim(), question: notes,
+                amount: total, currency, orderDate, status,
                 ...(schedule ? { date, time, durationMin: Number(durationMin) || 60 } : {}),
             }, token);
             onCreated('Booking added');
@@ -229,20 +235,20 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-[1fr_7rem] gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className={LBL}>Amount paid</label>
-                            <input type="number" min="0" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={currency === 'IDR' ? '300000' : '20'} className={FLD} />
+                            <label className={LBL}>Package price</label>
+                            <div className="rounded-lg border border-adm-line-2 bg-adm-hover px-3 py-2 text-sm text-text-light">{fmtAmt(baseAmount, currency)}</div>
                         </div>
                         <div>
-                            <label className={LBL}>Currency</label>
-                            <select value={currency} onChange={(e) => setCurrency(e.target.value as 'IDR' | 'USD')} className={FLD}>
-                                <option value="IDR">IDR</option>
-                                <option value="USD">USD</option>
-                            </select>
+                            <label className={LBL}>Tip (optional)</label>
+                            <input type="number" min="0" step="any" value={tip} onChange={(e) => setTip(e.target.value)} placeholder="0" className={FLD} />
                         </div>
                     </div>
-                    <p className="-mt-2 text-[0.7rem] text-text-subtle">Prefilled from the package — edit if this order had a custom price.</p>
+                    <div className="flex items-center justify-between rounded-lg bg-lilac/10 border border-lilac/30 px-3 py-2">
+                        <span className="text-sm text-text-subtle">Total recorded</span>
+                        <span className="text-base font-bold text-text-light">{fmtAmt(total, currency)}</span>
+                    </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
