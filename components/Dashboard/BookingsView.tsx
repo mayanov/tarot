@@ -120,6 +120,7 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
     const [tip, setTip] = useState('');
     const [orderDate, setOrderDate] = useState(today);
     const [status, setStatus] = useState<'confirmed' | 'done' | 'pending'>('confirmed');
+    const [payment, setPayment] = useState<'paid' | 'unpaid'>('paid');
     const [question, setQuestion] = useState('');
     const [schedule, setSchedule] = useState(false);
     const [date, setDate] = useState(today);
@@ -179,7 +180,7 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
             await createManualBooking({
                 serviceId, serviceName,
                 name: name.trim(), contact: contact.trim(), question: notes,
-                amount: total, currency, orderDate, status,
+                amount: total, currency, orderDate, status, paymentStatus: payment,
                 ...(schedule ? { date, time, durationMin: Number(durationMin) || 60 } : {}),
             }, token);
             onCreated('Booking added');
@@ -250,18 +251,25 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
                         <span className="text-base font-bold text-text-light">{fmtAmt(total, currency)}</span>
                     </div>
 
+                    <div>
+                        <label className={LBL}>Booking date</label>
+                        <input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} className={FLD} />
+                        <p className="mt-1 text-[0.7rem] text-text-subtle">Date the client booked — revenue is reported on this date.</p>
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className={LBL}>Booking date</label>
-                            <input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} className={FLD} />
-                            <p className="mt-1 text-[0.7rem] text-text-subtle">Date the client booked — revenue is reported on this date.</p>
-                        </div>
                         <div>
                             <label className={LBL}>Status</label>
                             <select value={status} onChange={(e) => setStatus(e.target.value as 'confirmed' | 'done' | 'pending')} className={FLD}>
                                 <option value="confirmed">Confirmed</option>
                                 <option value="done">Done</option>
                                 <option value="pending">Pending</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className={LBL}>Payment</label>
+                            <select value={payment} onChange={(e) => setPayment(e.target.value as 'paid' | 'unpaid')} className={FLD}>
+                                <option value="paid">Paid</option>
+                                <option value="unpaid">Unpaid</option>
                             </select>
                         </div>
                     </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact } from 'lucide-react';
+import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt } from 'lucide-react';
 import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance } from '../../services/mockAnalytics';
 import { initGoogleAPI, loginToGoogle, fetchGA4Data } from '../../services/ga4';
 import { DayPicker } from 'react-day-picker';
@@ -11,6 +11,7 @@ import { format, parseISO } from 'date-fns';
 import BookingsView from './BookingsView';
 import RevenueView from './RevenueView';
 import CustomersView from './CustomersView';
+import SalesView from './SalesView';
 
 type DateRangePreset = '7D' | '30D' | 'THIS_MONTH' | 'CUSTOM';
 
@@ -158,7 +159,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     // User Management State
     // User Management State
     // View State
-    const [activeView, setActiveView] = useState<'analytics' | 'users' | 'bookings' | 'revenue' | 'customers'>('analytics');
+    const [activeView, setActiveView] = useState<'analytics' | 'users' | 'bookings' | 'sales' | 'revenue' | 'customers'>('analytics');
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         try { return (localStorage.getItem('admin_theme') as 'light' | 'dark') || 'light'; } catch { return 'light'; }
     });
@@ -310,6 +311,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     </button>
 
                     <button
+                        onClick={() => setActiveView('sales')}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'sales' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
+                        <Receipt size={18} />
+                        <span>Sales</span>
+                    </button>
+
+                    <button
                         onClick={() => setActiveView('revenue')}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'revenue' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
                         <Wallet size={18} />
@@ -357,6 +365,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 {/* MAIN CONTENT SWITCHER */}
                 {activeView === 'bookings' ? (
                     <BookingsView />
+                ) : activeView === 'sales' ? (
+                    <SalesView />
                 ) : activeView === 'revenue' ? (
                     <RevenueView />
                 ) : activeView === 'customers' ? (

@@ -104,7 +104,7 @@ const RevenueView: React.FC = () => {
 
     // All confirmed/done bookings with a parseable amount in the selected currency (full history).
     const allRows = useMemo<Row[]>(() => bookings
-        .filter((b) => b.status === 'confirmed' || b.status === 'done')
+        .filter((b) => b.paymentStatus === 'paid' && b.status !== 'cancelled')
         .map((b) => ({ b, day: (b.createdAt || '').slice(0, 10), amt: amountForBooking(b) }))
         .filter((r) => r.amt && r.amt.currency === currency && r.day)
         .map((r) => ({ b: r.b, day: r.day, serviceId: r.b.serviceId, amount: r.amt!.amount })),

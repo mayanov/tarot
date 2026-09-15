@@ -39,6 +39,7 @@ export interface Booking extends BookingInput {
   gcalEventId?: string;
   price?: string; // explicit price token for manual orders (e.g. "Rp 300000", "$20")
   source?: string; // 'manual' for admin-entered orders (e.g. WhatsApp)
+  paymentStatus?: 'unpaid' | 'paid'; // reporting: whether the order has been paid
 }
 
 // Admin — manually record an order (e.g. taken over WhatsApp) so it appears in
@@ -53,6 +54,7 @@ export interface ManualBookingInput {
   currency: 'IDR' | 'USD';
   orderDate: string; // 'YYYY-MM-DD' — the day the order came in (drives revenue date)
   status: 'pending' | 'confirmed' | 'done';
+  paymentStatus?: 'unpaid' | 'paid';
   // Optional: schedule an actual session on the calendar.
   date?: string;
   time?: string;
@@ -67,6 +69,18 @@ export async function createManualBooking(input: ManualBookingInput, token?: str
     body: JSON.stringify(input),
   });
   if (res.status === 409) throw new Error('SLOT_TAKEN');
+  if (!res.ok) throw new Error(`HTTP_${res.status}`);
+  return await res.json();
+}
+
+// Admin — mark an order paid / unpaid (used by the Sales report).
+export async function updatePaymentStatus(id: string, paymentStatus: 'unpaid' | 'paid', token?: string): Promise<Booking> {
+  const res = await fetch(`${API_BASE}/api/admin/bookings/${encodeURIComponent(id)}/payment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    credentials: 'include',
+    body: JSON.stringify({ paymentStatus }),
+  });
   if (!res.ok) throw new Error(`HTTP_${res.status}`);
   return await res.json();
 }

@@ -154,6 +154,7 @@ export async function createBooking(input) {
     ref: genRef(),
     createdAt: data.createdAt || new Date().toISOString(),
     status: data.status || 'confirmed',
+    paymentStatus: data.paymentStatus === 'paid' ? 'paid' : 'unpaid',
   };
 
   // A scheduled booking blocks every 30-min slot it spans; reject if any overlap.
@@ -254,6 +255,24 @@ export async function getAllBookings() {
     rows = readAll().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   }
   return backfillRefs(rows);
+}
+
+// Set a booking's payment status ('unpaid' | 'paid'). Reporting-only — no calendar side effects.
+export async function updatePayment(id, paymentStatus) {
+  const ps = paymentStatus === 'paid' ? 'paid' : 'unpaid';
+  if (db) {
+    const ref = db.collection(COLLECTION).doc(id);
+    const snap = await ref.get();
+    if (!snap.exists) return null;
+    await ref.update({ paymentStatus: ps });
+    return { ...snap.data(), paymentStatus: ps };
+  }
+  const all = readAll();
+  const b = all.find((x) => x.id === id);
+  if (!b) return null;
+  b.paymentStatus = ps;
+  writeAll(all);
+  return b;
 }
 
 export async function updateStatus(id, status) {

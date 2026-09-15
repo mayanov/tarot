@@ -416,7 +416,7 @@ app.get('/api/admin/bookings', verifyToken, async (req, res) => {
 // Admin: create a booking manually (e.g. orders taken over WhatsApp) so they
 // show up in the schedule, customer list and revenue report.
 app.post('/api/admin/bookings', verifyToken, async (req, res) => {
-    const { serviceId, serviceName, date, time, durationMin, name, contact, question, amount, currency, orderDate, status } = req.body || {};
+    const { serviceId, serviceName, date, time, durationMin, name, contact, question, amount, currency, orderDate, status, paymentStatus } = req.body || {};
     if (!serviceId || !name) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -454,6 +454,7 @@ app.post('/api/admin/bookings', verifyToken, async (req, res) => {
             price,
             source: 'manual',
             status: st,
+            paymentStatus: paymentStatus === 'paid' ? 'paid' : 'unpaid',
             createdAt,
             // Only put a manual booking on Google Calendar if it's an actual upcoming
             // session (has date + time); pure report records skip the calendar.
@@ -484,6 +485,22 @@ app.post('/api/admin/bookings/:id/reschedule', verifyToken, async (req, res) => 
         if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
         console.error('reschedule failed:', e);
         res.status(500).json({ error: 'Failed to reschedule' });
+    }
+});
+
+// Admin: update a booking's payment status (unpaid | paid) — for the Sales report.
+app.post('/api/admin/bookings/:id/payment', verifyToken, async (req, res) => {
+    const { paymentStatus } = req.body || {};
+    if (!['unpaid', 'paid'].includes(paymentStatus)) {
+        return res.status(400).json({ error: 'Invalid payment status' });
+    }
+    try {
+        const updated = await bookingStore.updatePayment(req.params.id, paymentStatus);
+        if (!updated) return res.status(404).json({ error: 'Not found' });
+        res.json(updated);
+    } catch (e) {
+        console.error('update payment failed:', e);
+        res.status(500).json({ error: 'Failed to update payment' });
     }
 });
 
