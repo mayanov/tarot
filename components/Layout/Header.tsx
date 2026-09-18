@@ -43,8 +43,8 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-2 w-56 bg-paper border border-line rounded-xl shadow-xl overflow-hidden p-1.5 z-50" role="listbox">
-          <p className="px-3 pt-1.5 pb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-taupe">Choose your version</p>
+        <div className="absolute top-full right-0 mt-2 w-56 bg-[#160E32]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-[0_24px_60px_-30px_rgba(0,0,0,0.8)] overflow-hidden p-1.5 z-50" role="listbox">
+          <p className="px-3 pt-1.5 pb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-cream/45">Choose your version</p>
           {([['global', false], ['id', true]] as const).map(([key, toID]) => {
             const r = REGIONS[key];
             const active = toID === isIndonesian;
@@ -54,14 +54,14 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
                 onClick={() => choose(toID)}
                 role="option"
                 aria-selected={active}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${active ? 'bg-paper-2' : 'hover:bg-paper-2'}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${active ? 'bg-white/[0.08]' : 'hover:bg-white/[0.06]'}`}
               >
                 <span className="text-lg leading-none">{r.flag}</span>
                 <span className="flex-1">
-                  <span className="block text-sm font-medium text-ink">{r.name}</span>
-                  <span className="block text-xs text-taupe">{r.sub}</span>
+                  <span className="block text-sm font-medium text-cream">{r.name}</span>
+                  <span className="block text-xs text-cream/50">{r.sub}</span>
                 </span>
-                {active && <Check className="w-4 h-4 text-terracotta shrink-0" />}
+                {active && <Check className="w-4 h-4 text-moon shrink-0" />}
               </button>
             );
           })}
@@ -134,18 +134,18 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     { name: isIndonesian ? 'FAQ' : 'FAQ', id: 'faq' },
   ];
 
-  // Clean light nav — a frosted bone bar with espresso ink and coral accents,
-  // readable over both the light hero and the sections below.
-  const onDark = false;
+  // Dark twilight-glass nav — a frosted deep bar with moonstone accents,
+  // readable over the whole cosmic page.
+  const onDark = true;
 
   const Wordmark = () => (
     <div className="flex items-center gap-2.5 cursor-pointer group whitespace-nowrap" onClick={handleLogoClick}>
-      <span className="grid place-items-center w-8 h-8 shrink-0 rounded-full border border-coral/50 text-coral font-serif text-lg leading-none transition-colors duration-300 group-hover:bg-coral group-hover:text-ink">
+      <span className="grid place-items-center w-8 h-8 shrink-0 rounded-full border border-moon/50 text-moon font-serif text-lg leading-none transition-colors duration-300 group-hover:bg-moon group-hover:text-plum-deep">
         M
       </span>
       <span className={`overflow-hidden whitespace-nowrap transition-[max-width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled ? 'max-w-[220px]' : 'max-w-0'}`}>
-        <span className="pl-0.5 text-lg font-serif font-bold uppercase tracking-tight text-coral">
-          Mayanov <span className="text-ink">Tarot</span>
+        <span className="pl-0.5 text-lg font-serif font-bold uppercase tracking-tight text-moon">
+          Mayanov <span className="text-cream">Tarot</span>
         </span>
       </span>
     </div>
@@ -159,8 +159,8 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         <div className="max-w-[1280px] xl:max-w-[1400px] mx-auto px-4 md:px-6">
           <div
             className={`relative flex justify-between items-center gap-3 rounded-full pl-4 pr-2 py-2 border transition-all duration-300 ${isScrolled
-                ? 'bg-[#F6F2EB]/90 backdrop-blur-xl border-[#302620]/10 shadow-[0_16px_40px_-26px_rgba(0,0,0,0.3)]'
-                : 'bg-[#F6F2EB]/70 backdrop-blur-md border-[#302620]/10'
+                ? 'bg-[#120C28]/85 backdrop-blur-xl border-white/10 shadow-[0_16px_44px_-26px_rgba(0,0,0,0.6)]'
+                : 'bg-[#120C28]/55 backdrop-blur-md border-white/10'
               }`}
           >
             {/* LEFT — brand badge (always) + nav links */}
@@ -178,7 +178,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                   >
                     <button
                       onClick={() => scrollToSection(link.id)}
-                      className="flex items-center gap-1 px-3 py-2 rounded-full text-[11px] uppercase tracking-[0.14em] font-medium whitespace-nowrap text-ink/65 hover:text-ink hover:bg-ink/[0.05] transition-colors duration-200"
+                      className="flex items-center gap-1 px-3 py-2 rounded-full text-[11px] uppercase tracking-[0.14em] font-medium whitespace-nowrap text-cream/65 hover:text-cream hover:bg-white/[0.06] transition-colors duration-200"
                     >
                       {link.name}
                       {link.children && <ChevronDown className="w-3 h-3 group-hover/menu:rotate-180 transition-transform duration-200" />}
@@ -186,12 +186,12 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
                     {link.children && (
                       <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 transform translate-y-2 group-hover/menu:translate-y-0 w-48">
-                        <div className="bg-[#F6F2EB] border border-[#302620]/10 backdrop-blur-xl rounded-2xl shadow-[0_24px_50px_-28px_rgba(0,0,0,0.4)] overflow-hidden p-2 flex flex-col gap-0.5">
+                        <div className="bg-[#160E32]/95 border border-white/10 backdrop-blur-xl rounded-2xl shadow-[0_24px_50px_-28px_rgba(0,0,0,0.7)] overflow-hidden p-2 flex flex-col gap-0.5">
                           {link.children.map(child => (
                             <button
                               key={child.name}
                               onClick={(e) => { e.stopPropagation(); scrollToSection(child.id); }}
-                              className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.12em] text-ink/70 hover:text-ink hover:bg-ink/[0.05] rounded-lg transition-colors"
+                              className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.12em] text-cream/70 hover:text-cream hover:bg-white/[0.06] rounded-lg transition-colors"
                             >
                               {child.name}
                             </button>
@@ -211,7 +211,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               )}
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-                className="px-5 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap"
+                className="px-5 py-2.5 rounded-full bg-moon text-plum-deep text-sm font-semibold hover:bg-moon-bright transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap shadow-[0_0_0_1px_rgba(219,205,242,0.3),0_14px_36px_-18px_rgba(198,178,228,0.7)]"
               >
                 {isIndonesian ? 'Pesan Sekarang' : 'Book Now'}
               </button>
@@ -220,7 +220,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             {/* Mobile Menu Toggle */}
             {!isMobileMenuOpen && (
               <button
-                className="lg:hidden transition p-2 text-ink hover:text-coral"
+                className="lg:hidden transition p-2 text-cream hover:text-moon"
                 onClick={() => setIsMobileMenuOpen(true)}
               >
                 <Menu className="w-6 h-6" />
@@ -232,11 +232,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
       {/* Mobile Nav Overlay */}
       <div
-        className={`lg:hidden fixed inset-0 bg-cream/98 backdrop-blur-2xl z-[60] flex flex-col items-center justify-start pt-28 transition-all duration-500 ease-in-out ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
+        className={`lg:hidden fixed inset-0 bg-[#0E0A24]/98 backdrop-blur-2xl z-[60] flex flex-col items-center justify-start pt-28 transition-all duration-500 ease-in-out ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
           }`}
       >
         <button
-          className="absolute top-6 right-4 text-ink hover:text-coral transition p-2 bg-paper-2 rounded-full"
+          className="absolute top-6 right-4 text-cream hover:text-moon transition p-2 bg-white/[0.08] rounded-full"
           onClick={() => setIsMobileMenuOpen(false)}
         >
           <X className="w-7 h-7" />
@@ -244,7 +244,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
         <div className="flex flex-col space-y-4 text-center p-4 w-full max-w-sm overflow-y-auto max-h-[calc(100vh-100px)]">
           <div className="mb-2 shrink-0">
-            <span className="grid place-items-center w-14 h-14 mx-auto rounded-full border border-coral/40 text-coral font-serif text-2xl">
+            <span className="grid place-items-center w-14 h-14 mx-auto rounded-full border border-moon/40 text-moon font-serif text-2xl">
               M
             </span>
           </div>
@@ -252,10 +252,10 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           {/* Region switcher (mobile) */}
           {onSwitchRegion && (
             <div className="shrink-0 mb-4">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-taupe mb-2">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-cream/45 mb-2">
                 {isIndonesian ? 'Versi Situs' : 'Site Version'}
               </p>
-              <div className="flex gap-1 p-1 bg-paper-2 rounded-full border border-line">
+              <div className="flex gap-1 p-1 bg-white/[0.06] rounded-full border border-white/10">
                 {([['global', false], ['id', true]] as const).map(([key, toID]) => {
                   const r = REGIONS[key];
                   const active = toID === isIndonesian;
@@ -264,7 +264,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                       key={key}
                       onClick={() => { onSwitchRegion(toID); setIsMobileMenuOpen(false); }}
                       aria-pressed={active}
-                      className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-colors ${active ? 'bg-coral text-cream shadow-[0_8px_20px_-12px_rgba(216,128,90,0.9)]' : 'text-ink'}`}
+                      className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-colors ${active ? 'bg-moon text-plum-deep shadow-[0_8px_20px_-12px_rgba(198,178,228,0.9)]' : 'text-cream/80'}`}
                     >
                       <span className="mr-1.5">{r.flag}</span>{r.name}
                     </button>
@@ -284,7 +284,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                     scrollToSection(link.id);
                   }
                 }}
-                className={`text-2xl font-serif text-ink hover:text-coral transition-colors flex items-center justify-center gap-2 ${link.children ? 'mb-2' : ''}`}
+                className={`text-2xl font-elegant text-cream hover:text-moon transition-colors flex items-center justify-center gap-2 ${link.children ? 'mb-2' : ''}`}
                 style={{ transitionDelay: `${idx * 50}ms` }}
               >
                 {link.name}
@@ -292,12 +292,12 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               </button>
 
               {link.children && (
-                <div className={`flex flex-col gap-3 bg-paper-2 rounded-xl overflow-hidden transition-all duration-300 ${isServicesOpen ? 'max-h-64 py-4 mb-4' : 'max-h-0 py-0'}`}>
+                <div className={`flex flex-col gap-3 bg-white/[0.05] rounded-xl overflow-hidden transition-all duration-300 ${isServicesOpen ? 'max-h-64 py-4 mb-4' : 'max-h-0 py-0'}`}>
                   {link.children.map(child => (
                     <button
                       key={child.name}
                       onClick={() => scrollToSection(child.id)}
-                      className="text-base text-taupe hover:text-coral"
+                      className="text-base text-cream/60 hover:text-moon"
                     >
                       {child.name}
                     </button>
@@ -308,7 +308,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           ))}
           <button
             onClick={() => { setIsMobileMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
-            className="mt-4 px-10 py-4 rounded-full bg-coral text-ink font-semibold text-lg hover:bg-coral-deep hover:text-cream transition shrink-0"
+            className="mt-4 px-10 py-4 rounded-full bg-moon text-plum-deep font-semibold text-lg hover:bg-moon-bright transition shrink-0"
           >
             {isIndonesian ? 'Pesan Pembacaan' : 'Book a Reading'}
           </button>

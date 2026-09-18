@@ -18,24 +18,24 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="interlude"
-      className="relative overflow-hidden isolate text-ink py-14 md:py-20"
+      className="relative overflow-hidden isolate text-cream py-20 md:py-28 border-y border-white/[0.08]"
       style={{
         background:
-          'radial-gradient(120% 140% at 50% 0%, #FFFFFF 0%, #FCFBFC 42%, #F1EEEF 100%)',
+          'radial-gradient(120% 150% at 50% 0%, rgba(46,29,74,0.72) 0%, rgba(26,17,48,0.78) 55%, rgba(16,11,36,0.82) 100%)',
       }}
     >
-      {/* faint texture so the colour block isn't flat */}
+      {/* moonstone bloom from below */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.16] mix-blend-soft-light"
+        className="pointer-events-none absolute inset-0"
         style={{
-          backgroundImage:
-            'radial-gradient(circle at 20% 30%, rgba(255,255,255,0.6) 0, transparent 45%), radial-gradient(circle at 80% 70%, rgba(0,0,0,0.4) 0, transparent 40%)',
+          background:
+            'radial-gradient(60% 80% at 50% 118%, rgba(198,178,228,0.28) 0%, rgba(198,178,228,0.06) 40%, transparent 70%)',
         }}
       />
 
       {/* film grain — noise texture over the surface */}
       <div
-        className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-30"
+        className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-30"
         style={{ backgroundImage: GRAIN, backgroundSize: '150px 150px' }}
       />
 
@@ -43,16 +43,16 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
         <FadeIn>
           <div className="max-w-5xl mx-auto text-center">
             {/* pull-quote */}
-            <p className="font-elegant italic text-[#5B2E8C] text-[2rem] sm:text-[2.6rem] md:text-[3.4rem] lg:text-[3.9rem] leading-[1.08] tracking-[-0.01em]">
+            <p className="font-elegant italic text-cream text-[2rem] sm:text-[2.6rem] md:text-[3.4rem] lg:text-[3.9rem] leading-[1.08] tracking-[-0.01em]">
               {isIndonesian ? (
-                <>Tarot bukan meramal masa depan — tapi memberi <span className="not-italic font-serif font-semibold">kejelasan</span> untuk kamu bentuk sendiri.</>
+                <>Tarot bukan meramal masa depan — tapi memberi <span className="text-moon">kejelasan</span> untuk kamu bentuk sendiri.</>
               ) : (
-                <>Tarot won&rsquo;t predict your future — it hands you the <span className="not-italic font-serif font-semibold">clarity</span> to shape it.</>
+                <>Tarot won&rsquo;t predict your future — it hands you the <span className="text-moon">clarity</span> to shape it.</>
               )}
             </p>
 
             {/* signature */}
-            <div className="mt-10 md:mt-12 text-[0.72rem] uppercase tracking-[0.26em] text-ink/55">
+            <div className="mt-10 md:mt-12 text-[0.72rem] uppercase tracking-[0.26em] text-cream/50">
               {isIndonesian ? 'Mayanov · Pembaca Tarot' : 'Mayanov · Tarot Reader'}
             </div>
           </div>

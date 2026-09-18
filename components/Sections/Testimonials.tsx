@@ -229,15 +229,16 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 mb-12 md:mb-14">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-8">
             <div>
-              <span className="block text-[11px] uppercase tracking-[0.24em] text-coral mb-4">
+              <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-4">
+                <span className="h-px w-7 bg-moon/50" />
                 {isIndonesian ? 'Testimoni' : 'Testimonials'}
               </span>
-              <h2 className="text-[1.9rem] md:text-[2.5rem] leading-[1.05] font-serif font-semibold text-cream tracking-[-0.02em]">
+              <h2 className="text-[1.9rem] md:text-[2.5rem] leading-[1.05] font-elegant font-medium text-cream tracking-[-0.02em]">
                 {isIndonesian ? 'Apa kata mereka' : 'What others are saying'}
               </h2>
             </div>
             <div className="flex items-center gap-2 text-sm shrink-0 md:pb-2">
-              <div className="flex text-coral">
+              <div className="flex text-moon">
                 {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
               </div>
               <span className="text-cream font-medium ml-1">5.0</span>
@@ -254,12 +255,12 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         onMouseLeave={() => setPaused(false)}
       >
         <div className="relative text-center min-h-[17rem] sm:min-h-[15rem] flex flex-col items-center justify-center">
-          <Quote className="w-9 h-9 md:w-10 md:h-10 text-coral/50 mb-5 shrink-0" />
+          <Quote className="w-9 h-9 md:w-10 md:h-10 text-moon/50 mb-5 shrink-0" />
           <div key={index} className="animate-fade-up flex flex-col items-center">
             <p className="text-cream text-lg md:text-2xl leading-relaxed md:leading-relaxed font-normal">
               {review.text}
             </p>
-            <div className="mt-7 flex gap-1 text-coral">
+            <div className="mt-7 flex gap-1 text-moon">
               {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
             </div>
             <div className="mt-3 font-serif font-semibold text-cream text-base">{review.author}</div>
@@ -272,7 +273,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
             type="button"
             onClick={() => go(-1)}
             aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
-            className="p-1 text-cream/70 hover:text-coral transition-colors duration-300"
+            className="p-1 text-cream/70 hover:text-moon transition-colors duration-300"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -280,7 +281,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
             type="button"
             onClick={() => go(1)}
             aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
-            className="p-1 text-cream/70 hover:text-coral transition-colors duration-300"
+            className="p-1 text-cream/70 hover:text-moon transition-colors duration-300"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -294,7 +295,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-cream/30 hover:border-cream hover:bg-cream hover:text-ink transition-all duration-300 text-cream font-medium group"
         >
-          <Star className="w-4 h-4 fill-current text-coral" />
+          <Star className="w-4 h-4 fill-current text-moon" />
           <span>{isIndonesian ? 'Lihat Semua Review di Google' : 'Read All Reviews on Google'}</span>
         </a>
       </div>

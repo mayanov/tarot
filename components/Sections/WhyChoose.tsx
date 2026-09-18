@@ -69,18 +69,19 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
 
   return (
     <section id="why-choose" className="relative isolate">
-      {/* full-bleed deep-plum band — no floating card, no rounded corners */}
-      <div className="bg-plum-deep text-cream">
+      {/* full-bleed twilight-glass band — sky bleeds through, no floating card */}
+      <div className="bg-[rgba(28,18,54,0.6)] backdrop-blur-[3px] border-y border-white/[0.08] text-cream">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28">
           <div className="grid lg:grid-cols-12 gap-y-14 lg:gap-x-20">
             {/* LEFT — sticky intro */}
             <div className="lg:col-span-4">
               <FadeIn>
                 <div className="lg:sticky lg:top-28">
-                  <span className="block text-[11px] uppercase tracking-[0.28em] text-coral mb-6">
+                  <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-6">
+                    <span className="h-px w-7 bg-moon/50" />
                     {isIndonesian ? 'Kenapa saya' : 'Why me'}
                   </span>
-                  <h2 className="font-serif font-semibold text-cream text-[2rem] md:text-[2.6rem] leading-[1.03] tracking-[-0.02em]">
+                  <h2 className="font-elegant font-medium text-cream text-[2rem] md:text-[2.6rem] leading-[1.03] tracking-[-0.02em]">
                     {isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}
                   </h2>
                   <p className="mt-6 text-[0.95rem] text-cream/55 font-light leading-relaxed max-w-xs">
@@ -98,7 +99,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
                 {reasons.map((reason, index) => (
                   <FadeIn key={index} delay={Math.min(index, 6) * 60} dir="up">
                     <div className="group grid grid-cols-[auto_1fr] gap-6 md:gap-12 py-7 md:py-9 border-b border-cream/15 transition-colors duration-300">
-                      <span className="font-serif text-coral/90 text-base md:text-lg tabular-nums pt-1.5 tracking-tight">
+                      <span className="font-serif text-moon text-base md:text-lg tabular-nums pt-1.5 tracking-tight">
                         {String(index + 1).padStart(2, '0')}
                       </span>
                       <div className="transition-transform duration-300 group-hover:translate-x-1.5">

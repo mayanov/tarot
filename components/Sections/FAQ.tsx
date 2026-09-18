@@ -108,7 +108,11 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           <div className="lg:col-span-4">
             <FadeIn>
               <div className="lg:sticky lg:top-28">
-                <h2 className="font-serif font-semibold text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
+                <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-5">
+                  <span className="h-px w-7 bg-moon/50" />
+                  FAQ
+                </span>
+                <h2 className="font-elegant font-medium text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
                 </h2>
                 <p className="mt-5 text-cream font-light leading-relaxed max-w-xs">
@@ -136,7 +140,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                         <span className="font-serif font-medium text-base md:text-lg leading-snug tracking-tight text-cream">
                           {faq.question}
                         </span>
-                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-300 ${open ? 'text-coral rotate-180' : 'text-cream/60'}`} />
+                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-300 ${open ? 'text-moon rotate-180' : 'text-cream/60'}`} />
                       </button>
 
                       <div className={`grid transition-all duration-300 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>

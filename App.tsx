@@ -298,10 +298,10 @@ function App() {
   // ------------------------------------------------------------
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream text-ink">
+      <div className="min-h-screen flex items-center justify-center bg-[#0E1132] text-cream">
         <div className="flex flex-col items-center gap-4 animate-pulse">
-          <Moon className="w-10 h-10 text-coral animate-spin-slow" strokeWidth={1.5} />
-          <span className="text-xs tracking-[0.3em] uppercase text-taupe">Loading...</span>
+          <Moon className="w-10 h-10 text-moon animate-spin-slow" strokeWidth={1.5} />
+          <span className="text-xs tracking-[0.3em] uppercase text-moon/70">Loading...</span>
         </div>
       </div>
     );
@@ -348,7 +348,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen relative font-sans text-ink selection:bg-coral/25">
+    <div className="min-h-screen relative font-sans text-cream selection:bg-moon/25">
       <Background />
 
       <Header isIndonesian={isIndonesian} onSwitchRegion={handleSwitchRegion} />
@@ -386,7 +386,7 @@ function App() {
         {showBackToTop && (
           <button
             onClick={scrollToTop}
-            className="p-3 rounded-full bg-paper text-terracotta shadow-[0_10px_30px_-12px_rgba(42,35,32,0.5)] hover:bg-terracotta hover:text-paper transition-all duration-300 border border-line hover:-translate-y-1"
+            className="p-3 rounded-full bg-plum-deep/70 backdrop-blur-md text-moon shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] hover:bg-moon hover:text-plum-deep transition-all duration-300 border border-moon/25 hover:-translate-y-1"
             title="Back to Top"
           >
             <ArrowUp className="w-5 h-5" />

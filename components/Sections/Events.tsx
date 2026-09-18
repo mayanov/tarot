@@ -54,23 +54,24 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       className="py-10 md:py-16 relative overflow-hidden isolate"
     >
       <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
-        <div className="relative overflow-hidden rounded-xl md:rounded-2xl text-cream border border-white/10 shadow-[0_40px_120px_-55px_rgba(0,0,0,0.8)] px-6 sm:px-10 md:px-14 lg:px-16 py-14 md:py-20 bg-[#241436]">
+        <div className="relative overflow-hidden rounded-xl md:rounded-2xl text-cream border border-white/10 shadow-[0_40px_120px_-60px_rgba(0,0,0,0.7)] px-6 sm:px-10 md:px-14 lg:px-16 py-14 md:py-20 bg-[rgba(24,18,52,0.62)] backdrop-blur-[4px]">
           <GrainyMesh variant="catPlum" grain={0.16} />
           <FadeIn>
             {/* HEADER — title on the left, count + CTA on the right */}
             <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between mb-10 md:mb-14">
               <div>
-                <span className="block text-[11px] uppercase tracking-[0.24em] text-coral mb-4">
+                <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-4">
+                  <span className="h-px w-7 bg-moon/50" />
                   {isIndonesian ? "Portofolio" : "Portfolio"}
                 </span>
-                <h2 className="font-serif font-semibold text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
+                <h2 className="font-elegant font-medium text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian ? "Event & collaboration" : "Community & events"}
                 </h2>
               </div>
 
               <div className="flex items-center gap-6 shrink-0">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-serif font-semibold text-5xl md:text-6xl text-coral leading-none tracking-tight">{eventList.length}+</span>
+                  <span className="font-elegant font-medium text-5xl md:text-6xl text-moon leading-none tracking-tight">{eventList.length}+</span>
                   <span className="text-[0.66rem] uppercase tracking-[0.22em] text-cream/60 leading-snug max-w-[6rem]">
                     {isIndonesian ? "Event sejak 2016" : "Events since 2016"}
                   </span>
@@ -79,7 +80,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                   href="https://wa.link/5peyhb"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-coral text-ink hover:bg-coral-deep hover:text-cream text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 shadow-[0_16px_36px_-18px_rgba(218,134,54,0.85)]"
+                  className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-moon text-plum-deep hover:bg-moon-bright text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 shadow-[0_16px_36px_-18px_rgba(198,178,228,0.85)]"
                 >
                   {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
                 </a>
@@ -88,7 +89,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
             {/* PHOTO GALLERY — a few moments from past events */}
             <div className="mb-10 md:mb-14">
-              <span className="block text-[0.66rem] uppercase tracking-[0.22em] text-coral/85 mb-4">
+              <span className="block text-[0.66rem] uppercase tracking-[0.22em] text-moon/85 mb-4">
                 {isIndonesian ? "Momen dari beberapa event" : "Moments from past events"}
               </span>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -106,7 +107,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
                       />
-                      <span className="pointer-events-none absolute inset-0 rounded-xl md:rounded-2xl ring-1 ring-inset ring-white/10 group-hover:ring-coral/50 transition-all" />
+                      <span className="pointer-events-none absolute inset-0 rounded-xl md:rounded-2xl ring-1 ring-inset ring-white/10 group-hover:ring-moon/50 transition-all" />
                       <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
                   </FadeIn>
@@ -120,7 +121,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 <FadeIn key={index} delay={Math.min(index, 6) * 40} dir="up">
                   <div className="group grid grid-cols-12 items-center gap-x-4 py-2.5 md:py-3 border-b border-white/12 transition-colors duration-300 hover:bg-white/[0.05]">
                     {/* year */}
-                    <span className="col-span-3 md:col-span-2 font-medium text-[0.62rem] md:text-xs uppercase tracking-[0.18em] text-coral tabular-nums pl-0 md:pl-2">
+                    <span className="col-span-3 md:col-span-2 font-medium text-[0.62rem] md:text-xs uppercase tracking-[0.18em] text-moon tabular-nums pl-0 md:pl-2">
                       {event.year}
                     </span>
                     {/* title */}
