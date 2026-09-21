@@ -32,7 +32,7 @@ const OrbitField: React.FC = () => {
     <div
       ref={ref}
       aria-hidden
-      className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(135vw,820px)] aspect-square opacity-[0.4] lg:opacity-[0.6] lg:left-auto lg:right-[-10%] lg:translate-x-0"
+      className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(120vw,660px)] aspect-square opacity-[0.5] lg:opacity-[0.7]"
       style={{
         maskImage: 'radial-gradient(closest-side, #000 58%, transparent 85%)',
         WebkitMaskImage: 'radial-gradient(closest-side, #000 58%, transparent 85%)',
@@ -131,27 +131,12 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       id="hero"
       className="relative min-h-screen flex flex-col overflow-hidden isolate text-cream"
     >
-      <OrbitField />
-
-      {/* Left-aligned editorial composition (Othership / Co-Star), not centred */}
-      <div className="relative flex-1 w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-12 gap-8 items-center pt-32 pb-12">
-        <div className="lg:col-span-7 xl:col-span-6">
-          {/* brand wordmark as a tracked kicker */}
-          <Rise delay={80}>
-            <div className="flex items-center gap-4">
-              <span className="h-px w-8 bg-moon/60" />
-              <span className="text-[12px] sm:text-[13px] uppercase tracking-[0.42em] text-moon font-semibold">
-                Mayanov Tarot
-              </span>
-            </div>
-            <p className="mt-3 text-[11px] uppercase tracking-[0.32em] text-cream/45">
-              {isIndonesian ? 'Tarot Analitis · Sejak 2009' : 'Analytical Tarot · Since 2009'}
-            </p>
-          </Rise>
-
-          {/* the statement headline — serif, mixed case, one lilac accent */}
-          <Rise delay={220}>
-            <h1 className="mt-8 font-elegant font-medium leading-[1.02] tracking-[-0.02em] text-[2.9rem] sm:text-[4rem] lg:text-[4.7rem] [text-shadow:0_6px_44px_rgba(6,4,14,0.5)]">
+      {/* Split hero — statement + CTA on the left, brand title (with orbit) on the right */}
+      <div className="relative flex-1 w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-12 gap-10 lg:gap-12 items-center pt-32 pb-12">
+        {/* LEFT — the statement + copy + single CTA */}
+        <div className="lg:col-span-6 order-2 lg:order-1">
+          <Rise delay={160}>
+            <h1 className="font-elegant font-medium leading-[1.04] tracking-[-0.02em] text-[2.4rem] sm:text-[3.1rem] lg:text-[3.6rem] [text-shadow:0_6px_44px_rgba(6,4,14,0.5)]">
               {isIndonesian ? (
                 <>Pandangan <span className="italic text-moon">jernih</span><br />untuk langkah berikutnya.</>
               ) : (
@@ -160,16 +145,16 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
             </h1>
           </Rise>
 
-          <Rise delay={360}>
-            <p className="mt-7 text-[15px] md:text-base font-light leading-relaxed max-w-xl text-cream/75 [text-shadow:0_1px_12px_rgba(6,4,14,0.7)]">
+          <Rise delay={300}>
+            <p className="mt-6 text-[15px] md:text-base font-light leading-relaxed max-w-xl text-cream/75 [text-shadow:0_1px_12px_rgba(6,4,14,0.7)]">
               {isIndonesian
                 ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi. Bukan ramalan, tapi percakapan jujur untuk melihat langkahmu lebih jelas.'
                 : 'Tarot as a space for reflection — analytical, warm, and grounded. Not fortune-telling, just an honest conversation that helps you see your next step clearly.'}
             </p>
           </Rise>
 
-          <Rise delay={480}>
-            <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <Rise delay={440}>
+            <div className="mt-9">
               <a
                 href="#services"
                 onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
@@ -180,14 +165,18 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </a>
-              <a
-                href="#about"
-                onClick={(e) => { e.preventDefault(); smoothScrollToId('about', 80); }}
-                className="text-sm font-medium text-cream/70 hover:text-cream underline-offset-[6px] hover:underline decoration-moon/60 transition-colors"
-              >
-                {isIndonesian ? 'Kenali Mayanov' : 'Meet Mayanov'}
-              </a>
             </div>
+          </Rise>
+        </div>
+
+        {/* RIGHT — brand title anchored over the orbit motif */}
+        <div className="relative lg:col-span-6 order-1 lg:order-2 flex items-center justify-center min-h-[38vh] lg:min-h-[62vh]">
+          <OrbitField />
+          <Rise delay={80} className="relative">
+            <h2 className="font-serif font-bold uppercase leading-[0.92] tracking-[-0.01em] text-center text-[3.4rem] sm:text-[4.6rem] lg:text-[5.4rem] [text-shadow:0_6px_44px_rgba(6,4,14,0.55)]">
+              <span className="block text-cream">Mayanov</span>
+              <span className="block text-moon">Tarot</span>
+            </h2>
           </Rise>
         </div>
       </div>
