@@ -599,8 +599,8 @@ const BookingsView: React.FC = () => {
                                                         <div key={e.id} title={`${e.time}${e.endTime ? `–${e.endTime}` : ''} · ${e.title} (Google Calendar — slot filled)`}
                                                             className="absolute left-1 right-1 rounded-md bg-text-subtle/30 border border-adm-line-3 px-1.5 py-0.5 overflow-hidden pointer-events-none z-0"
                                                             style={{ top, height, backgroundImage: 'repeating-linear-gradient(45deg, rgba(130,130,140,0.28) 0, rgba(130,130,140,0.28) 5px, transparent 5px, transparent 10px)' }}>
-                                                            <div className="text-[8px] uppercase tracking-wider text-text-subtle leading-none">Busy</div>
-                                                            {height > 22 && <div className="text-[10px] text-text-subtle truncate leading-tight mt-0.5">{e.title}</div>}
+                                                            <div className="inline-flex text-[8px] font-bold uppercase tracking-wider text-text-light leading-none px-1 py-0.5 rounded bg-surface-1/85">Busy</div>
+                                                            {height > 22 && <div className="text-[10px] font-medium text-text-light truncate leading-tight mt-0.5 [text-shadow:0_1px_2px_var(--adm-surface-1)]">{e.title}</div>}
                                                         </div>
                                                     );
                                                 })}
