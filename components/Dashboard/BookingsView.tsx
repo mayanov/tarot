@@ -597,10 +597,10 @@ const BookingsView: React.FC = () => {
                                                     const height = Math.max(16, bottom - top - 2);
                                                     return (
                                                         <div key={e.id} title={`${e.time}${e.endTime ? `–${e.endTime}` : ''} · ${e.title} (Google Calendar — slot filled)`}
-                                                            className="absolute left-1 right-1 rounded-md bg-text-subtle/[0.16] border border-adm-line-3 px-1.5 py-0.5 overflow-hidden pointer-events-none z-0"
-                                                            style={{ top, height }}>
-                                                            <div className="text-[8px] font-semibold uppercase tracking-wider text-text-light leading-none">Busy</div>
-                                                            {height > 22 && <div className="text-[10px] font-medium text-text-light truncate leading-tight mt-0.5">{e.title}</div>}
+                                                            className="absolute left-1 right-1 rounded-md border border-black/10 px-1.5 py-0.5 overflow-hidden pointer-events-none z-0"
+                                                            style={{ top, height, backgroundColor: '#D7D6DE' }}>
+                                                            <div className="text-[8px] font-bold uppercase tracking-wider leading-none" style={{ color: '#4A4753' }}>Busy</div>
+                                                            {height > 22 && <div className="text-[10px] font-medium truncate leading-tight mt-0.5" style={{ color: '#54515F' }}>{e.title}</div>}
                                                         </div>
                                                     );
                                                 })}
