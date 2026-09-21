@@ -131,30 +131,37 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       id="hero"
       className="relative min-h-screen flex flex-col overflow-hidden isolate text-cream"
     >
-      {/* Split hero — statement + CTA on the left, brand title (with orbit) on the right */}
+      {/* Brand-led hero — MAYANOV TAROT is the clear #1 (right, over the orbit);
+          the statement is a smaller supporting subhead + CTA on the left. */}
       <div className="relative flex-1 w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-12 gap-10 lg:gap-12 items-center pt-32 pb-12">
-        {/* LEFT — the statement + copy + single CTA */}
-        <div className="lg:col-span-6 order-2 lg:order-1">
-          <Rise delay={160}>
-            <h1 className="font-elegant font-medium leading-[1.04] tracking-[-0.02em] text-[2.4rem] sm:text-[3.1rem] lg:text-[3.6rem] [text-shadow:0_6px_44px_rgba(6,4,14,0.5)]">
+        {/* LEFT — supporting subhead + copy + single CTA */}
+        <div className="lg:col-span-5 order-2 lg:order-1">
+          <Rise delay={320}>
+            <div className="flex items-center gap-3 mb-5">
+              <span className="h-px w-8 bg-moon/60" />
+              <span className="text-[11px] uppercase tracking-[0.34em] text-moon">
+                {isIndonesian ? 'Refleksi, bukan ramalan' : 'Reflection, not fortune-telling'}
+              </span>
+            </div>
+            <p className="font-elegant font-medium leading-[1.12] tracking-[-0.01em] text-[1.6rem] sm:text-[1.95rem] lg:text-[2.1rem] text-cream [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
               {isIndonesian ? (
-                <>Pandangan <span className="italic text-moon">jernih</span><br />untuk langkah berikutnya.</>
+                <>Pandangan <span className="italic text-moon">jernih</span> untuk langkah berikutnya.</>
               ) : (
-                <>A <span className="italic text-moon">clearer</span> view<br />of what comes next.</>
+                <>A <span className="italic text-moon">clearer</span> view of what comes next.</>
               )}
-            </h1>
-          </Rise>
-
-          <Rise delay={300}>
-            <p className="mt-6 text-[15px] md:text-base font-light leading-relaxed max-w-xl text-cream/75 [text-shadow:0_1px_12px_rgba(6,4,14,0.7)]">
-              {isIndonesian
-                ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi. Bukan ramalan, tapi percakapan jujur untuk melihat langkahmu lebih jelas.'
-                : 'Tarot as a space for reflection — analytical, warm, and grounded. Not fortune-telling, just an honest conversation that helps you see your next step clearly.'}
             </p>
           </Rise>
 
           <Rise delay={440}>
-            <div className="mt-9">
+            <p className="mt-5 text-[14.5px] md:text-[15px] font-light leading-relaxed max-w-md text-cream/70 [text-shadow:0_1px_12px_rgba(6,4,14,0.7)]">
+              {isIndonesian
+                ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi. Percakapan jujur untuk melihat langkahmu lebih jelas.'
+                : 'Tarot as a space for reflection — analytical, warm, and grounded. An honest conversation that helps you see your next step clearly.'}
+            </p>
+          </Rise>
+
+          <Rise delay={560}>
+            <div className="mt-8">
               <a
                 href="#services"
                 onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
@@ -169,14 +176,14 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           </Rise>
         </div>
 
-        {/* RIGHT — brand title anchored over the orbit motif */}
-        <div className="relative lg:col-span-6 order-1 lg:order-2 flex items-center justify-center min-h-[38vh] lg:min-h-[62vh]">
+        {/* RIGHT — dominant brand title anchored over the orbit motif (the #1) */}
+        <div className="relative lg:col-span-7 order-1 lg:order-2 flex items-center justify-center min-h-[42vh] lg:min-h-[66vh]">
           <OrbitField />
           <Rise delay={80} className="relative">
-            <h2 className="font-serif font-bold uppercase leading-[0.92] tracking-[-0.01em] text-center text-[3.4rem] sm:text-[4.6rem] lg:text-[5.4rem] [text-shadow:0_6px_44px_rgba(6,4,14,0.55)]">
+            <h1 className="font-serif font-bold uppercase leading-[0.9] tracking-[-0.01em] text-center text-[3.6rem] sm:text-[5rem] lg:text-[5.6rem] xl:text-[6.6rem] [text-shadow:0_6px_50px_rgba(6,4,14,0.55)]">
               <span className="block text-cream">Mayanov</span>
               <span className="block text-moon">Tarot</span>
-            </h2>
+            </h1>
           </Rise>
         </div>
       </div>
