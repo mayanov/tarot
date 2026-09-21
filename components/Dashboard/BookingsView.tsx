@@ -596,9 +596,9 @@ const BookingsView: React.FC = () => {
                                                     if (bottom <= 0 || top >= GRID_H) return null;
                                                     const height = Math.max(16, bottom - top - 2);
                                                     return (
-                                                        <div key={e.id} title={`${e.time}${e.endTime ? `–${e.endTime}` : ''} · ${e.title} (Google Calendar)`}
-                                                            className="absolute left-1 right-1 rounded-md bg-text-subtle/10 border border-dashed border-adm-line-3 px-1.5 py-0.5 overflow-hidden pointer-events-none z-0"
-                                                            style={{ top, height }}>
+                                                        <div key={e.id} title={`${e.time}${e.endTime ? `–${e.endTime}` : ''} · ${e.title} (Google Calendar — slot filled)`}
+                                                            className="absolute left-1 right-1 rounded-md bg-text-subtle/30 border border-adm-line-3 px-1.5 py-0.5 overflow-hidden pointer-events-none z-0"
+                                                            style={{ top, height, backgroundImage: 'repeating-linear-gradient(45deg, rgba(130,130,140,0.28) 0, rgba(130,130,140,0.28) 5px, transparent 5px, transparent 10px)' }}>
                                                             <div className="text-[8px] uppercase tracking-wider text-text-subtle leading-none">Busy</div>
                                                             {height > 22 && <div className="text-[10px] text-text-subtle truncate leading-tight mt-0.5">{e.title}</div>}
                                                         </div>
