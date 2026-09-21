@@ -156,7 +156,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
       <header
         className={`fixed left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'top-2 md:top-3' : 'top-3 md:top-5'}`}
       >
-        <div className="max-w-[1280px] xl:max-w-[1400px] mx-auto px-4 md:px-6">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
           <div
             className={`relative flex justify-between items-center gap-3 rounded-full pl-4 pr-2 py-2 border transition-all duration-300 ${isScrolled
                 ? 'bg-[#120C28]/85 backdrop-blur-xl border-white/10 shadow-[0_16px_44px_-26px_rgba(0,0,0,0.6)]'

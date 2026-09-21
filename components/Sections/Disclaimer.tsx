@@ -22,9 +22,9 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
 
     return (
         <section id="disclaimer" className="pt-6 md:pt-8 pb-8 md:pb-12 relative overflow-hidden isolate">
-            <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
+            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 <FadeIn>
-                    <div className="rounded-2xl md:rounded-[1.75rem] bg-[rgba(18,12,40,0.5)] backdrop-blur-[3px] border border-white/10 p-7 md:p-10 lg:p-12">
+                    <div className="pt-8 border-t border-white/10">
                         <div className="grid lg:grid-cols-12 gap-y-9 lg:gap-x-16">
                             {/* LEFT — title + subtitle */}
                             <div className="lg:col-span-4">

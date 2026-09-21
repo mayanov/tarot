@@ -134,7 +134,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       <OrbitField />
 
       {/* Left-aligned editorial composition (Othership / Co-Star), not centred */}
-      <div className="relative flex-1 w-full max-w-[1240px] mx-auto px-6 sm:px-10 grid lg:grid-cols-12 gap-8 items-center pt-32 pb-12">
+      <div className="relative flex-1 w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-12 gap-8 items-center pt-32 pb-12">
         <div className="lg:col-span-7 xl:col-span-6">
           {/* brand wordmark as a tracked kicker */}
           <Rise delay={80}>
@@ -194,7 +194,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
       {/* Stats — a quiet, left-aligned strip on a moonstone hairline */}
       <Rise delay={620}>
-        <div className="relative w-full max-w-[1240px] mx-auto px-6 sm:px-10 pb-11 md:pb-14">
+        <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pb-11 md:pb-14">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-6 pt-6 border-t border-moon/20 max-w-3xl">
             {metrics.map((m, i) => (
               <div key={i} className="text-left">

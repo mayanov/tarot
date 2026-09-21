@@ -39,7 +39,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
         style={{ backgroundImage: GRAIN, backgroundSize: '150px 150px' }}
       />
 
-      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
+      <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
         <FadeIn>
           <div className="max-w-5xl mx-auto text-center">
             {/* pull-quote */}

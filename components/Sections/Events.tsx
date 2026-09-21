@@ -51,11 +51,12 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="events"
-      className="py-10 md:py-16 relative overflow-hidden isolate"
+      className="py-16 md:py-24 relative overflow-hidden isolate border-y border-white/[0.08]"
     >
-      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 relative z-10">
-        <div className="relative overflow-hidden rounded-xl md:rounded-2xl text-cream border border-white/10 shadow-[0_40px_120px_-60px_rgba(0,0,0,0.7)] px-6 sm:px-10 md:px-14 lg:px-16 py-14 md:py-20 bg-[rgba(24,18,52,0.62)] backdrop-blur-[4px]">
-          <GrainyMesh variant="catPlum" grain={0.16} />
+      <div className="absolute inset-0 bg-[rgba(24,18,52,0.5)] backdrop-blur-[4px]">
+        <GrainyMesh variant="catPlum" grain={0.16} />
+      </div>
+      <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10 text-cream">
           <FadeIn>
             {/* HEADER — title on the left, count + CTA on the right */}
             <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between mb-10 md:mb-14">
@@ -146,7 +147,6 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               </button>
             )}
           </FadeIn>
-        </div>
       </div>
 
       {/* Lightbox */}

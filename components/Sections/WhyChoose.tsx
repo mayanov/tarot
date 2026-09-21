@@ -71,7 +71,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
     <section id="why-choose" className="relative isolate">
       {/* full-bleed twilight-glass band — sky bleeds through, no floating card */}
       <div className="bg-[rgba(28,18,54,0.6)] backdrop-blur-[3px] border-y border-white/[0.08] text-cream">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 md:py-28">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-20 md:py-28">
           <div className="grid lg:grid-cols-12 gap-y-14 lg:gap-x-20">
             {/* LEFT — sticky intro */}
             <div className="lg:col-span-4">

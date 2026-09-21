@@ -229,7 +229,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     return (
         <section id="services" className="relative isolate text-cream">
             {/* HEADER — transparent over the sky */}
-            <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-20 md:pt-28 pb-10 md:pb-14">
+            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-20 md:pt-28 pb-10 md:pb-14">
                 <FadeIn>
                     <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
                         <div className="lg:col-span-7">
@@ -268,7 +268,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 transition: `transform 0.9s ${REVEAL_EASE} ${i * 90}ms`,
                             }}
                         >
-                            <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+                            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
                                 {/* header row — spans full width, toggles the band */}
                                 <button
                                     type="button"
@@ -323,7 +323,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* ===== How it works — editorial numbered steps, transparent over the sky ===== */}
-            <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-24">
+            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-16 md:py-24">
                 <FadeIn>
                     <div id="process" className="scroll-mt-24">
                         <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-5">

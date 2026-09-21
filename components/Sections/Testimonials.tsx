@@ -226,7 +226,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   return (
     <section id="testimonials" className="pt-6 md:pt-10 pb-16 md:pb-24 relative overflow-hidden isolate">
       <FadeIn>
-        <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-10 mb-12 md:mb-14">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 mb-12 md:mb-14">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-8">
             <div>
               <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-4">
