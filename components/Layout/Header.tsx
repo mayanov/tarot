@@ -12,15 +12,22 @@ const REGIONS = {
   id: { flag: '🇮🇩', name: 'Indonesia', sub: 'Bahasa · IDR' },
 } as const;
 
-// Desktop region switcher: a two-segment toggle (Global / Indonesia).
+// Desktop region switcher: a two-segment toggle with a sliding moonstone thumb.
 const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; onDark?: boolean }> = ({ isIndonesian, onSwitch, onDark = false }) => {
+  const options = [['global', false], ['id', true]] as const;
   return (
     <div
       role="group"
       aria-label="Site version"
-      className={`flex items-center gap-0.5 p-0.5 rounded-full border ${onDark ? 'border-cream/20' : 'border-line'}`}
+      className={`relative flex items-center p-0.5 rounded-full border ${onDark ? 'border-cream/20 bg-cream/[0.05]' : 'border-line bg-ink/[0.03]'}`}
     >
-      {([['global', false], ['id', true]] as const).map(([key, toID]) => {
+      {/* sliding thumb — glides under the active segment */}
+      <span
+        aria-hidden
+        className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-full bg-moon shadow-[0_0_0_1px_rgba(219,205,242,0.35),0_10px_22px_-10px_rgba(198,178,228,0.9)] transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{ transform: isIndonesian ? 'translateX(100%)' : 'translateX(0)' }}
+      />
+      {options.map(([key, toID]) => {
         const r = REGIONS[key];
         const active = toID === isIndonesian;
         return (
@@ -29,11 +36,11 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
             onClick={() => onSwitch(toID)}
             aria-pressed={active}
             title={`Switch to the ${r.name} version`}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${active
-                ? 'bg-moon text-plum-deep'
-                : (onDark ? 'text-cream/60 hover:text-cream' : 'text-ink/60 hover:text-ink')}`}
+            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors duration-300 ${active
+                ? 'text-plum-deep'
+                : (onDark ? 'text-cream/55 hover:text-cream/80' : 'text-ink/55 hover:text-ink/80')}`}
           >
-            <span className="text-sm leading-none">{r.flag}</span>
+            <span className={`text-sm leading-none transition-[filter,opacity] duration-300 ${active ? '' : 'grayscale opacity-70'}`}>{r.flag}</span>
             <span className="hidden xl:inline">{r.name}</span>
           </button>
         );
