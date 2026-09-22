@@ -221,7 +221,6 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   }, [paused, reviews.length]);
 
   const go = (dir: number) => setIndex((i) => (i + dir + reviews.length) % reviews.length);
-  const review = reviews[index];
 
   return (
     <section id="testimonials" className="pt-6 md:pt-10 pb-16 md:pb-24 relative overflow-hidden isolate">
@@ -244,42 +243,59 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         </div>
       </FadeIn>
 
-      {/* One review at a time, auto-advancing — arrows flank the quote */}
+      {/* Auto-advancing — arrows flank the quote; all reviews are stacked so the
+          block height always fits the LONGEST one (no jump when it changes). */}
       <div
         className="relative max-w-4xl mx-auto px-2 sm:px-4"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        {/* prev — left side */}
+        {/* prev — plain chevron, left side */}
         <button
           type="button"
           onClick={() => go(-1)}
           aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
-          className="absolute left-0 sm:left-1 top-1/2 -translate-y-1/2 z-10 grid place-items-center w-10 h-10 md:w-11 md:h-11 rounded-full border border-cream/20 text-cream/70 hover:text-moon hover:border-moon/60 hover:-translate-y-1/2 transition-colors duration-300"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 text-cream/45 hover:text-moon transition-colors duration-300"
         >
-          <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+          <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
         </button>
-        {/* next — right side */}
+        {/* next — plain chevron, right side */}
         <button
           type="button"
           onClick={() => go(1)}
           aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
-          className="absolute right-0 sm:right-1 top-1/2 -translate-y-1/2 z-10 grid place-items-center w-10 h-10 md:w-11 md:h-11 rounded-full border border-cream/20 text-cream/70 hover:text-moon hover:border-moon/60 hover:-translate-y-1/2 transition-colors duration-300"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 text-cream/45 hover:text-moon transition-colors duration-300"
         >
-          <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+          <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
         </button>
 
-        <div className="relative text-center min-h-[17rem] sm:min-h-[15rem] flex flex-col items-center justify-center px-12 sm:px-20">
-          <Quote className="w-9 h-9 md:w-10 md:h-10 text-moon/50 mb-5 shrink-0" />
-          <div key={index} className="animate-fade-up flex flex-col items-center">
-            <p className="text-cream text-lg md:text-2xl leading-relaxed md:leading-relaxed font-normal">
-              {review.text}
-            </p>
-            <div className="mt-7 flex gap-1 text-moon">
-              {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
-            </div>
-            <div className="mt-3 font-serif font-semibold text-cream text-base">{review.author}</div>
-          </div>
+        <div className="grid px-10 sm:px-20">
+          {reviews.map((r, i) => {
+            const active = i === index;
+            return (
+              <div
+                key={i}
+                aria-hidden={!active}
+                style={{ gridArea: '1 / 1' }}
+                className={`flex flex-col items-center text-center transition-opacity duration-500 ${active ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              >
+                {/* small quote mark on each testimonial */}
+                <Quote className="w-6 h-6 md:w-7 md:h-7 text-moon/45 mb-4 shrink-0" />
+                <p className="text-cream text-lg md:text-2xl leading-relaxed font-normal">
+                  {r.text}
+                </p>
+                <div className="mt-7 flex gap-1 text-moon">
+                  {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
+                </div>
+                {/* name block — set off with a hairline + source line */}
+                <div className="mt-6 flex flex-col items-center">
+                  <span className="h-px w-8 bg-moon/40 mb-4" />
+                  <div className="font-serif font-semibold text-cream text-lg md:text-xl tracking-tight">{r.author}</div>
+                  <div className="mt-1.5 text-[10px] uppercase tracking-[0.24em] text-moon/80">{r.location}</div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
