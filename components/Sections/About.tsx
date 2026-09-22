@@ -18,8 +18,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
 
   return (
     <section id="about" className="relative isolate text-cream">
-      {/* full-bleed twilight-glass band — a quiet cut from the hero, portrait + text */}
-      <div className="border-y border-white/[0.08] bg-[rgba(18,12,40,0.55)] backdrop-blur-[3px]">
+      {/* NEUTRAL band — a calm, low-chroma deep ground so the portrait + text read quietly */}
+      <div className="border-y border-white/[0.08]" style={{ background: 'linear-gradient(180deg, #15121F 0%, #1B1730 100%)' }}>
         <FadeIn>
           <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-[1fr_42%] items-stretch">
             {/* RIGHT (on desktop) — portrait */}

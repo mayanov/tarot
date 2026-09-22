@@ -53,7 +53,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       id="events"
       className="py-16 md:py-24 relative overflow-hidden isolate border-y border-white/[0.08]"
     >
-      <div className="absolute inset-0 bg-[rgba(24,18,52,0.5)] backdrop-blur-[4px]">
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #16131F 0%, #1D1930 100%)' }}>
         <GrainyMesh variant="catPlum" grain={0.16} />
       </div>
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10 text-cream">

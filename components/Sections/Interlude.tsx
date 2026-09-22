@@ -21,15 +21,15 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       className="relative overflow-hidden isolate text-cream py-20 md:py-28 border-y border-white/[0.08]"
       style={{
         background:
-          'radial-gradient(120% 150% at 50% 0%, rgba(46,29,74,0.72) 0%, rgba(26,17,48,0.78) 55%, rgba(16,11,36,0.82) 100%)',
+          'linear-gradient(180deg, #3A2036 0%, #2C1930 55%, #1E1428 100%)',
       }}
     >
-      {/* moonstone bloom from below */}
+      {/* warm dawn bloom from below — echoes the sky's horizon, a warm accent moment */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(60% 80% at 50% 118%, rgba(198,178,228,0.28) 0%, rgba(198,178,228,0.06) 40%, transparent 70%)',
+            'radial-gradient(60% 80% at 50% 118%, rgba(224,146,110,0.24) 0%, rgba(200,120,110,0.08) 42%, transparent 72%)',
         }}
       />
 

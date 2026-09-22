@@ -69,8 +69,8 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
 
   return (
     <section id="why-choose" className="relative isolate">
-      {/* full-bleed twilight-glass band — sky bleeds through, no floating card */}
-      <div className="bg-[rgba(28,18,54,0.6)] backdrop-blur-[3px] border-y border-white/[0.08] text-cream">
+      {/* PLUM accent band — a warmer violet moment between the indigo Services and the reviews */}
+      <div className="border-y border-white/[0.08] text-cream" style={{ background: 'linear-gradient(180deg, #201540 0%, #2C1A46 100%)' }}>
         <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-20 md:py-28">
           <div className="grid lg:grid-cols-12 gap-y-14 lg:gap-x-20">
             {/* LEFT — sticky intro */}
