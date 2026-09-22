@@ -70,7 +70,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   return (
     <section id="why-choose" className="relative isolate">
       {/* LIGHT band — warm bone with dark text (noho-style) */}
-      <div className="border-y border-black/[0.08] text-ink" style={{ background: 'linear-gradient(180deg, #F2F1EE 0%, #EAE8E3 100%)' }}>
+      <div className="border-y border-black/[0.08] text-ink" style={{ background: '#ffffff' }}>
         <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-24 md:py-32">
           {/* Big lead statement */}
           <FadeIn>
