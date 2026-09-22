@@ -54,7 +54,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         <footer
             ref={footerRef}
             className="relative z-20 mt-3 md:mt-6 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-44px_100px_-46px_rgba(0,0,0,0.85)]"
-            style={{ background: 'linear-gradient(180deg, #1B1230 0%, #120B1E 100%)' }}
+            style={{ background: 'linear-gradient(180deg, #111013 0%, #060608 100%)' }}
         >
             {/* film grain — matches the site background (subtle) */}
             <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />

@@ -101,7 +101,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
     <section
       id="faq"
       className="py-20 md:py-28 relative overflow-hidden isolate border-y border-black/[0.08] text-ink"
-      style={{ background: 'linear-gradient(180deg, #F3EFE7 0%, #ECE6DC 100%)' }}
+      style={{ background: 'linear-gradient(180deg, #F6F5F2 0%, #EEEDE9 100%)' }}
     >
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
         <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16">

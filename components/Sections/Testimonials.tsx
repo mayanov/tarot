@@ -225,7 +225,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   return (
     <section id="testimonials" className="py-20 md:py-28 relative overflow-hidden isolate border-y border-black/[0.08] text-ink">
       {/* light spotlight band — a soft lit stage on the warm bone ground */}
-      <div aria-hidden className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg, #F3EFE7 0%, #EBE5DB 100%)' }}>
+      <div aria-hidden className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg, #F6F5F2 0%, #EEEDE9 100%)' }}>
         <div
           className="absolute left-1/2 top-1/2 h-[130%] w-[80%] max-w-[1050px] -translate-x-1/2 -translate-y-1/2"
           style={{ background: 'radial-gradient(closest-side, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.2) 42%, transparent 72%)' }}

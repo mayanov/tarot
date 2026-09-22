@@ -21,7 +21,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       className="relative overflow-hidden isolate text-cream py-24 md:py-32 border-y border-white/[0.08]"
       style={{
         background:
-          'linear-gradient(180deg, #1B1440 0%, #120B24 100%)',
+          'linear-gradient(180deg, #111013 0%, #08070A 100%)',
       }}
     >
       {/* moonstone bloom from below — a dark cosmic breath amid the light sections */}
