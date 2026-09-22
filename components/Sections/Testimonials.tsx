@@ -244,13 +244,32 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         </div>
       </FadeIn>
 
-      {/* One review at a time, centered and auto-advancing */}
+      {/* One review at a time, auto-advancing — arrows flank the quote */}
       <div
-        className="max-w-3xl mx-auto px-4"
+        className="relative max-w-4xl mx-auto px-2 sm:px-4"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        <div className="relative text-center min-h-[17rem] sm:min-h-[15rem] flex flex-col items-center justify-center">
+        {/* prev — left side */}
+        <button
+          type="button"
+          onClick={() => go(-1)}
+          aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
+          className="absolute left-0 sm:left-1 top-1/2 -translate-y-1/2 z-10 grid place-items-center w-10 h-10 md:w-11 md:h-11 rounded-full border border-cream/20 text-cream/70 hover:text-moon hover:border-moon/60 hover:-translate-y-1/2 transition-colors duration-300"
+        >
+          <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+        </button>
+        {/* next — right side */}
+        <button
+          type="button"
+          onClick={() => go(1)}
+          aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
+          className="absolute right-0 sm:right-1 top-1/2 -translate-y-1/2 z-10 grid place-items-center w-10 h-10 md:w-11 md:h-11 rounded-full border border-cream/20 text-cream/70 hover:text-moon hover:border-moon/60 hover:-translate-y-1/2 transition-colors duration-300"
+        >
+          <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+        </button>
+
+        <div className="relative text-center min-h-[17rem] sm:min-h-[15rem] flex flex-col items-center justify-center px-12 sm:px-20">
           <Quote className="w-9 h-9 md:w-10 md:h-10 text-moon/50 mb-5 shrink-0" />
           <div key={index} className="animate-fade-up flex flex-col items-center">
             <p className="text-cream text-lg md:text-2xl leading-relaxed md:leading-relaxed font-normal">
@@ -261,26 +280,6 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
             </div>
             <div className="mt-3 font-serif font-semibold text-cream text-base">{review.author}</div>
           </div>
-        </div>
-
-        {/* controls */}
-        <div className="mt-8 flex items-center justify-center gap-6">
-          <button
-            type="button"
-            onClick={() => go(-1)}
-            aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
-            className="p-1 text-cream/70 hover:text-moon transition-colors duration-300"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => go(1)}
-            aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
-            className="p-1 text-cream/70 hover:text-moon transition-colors duration-300"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
