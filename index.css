@@ -4,15 +4,15 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
-  font-weight: 700;
+  font-family: 'Switzer', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
-/* Display headings lean into Syne's heavy, geometric character */
+/* Display headings lean into Switzer's bold grotesque character */
 h1,
 h2 {
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* Dark fallback behind the fixed sunset field (see <Background>) */

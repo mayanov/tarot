@@ -26,10 +26,9 @@
 
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-  <!-- Fonts: Fraunces (editorial serif display) + Work Sans (humanist body) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font: Switzer (modern grotesque) — one clean typeface across the whole site -->
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&display=swap" rel="stylesheet">
 
   <!-- Google API Scripts (for Real Data Dashboard) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -42,13 +41,12 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Work Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            // Display face — Syne (geometric art-display) carries all headings.
-            serif: ['Syne', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            heading: ['Syne', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            display: ['Syne', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            // Retained for occasional elegant italic accents.
-            elegant: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+            // Switzer — one clean modern grotesque across the whole site (noho-style).
+            sans: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            serif: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            heading: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            display: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            elegant: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           colors: {
             // --- Brand palette v2.0 (jewel tones) ---
