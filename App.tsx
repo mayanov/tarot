@@ -5,10 +5,11 @@ import Hero from './components/Sections/Hero';
 import About from './components/Sections/About';
 import WhyChoose from './components/Sections/WhyChoose';
 import Footer from './components/Layout/Footer';
+import Loader from './components/Layout/Loader';
 import BookingModal from './components/Booking/BookingModal';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
 import { initLenis, destroyLenis, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
-import { Moon, ArrowUp, RefreshCw } from 'lucide-react';
+import { ArrowUp, RefreshCw } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 
 // Lazy Load below-the-fold components
@@ -296,17 +297,6 @@ function App() {
   // ------------------------------------------------------------
   // 2. MAIN APP LOGIC (Geo Checks only happen here)
   // ------------------------------------------------------------
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0E1132] text-cream">
-        <div className="flex flex-col items-center gap-4 animate-pulse">
-          <Moon className="w-10 h-10 text-moon animate-spin-slow" strokeWidth={1.5} />
-          <span className="text-xs tracking-[0.3em] uppercase text-moon/70">Loading...</span>
-        </div>
-      </div>
-    );
-  }
-
   if (isGeoError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-cream text-ink p-4 text-center">
@@ -349,6 +339,8 @@ function App() {
 
   return (
     <div className="min-h-screen relative font-sans text-cream selection:bg-moon/25">
+      <Loader ready={!isLoading} isIndonesian={isIndonesian} />
+
       <Background />
 
       <Header isIndonesian={isIndonesian} onSwitchRegion={handleSwitchRegion} />
