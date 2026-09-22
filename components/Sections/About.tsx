@@ -21,21 +21,21 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       {/* full-bleed twilight-glass band — a quiet cut from the hero, portrait + text */}
       <div className="border-y border-white/[0.08] bg-[rgba(18,12,40,0.55)] backdrop-blur-[3px]">
         <FadeIn>
-          <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-[42%_1fr] items-stretch">
-            {/* LEFT — portrait, aligned to the shared page margin */}
-            <div className="relative min-h-[52vh] lg:min-h-0 order-1 overflow-hidden rounded-lg lg:rounded-none">
+          <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-[1fr_42%] items-stretch">
+            {/* RIGHT (on desktop) — portrait */}
+            <div className="relative min-h-[52vh] lg:min-h-0 order-1 lg:order-2 overflow-hidden rounded-lg lg:rounded-none">
               <img
                 src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
                 alt="Mayanov"
                 className="absolute inset-0 w-full h-full object-cover object-top"
               />
               {/* gradient veil so the portrait melts into the dark band */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#120C28] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-[#120C28]/80" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#120C28] via-transparent to-transparent lg:bg-gradient-to-l lg:from-transparent lg:via-transparent lg:to-[#120C28]/80" />
             </div>
 
-            {/* RIGHT — content */}
-            <div className="order-2 flex items-center">
-              <div className="w-full max-w-xl py-12 md:py-16 lg:pl-14">
+            {/* LEFT (on desktop) — content, aligned to the page margin */}
+            <div className="order-2 lg:order-1 flex items-center">
+              <div className="w-full max-w-xl py-12 md:py-16 lg:pr-14">
                 <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-3.5">
                   <span className="h-px w-7 bg-moon/50" />
                   {isIndonesian ? 'Tentang' : 'About'}
