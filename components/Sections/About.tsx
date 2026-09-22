@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import FadeIn from '../UI/FadeIn';
+import { ImageReveal } from '../UI/Reveal';
 import { trackEvent } from '../../services/analytics';
 
 interface AboutProps {
@@ -24,10 +25,12 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-[1fr_42%] items-stretch">
             {/* RIGHT (on desktop) — portrait */}
             <div className="relative min-h-[52vh] lg:min-h-0 order-1 lg:order-2 overflow-hidden rounded-lg lg:rounded-none">
-              <img
+              <ImageReveal
                 src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
                 alt="Mayanov"
-                className="absolute inset-0 w-full h-full object-cover object-top"
+                className="absolute inset-0"
+                imgClassName="w-full h-full object-cover object-top"
+                loading="eager"
               />
               {/* credentials, set onto the portrait */}
               <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 bg-gradient-to-t from-[#0E0B24]/90 via-[#0E0B24]/30 to-transparent">

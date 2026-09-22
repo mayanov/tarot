@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import FadeIn from '../UI/FadeIn';
-import GrainyMesh from '../UI/GrainyMesh';
+import { ImageReveal } from '../UI/Reveal';
 import { ChevronDown, X } from 'lucide-react';
 
 interface EventsProps {
@@ -93,14 +93,15 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                     <button
                       type="button"
                       onClick={() => setLightbox(src)}
-                      className="group relative block w-full overflow-hidden rounded-xl md:rounded-2xl aspect-[3/4] bg-white/5"
+                      className="group relative block w-full overflow-hidden rounded-xl md:rounded-2xl aspect-[3/4] bg-black/5"
                       aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
                     >
-                      <img
+                      <ImageReveal
                         src={src}
                         alt={isIndonesian ? `Sesi tarot Mayanov di event ${i + 1}` : `Mayanov tarot session at event ${i + 1}`}
-                        loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                        className="absolute inset-0"
+                        imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                        delay={i * 90}
                       />
                       <span className="pointer-events-none absolute inset-0 rounded-xl md:rounded-2xl ring-1 ring-inset ring-black/10 group-hover:ring-plum/50 transition-all" />
                       <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
