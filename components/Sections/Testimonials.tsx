@@ -253,32 +253,32 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
       {/* Auto-advancing — arrows flank the quote; all reviews are stacked so the
           block height always fits the LONGEST one (no jump when it changes). */}
       <div
-        className="relative max-w-4xl mx-auto px-2 sm:px-4"
+        className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
         {/* giant ghosted quotation mark behind the review */}
         <span aria-hidden className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/3 font-elegant text-moon/10 text-[10rem] md:text-[16rem] leading-none select-none">&ldquo;</span>
-        {/* prev — plain chevron, left side */}
+        {/* prev — plain chevron, at the section's left margin */}
         <button
           type="button"
           onClick={() => go(-1)}
           aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 text-cream/45 hover:text-moon transition-colors duration-300"
+          className="absolute left-3 md:left-8 lg:left-10 top-1/2 -translate-y-1/2 z-10 p-2 text-cream/45 hover:text-moon transition-colors duration-300"
         >
           <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
         </button>
-        {/* next — plain chevron, right side */}
+        {/* next — plain chevron, at the section's right margin */}
         <button
           type="button"
           onClick={() => go(1)}
           aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 text-cream/45 hover:text-moon transition-colors duration-300"
+          className="absolute right-3 md:right-8 lg:right-10 top-1/2 -translate-y-1/2 z-10 p-2 text-cream/45 hover:text-moon transition-colors duration-300"
         >
           <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
         </button>
 
-        <div className="relative z-10 grid px-10 sm:px-20">
+        <div className="relative z-10 grid max-w-3xl mx-auto px-4 sm:px-6">
           {reviews.map((r, i) => {
             const active = i === index;
             return (
