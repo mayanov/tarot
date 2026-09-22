@@ -71,46 +71,38 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
     <section id="why-choose" className="relative isolate">
       {/* LIGHT band — warm bone with dark text (noho-style) */}
       <div className="border-y border-black/[0.08] text-ink" style={{ background: 'linear-gradient(180deg, #EFEAE0 0%, #E7E0D5 100%)' }}>
-        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-20 md:py-28">
-          <div className="grid lg:grid-cols-12 gap-y-14 lg:gap-x-20">
-            {/* LEFT — sticky intro */}
-            <div className="lg:col-span-4">
-              <FadeIn>
-                <div className="lg:sticky lg:top-28">
-                  <h2 className="font-elegant font-medium text-ink text-[2rem] md:text-[2.6rem] leading-[1.03] tracking-[-0.02em]">
-                    {isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}
-                  </h2>
-                  <p className="mt-6 text-[0.95rem] text-ink/55 font-light leading-relaxed max-w-xs">
-                    {isIndonesian
-                      ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan sesi curhat yang penuh insight.'
-                      : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
+        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-24 md:py-32">
+          {/* Big lead statement */}
+          <FadeIn>
+            <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl">
+              {isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}
+            </h2>
+            <p className="mt-6 text-lg md:text-xl text-ink/60 font-light leading-relaxed max-w-2xl">
+              {isIndonesian
+                ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan ruang aman untuk bercerita, dengan kesimpulan yang jelas dan langkah yang bisa kamu ambil.'
+                : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
+            </p>
+          </FadeIn>
+
+          {/* Feature prose blocks — titled paragraphs in a generous 2-column grid */}
+          <div className="mt-16 md:mt-24 grid md:grid-cols-2 gap-x-12 lg:gap-x-28 gap-y-12 md:gap-y-16">
+            {reasons.map((reason, index) => (
+              <FadeIn key={index} delay={Math.min(index, 6) * 70} dir="up">
+                <div className="max-w-xl">
+                  <div className="flex items-baseline gap-4">
+                    <span className="font-serif text-plum text-sm tabular-nums pt-1 shrink-0">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="font-serif font-semibold text-ink text-xl md:text-[1.7rem] leading-[1.15] tracking-[-0.015em]">
+                      {reason.title}
+                    </h3>
+                  </div>
+                  <p className="mt-4 pl-9 text-[0.95rem] md:text-base text-ink/65 font-light leading-relaxed">
+                    {reason.description}
                   </p>
                 </div>
               </FadeIn>
-            </div>
-
-            {/* RIGHT — numbered editorial list */}
-            <div className="lg:col-span-8">
-              <div className="border-t border-ink/15">
-                {reasons.map((reason, index) => (
-                  <FadeIn key={index} delay={Math.min(index, 6) * 60} dir="up">
-                    <div className="group grid grid-cols-[auto_1fr] gap-6 md:gap-12 py-7 md:py-9 border-b border-ink/15 transition-colors duration-300">
-                      <span className="font-serif text-plum text-base md:text-lg tabular-nums pt-1.5 tracking-tight">
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      <div className="transition-transform duration-300 group-hover:translate-x-1.5">
-                        <h3 className="font-serif font-semibold text-ink text-xl md:text-[1.65rem] leading-[1.2] tracking-[-0.01em]">
-                          {reason.title}
-                        </h3>
-                        <p className="mt-3 text-sm md:text-[0.95rem] text-ink/55 font-light leading-relaxed max-w-xl">
-                          {reason.description}
-                        </p>
-                      </div>
-                    </div>
-                  </FadeIn>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
