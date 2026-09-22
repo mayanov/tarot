@@ -257,8 +257,6 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        {/* giant ghosted quotation mark behind the review */}
-        <span aria-hidden className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/3 font-elegant text-moon/10 text-[10rem] md:text-[16rem] leading-none select-none">&ldquo;</span>
         {/* prev — plain chevron, at the section's left margin */}
         <button
           type="button"
@@ -278,7 +276,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
         </button>
 
-        <div className="relative z-10 grid max-w-3xl mx-auto px-4 sm:px-6">
+        <div className="relative z-10 grid max-w-5xl mx-auto px-4 sm:px-6">
           {reviews.map((r, i) => {
             const active = i === index;
             return (
