@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Quote, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 
 interface TestimonialsProps {
@@ -279,19 +279,12 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                 style={{ gridArea: '1 / 1' }}
                 className={`flex flex-col items-center text-center transition-opacity duration-500 ${active ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
               >
-                {/* small quote mark on each testimonial */}
-                <Quote className="w-6 h-6 md:w-7 md:h-7 text-moon/45 mb-4 shrink-0" />
                 <p className="text-cream text-lg md:text-2xl leading-relaxed font-normal">
-                  {r.text}
+                  <span className="font-elegant text-moon-bright/70 align-baseline">&ldquo;</span>{r.text}<span className="font-elegant text-moon-bright/70 align-baseline">&rdquo;</span>
                 </p>
-                <div className="mt-7 flex gap-1 text-moon">
-                  {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
-                </div>
-                {/* name block — set off with a hairline + source line */}
-                <div className="mt-6 flex flex-col items-center">
-                  <span className="h-px w-8 bg-moon/40 mb-4" />
-                  <div className="font-serif font-semibold text-cream text-lg md:text-xl tracking-tight">{r.author}</div>
-                  <div className="mt-1.5 text-[10px] uppercase tracking-[0.24em] text-moon/80">{r.location}</div>
+                {/* attribution — italic serif with a moonstone dash */}
+                <div className="mt-8 font-elegant italic text-cream/90 text-lg md:text-xl">
+                  <span className="not-italic text-moon mr-2">&mdash;</span>{r.author}
                 </div>
               </div>
             );
@@ -306,7 +299,6 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-cream/30 hover:border-cream hover:bg-cream hover:text-ink transition-all duration-300 text-cream font-medium group"
         >
-          <Star className="w-4 h-4 fill-current text-moon" />
           <span>{isIndonesian ? 'Lihat Semua Review di Google' : 'Read All Reviews on Google'}</span>
         </a>
       </div>
