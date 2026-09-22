@@ -17,9 +17,9 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
   }, [isIndonesian]);
 
   return (
-    <section id="about" className="relative isolate text-cream">
-      {/* NEUTRAL band — a calm, low-chroma deep ground so the portrait + text read quietly */}
-      <div className="border-y border-white/[0.08]" style={{ background: 'linear-gradient(180deg, #15121F 0%, #1B1730 100%)' }}>
+    <section id="about" className="relative isolate text-ink">
+      {/* LIGHT relief band — warm dawn light with dark text, a breath after the dark hero */}
+      <div className="border-y border-black/[0.06]" style={{ background: 'linear-gradient(180deg, #F5EDE4 0%, #EADFD3 100%)' }}>
         <FadeIn>
           <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-[1fr_42%] items-stretch">
             {/* RIGHT (on desktop) — portrait */}
@@ -29,8 +29,6 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 alt="Mayanov"
                 className="absolute inset-0 w-full h-full object-cover object-top"
               />
-              {/* gradient veil so the portrait melts into the dark band */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#120C28] via-transparent to-transparent lg:bg-gradient-to-l lg:from-transparent lg:via-transparent lg:to-[#120C28]/80" />
               {/* credentials, set onto the portrait */}
               <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 bg-gradient-to-t from-[#0E0B24]/90 via-[#0E0B24]/30 to-transparent">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-cream/85">
@@ -46,20 +44,20 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             {/* LEFT (on desktop) — content, aligned to the page margin */}
             <div className="order-2 lg:order-1 flex items-center">
               <div className="w-full max-w-2xl py-12 md:py-16 lg:pr-14">
-                <h2 className="font-elegant font-medium text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
+                <h2 className="font-elegant font-medium text-plum-deep text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian ? 'Tentang Saya' : 'About Me'}
                 </h2>
 
                 {/* pull quote */}
                 <div className="relative mt-5">
-                  <p className="relative font-elegant italic text-moon-bright text-[1.05rem] md:text-[1.22rem] xl:text-[1.3rem] leading-[1.35] tracking-[-0.01em]">
+                  <p className="relative font-elegant italic text-plum-deep text-[1.05rem] md:text-[1.22rem] xl:text-[1.3rem] leading-[1.35] tracking-[-0.01em]">
                     {isIndonesian
                       ? 'Tarot, buat saya, bukan soal takdir yang menakutkan — melainkan ruang tenang untuk berhenti sejenak, mendengarkan diri, dan menemukan kejernihan di tengah hiruk-pikuk.'
                       : 'Tarot, for me, isn’t about scary fate — it’s a calm space to pause, listen to yourself, and find clarity in the middle of the noise.'}
                   </p>
                 </div>
 
-                <div className="mt-5 space-y-3 text-sm md:text-[14.5px] text-cream/70 font-light leading-[1.65]">
+                <div className="mt-5 space-y-3 text-sm md:text-[14.5px] text-ink/70 font-light leading-[1.65]">
                   <p>
                     {isIndonesian
                       ? 'Saya sudah mendalami seni membaca Tarot sejak 2009 — lebih dari 15 tahun menjadikannya medium untuk refleksi diri dan menemukan solusi yang nyata. Sesi bersama saya terasa seperti percakapan jujur, bukan ramalan. Kita bedah situasimu, kenali pola yang bikin stuck, lalu susun langkah konkret — analitis, hangat, tanpa menghakimi.'
@@ -73,8 +71,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 </div>
 
                 {/* closing statement */}
-                <div className="mt-6 pt-5 border-t border-moon/25">
-                  <p className="font-elegant text-cream text-[1rem] md:text-[1.18rem] lg:text-[1.28rem] leading-[1.3] tracking-[-0.015em]">
+                <div className="mt-6 pt-5 border-t border-plum-deep/20">
+                  <p className="font-elegant text-plum-deep text-[1rem] md:text-[1.18rem] lg:text-[1.28rem] leading-[1.3] tracking-[-0.015em]">
                     {isIndonesian
                       ? 'Tujuan saya simpel: memberi kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                       : 'My goal is simple — the clarity you need to make decisions with confidence.'}
