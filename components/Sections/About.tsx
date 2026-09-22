@@ -18,8 +18,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
 
   return (
     <section id="about" className="relative isolate text-ink">
-      {/* LIGHT relief band — warm dawn light with dark text, a breath after the dark hero */}
-      <div className="border-y border-black/[0.06]" style={{ background: 'linear-gradient(180deg, #F5EDE4 0%, #EADFD3 100%)' }}>
+      {/* LIGHT relief band — cool pale-lilac (same light tone as Interlude); soft seams into the dark neighbours */}
+      <div className="border-y border-black/[0.06]" style={{ background: 'linear-gradient(180deg, #F1ECF7 0%, #E6DEF0 100%)', boxShadow: 'inset 0 44px 52px -44px rgba(18,12,36,0.5), inset 0 -44px 52px -44px rgba(18,12,36,0.5)' }}>
         <FadeIn>
           <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-[1fr_42%] items-stretch">
             {/* RIGHT (on desktop) — portrait */}
