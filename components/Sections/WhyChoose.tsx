@@ -88,7 +88,8 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
           <div className="mt-16 md:mt-24 grid md:grid-cols-2 gap-x-12 lg:gap-x-28 gap-y-12 md:gap-y-16">
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 70} dir="up">
-                <div className="max-w-xl pt-6 border-t border-ink/15">
+                <div className="max-w-xl">
+                  <span aria-hidden className="block text-plum text-base leading-none mb-4">✦</span>
                   <h3 className="font-serif font-semibold text-ink text-xl md:text-[1.7rem] leading-[1.15] tracking-[-0.015em]">
                     {reason.title}
                   </h3>
