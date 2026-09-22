@@ -61,10 +61,6 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             {/* HEADER — title on the left, count + CTA on the right */}
             <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between mb-10 md:mb-14">
               <div>
-                <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-4">
-                  <span className="h-px w-7 bg-moon/50" />
-                  {isIndonesian ? "Portofolio" : "Portfolio"}
-                </span>
                 <h2 className="font-elegant font-medium text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian ? "Event & collaboration" : "Community & events"}
                 </h2>

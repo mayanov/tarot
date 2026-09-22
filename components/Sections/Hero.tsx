@@ -137,12 +137,6 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         {/* LEFT — supporting subhead + copy + single CTA */}
         <div className="lg:col-span-5 order-2 lg:order-1">
           <Rise delay={320}>
-            <div className="flex items-center gap-3 mb-5">
-              <span className="h-px w-8 bg-moon/60" />
-              <span className="text-[11px] uppercase tracking-[0.34em] text-moon">
-                {isIndonesian ? 'Refleksi, bukan ramalan' : 'Reflection, not fortune-telling'}
-              </span>
-            </div>
             <p className="font-elegant font-medium leading-[1.12] tracking-[-0.01em] text-[1.6rem] sm:text-[1.95rem] lg:text-[2.1rem] text-cream [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
               {isIndonesian ? (
                 <>Pandangan <span className="italic text-moon">jernih</span> untuk langkah berikutnya.</>

@@ -31,27 +31,24 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
               />
               {/* gradient veil so the portrait melts into the dark band */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#120C28] via-transparent to-transparent lg:bg-gradient-to-l lg:from-transparent lg:via-transparent lg:to-[#120C28]/80" />
+              {/* credentials, set onto the portrait */}
+              <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 bg-gradient-to-t from-[#0E0B24]/90 via-[#0E0B24]/30 to-transparent">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-cream/85">
+                  <span>{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</span>
+                  <span className="w-1 h-1 rounded-full bg-moon" />
+                  <span>{isIndonesian ? 'Sejak 2009' : 'Since 2009'}</span>
+                  <span className="w-1 h-1 rounded-full bg-moon" />
+                  <span>{isIndonesian ? '15+ Tahun' : '15+ Years'}</span>
+                </div>
+              </div>
             </div>
 
             {/* LEFT (on desktop) — content, aligned to the page margin */}
             <div className="order-2 lg:order-1 flex items-center">
-              <div className="w-full max-w-xl py-12 md:py-16 lg:pr-14">
-                <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-3.5">
-                  <span className="h-px w-7 bg-moon/50" />
-                  {isIndonesian ? 'Tentang' : 'About'}
-                </span>
-                <h2 className="font-elegant font-medium text-cream text-[1.8rem] md:text-[2.3rem] leading-[1.05] tracking-[-0.02em]">
+              <div className="w-full max-w-2xl py-12 md:py-16 lg:pr-14">
+                <h2 className="font-elegant font-medium text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian ? 'Tentang Saya' : 'About Me'}
                 </h2>
-
-                {/* credential meta line */}
-                <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] text-cream/50">
-                  <span>{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</span>
-                  <span className="w-1 h-1 rounded-full bg-moon/70" />
-                  <span>{isIndonesian ? 'Sejak 2009' : 'Since 2009'}</span>
-                  <span className="w-1 h-1 rounded-full bg-moon/70" />
-                  <span>{isIndonesian ? '15+ Tahun' : '15+ Years'}</span>
-                </div>
 
                 {/* pull quote */}
                 <div className="relative mt-5">

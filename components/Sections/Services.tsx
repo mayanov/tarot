@@ -31,8 +31,8 @@ const OfferRow: React.FC<{ o: any }> = ({ o }) => (
                 <span className="text-lg md:text-xl font-serif font-semibold text-moon-bright leading-none whitespace-nowrap">{o.price}</span>
             </div>
         </div>
-        {o.desc && <p className="mt-2 text-sm text-cream/70 font-light leading-relaxed">{o.desc}</p>}
-        {o.features && <p className="mt-1.5 text-xs text-cream/50 leading-relaxed">{o.features}</p>}
+        {o.desc && <p className="mt-2 text-sm text-cream/70 font-light leading-relaxed max-w-2xl">{o.desc}</p>}
+        {o.features && <p className="mt-1.5 text-xs text-cream/50 leading-relaxed max-w-2xl">{o.features}</p>}
     </div>
 );
 
@@ -233,10 +233,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 <FadeIn>
                     <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
                         <div className="lg:col-span-7">
-                            <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-5">
-                                <span className="h-px w-7 bg-moon/50" />
-                                {isIndonesian ? 'Layanan' : 'Services'}
-                            </span>
                             <h2 className="font-elegant font-medium text-cream text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
                                 {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
                             </h2>
@@ -300,13 +296,13 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 {/* body — collapses smoothly via grid-rows trick */}
                                 <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
                                     <div className="overflow-hidden min-h-0">
-                                        <div className="pb-9 md:pb-12 max-w-3xl">
+                                        <div className="pb-9 md:pb-12">
                                             <div className="flex flex-wrap gap-1.5">
                                                 {g.tags.map((t: string) => (
                                                     <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-cream/20 text-cream/55 rounded">{t}</span>
                                                 ))}
                                             </div>
-                                            <p className="mt-4 text-sm text-cream/65 font-light leading-relaxed max-w-lg">{g.blurb}</p>
+                                            <p className="mt-4 text-sm text-cream/65 font-light leading-relaxed max-w-2xl">{g.blurb}</p>
                                             <div className="mt-6 border-t border-white/10">
                                                 {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
                                             </div>
@@ -326,10 +322,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-16 md:py-24">
                 <FadeIn>
                     <div id="process" className="scroll-mt-24">
-                        <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-5">
-                            <span className="h-px w-7 bg-moon/50" />
-                            {isIndonesian ? 'Prosesnya' : 'The process'}
-                        </span>
                         <h3 className="font-elegant font-medium text-cream text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em] max-w-xl">
                             {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
                         </h3>

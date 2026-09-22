@@ -77,10 +77,6 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             <div className="lg:col-span-4">
               <FadeIn>
                 <div className="lg:sticky lg:top-28">
-                  <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-6">
-                    <span className="h-px w-7 bg-moon/50" />
-                    {isIndonesian ? 'Kenapa saya' : 'Why me'}
-                  </span>
                   <h2 className="font-elegant font-medium text-cream text-[2rem] md:text-[2.6rem] leading-[1.03] tracking-[-0.02em]">
                     {isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}
                   </h2>

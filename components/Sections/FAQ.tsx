@@ -108,10 +108,6 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           <div className="lg:col-span-4">
             <FadeIn>
               <div className="lg:sticky lg:top-28">
-                <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-5">
-                  <span className="h-px w-7 bg-moon/50" />
-                  FAQ
-                </span>
                 <h2 className="font-elegant font-medium text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
                 </h2>

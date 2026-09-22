@@ -229,10 +229,6 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 mb-12 md:mb-14">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-8">
             <div>
-              <span className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-moon mb-4">
-                <span className="h-px w-7 bg-moon/50" />
-                {isIndonesian ? 'Testimoni' : 'Testimonials'}
-              </span>
               <h2 className="text-[1.9rem] md:text-[2.5rem] leading-[1.05] font-elegant font-medium text-cream tracking-[-0.02em]">
                 {isIndonesian ? 'Apa kata mereka' : 'What others are saying'}
               </h2>
