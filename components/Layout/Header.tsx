@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, ChevronDown, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import { smoothScrollTo, smoothScrollToId } from '../UI/scroll';
 
 interface HeaderProps {
@@ -12,61 +12,32 @@ const REGIONS = {
   id: { flag: '🇮🇩', name: 'Indonesia', sub: 'Bahasa · IDR' },
 } as const;
 
-// Desktop region selector: shows the current version and lets the visitor switch.
+// Desktop region switcher: a two-segment toggle (Global / Indonesia).
 const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; onDark?: boolean }> = ({ isIndonesian, onSwitch, onDark = false }) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const current = isIndonesian ? REGIONS.id : REGIONS.global;
-  const choose = (toID: boolean) => { onSwitch(toID); setOpen(false); };
-
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        title={`Currently viewing the ${current.name} version — click to switch`}
-        className={`flex items-center gap-1.5 pl-2.5 pr-2 py-1.5 rounded-full border text-sm font-medium transition-colors ${onDark ? 'border-cream/30 text-cream hover:border-cream/60' : 'border-line text-ink hover:border-coral/50'}`}
-      >
-        <span className="text-base leading-none">{current.flag}</span>
-        <span className="hidden xl:inline">{current.name}</span>
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${onDark ? 'text-cream/70' : 'text-taupe'} ${open ? 'rotate-180' : ''}`} />
-      </button>
-
-      {open && (
-        <div className="absolute top-full right-0 mt-2 w-56 bg-[#160E32]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-[0_24px_60px_-30px_rgba(0,0,0,0.8)] overflow-hidden p-1.5 z-50" role="listbox">
-          <p className="px-3 pt-1.5 pb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-cream/45">Choose your version</p>
-          {([['global', false], ['id', true]] as const).map(([key, toID]) => {
-            const r = REGIONS[key];
-            const active = toID === isIndonesian;
-            return (
-              <button
-                key={key}
-                onClick={() => choose(toID)}
-                role="option"
-                aria-selected={active}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${active ? 'bg-white/[0.08]' : 'hover:bg-white/[0.06]'}`}
-              >
-                <span className="text-lg leading-none">{r.flag}</span>
-                <span className="flex-1">
-                  <span className="block text-sm font-medium text-cream">{r.name}</span>
-                  <span className="block text-xs text-cream/50">{r.sub}</span>
-                </span>
-                {active && <Check className="w-4 h-4 text-moon shrink-0" />}
-              </button>
-            );
-          })}
-        </div>
-      )}
+    <div
+      role="group"
+      aria-label="Site version"
+      className={`flex items-center gap-0.5 p-0.5 rounded-full border ${onDark ? 'border-cream/20' : 'border-line'}`}
+    >
+      {([['global', false], ['id', true]] as const).map(([key, toID]) => {
+        const r = REGIONS[key];
+        const active = toID === isIndonesian;
+        return (
+          <button
+            key={key}
+            onClick={() => onSwitch(toID)}
+            aria-pressed={active}
+            title={`Switch to the ${r.name} version`}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${active
+                ? 'bg-moon text-plum-deep'
+                : (onDark ? 'text-cream/60 hover:text-cream' : 'text-ink/60 hover:text-ink')}`}
+          >
+            <span className="text-sm leading-none">{r.flag}</span>
+            <span className="hidden xl:inline">{r.name}</span>
+          </button>
+        );
+      })}
     </div>
   );
 };
