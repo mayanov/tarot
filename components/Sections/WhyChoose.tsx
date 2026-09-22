@@ -89,15 +89,10 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 70} dir="up">
                 <div className="max-w-xl">
-                  <div className="flex items-baseline gap-4">
-                    <span className="font-serif text-plum text-sm tabular-nums pt-1 shrink-0">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <h3 className="font-serif font-semibold text-ink text-xl md:text-[1.7rem] leading-[1.15] tracking-[-0.015em]">
-                      {reason.title}
-                    </h3>
-                  </div>
-                  <p className="mt-4 pl-9 text-[0.95rem] md:text-base text-ink/65 font-light leading-relaxed">
+                  <h3 className="font-serif font-semibold text-ink text-xl md:text-[1.7rem] leading-[1.15] tracking-[-0.015em]">
+                    {reason.title}
+                  </h3>
+                  <p className="mt-4 text-[0.95rem] md:text-base text-ink/65 font-light leading-relaxed">
                     {reason.description}
                   </p>
                 </div>
