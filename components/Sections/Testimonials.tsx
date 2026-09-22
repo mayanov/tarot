@@ -223,7 +223,14 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   const go = (dir: number) => setIndex((i) => (i + dir + reviews.length) % reviews.length);
 
   return (
-    <section id="testimonials" className="py-20 md:py-28 relative overflow-hidden isolate">
+    <section id="testimonials" className="py-20 md:py-28 relative overflow-hidden isolate border-y border-white/[0.08]">
+      {/* spotlight band — a lit stage that sets reviews apart from the transparent sections */}
+      <div aria-hidden className="absolute inset-0 -z-10 bg-[rgba(20,14,44,0.5)] backdrop-blur-[2px]">
+        <div
+          className="absolute left-1/2 top-1/2 h-[130%] w-[80%] max-w-[1050px] -translate-x-1/2 -translate-y-1/2"
+          style={{ background: 'radial-gradient(closest-side, rgba(198,178,228,0.18) 0%, rgba(198,178,228,0.06) 42%, transparent 72%)' }}
+        />
+      </div>
       <FadeIn>
         <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 mb-12 md:mb-14">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-8">
@@ -250,6 +257,8 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
+        {/* giant ghosted quotation mark behind the review */}
+        <span aria-hidden className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/3 font-elegant text-moon/10 text-[10rem] md:text-[16rem] leading-none select-none">&ldquo;</span>
         {/* prev — plain chevron, left side */}
         <button
           type="button"
@@ -269,7 +278,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
         </button>
 
-        <div className="grid px-10 sm:px-20">
+        <div className="relative z-10 grid px-10 sm:px-20">
           {reviews.map((r, i) => {
             const active = i === index;
             return (
