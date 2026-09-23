@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Instagram, Clock, ArrowRight, MapPin } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
@@ -17,32 +17,6 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const currentYear = new Date().getFullYear();
     const footerRef = useRef<HTMLElement>(null);
 
-    // As you reach the bottom, the footer rises up into the section above it —
-    // so it feels like the footer is pushing that section up. Settles to 0 at rest
-    // (no gap), and reveals the deep panel from below.
-    useEffect(() => {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        const el = footerRef.current;
-        if (!el) return;
-        let raf = 0;
-        const update = () => {
-            const rect = el.getBoundingClientRect();
-            const vh = window.innerHeight;
-            const t = Math.min(Math.max((vh - rect.top) / (vh * 0.62), 0), 1);
-            const shift = (1 - t) * 72; // starts lower, rises to its resting spot
-            el.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0)`;
-        };
-        const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
-        update();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-        return () => {
-            window.removeEventListener('scroll', onScroll);
-            window.removeEventListener('resize', onScroll);
-            cancelAnimationFrame(raf);
-        };
-    }, []);
-
     // Circular, bordered social button — fills with moonstone on hover.
     const socialClass = "grid place-items-center w-11 h-11 rounded-full border border-white/20 text-white hover:text-plum-deep hover:bg-moon hover:border-moon transition-all duration-300 hover:-translate-y-0.5";
     const labelClass = "text-[11px] uppercase tracking-[0.24em] text-moon mb-5";
@@ -53,7 +27,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     return (
         <footer
             ref={footerRef}
-            className="relative z-20 mt-3 md:mt-6 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-44px_100px_-46px_rgba(0,0,0,0.85)]"
+            className="relative z-20 pt-12 md:pt-16 pb-6 overflow-hidden isolate"
             style={{ background: 'linear-gradient(180deg, #0C0C0D 0%, #050505 100%)' }}
         >
             {/* film grain — matches the site background (subtle) */}
