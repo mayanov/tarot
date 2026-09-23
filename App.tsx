@@ -367,7 +367,8 @@ function App() {
         </React.Suspense>
       </main>
 
-      <div className="relative z-10">
+      {/* white backdrop so the footer's rise + rounded corners reveal white, not the sky */}
+      <div className="relative z-10 bg-white">
         <Footer isIndonesian={isIndonesian} />
       </div>
 
