@@ -10,28 +10,28 @@ interface ServicesProps {
 }
 
 // Dark order pill on the light ground — opens the on-site booking flow.
-const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-none border border-ink text-ink text-sm font-semibold hover:bg-ink hover:text-cream transition-colors duration-300";
+const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-none border border-cream text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300";
 
 // A per-category tint — subtle warm-bone panels that alternate for a gentle rhythm on light.
-const PANELS = ['rgba(255,253,248,0.6)', 'rgba(0,0,0,0.028)', 'rgba(255,253,248,0.6)', 'rgba(0,0,0,0.028)'];
+const PANELS = ['rgba(255,255,255,0.04)', 'rgba(255,255,255,0.02)', 'rgba(255,255,255,0.04)', 'rgba(255,255,255,0.02)'];
 
 // One offer line inside a category row: name (+ inline badge) left, price right.
 const OfferRow: React.FC<{ o: any }> = ({ o }) => (
-    <div className="py-4 border-t border-black/10 first:border-t-0">
+    <div className="py-4 border-t border-white/10 first:border-t-0">
         <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2.5 flex-wrap min-w-0">
-                <h4 className="text-[1.05rem] font-serif font-semibold text-ink leading-tight tracking-tight">
-                    {o.name}{o.sub && <span className="text-sm text-ink/55 font-sans font-normal ml-2">{o.sub}</span>}
+                <h4 className="text-[1.05rem] font-serif font-semibold text-cream leading-tight tracking-tight">
+                    {o.name}{o.sub && <span className="text-sm text-cream/55 font-sans font-normal ml-2">{o.sub}</span>}
                 </h4>
-                {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-none ${o.badgeTone || 'bg-black/[0.06] text-ink'}`}>{o.badge}</span>}
+                {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-none ${o.badgeTone || 'bg-white/[0.06] text-cream'}`}>{o.badge}</span>}
             </div>
             <div className="text-right shrink-0">
-                {o.oldPrice && <span className="text-xs text-ink/45 line-through leading-none block">{o.oldPrice}</span>}
-                <span className="text-lg md:text-xl font-serif font-semibold text-ink leading-none whitespace-nowrap">{o.price}</span>
+                {o.oldPrice && <span className="text-xs text-cream/45 line-through leading-none block">{o.oldPrice}</span>}
+                <span className="text-lg md:text-xl font-serif font-semibold text-cream leading-none whitespace-nowrap">{o.price}</span>
             </div>
         </div>
-        {o.desc && <p className="mt-2 text-sm text-ink/70 font-light leading-relaxed max-w-2xl">{o.desc}</p>}
-        {o.features && <p className="mt-1.5 text-xs text-ink/50 leading-relaxed max-w-2xl">{o.features}</p>}
+        {o.desc && <p className="mt-2 text-sm text-cream/70 font-light leading-relaxed max-w-2xl">{o.desc}</p>}
+        {o.features && <p className="mt-1.5 text-xs text-cream/50 leading-relaxed max-w-2xl">{o.features}</p>}
     </div>
 );
 
@@ -146,7 +146,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                     },
                     {
                         name: 'Beli 3 Dapat 5 Pertanyaan', price: 'Rp 315K',
-                        badge: 'Promo', badgeTone: 'bg-moon-deep/10 text-moon-deep',
+                        badge: 'Promo', badgeTone: 'bg-moon/10 text-moon',
                         features: 'Bayar 3, dapat 5 pertanyaan (dipakai di hari yang sama).',
                         book: [{ href: 'http://lynk.id/mayanovtarot/mm7ykgdwndez/', onClick: handlePromoBuy3Get5 }],
                     },
@@ -169,7 +169,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             },
             {
                 id: 'service-meetup', type: 'Sesi Tatap Muka', tags: ['JAKSEL', '1 JAM'],
-                blurb: <>Temu langsung di Jakarta Selatan — energi lebih terasa, analisa lebih personal. <a href="https://maps.app.goo.gl/LE2YwZiM2exhqunh8" target="_blank" rel="noopener noreferrer" className="text-ink border-b border-ink/40 hover:border-ink">Rekomendasi tempat</a></>,
+                blurb: <>Temu langsung di Jakarta Selatan — energi lebih terasa, analisa lebih personal. <a href="https://maps.app.goo.gl/LE2YwZiM2exhqunh8" target="_blank" rel="noopener noreferrer" className="text-cream border-b border-cream/40 hover:border-cream">Rekomendasi tempat</a></>,
                 priceLabel: 'Rp 450K',
                 offers: [
                     {
@@ -192,7 +192,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                     {
                         name: '3-Card Spread', price: '$12',
                         desc: 'A quick check-in on one specific question — direct and to the point.',
-                        features: <>Photo of your spread · within 24h · <span className="text-ink font-medium">1 qty = 1 question</span></>,
+                        features: <>Photo of your spread · within 24h · <span className="text-cream font-medium">1 qty = 1 question</span></>,
                         book: [{ href: 'https://www.paypal.com/ncp/payment/DSPX84KBN8GC2', onClick: handleBookBasic }],
                     },
                 ],
@@ -203,9 +203,9 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 priceLabel: '$20',
                 offers: [
                     {
-                        name: '5-Card Deep', price: '$20', badge: 'Most Popular', badgeTone: 'bg-moon-deep text-cream',
+                        name: '5-Card Deep', price: '$20', badge: 'Most Popular', badgeTone: 'bg-moon text-plum-deep',
                         desc: "The bigger picture — hidden influences and what's coming next, read in depth.",
-                        features: <>5-card spread · high-res photo · priority 24h · <span className="text-ink font-medium">1 qty = 1 question</span></>,
+                        features: <>5-card spread · high-res photo · priority 24h · <span className="text-cream font-medium">1 qty = 1 question</span></>,
                         book: [{ href: 'https://www.paypal.com/ncp/payment/V6U4QMAU642KA', onClick: handleBookDeep }],
                     },
                 ],
@@ -218,7 +218,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                     {
                         name: 'Live Session', sub: '30 min', price: '$45',
                         desc: 'Talk it out live on Google Meet and dive as deep as you want, together.',
-                        features: <><span className="text-ink font-medium">Unlimited questions</span> · real-time feedback · natural flow</>,
+                        features: <><span className="text-cream font-medium">Unlimited questions</span> · real-time feedback · natural flow</>,
                         book: [{ href: 'https://www.picktime.com/mayanovtarotEn#book/date', onClick: handleBookLive }],
                     },
                 ],
@@ -226,17 +226,17 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
         ];
 
     return (
-        <section id="services" className="relative isolate text-ink border-y border-black/[0.08]" style={{ background: '#ffffff' }}>
+        <section id="services" className="relative isolate text-cream border-y border-white/[0.08]" style={{ background: '#0B0B0D' }}>
             {/* HEADER — transparent over the sky */}
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-20 md:pt-28 pb-10 md:pb-14">
                 <FadeIn>
                     <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
                         <div className="lg:col-span-7">
-                            <h2 className="font-elegant font-medium text-ink text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
+                            <h2 className="font-elegant font-medium text-cream text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
                                 {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
                             </h2>
                         </div>
-                        <p className="lg:col-span-4 lg:col-start-9 text-[0.95rem] text-ink/60 font-light leading-relaxed lg:pb-2">
+                        <p className="lg:col-span-4 lg:col-start-9 text-[0.95rem] text-cream/60 font-light leading-relaxed lg:pb-2">
                             {isIndonesian
                                 ? 'Pilih metode yang paling nyaman — analisa tajam, solutif, tanpa basa-basi.'
                                 : 'Clear options, no hidden fees. Just choose the depth you need.'}
@@ -246,7 +246,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* ===== Pricelist — full-width translucent twilight-glass bands, one open at a time ===== */}
-            <div className="border-t border-black/[0.08]">
+            <div className="border-t border-white/[0.08]">
                 {groups.map((g: any, i: number) => {
                     const open = openIdx === i;
                     const on = shown[i];
@@ -256,7 +256,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             id={g.id || undefined}
                             ref={(el) => { bandRefs.current[i] = el; }}
                             data-idx={i}
-                            className="relative scroll-mt-28 border-b border-black/[0.08] backdrop-blur-[3px] will-change-transform"
+                            className="relative scroll-mt-28 border-b border-white/[0.08] backdrop-blur-[3px] will-change-transform"
                             style={{
                                 background: PANELS[i % PANELS.length],
                                 transform: on ? 'translateY(0)' : 'translateY(56px)',
@@ -272,22 +272,22 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     className="w-full flex items-center justify-between gap-4 py-7 md:py-9 text-left group"
                                 >
                                     <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap min-w-0">
-                                        <h3 className="font-elegant font-medium text-ink text-[1.55rem] md:text-[2.2rem] leading-none tracking-tight transition-colors group-hover:text-ink">
+                                        <h3 className="font-elegant font-medium text-cream text-[1.55rem] md:text-[2.2rem] leading-none tracking-tight transition-colors group-hover:text-cream">
                                             {g.type}
                                         </h3>
                                         {g.seasonal && (
-                                            <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-none bg-black/[0.06] text-ink">
+                                            <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-none bg-white/[0.06] text-cream">
                                                 {isIndonesian ? 'Musiman' : 'Seasonal'}
                                             </span>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-4 md:gap-6 shrink-0">
                                         <span className="hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap">
-                                            <span className="text-ink/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
-                                            <span className="font-serif font-semibold text-ink">{g.priceLabel}</span>
+                                            <span className="text-cream/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
+                                            <span className="font-serif font-semibold text-cream">{g.priceLabel}</span>
                                         </span>
-                                        <span className={`grid place-items-center w-9 h-9 rounded-none border border-ink/25 transition-transform duration-300 ${open ? 'rotate-180 border-ink' : ''}`}>
-                                            <ChevronDown className="w-4 h-4 text-ink" />
+                                        <span className={`grid place-items-center w-9 h-9 rounded-none border border-cream/25 transition-transform duration-300 ${open ? 'rotate-180 border-cream' : ''}`}>
+                                            <ChevronDown className="w-4 h-4 text-cream" />
                                         </span>
                                     </div>
                                 </button>
@@ -298,11 +298,11 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                         <div className="pb-9 md:pb-12">
                                             <div className="flex flex-wrap gap-1.5">
                                                 {g.tags.map((t: string) => (
-                                                    <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
+                                                    <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-cream/20 text-cream/55 rounded">{t}</span>
                                                 ))}
                                             </div>
-                                            <p className="mt-4 text-sm text-ink/65 font-light leading-relaxed max-w-2xl">{g.blurb}</p>
-                                            <div className="mt-6 border-t border-black/10">
+                                            <p className="mt-4 text-sm text-cream/65 font-light leading-relaxed max-w-2xl">{g.blurb}</p>
+                                            <div className="mt-6 border-t border-white/10">
                                                 {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
                                             </div>
                                             <div className="mt-6">
@@ -321,19 +321,19 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-16 md:py-24">
                 <FadeIn>
                     <div id="process" className="scroll-mt-24">
-                        <h3 className="font-elegant font-medium text-ink text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em] max-w-xl">
+                        <h3 className="font-elegant font-medium text-cream text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em] max-w-xl">
                             {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
                         </h3>
 
                         <ol className="mt-12 md:mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-5">
                             {steps.map((step, i) => (
                                 <li key={i} className="animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
-                                    <span className="font-serif text-ink text-lg tabular-nums tracking-tight">
+                                    <span className="font-serif text-cream text-lg tabular-nums tracking-tight">
                                         {String(i + 1).padStart(2, '0')}
                                     </span>
                                     <div className="mt-4 h-px w-full bg-cream/15" />
-                                    <h4 className="mt-4 text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
-                                    <p className="mt-2 text-sm leading-relaxed font-light text-ink/60">{step.desc}</p>
+                                    <h4 className="mt-4 text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-cream tracking-tight">{step.title}</h4>
+                                    <p className="mt-2 text-sm leading-relaxed font-light text-cream/60">{step.desc}</p>
                                 </li>
                             ))}
                         </ol>
