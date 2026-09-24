@@ -146,7 +146,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                     },
                     {
                         name: 'Beli 3 Dapat 5 Pertanyaan', price: 'Rp 315K',
-                        badge: 'Promo', badgeTone: 'bg-black/[0.06] text-ink',
+                        badge: 'Promo', badgeTone: 'bg-moon-deep/10 text-moon-deep',
                         features: 'Bayar 3, dapat 5 pertanyaan (dipakai di hari yang sama).',
                         book: [{ href: 'http://lynk.id/mayanovtarot/mm7ykgdwndez/', onClick: handlePromoBuy3Get5 }],
                     },
@@ -203,7 +203,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 priceLabel: '$20',
                 offers: [
                     {
-                        name: '5-Card Deep', price: '$20', badge: 'Most Popular', badgeTone: 'bg-ink text-cream',
+                        name: '5-Card Deep', price: '$20', badge: 'Most Popular', badgeTone: 'bg-moon-deep text-cream',
                         desc: "The bigger picture — hidden influences and what's coming next, read in depth.",
                         features: <>5-card spread · high-res photo · priority 24h · <span className="text-ink font-medium">1 qty = 1 question</span></>,
                         book: [{ href: 'https://www.paypal.com/ncp/payment/V6U4QMAU642KA', onClick: handleBookDeep }],

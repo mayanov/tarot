@@ -43,8 +43,8 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     }, []);
 
     // Square, bordered social button — fills with cream on hover.
-    const socialClass = "grid place-items-center w-11 h-11 rounded-none border border-white/20 text-white hover:text-ink hover:bg-cream hover:border-cream transition-all duration-300 hover:-translate-y-0.5";
-    const labelClass = "text-[11px] uppercase tracking-[0.24em] text-cream/60 mb-5";
+    const socialClass = "grid place-items-center w-11 h-11 rounded-none border border-white/20 text-white hover:text-plum-deep hover:bg-moon hover:border-moon transition-all duration-300 hover:-translate-y-0.5";
+    const labelClass = "text-[11px] uppercase tracking-[0.24em] text-moon mb-5";
     const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-white/80 font-light leading-relaxed";
 
     const goTo = (id: string) => smoothScrollToId(id, 80);
@@ -53,7 +53,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         <footer
             ref={footerRef}
             className="relative z-20 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-40px_90px_-50px_rgba(0,0,0,0.5)]"
-            style={{ background: 'linear-gradient(180deg, #0C0C0D 0%, #050505 100%)' }}
+            style={{ background: 'linear-gradient(180deg, #17123A 0%, #0A0818 100%)' }}
         >
             {/* film grain — matches the site background (subtle) */}
             <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
@@ -98,11 +98,11 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         <h4 className={labelClass}>{isIndonesian ? 'Kunjungi' : 'Visit'}</h4>
                         <ul className="space-y-3.5">
                             <li className={infoClass}>
-                                <Clock className="w-4 h-4 mt-0.5 text-cream/60 shrink-0" />
+                                <Clock className="w-4 h-4 mt-0.5 text-moon shrink-0" />
                                 <span>{isIndonesian ? 'Waktu Layanan: 11:00 – 20:00' : 'Service Hours: 11:00 – 20:00'}</span>
                             </li>
                             <li className={infoClass}>
-                                <MapPin className="w-4 h-4 mt-0.5 text-cream/60 shrink-0" />
+                                <MapPin className="w-4 h-4 mt-0.5 text-moon shrink-0" />
                                 <span>{isIndonesian ? 'Jakarta Selatan' : 'South Jakarta'}</span>
                             </li>
                         </ul>
@@ -136,7 +136,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
                     <button
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                        className="group inline-flex items-center gap-2 uppercase tracking-[0.2em] text-[10px] text-white/60 hover:text-cream/60 transition-colors"
+                        className="group inline-flex items-center gap-2 uppercase tracking-[0.2em] text-[10px] text-white/60 hover:text-moon transition-colors"
                     >
                         {isIndonesian ? 'Kembali ke atas' : 'Back to top'}
                         <ArrowRight className="w-3.5 h-3.5 -rotate-90 group-hover:-translate-y-0.5 transition-transform" />

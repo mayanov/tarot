@@ -61,7 +61,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         {/* small brand mark — the one touch of colour */}
         <span
           aria-hidden
-          className="text-ink text-lg leading-none mb-6"
+          className="text-moon-deep text-lg leading-none mb-6"
           style={{ animation: reduce ? undefined : 'ldGlow 2.6s ease-in-out infinite' }}
         >
           ✦

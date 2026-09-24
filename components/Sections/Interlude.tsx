@@ -21,15 +21,15 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       className="relative overflow-hidden isolate text-cream py-24 md:py-32 border-y border-white/[0.08]"
       style={{
         background:
-          'linear-gradient(180deg, #0C0C0D 0%, #050505 100%)',
+          'linear-gradient(180deg, #17123A 0%, #0E0A22 100%)',
       }}
     >
-      {/* soft white bloom from below — a dark cosmic breath amid the light sections */}
+      {/* moonstone bloom from below — a violet cosmic breath amid the light sections */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(60% 80% at 50% 116%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 42%, transparent 72%)',
+            'radial-gradient(60% 80% at 50% 116%, rgba(198,178,228,0.30) 0%, rgba(158,134,201,0.10) 42%, transparent 72%)',
         }}
       />
 
@@ -45,9 +45,9 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
             {/* pull-quote */}
             <p className="font-elegant italic text-cream text-[2rem] sm:text-[2.6rem] md:text-[3.4rem] lg:text-[3.9rem] leading-[1.08] tracking-[-0.01em]">
               {isIndonesian ? (
-                <>Tarot bukan meramal masa depan — tapi memberi <span className="text-cream">kejelasan</span> untuk kamu bentuk sendiri.</>
+                <>Tarot bukan meramal masa depan — tapi memberi <span className="text-moon">kejelasan</span> untuk kamu bentuk sendiri.</>
               ) : (
-                <>Tarot won&rsquo;t predict your future — it hands you the <span className="text-cream">clarity</span> to shape it.</>
+                <>Tarot won&rsquo;t predict your future — it hands you the <span className="text-moon">clarity</span> to shape it.</>
               )}
             </p>
 
