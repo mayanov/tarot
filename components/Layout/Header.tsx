@@ -173,12 +173,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <button
               onClick={() => setMenuOpen(false)}
               aria-label={isIndonesian ? 'Tutup menu' : 'Close menu'}
-              className="group inline-flex items-center gap-2.5 text-cream"
+              className="group inline-flex items-center justify-center -mr-2 p-2 text-cream"
             >
-              <span className="text-[11px] uppercase tracking-[0.22em] font-medium">{isIndonesian ? 'Tutup' : 'Close'}</span>
-              <span className="relative block w-4 h-4">
-                <span className="absolute top-1/2 left-0 h-px w-4 bg-cream -translate-y-1/2 rotate-45 transition-transform duration-300 group-hover:rotate-[135deg]" />
-                <span className="absolute top-1/2 left-0 h-px w-4 bg-cream -translate-y-1/2 -rotate-45 transition-transform duration-300 group-hover:rotate-[45deg]" />
+              <span className="relative block w-5 h-5">
+                <span className="absolute top-1/2 left-0 h-px w-5 bg-cream -translate-y-1/2 rotate-45 transition-transform duration-300 group-hover:rotate-[135deg]" />
+                <span className="absolute top-1/2 left-0 h-px w-5 bg-cream -translate-y-1/2 -rotate-45 transition-transform duration-300 group-hover:rotate-[45deg]" />
               </span>
             </button>
           </div>
