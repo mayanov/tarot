@@ -106,7 +106,6 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   // The floating bar has no container; its text/marks flip from cream (over the
   // dark hero) to ink once a light frosted scrim fades in on scroll.
   const dark = !isScrolled; // cream marks over the hero
-  const markText = dark ? 'text-cream' : 'text-ink';
 
   // Brand mark — badge always; full wordmark eases in once scrolled.
   const Wordmark: React.FC<{ onDark?: boolean }> = ({ onDark = dark }) => (
@@ -134,11 +133,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <Wordmark />
           </div>
 
-          {/* RIGHT — Book Now + Menu trigger */}
-          <div className={`flex items-center gap-4 md:gap-6 transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          {/* RIGHT — Book Now + Menu trigger (matched square buttons) */}
+          <div className={`flex items-stretch transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-              className={`hidden sm:inline-flex px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 hover:-translate-y-0.5 ${dark ? 'bg-cream text-ink hover:bg-white' : 'bg-ink text-cream hover:bg-black'}`}
+              className={`hidden sm:inline-flex items-center px-5 py-3 border text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap transition-colors duration-300 ${dark ? 'border-cream/40 text-cream hover:bg-cream hover:text-ink' : 'border-ink/25 text-ink hover:bg-ink hover:text-cream'}`}
             >
               {isIndonesian ? 'Pesan Sekarang' : 'Book Now'}
             </button>
@@ -147,12 +146,12 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               onClick={() => setMenuOpen(true)}
               aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
               aria-expanded={menuOpen}
-              className={`group inline-flex items-center gap-2.5 transition-colors duration-300 ${markText}`}
+              className={`group inline-flex items-center gap-2.5 px-5 py-3 border sm:border-l-0 text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap transition-colors duration-300 ${dark ? 'border-cream/40 text-cream hover:bg-cream hover:text-ink' : 'border-ink/25 text-ink hover:bg-ink hover:text-cream'}`}
             >
-              <span className="text-[11px] uppercase tracking-[0.22em] font-medium">Menu</span>
-              <span className="flex flex-col items-end gap-[4px] w-5">
-                <span className={`block h-px w-5 transition-all duration-300 ${dark ? 'bg-cream' : 'bg-ink'}`} />
-                <span className={`block h-px w-3 group-hover:w-5 transition-all duration-300 ${dark ? 'bg-cream' : 'bg-ink'}`} />
+              <span>Menu</span>
+              <span className="flex flex-col items-end gap-[4px] w-4">
+                <span className="block h-px w-4 bg-current transition-all duration-300" />
+                <span className="block h-px w-2.5 bg-current group-hover:w-4 transition-all duration-300" />
               </span>
             </button>
           </div>
