@@ -12,8 +12,8 @@ interface ServicesProps {
 // Dark order pill on the light ground — opens the on-site booking flow.
 const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-none border border-cream text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300";
 
-// A per-category tint — subtle warm-bone panels that alternate for a gentle rhythm on light.
-const PANELS = ['rgba(255,255,255,0.04)', 'rgba(255,255,255,0.02)', 'rgba(255,255,255,0.04)', 'rgba(255,255,255,0.02)'];
+// Each pricing category gets its own twilight sky, so the categories feel distinct.
+const CAT_SKIES = ['sky-hero.jpg', 'catsky-aurora.jpg', 'sky-footer.jpg', 'sky-interlude.jpg'];
 
 // One offer line inside a category row: name (+ inline badge) left, price right.
 const OfferRow: React.FC<{ o: any }> = ({ o }) => (
@@ -256,14 +256,26 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             id={g.id || undefined}
                             ref={(el) => { bandRefs.current[i] = el; }}
                             data-idx={i}
-                            className="relative scroll-mt-28 border-b border-white/[0.08] backdrop-blur-[3px] will-change-transform"
+                            className="relative overflow-hidden scroll-mt-28 border-b border-white/[0.08] will-change-transform"
                             style={{
-                                background: PANELS[i % PANELS.length],
                                 transform: on ? 'translateY(0)' : 'translateY(56px)',
                                 transition: `transform 0.9s ${REVEAL_EASE} ${i * 90}ms`,
                             }}
                         >
-                            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
+                            {/* per-category twilight sky + dark overlay (lighter at the header, darker over the pricelist for legibility) */}
+                            <div
+                                className="pointer-events-none absolute inset-0"
+                                style={{
+                                    backgroundImage: `url(${import.meta.env.BASE_URL}${CAT_SKIES[i % CAT_SKIES.length]})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                }}
+                            />
+                            <div
+                                className="pointer-events-none absolute inset-0"
+                                style={{ background: 'linear-gradient(180deg, rgba(11,11,13,0.58) 0%, rgba(11,11,13,0.80) 60%, rgba(11,11,13,0.88) 100%)' }}
+                            />
+                            <div className="relative z-10 max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
                                 {/* header row — spans full width, toggles the band */}
                                 <button
                                     type="button"
