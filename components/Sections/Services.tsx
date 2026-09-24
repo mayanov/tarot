@@ -273,7 +273,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             />
                             <div
                                 className="pointer-events-none absolute inset-0"
-                                style={{ background: 'linear-gradient(180deg, rgba(11,11,13,0.58) 0%, rgba(11,11,13,0.80) 60%, rgba(11,11,13,0.88) 100%)' }}
+                                style={{ background: 'linear-gradient(180deg, rgba(11,11,13,0.26) 0%, rgba(11,11,13,0.48) 42%, rgba(11,11,13,0.80) 100%)' }}
                             />
                             <div className="relative z-10 max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
                                 {/* header row — spans full width, toggles the band */}
@@ -281,7 +281,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     type="button"
                                     onClick={() => toggle(i)}
                                     aria-expanded={open}
-                                    className="w-full flex items-center justify-between gap-4 py-7 md:py-9 text-left group"
+                                    className="w-full flex items-center justify-between gap-4 py-7 md:py-9 text-left group [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]"
                                 >
                                     <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap min-w-0">
                                         <h3 className="font-elegant font-medium text-cream text-[1.55rem] md:text-[2.2rem] leading-none tracking-tight transition-colors group-hover:text-cream">
@@ -307,7 +307,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 {/* body — collapses smoothly via grid-rows trick */}
                                 <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
                                     <div className="overflow-hidden min-h-0">
-                                        <div className="pb-9 md:pb-12">
+                                        <div className="pb-9 md:pb-12 -mx-6 md:-mx-10 lg:-mx-12 px-6 md:px-10 lg:px-12 bg-[rgba(9,9,11,0.5)] backdrop-blur-[2px]">
                                             <div className="flex flex-wrap gap-1.5">
                                                 {g.tags.map((t: string) => (
                                                     <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-cream/20 text-cream/55 rounded">{t}</span>
