@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { smoothScrollTo, smoothScrollToId } from '../UI/scroll';
 
 interface HeaderProps {
@@ -12,14 +12,14 @@ const REGIONS = {
   id: { flag: '🇮🇩', name: 'Indonesia', sub: 'Bahasa · IDR' },
 } as const;
 
-// Desktop region switcher: a two-segment toggle with a sliding white thumb.
-const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; onDark?: boolean }> = ({ isIndonesian, onSwitch, onDark = false }) => {
+// Region switcher: a two-segment toggle with a sliding white thumb.
+const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void }> = ({ isIndonesian, onSwitch }) => {
   const options = [['global', false], ['id', true]] as const;
   return (
     <div
       role="group"
       aria-label="Site version"
-      className={`relative flex items-center p-0.5 rounded-full border ${onDark ? 'border-cream/20 bg-cream/[0.05]' : 'border-line bg-ink/[0.03]'}`}
+      className="relative flex items-center p-0.5 rounded-full border border-cream/20 bg-cream/[0.05]"
     >
       {/* sliding thumb — glides under the active segment */}
       <span
@@ -36,12 +36,10 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
             onClick={() => onSwitch(toID)}
             aria-pressed={active}
             title={`Switch to the ${r.name} version`}
-            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors duration-300 ${active
-                ? 'text-ink'
-                : (onDark ? 'text-cream/55 hover:text-cream/80' : 'text-ink/55 hover:text-ink/80')}`}
+            className={`relative z-10 flex items-center justify-center gap-2 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors duration-300 ${active ? 'text-ink' : 'text-cream/55 hover:text-cream/80'}`}
           >
-            <span className={`text-sm leading-none transition-[filter,opacity] duration-300 ${active ? '' : 'grayscale opacity-70'}`}>{r.flag}</span>
-            <span className="hidden xl:inline">{r.name}</span>
+            <span className={`text-base leading-none transition-[filter,opacity] duration-300 ${active ? '' : 'grayscale opacity-70'}`}>{r.flag}</span>
+            {r.name}
           </button>
         );
       })}
@@ -57,33 +55,26 @@ interface NavItem {
 
 const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isServicesOpen, setIsServicesOpen] = useState(false); // For mobile expand
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Prevent scrolling when mobile menu is open
+  // Lock scroll while the menu overlay is open; close on Escape.
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-  }, [isMobileMenuOpen]);
+    document.body.style.overflow = menuOpen ? 'hidden' : 'unset';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
 
   const scrollToSection = (id: string) => {
-    setIsMobileMenuOpen(false);
+    setMenuOpen(false);
     const found = smoothScrollToId(id, 80);
-    if (!found) {
-      // If element not found (e.g. on 404 page), redirect to home with hash
-      window.location.href = `/#${id}`;
-    }
+    if (!found) window.location.href = `/#${id}`;
   };
 
   const handleLogoClick = () => {
@@ -112,10 +103,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     { name: isIndonesian ? 'FAQ' : 'FAQ', id: 'faq' },
   ];
 
-  // Monochrome nav — a frosted near-black bar with white text and a white CTA,
-  // matching the black-and-white site.
-  const onDark = true;
-
+  // Brand mark — badge always; full wordmark eases in once scrolled.
   const Wordmark = () => (
     <div className="flex items-center gap-2.5 cursor-pointer group whitespace-nowrap" onClick={handleLogoClick}>
       <span className="grid place-items-center w-8 h-8 shrink-0 rounded-full border border-cream/40 text-cream font-serif text-lg leading-none transition-colors duration-300 group-hover:bg-cream group-hover:text-ink">
@@ -131,9 +119,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
   return (
     <>
-      <header
-        className={`fixed left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'top-2 md:top-3' : 'top-3 md:top-5'}`}
-      >
+      <header className={`fixed left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'top-2 md:top-3' : 'top-3 md:top-5'}`}>
         <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
           <div
             className={`relative flex justify-between items-center gap-3 rounded-full pl-4 pr-2 py-2 border transition-all duration-300 ${isScrolled
@@ -141,155 +127,141 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 : 'bg-[#0C0C0D]/55 backdrop-blur-md border-white/10'
               }`}
           >
-            {/* LEFT — brand badge (always) + nav links */}
-            <div className="flex items-center min-w-0">
-              <div className="mr-2 lg:mr-4 shrink-0">
-                <Wordmark />
-              </div>
-
-              <nav className="hidden lg:flex items-center gap-0.5">
-                {navLinks.map((link, i) => (
-                  <div
-                    key={link.name}
-                    className="relative group/menu animate-[navSlide_0.5s_cubic-bezier(0.22,1,0.36,1)_both]"
-                    style={{ animationDelay: `${i * 70 + 150}ms` }}
-                  >
-                    <button
-                      onClick={() => scrollToSection(link.id)}
-                      className="flex items-center gap-1 px-3 py-2 rounded-full text-[11px] uppercase tracking-[0.14em] font-medium whitespace-nowrap text-cream/65 hover:text-cream hover:bg-white/[0.06] transition-colors duration-200"
-                    >
-                      {link.name}
-                      {link.children && <ChevronDown className="w-3 h-3 group-hover/menu:rotate-180 transition-transform duration-200" />}
-                    </button>
-
-                    {link.children && (
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 transform translate-y-2 group-hover/menu:translate-y-0 w-48">
-                        <div className="bg-[#0C0C0D]/95 border border-white/10 backdrop-blur-xl rounded-2xl shadow-[0_24px_50px_-28px_rgba(0,0,0,0.7)] overflow-hidden p-2 flex flex-col gap-0.5">
-                          {link.children.map(child => (
-                            <button
-                              key={child.name}
-                              onClick={(e) => { e.stopPropagation(); scrollToSection(child.id); }}
-                              className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.12em] text-cream/70 hover:text-cream hover:bg-white/[0.06] rounded-lg transition-colors"
-                            >
-                              {child.name}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </nav>
+            {/* LEFT — brand */}
+            <div className="shrink-0">
+              <Wordmark />
             </div>
 
-            {/* RIGHT — region switcher + Book Now */}
-            <div className="hidden lg:flex items-center gap-2 shrink-0">
-              {onSwitchRegion && (
-                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} onDark={onDark} />
-              )}
+            {/* RIGHT — Book Now + Menu trigger */}
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-                className="px-5 py-2.5 rounded-full bg-cream text-ink text-sm font-semibold hover:bg-white transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap shadow-[0_14px_36px_-18px_rgba(0,0,0,0.7)]"
+                className="hidden sm:inline-flex px-5 py-2.5 rounded-full bg-cream text-ink text-sm font-semibold hover:bg-white transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap shadow-[0_14px_36px_-18px_rgba(0,0,0,0.7)]"
               >
                 {isIndonesian ? 'Pesan Sekarang' : 'Book Now'}
               </button>
-            </div>
 
-            {/* Mobile Menu Toggle */}
-            {!isMobileMenuOpen && (
               <button
-                className="lg:hidden transition p-2 text-cream hover:text-cream/60"
-                onClick={() => setIsMobileMenuOpen(true)}
+                onClick={() => setMenuOpen(true)}
+                aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
+                aria-expanded={menuOpen}
+                className="group inline-flex items-center gap-2.5 pl-4 pr-3 py-2.5 rounded-full text-cream hover:bg-white/[0.06] transition-colors duration-200"
               >
-                <Menu className="w-6 h-6" />
+                <span className="text-[11px] uppercase tracking-[0.2em] font-medium">Menu</span>
+                <span className="flex flex-col items-end gap-[3px] w-4">
+                  <span className="block h-px w-4 bg-cream transition-all duration-300 group-hover:w-4" />
+                  <span className="block h-px w-2.5 bg-cream transition-all duration-300 group-hover:w-4" />
+                </span>
               </button>
-            )}
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Mobile Nav Overlay */}
+      {/* Full-screen editorial menu overlay */}
       <div
-        className={`lg:hidden fixed inset-0 bg-[#0C0C0D]/98 backdrop-blur-2xl z-[60] flex flex-col items-center justify-start pt-28 transition-all duration-500 ease-in-out ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
-          }`}
+        className={`fixed inset-0 z-[60] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${menuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
+        style={{ background: 'linear-gradient(180deg, #0C0C0D 0%, #050505 100%)' }}
+        aria-hidden={!menuOpen}
       >
-        <button
-          className="absolute top-6 right-4 text-cream hover:text-cream/60 transition p-2 bg-white/[0.08] rounded-full"
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <X className="w-7 h-7" />
-        </button>
+        {/* faint moonstone bloom, low — the only whisper of colour */}
+        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(60% 60% at 78% 108%, rgba(198,178,228,0.10) 0%, transparent 60%)' }} />
 
-        <div className="flex flex-col space-y-4 text-center p-4 w-full max-w-sm overflow-y-auto max-h-[calc(100vh-100px)]">
-          <div className="mb-2 shrink-0">
-            <span className="grid place-items-center w-14 h-14 mx-auto rounded-full border border-cream/40 text-cream font-serif text-2xl">
-              M
-            </span>
+        <div className="relative h-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex flex-col">
+          {/* Top row — brand + close */}
+          <div className="flex items-center justify-between py-5 md:py-7 shrink-0">
+            <Wordmark />
+            <button
+              onClick={() => setMenuOpen(false)}
+              aria-label={isIndonesian ? 'Tutup menu' : 'Close menu'}
+              className="group inline-flex items-center gap-2.5 pl-4 pr-3 py-2.5 rounded-full text-cream hover:bg-white/[0.06] transition-colors duration-200"
+            >
+              <span className="text-[11px] uppercase tracking-[0.2em] font-medium">{isIndonesian ? 'Tutup' : 'Close'}</span>
+              <span className="relative block w-4 h-4">
+                <span className="absolute top-1/2 left-0 h-px w-4 bg-cream -translate-y-1/2 rotate-45" />
+                <span className="absolute top-1/2 left-0 h-px w-4 bg-cream -translate-y-1/2 -rotate-45" />
+              </span>
+            </button>
           </div>
 
-          {/* Region switcher (mobile) */}
-          {onSwitchRegion && (
-            <div className="shrink-0 mb-4">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-cream/45 mb-2">
-                {isIndonesian ? 'Versi Situs' : 'Site Version'}
-              </p>
-              <div className="flex gap-1 p-1 bg-white/[0.06] rounded-full border border-white/10">
-                {([['global', false], ['id', true]] as const).map(([key, toID]) => {
-                  const r = REGIONS[key];
-                  const active = toID === isIndonesian;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => { onSwitchRegion(toID); setIsMobileMenuOpen(false); }}
-                      aria-pressed={active}
-                      className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-colors ${active ? 'bg-cream text-ink shadow-[0_8px_20px_-12px_rgba(0,0,0,0.6)]' : 'text-cream/80'}`}
-                    >
-                      <span className="mr-1.5">{r.flag}</span>{r.name}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* Center — the links */}
+          <nav
+            key={menuOpen ? 'open' : 'closed'}
+            className="flex-1 min-h-0 overflow-y-auto flex flex-col justify-center py-6"
+          >
+            <ul className="w-full">
+              {navLinks.map((link, i) => (
+                <li
+                  key={link.name}
+                  className={menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}
+                  style={{ animationDelay: `${i * 70 + 120}ms` }}
+                >
+                  <button
+                    onClick={() => scrollToSection(link.id)}
+                    className="group w-full flex items-baseline gap-4 md:gap-7 py-2.5 md:py-3 text-left border-b border-white/[0.07]"
+                  >
+                    <span className="font-serif text-xs md:text-sm tabular-nums text-cream/35 w-7 shrink-0 pt-1">
+                      0{i + 1}
+                    </span>
+                    <span className="flex-1 font-elegant font-medium text-cream/80 group-hover:text-cream text-[2rem] sm:text-[2.8rem] md:text-[3.6rem] leading-[1.05] tracking-[-0.02em] transition-all duration-300 group-hover:translate-x-1.5">
+                      {link.name}
+                    </span>
+                    <ArrowUpRight className="w-6 h-6 md:w-8 md:h-8 text-cream/30 self-center opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                  </button>
 
-          {navLinks.map((link, idx) => (
-            <div key={link.name} className="flex flex-col w-full">
-              <button
-                onClick={() => {
-                  if (link.children) {
-                    setIsServicesOpen(!isServicesOpen);
-                  } else {
-                    scrollToSection(link.id);
-                  }
-                }}
-                className={`text-2xl font-elegant text-cream hover:text-cream/60 transition-colors flex items-center justify-center gap-2 ${link.children ? 'mb-2' : ''}`}
-                style={{ transitionDelay: `${idx * 50}ms` }}
-              >
-                {link.name}
-                {link.children && <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isServicesOpen ? 'rotate-180' : ''}`} />}
-              </button>
+                  {/* Services sub-links (ID) */}
+                  {link.children && (
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 pl-11 md:pl-[4.4rem] pt-2 pb-1">
+                      {link.children.map(child => (
+                        <button
+                          key={child.name}
+                          onClick={() => scrollToSection(child.id)}
+                          className="text-xs md:text-sm uppercase tracking-[0.14em] text-cream/45 hover:text-cream transition-colors"
+                        >
+                          {child.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-              {link.children && (
-                <div className={`flex flex-col gap-3 bg-white/[0.05] rounded-xl overflow-hidden transition-all duration-300 ${isServicesOpen ? 'max-h-64 py-4 mb-4' : 'max-h-0 py-0'}`}>
-                  {link.children.map(child => (
-                    <button
-                      key={child.name}
-                      onClick={() => scrollToSection(child.id)}
-                      className="text-base text-cream/60 hover:text-cream"
-                    >
-                      {child.name}
-                    </button>
-                  ))}
-                </div>
+          {/* Bottom — region toggle + contact/CTA */}
+          <div className="shrink-0 py-5 md:py-7 border-t border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            <div className="flex items-center gap-4">
+              {onSwitchRegion && (
+                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
               )}
             </div>
-          ))}
-          <button
-            onClick={() => { setIsMobileMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
-            className="mt-4 px-10 py-4 rounded-full bg-cream text-ink font-semibold text-lg hover:bg-white transition shrink-0"
-          >
-            {isIndonesian ? 'Pesan Pembacaan' : 'Book a Reading'}
-          </button>
+
+            <div className="flex items-center gap-5">
+              <a
+                href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] uppercase tracking-[0.2em] text-cream/55 hover:text-cream transition-colors"
+              >
+                WhatsApp
+              </a>
+              <a
+                href="https://www.instagram.com/mayanov_/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] uppercase tracking-[0.2em] text-cream/55 hover:text-cream transition-colors"
+              >
+                Instagram
+              </a>
+              <button
+                onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-cream text-ink text-sm font-semibold hover:bg-white transition-all duration-300 hover:-translate-y-0.5"
+              >
+                {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                <ArrowUpRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </>
