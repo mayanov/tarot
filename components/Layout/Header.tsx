@@ -183,79 +183,41 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             </button>
           </div>
 
-          {/* Main — links (left) + meta panel (right) */}
-          <div key={menuOpen ? 'open' : 'closed'} className="flex-1 min-h-0 overflow-y-auto grid lg:grid-cols-12 gap-y-12 lg:gap-x-16 items-center py-8">
-            {/* Links */}
-            <nav className="lg:col-span-8">
-              <ul className="group/nav">
-                {navLinks.map((link, i) => (
-                  <li
-                    key={link.name}
-                    className={`${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'} transition-opacity duration-300 lg:group-hover/nav:opacity-35 lg:hover:!opacity-100`}
-                    style={{ animationDelay: `${i * 65 + 120}ms` }}
+          {/* Main — the section links */}
+          <nav key={menuOpen ? 'open' : 'closed'} className="flex-1 min-h-0 overflow-y-auto flex flex-col justify-center py-8">
+            <ul className="group/nav">
+              {navLinks.map((link, i) => (
+                <li
+                  key={link.name}
+                  className={`${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'} transition-opacity duration-300 lg:group-hover/nav:opacity-35 lg:hover:!opacity-100`}
+                  style={{ animationDelay: `${i * 65 + 120}ms` }}
+                >
+                  <button
+                    onClick={() => scrollToSection(link.id)}
+                    className="group/link w-full flex items-center gap-4 py-2 md:py-2.5 text-left"
                   >
-                    <button
-                      onClick={() => scrollToSection(link.id)}
-                      className="group/link w-full flex items-center gap-4 py-1.5 md:py-2 text-left"
-                    >
-                      <span className="flex-1 font-elegant font-medium text-cream text-[2.1rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.08] tracking-[-0.025em] transition-transform duration-300 group-hover/link:translate-x-2">
-                        <span className="align-super text-[0.62rem] md:text-xs font-serif tabular-nums text-cream/35 mr-3 md:mr-4">0{i + 1}</span>
-                        {link.name}
-                      </span>
-                      <ArrowUpRight className="w-7 h-7 md:w-9 md:h-9 text-cream shrink-0 opacity-0 -translate-x-3 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all duration-300" />
-                    </button>
+                    <span className="flex-1 font-elegant font-medium text-cream text-[2.1rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.08] tracking-[-0.025em] transition-transform duration-300 group-hover/link:translate-x-2">
+                      {link.name}
+                    </span>
+                    <ArrowUpRight className="w-7 h-7 md:w-9 md:h-9 text-cream shrink-0 opacity-0 -translate-x-3 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all duration-300" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-                    {/* Services quick-links (ID) */}
-                    {link.children && (
-                      <div className="flex flex-wrap gap-x-5 gap-y-1.5 pl-9 md:pl-11 pt-1 pb-2">
-                        {link.children.map(child => (
-                          <button
-                            key={child.name}
-                            onClick={() => scrollToSection(child.id)}
-                            className="text-[0.7rem] md:text-xs uppercase tracking-[0.16em] text-cream/40 hover:text-cream transition-colors"
-                          >
-                            {child.name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
-            {/* Meta panel */}
-            <div className={`lg:col-span-4 lg:col-start-9 flex flex-col gap-8 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '520ms' }}>
-              {onSwitchRegion && (
-                <div>
-                  <p className="text-[0.65rem] uppercase tracking-[0.22em] text-cream/40 mb-3">{isIndonesian ? 'Versi Situs' : 'Site Version'}</p>
-                  <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
-                </div>
-              )}
-
-              <div>
-                <p className="text-[0.65rem] uppercase tracking-[0.22em] text-cream/40 mb-3">{isIndonesian ? 'Terhubung' : 'Get in Touch'}</p>
-                <div className="flex flex-col gap-2">
-                  <a href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer" className="w-fit text-sm text-cream/75 hover:text-cream transition-colors">WhatsApp</a>
-                  <a href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer" className="w-fit text-sm text-cream/75 hover:text-cream transition-colors">Instagram</a>
-                  <a href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer" className="w-fit text-sm text-cream/75 hover:text-cream transition-colors">TikTok</a>
-                </div>
-              </div>
-
-              <button
-                onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
-                className="inline-flex items-center justify-between gap-3 w-full sm:w-auto lg:w-full px-6 py-3.5 rounded-full bg-cream text-ink text-sm font-semibold hover:bg-white transition-all duration-300 hover:-translate-y-0.5"
-              >
-                {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                <ArrowUpRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Bottom — footnote */}
-          <div className="shrink-0 py-4 md:py-5 border-t border-white/[0.08] flex items-center justify-between text-[0.68rem] uppercase tracking-[0.2em] text-cream/40">
-            <span>{isIndonesian ? 'Sejak 2009 · Jakarta Selatan' : 'Since 2009 · South Jakarta'}</span>
-            <span className="hidden sm:inline">{isIndonesian ? '11:00 – 20:00' : 'Daily 11:00 – 20:00'}</span>
+          {/* Bottom — language toggle + book */}
+          <div className={`shrink-0 py-5 md:py-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '480ms' }}>
+            {onSwitchRegion ? (
+              <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
+            ) : <span />}
+            <button
+              onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
+              className="inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-cream text-ink text-sm font-semibold hover:bg-white transition-all duration-300 hover:-translate-y-0.5"
+            >
+              {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+              <ArrowUpRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
