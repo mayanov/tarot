@@ -1,5 +1,6 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
+import SkyLayer from '../UI/SkyLayer';
 
 interface InterludeProps {
   isIndonesian?: boolean;
@@ -21,16 +22,14 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       className="relative overflow-hidden isolate text-cream py-24 md:py-32 border-y border-white/[0.08]"
       style={{
         background:
-          'linear-gradient(180deg, #17123A 0%, #0E0A22 100%)',
+          'linear-gradient(165deg, #241546 0%, #3A1C46 55%, #4A2247 100%)',
       }}
     >
-      {/* moonstone bloom from below — a violet cosmic breath amid the light sections */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(60% 80% at 50% 116%, rgba(198,178,228,0.30) 0%, rgba(158,134,201,0.10) 42%, transparent 72%)',
-        }}
+      {/* rose-dusk sky — stars + small clouds + a warm bloom from below */}
+      <SkyLayer
+        cloud="rgba(236,188,216,0.13)"
+        star="rgba(255,238,247,0.9)"
+        glow="radial-gradient(60% 80% at 50% 116%, rgba(232,150,190,0.26) 0%, rgba(180,120,180,0.10) 44%, transparent 74%)"
       />
 
       {/* film grain */}

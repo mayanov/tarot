@@ -117,6 +117,11 @@ const Background: React.FC = () => {
       <div className="absolute bottom-[12%] right-[2%] w-[66%] h-[22%] rounded-[50%] bg-moon/[0.10] blur-[64px] mix-blend-screen animate-[cloudB_86s_ease-in-out_infinite_alternate]" />
       <div className="absolute bottom-[24%] left-[8%] w-[46%] h-[15%] rounded-[50%] bg-moon/[0.08] blur-[60px] mix-blend-screen animate-[cloudA_96s_ease-in-out_infinite_alternate]" />
 
+      {/* small, crisper cloud puffs — read as individual little clouds */}
+      <div className="absolute top-[16%] left-[24%] w-[20%] h-[9%] rounded-[50%] bg-white/[0.10] blur-[30px] mix-blend-screen animate-[cloudB_70s_ease-in-out_infinite_alternate]" />
+      <div className="absolute top-[40%] right-[20%] w-[15%] h-[7%] rounded-[50%] bg-moon/[0.12] blur-[26px] mix-blend-screen animate-[cloudA_84s_ease-in-out_infinite_alternate]" />
+      <div className="absolute bottom-[32%] right-[28%] w-[17%] h-[8%] rounded-[50%] bg-white/[0.08] blur-[28px] mix-blend-screen animate-[cloudB_100s_ease-in-out_infinite_alternate]" />
+
       {/* slow living colour drift */}
       <div className="absolute -top-[10%] -right-[8%] w-[52%] h-[46%] rounded-full bg-moon/[0.09] blur-[150px] mix-blend-screen animate-[blobA_34s_ease-in-out_infinite]" />
       <div className="absolute top-[30%] -left-[10%] w-[50%] h-[48%] rounded-full bg-moon-deep/[0.16] blur-[150px] mix-blend-screen animate-[blobB_40s_ease-in-out_infinite]" />
