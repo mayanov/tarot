@@ -19,7 +19,7 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
     <div
       role="group"
       aria-label="Site version"
-      className="relative flex w-full max-w-[17rem] items-center p-0.5 rounded-none border border-cream/40"
+      className="relative flex w-full max-w-none sm:max-w-[17rem] items-center p-0.5 rounded-none border border-cream/40"
     >
       <span
         aria-hidden
@@ -183,7 +183,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           </div>
 
           {/* Main — the section links */}
-          <nav key={menuOpen ? 'open' : 'closed'} className="flex-1 min-h-0 overflow-y-auto flex flex-col justify-center py-8">
+          <nav key={menuOpen ? 'open' : 'closed'} className="flex-1 min-h-0 overflow-y-auto flex flex-col justify-start lg:justify-center pt-6 pb-8 sm:py-8">
             <ul className="group/nav">
               {navLinks.map((link, i) => (
                 <li
@@ -193,12 +193,12 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 >
                   <button
                     onClick={() => scrollToSection(link.id)}
-                    className="group/link w-full flex items-center gap-4 py-2 md:py-2.5 text-left"
+                    className="group/link w-full flex items-center gap-4 py-3 sm:py-2.5 text-left"
                   >
-                    <span className="flex-1 font-elegant font-medium text-cream text-[2.1rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.08] tracking-[-0.025em] transition-transform duration-300 group-hover/link:translate-x-2">
+                    <span className="flex-1 font-elegant font-medium text-cream text-[2rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-transform duration-300 group-hover/link:translate-x-2">
                       {link.name}
                     </span>
-                    <ArrowUpRight className="w-7 h-7 md:w-9 md:h-9 text-cream shrink-0 opacity-0 -translate-x-3 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all duration-300" />
+                    <ArrowUpRight className="w-6 h-6 md:w-9 md:h-9 text-cream shrink-0 opacity-60 -translate-x-0 sm:opacity-0 sm:-translate-x-3 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all duration-300" />
                   </button>
                 </li>
               ))}
@@ -206,13 +206,13 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           </nav>
 
           {/* Bottom — language toggle + book */}
-          <div className={`shrink-0 py-5 md:py-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '480ms' }}>
+          <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-5 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '480ms' }}>
             {onSwitchRegion ? (
               <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
             ) : <span />}
             <button
               onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
-              className="group inline-flex items-center gap-3 px-6 py-2.5 rounded-none border border-cream/40 text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300"
+              className="group self-start sm:self-auto inline-flex items-center gap-3 px-6 py-3 rounded-none border border-cream/40 text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300"
             >
               {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
               <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
