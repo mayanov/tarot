@@ -40,19 +40,19 @@ const Background: React.FC = () => {
         className="absolute -inset-y-[6%] inset-x-0 will-change-transform"
         style={{
           background:
-            'linear-gradient(176deg, #0E1132 0%, #161A42 14%, #211E4E 30%, #322357 46%, #4B2C5D 60%, #6E3A61 74%, #99525E 87%, #C67C5A 100%)',
+            'linear-gradient(176deg, #060608 0%, #0B0B0E 22%, #121216 44%, #191920 66%, #232329 84%, #2B2B31 100%)',
         }}
       />
-      {/* organic accents — soft, uneven colour pools that keep the smooth base from
+      {/* organic accents — soft, uneven light pools that keep the smooth base from
           looking mechanical (kept subtle so the gradient itself carries the sky) */}
       <div
         className="absolute inset-0 mix-blend-screen"
         style={{
           background:
-            'radial-gradient(48% 40% at 16% 12%, rgba(78,120,182,0.26) 0%, transparent 66%),' +
-            'radial-gradient(40% 36% at 62% 6%, rgba(96,74,150,0.16) 0%, transparent 64%),' +
-            'radial-gradient(44% 44% at 92% 40%, rgba(150,92,124,0.14) 0%, transparent 66%),' +
-            'radial-gradient(46% 40% at 4% 58%, rgba(58,92,160,0.16) 0%, transparent 64%)',
+            'radial-gradient(48% 40% at 16% 12%, rgba(255,255,255,0.05) 0%, transparent 66%),' +
+            'radial-gradient(40% 36% at 62% 6%, rgba(255,255,255,0.04) 0%, transparent 64%),' +
+            'radial-gradient(44% 44% at 92% 40%, rgba(255,255,255,0.035) 0%, transparent 66%),' +
+            'radial-gradient(46% 40% at 4% 58%, rgba(255,255,255,0.04) 0%, transparent 64%)',
         }}
       />
       {/* starfield — bright and dense across the upper sky, thinning toward the horizon */}
@@ -88,39 +88,39 @@ const Background: React.FC = () => {
           WebkitMaskImage: 'linear-gradient(to bottom, #000 0%, #000 42%, transparent 72%)',
         }}
       />
-      {/* dawn layer — fades in as you scroll (the sky warms & lightens), diffuse so it never bands */}
+      {/* horizon glow — fades in as you scroll (the sky lightens), diffuse so it never bands */}
       <div
         ref={dawnRef}
         className="absolute inset-0 opacity-0 will-change-[opacity]"
-        style={{ background: 'radial-gradient(150% 132% at 74% 92%, rgba(216,140,85,0.62) 0%, rgba(152,92,118,0.32) 44%, rgba(66,72,130,0.12) 100%)' }}
+        style={{ background: 'radial-gradient(150% 132% at 74% 92%, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 44%, rgba(255,255,255,0) 100%)' }}
       />
-      {/* rising sun — climbs and brightens on scroll */}
+      {/* rising moon — climbs and brightens on scroll */}
       <div
         ref={sunRef}
         className="absolute inset-0 will-change-transform"
-        style={{ background: 'radial-gradient(50% 44% at 74% 80%, rgba(255,198,124,0.6) 0%, rgba(246,152,72,0.3) 40%, rgba(230,120,40,0) 70%)' }}
+        style={{ background: 'radial-gradient(50% 44% at 74% 80%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 40%, rgba(255,255,255,0) 70%)' }}
       >
-        {/* the sun disc itself */}
+        {/* the moon disc itself */}
         <div
           className="absolute rounded-full"
           style={{
             left: '74%', top: '80%', width: 'clamp(90px, 14vw, 210px)', height: 'clamp(90px, 14vw, 210px)',
             transform: 'translate(-50%, -50%)',
-            background: 'radial-gradient(closest-side, rgba(255,236,196,0.95) 0%, rgba(255,204,138,0.55) 52%, rgba(255,176,96,0) 78%)',
+            background: 'radial-gradient(closest-side, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 52%, rgba(255,255,255,0) 78%)',
           }}
         />
       </div>
-      {/* drifting clouds — soft banks that read as sky; warm ones near the horizon */}
+      {/* drifting clouds — soft banks that read as sky */}
       <div className="absolute top-[10%] -left-[12%] w-[70%] h-[24%] rounded-[50%] bg-white/[0.10] blur-[58px] mix-blend-screen animate-[cloudA_75s_ease-in-out_infinite_alternate]" />
       <div className="absolute top-[26%] -right-[16%] w-[62%] h-[20%] rounded-[50%] bg-white/[0.08] blur-[66px] mix-blend-screen animate-[cloudB_92s_ease-in-out_infinite_alternate]" />
       <div className="absolute top-[48%] -left-[10%] w-[58%] h-[18%] rounded-[50%] bg-white/[0.06] blur-[64px] mix-blend-screen animate-[cloudA_104s_ease-in-out_infinite_alternate]" />
-      <div className="absolute bottom-[12%] right-[2%] w-[66%] h-[22%] rounded-[50%] bg-coral/[0.13] blur-[64px] mix-blend-screen animate-[cloudB_86s_ease-in-out_infinite_alternate]" />
-      <div className="absolute bottom-[24%] left-[8%] w-[46%] h-[15%] rounded-[50%] bg-mauve/[0.10] blur-[60px] mix-blend-screen animate-[cloudA_96s_ease-in-out_infinite_alternate]" />
+      <div className="absolute bottom-[12%] right-[2%] w-[66%] h-[22%] rounded-[50%] bg-white/[0.07] blur-[64px] mix-blend-screen animate-[cloudB_86s_ease-in-out_infinite_alternate]" />
+      <div className="absolute bottom-[24%] left-[8%] w-[46%] h-[15%] rounded-[50%] bg-white/[0.05] blur-[60px] mix-blend-screen animate-[cloudA_96s_ease-in-out_infinite_alternate]" />
 
-      {/* slow living colour drift */}
-      <div className="absolute -top-[10%] -right-[8%] w-[52%] h-[46%] rounded-full bg-coral/[0.10] blur-[150px] mix-blend-screen animate-[blobA_34s_ease-in-out_infinite]" />
-      <div className="absolute top-[30%] -left-[10%] w-[50%] h-[48%] rounded-full bg-blue/[0.22] blur-[150px] mix-blend-screen animate-[blobB_40s_ease-in-out_infinite]" />
-      <div className="absolute -bottom-[8%] right-[12%] w-[48%] h-[44%] rounded-full bg-mauve/[0.12] blur-[150px] mix-blend-screen animate-[blobC_46s_ease-in-out_infinite]" />
+      {/* slow living light drift */}
+      <div className="absolute -top-[10%] -right-[8%] w-[52%] h-[46%] rounded-full bg-white/[0.05] blur-[150px] mix-blend-screen animate-[blobA_34s_ease-in-out_infinite]" />
+      <div className="absolute top-[30%] -left-[10%] w-[50%] h-[48%] rounded-full bg-white/[0.06] blur-[150px] mix-blend-screen animate-[blobB_40s_ease-in-out_infinite]" />
+      <div className="absolute -bottom-[8%] right-[12%] w-[48%] h-[44%] rounded-full bg-white/[0.05] blur-[150px] mix-blend-screen animate-[blobC_46s_ease-in-out_infinite]" />
       {/* film grain */}
       <div className="absolute inset-0 opacity-70 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
       <div className="absolute inset-0 opacity-[0.12] mix-blend-screen" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />

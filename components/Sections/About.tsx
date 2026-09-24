@@ -24,7 +24,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         <FadeIn>
           <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-[1fr_42%] items-stretch">
             {/* RIGHT (on desktop) — portrait */}
-            <div className="relative min-h-[52vh] lg:min-h-0 order-1 lg:order-2 overflow-hidden rounded-lg lg:rounded-none">
+            <div className="relative min-h-[52vh] lg:min-h-0 order-1 lg:order-2 overflow-hidden rounded-none">
               <ImageReveal
                 src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
                 alt="Mayanov"
@@ -36,9 +36,9 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
               <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 bg-gradient-to-t from-[#0E0B24]/90 via-[#0E0B24]/30 to-transparent">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-cream/85">
                   <span>{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</span>
-                  <span className="w-1 h-1 rounded-full bg-moon" />
+                  <span className="w-1 h-1 rounded-none bg-cream/70" />
                   <span>{isIndonesian ? 'Sejak 2009' : 'Since 2009'}</span>
-                  <span className="w-1 h-1 rounded-full bg-moon" />
+                  <span className="w-1 h-1 rounded-none bg-cream/70" />
                   <span>{isIndonesian ? '15+ Tahun' : '15+ Years'}</span>
                 </div>
               </div>
@@ -47,13 +47,13 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             {/* LEFT (on desktop) — content, aligned to the page margin */}
             <div className="order-2 lg:order-1 flex items-center">
               <div className="w-full max-w-2xl py-12 md:py-16 lg:pr-14">
-                <h2 className="font-elegant font-medium text-plum-deep text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
+                <h2 className="font-elegant font-medium text-ink text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian ? 'Tentang Saya' : 'About Me'}
                 </h2>
 
                 {/* pull quote */}
                 <div className="relative mt-5">
-                  <p className="relative font-elegant italic text-plum-deep text-[1.05rem] md:text-[1.22rem] xl:text-[1.3rem] leading-[1.35] tracking-[-0.01em]">
+                  <p className="relative font-elegant italic text-ink text-[1.05rem] md:text-[1.22rem] xl:text-[1.3rem] leading-[1.35] tracking-[-0.01em]">
                     {isIndonesian
                       ? 'Tarot, buat saya, bukan soal takdir yang menakutkan — melainkan ruang tenang untuk berhenti sejenak, mendengarkan diri, dan menemukan kejernihan di tengah hiruk-pikuk.'
                       : 'Tarot, for me, isn’t about scary fate — it’s a calm space to pause, listen to yourself, and find clarity in the middle of the noise.'}
@@ -74,8 +74,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 </div>
 
                 {/* closing statement */}
-                <div className="mt-6 pt-5 border-t border-plum-deep/20">
-                  <p className="font-elegant text-plum-deep text-[1rem] md:text-[1.18rem] lg:text-[1.28rem] leading-[1.3] tracking-[-0.015em]">
+                <div className="mt-6 pt-5 border-t border-ink/15">
+                  <p className="font-elegant text-ink text-[1rem] md:text-[1.18rem] lg:text-[1.28rem] leading-[1.3] tracking-[-0.015em]">
                     {isIndonesian
                       ? 'Tujuan saya simpel: memberi kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                       : 'My goal is simple — the clarity you need to make decisions with confidence.'}

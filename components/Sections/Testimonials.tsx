@@ -240,7 +240,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
               </h2>
             </div>
             <div className="flex items-center gap-2 text-sm shrink-0 md:pb-2">
-              <div className="flex text-plum">
+              <div className="flex text-ink">
                 {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
               </div>
               <span className="text-ink font-medium ml-1">5.0</span>
@@ -262,7 +262,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           type="button"
           onClick={() => go(-1)}
           aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
-          className="absolute left-3 md:left-8 lg:left-10 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/45 hover:text-plum transition-colors duration-300"
+          className="absolute left-3 md:left-8 lg:left-10 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/45 hover:text-ink transition-colors duration-300"
         >
           <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
         </button>
@@ -271,7 +271,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           type="button"
           onClick={() => go(1)}
           aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
-          className="absolute right-3 md:right-8 lg:right-10 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/45 hover:text-plum transition-colors duration-300"
+          className="absolute right-3 md:right-8 lg:right-10 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/45 hover:text-ink transition-colors duration-300"
         >
           <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
         </button>
@@ -287,11 +287,11 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                 className={`flex flex-col items-center justify-center text-center transition-opacity duration-500 ${active ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
               >
                 <p className="text-ink text-xl md:text-3xl leading-relaxed font-normal">
-                  <span className="font-elegant text-plum/70 align-baseline">&ldquo;</span>{r.text}<span className="font-elegant text-plum/70 align-baseline">&rdquo;</span>
+                  <span className="font-elegant text-ink/60 align-baseline">&ldquo;</span>{r.text}<span className="font-elegant text-ink/60 align-baseline">&rdquo;</span>
                 </p>
-                {/* attribution — italic serif with a moonstone dash */}
+                {/* attribution — italic serif with a dash */}
                 <div className="mt-8 font-elegant italic text-ink/90 text-lg md:text-xl">
-                  <span className="not-italic text-plum mr-2">&mdash;</span>{r.author}
+                  <span className="not-italic text-ink mr-2">&mdash;</span>{r.author}
                 </div>
               </div>
             );
@@ -304,7 +304,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           href="https://share.google/4LrmhpcgHNXX9bTzr"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-ink/30 hover:border-ink hover:bg-ink hover:text-cream transition-all duration-300 text-ink font-medium group"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-none border border-ink/30 hover:border-ink hover:bg-ink hover:text-cream transition-all duration-300 text-ink font-medium group"
         >
           <span>{isIndonesian ? 'Lihat Semua Review di Google' : 'Read All Reviews on Google'}</span>
         </a>

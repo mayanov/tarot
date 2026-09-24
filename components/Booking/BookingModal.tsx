@@ -212,28 +212,28 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   // Payment methods card (Indonesian market). `compact` stacks QRIS above bank
   // so it fits in a narrow side-by-side column on the confirmation step.
   const paymentPanel = (compact: boolean) => !isIndonesian ? null : (
-    <div className="text-left rounded-2xl bg-white border border-line overflow-hidden h-full flex flex-col">
-      <div className="px-4 py-3 bg-coral/[0.06] border-b border-line">
-        <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Cara pembayaran', 'How to pay')}</span>
+    <div className="text-left rounded-none bg-white border border-black/10 overflow-hidden h-full flex flex-col">
+      <div className="px-4 py-3 bg-ink/[0.05] border-b border-black/10">
+        <span className="text-xs uppercase tracking-[0.16em] text-ink font-semibold">{t('Cara pembayaran', 'How to pay')}</span>
       </div>
       <div className={compact ? 'p-5 flex-1 flex flex-col items-center justify-center gap-4 text-center' : 'p-5 grid sm:grid-cols-2 gap-5'}>
         <div className="flex flex-col items-center gap-2">
-          <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Scan QRIS', 'Scan QRIS')}</span>
-          <div className={`${compact ? 'w-32 h-32' : 'w-40 h-40'} rounded-xl border border-line bg-paper grid place-items-center overflow-hidden relative`}>
-            <span className="text-[11px] text-taupe text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
+          <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Scan QRIS', 'Scan QRIS')}</span>
+          <div className={`${compact ? 'w-32 h-32' : 'w-40 h-40'} rounded-none border border-black/10 bg-paper grid place-items-center overflow-hidden relative`}>
+            <span className="text-[11px] text-ink/50 text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
             <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={(e) => { e.currentTarget.remove(); }} />
           </div>
         </div>
         <div className={`flex items-center gap-3 w-full ${compact ? '' : 'hidden'}`}>
-          <div className="h-px flex-1 bg-line" />
-          <span className="text-[0.65rem] uppercase tracking-widest text-taupe">{t('atau', 'or')}</span>
-          <div className="h-px flex-1 bg-line" />
+          <div className="h-px flex-1 bg-black/10" />
+          <span className="text-[0.65rem] uppercase tracking-widest text-ink/50">{t('atau', 'or')}</span>
+          <div className="h-px flex-1 bg-black/10" />
         </div>
         <div className={`flex flex-col gap-1.5 ${compact ? 'items-center' : 'justify-center'}`}>
-          <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Transfer Bank', 'Bank transfer')}</span>
-          <div className="font-serif font-semibold text-base text-plum leading-tight">{PAYMENT.bankName}</div>
+          <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Transfer Bank', 'Bank transfer')}</span>
+          <div className="font-serif font-semibold text-base text-ink leading-tight">{PAYMENT.bankName}</div>
           <div className="text-sm text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
-          <div className="text-xs text-ink-soft">a.n. {PAYMENT.accountHolder}</div>
+          <div className="text-xs text-ink/70">a.n. {PAYMENT.accountHolder}</div>
         </div>
       </div>
     </div>
@@ -242,35 +242,32 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
       {/* backdrop */}
-      <div className="absolute inset-0 bg-plum-deep/60 backdrop-blur-2xl" onClick={close} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-2xl" onClick={close} />
 
-      {/* panel — warm, light, on-brand with a plum undertone */}
-      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-[#FBF6F1] via-[#F6F0EC] to-[#ECE6F1] text-ink shadow-[0_40px_120px_-24px_rgba(42,24,57,0.6)] ring-1 ring-plum/10 border border-white/70 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${(step === 3 && isIndonesian) || step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
-        {/* soft glow accents — coral + plum (clipped, so they never add scroll) */}
-        <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-coral/25 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-plum/20 blur-3xl" />
+      {/* panel — clean white, sharp corners */}
+      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-none bg-white text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] ring-1 ring-black/10 border border-black/10 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${(step === 3 && isIndonesian) || step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
 
         {/* scroll only the content, not the decorations (data-lenis-prevent lets this
             scroll natively instead of the page's smooth-scroll hijacking the wheel) */}
         <div className="relative max-h-[92vh] overflow-y-auto overscroll-contain" data-lenis-prevent>
         {/* header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-5 md:px-6 py-4 bg-[#FCF8F1]/85 backdrop-blur border-b border-line">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-5 md:px-6 py-4 bg-white/85 backdrop-blur border-b border-black/10">
           <div className="flex items-center gap-3">
             {(step === 1 || step === 2 || step === 3) && (
               <button
                 onClick={() => setStep(step === 3 ? 2 : step === 2 ? (scheduled ? 1 : 0) : 0)}
                 aria-label="Back"
-                className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-line bg-white/70 text-ink-soft hover:text-ink hover:border-ink/25 hover:bg-white transition-colors"
+                className="shrink-0 grid place-items-center w-9 h-9 rounded-none border border-black/10 bg-white/70 text-ink/70 hover:text-ink hover:border-ink/25 hover:bg-white transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
             )}
             <div>
-              <div className="text-[0.62rem] uppercase tracking-[0.24em] text-coral-deep font-semibold">{t('Booking Sesi', 'Book a Session')}</div>
-              {step < 4 && <div className="mt-0.5 text-sm font-serif font-semibold text-plum leading-tight">{stepLabels[step]}</div>}
+              <div className="text-[0.62rem] uppercase tracking-[0.24em] text-ink font-semibold">{t('Booking Sesi', 'Book a Session')}</div>
+              {step < 4 && <div className="mt-0.5 text-sm font-serif font-semibold text-ink leading-tight">{stepLabels[step]}</div>}
             </div>
           </div>
-          <button onClick={close} aria-label="Close" className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-line bg-white/70 text-ink-soft hover:text-ink hover:border-ink/25 hover:bg-white transition-colors">
+          <button onClick={close} aria-label="Close" className="shrink-0 grid place-items-center w-9 h-9 rounded-none border border-black/10 bg-white/70 text-ink/70 hover:text-ink hover:border-ink/25 hover:bg-white transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -288,19 +285,19 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   return (
                     <React.Fragment key={s}>
                       <div className="flex flex-col items-center gap-1.5 shrink-0 w-16">
-                        <div className={`w-6 h-6 rounded-full grid place-items-center text-xs font-bold border-2 transition-colors ${
-                          done ? 'bg-coral border-coral text-ink'
-                            : active ? 'bg-coral/15 border-coral text-coral-deep'
-                              : 'bg-white border-line text-taupe'
+                        <div className={`w-6 h-6 rounded-none grid place-items-center text-xs font-bold border-2 transition-colors ${
+                          done ? 'bg-ink border-ink text-ink'
+                            : active ? 'bg-ink/[0.08] border-ink text-ink'
+                              : 'bg-white border-black/10 text-ink/50'
                         }`}>
                           {done ? <Check className="w-3.5 h-3.5" /> : i + 1}
                         </div>
-                        <span className={`text-[9px] uppercase tracking-wide text-center leading-tight ${active ? 'text-plum font-semibold' : 'text-taupe'}`}>
+                        <span className={`text-[9px] uppercase tracking-wide text-center leading-tight ${active ? 'text-ink font-semibold' : 'text-ink/50'}`}>
                           {stepLabels[s]}
                         </span>
                       </div>
                       {i < seq.length - 1 && (
-                        <div className={`flex-1 h-0.5 mt-3.5 rounded transition-colors ${i < cur ? 'bg-coral' : 'bg-line'}`} />
+                        <div className={`flex-1 h-0.5 mt-3.5 rounded transition-colors ${i < cur ? 'bg-ink' : 'bg-black/10'}`} />
                       )}
                     </React.Fragment>
                   );
@@ -318,18 +315,18 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 <button
                   key={s.id}
                   onClick={() => { setService(s); setStep(s.scheduled ? 1 : 2); }}
-                  className="group w-full flex items-center justify-between gap-4 text-left rounded-2xl border border-line bg-white hover:border-coral/50 hover:shadow-[0_14px_34px_-18px_rgba(218,134,54,0.55)] hover:-translate-y-0.5 transition-all px-4 py-3.5"
+                  className="group w-full flex items-center justify-between gap-4 text-left rounded-none border border-black/10 bg-white hover:border-ink/50 hover:shadow-[0_14px_34px_-18px_rgba(218,134,54,0.55)] hover:-translate-y-0.5 transition-all px-4 py-3.5"
                 >
                   <span className="min-w-0">
-                    <span className="block font-serif font-semibold text-plum">{s.name}</span>
+                    <span className="block font-serif font-semibold text-ink">{s.name}</span>
                     <span className="flex flex-wrap gap-1.5 mt-1.5">
                       {s.meta.split(' · ').map((t) => (
                         <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
                       ))}
                     </span>
-                    <span className="block text-xs text-ink-soft leading-snug mt-1.5">{s.desc}</span>
+                    <span className="block text-xs text-ink/70 leading-snug mt-1.5">{s.desc}</span>
                   </span>
-                  <ChevronRight className="w-5 h-5 text-coral-deep/40 group-hover:text-coral-deep group-hover:translate-x-0.5 transition-all shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-ink/40 group-hover:text-ink group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
               ))}
             </div>
@@ -338,14 +335,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 1 — date & time */}
           {step === 1 && (
             <div>
-              <p className="text-sm text-ink-soft mb-5">{service?.name}</p>
+              <p className="text-sm text-ink/70 mb-5">{service?.name}</p>
 
-              {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-3">{error}</div>}
+              {error && <div className="mb-4 text-sm text-ink bg-ink/[0.06] border border-ink/30 rounded-none px-4 py-3">{error}</div>}
 
               {/* duration / package — choose before the time slot */}
               {service?.packages && (
                 <div className="mb-5">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-2">
+                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-2">
                     {t('Pilih durasi', 'Choose duration')}
                   </span>
                   <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
@@ -358,10 +355,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                           key={p}
                           type="button"
                           onClick={() => { setPkg(p); setTime(null); }}
-                          className={`flex flex-col text-center rounded-lg border px-2 py-2.5 transition-colors ${active ? 'border-coral bg-coral/10 text-plum' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
+                          className={`flex flex-col text-center rounded-none border px-2 py-2.5 transition-colors ${active ? 'border-ink bg-ink/[0.06] text-ink' : 'border-black/10 bg-white text-ink/70 hover:border-ink/40'}`}
                         >
                           <span className="text-xs font-medium leading-snug">{pName}</span>
-                          {pPrice && <span className={`mt-1 text-[0.7rem] leading-snug ${active ? 'text-plum/80' : 'text-taupe'}`}>{pPrice}</span>}
+                          {pPrice && <span className={`mt-1 text-[0.7rem] leading-snug ${active ? 'text-ink/70' : 'text-ink/50'}`}>{pPrice}</span>}
                         </button>
                       );
                     })}
@@ -373,7 +370,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               {(!needsPackage || pkg) && (
               <div className="md:grid md:grid-cols-2 md:gap-4 md:items-stretch">
               {/* calendar */}
-              <div className="booking-cal rounded-2xl bg-white border border-line shadow-sm text-ink p-2 sm:p-3 flex items-center justify-center md:h-full">
+              <div className="booking-cal rounded-none bg-white border border-black/10 shadow-sm text-ink p-2 sm:p-3 flex items-center justify-center md:h-full">
                 <DayPicker
                   mode="single"
                   selected={date}
@@ -385,23 +382,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               {/* time */}
               <div className="mt-5 md:mt-0 md:h-full">
-                  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-taupe mb-3">
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-ink/50 mb-3">
                     <Clock className="w-3.5 h-3.5" /> {t('Pilih jam', 'Choose a time')}
                   </div>
                   {!date ? (
-                    <p className="text-sm text-ink-soft bg-ink/[0.04] border border-line rounded-lg px-4 py-3">
+                    <p className="text-sm text-ink/70 bg-ink/[0.04] border border-black/10 rounded-none px-4 py-3">
                       {t('Pilih tanggal dulu untuk melihat jam.', 'Pick a date to see available times.')}
                     </p>
                   ) : time ? (
                     // Selected slot(s) merged into the full booked range.
-                    <div className="flex items-center justify-between gap-3 rounded-lg border-2 border-coral bg-coral/10 px-4 py-3.5">
-                      <span className="flex items-center gap-2 text-lg font-serif font-bold text-plum tabular-nums">
-                        <Clock className="w-4 h-4 text-coral-deep" /> {time} – {addMinutes(time, durationMin || 30)}
+                    <div className="flex items-center justify-between gap-3 rounded-none border-2 border-ink bg-ink/[0.06] px-4 py-3.5">
+                      <span className="flex items-center gap-2 text-lg font-serif font-bold text-ink tabular-nums">
+                        <Clock className="w-4 h-4 text-ink" /> {time} – {addMinutes(time, durationMin || 30)}
                       </span>
-                      <button type="button" onClick={() => setTime(null)} className="text-xs uppercase tracking-wider text-ink-soft hover:text-ink underline underline-offset-2">{t('Ubah', 'Change')}</button>
+                      <button type="button" onClick={() => setTime(null)} className="text-xs uppercase tracking-wider text-ink/70 hover:text-ink underline underline-offset-2">{t('Ubah', 'Change')}</button>
                     </div>
                   ) : visibleSlots.length === 0 ? (
-                    <p className="text-sm text-ink-soft bg-ink/[0.04] border border-line rounded-lg px-4 py-3">
+                    <p className="text-sm text-ink/70 bg-ink/[0.04] border border-black/10 rounded-none px-4 py-3">
                       {t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}
                     </p>
                   ) : (
@@ -416,12 +413,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                           key={slot}
                           disabled={isTaken}
                           onClick={() => setTime(slot)}
-                          className={`py-2.5 rounded-lg text-sm font-medium border transition-all tabular-nums ${
+                          className={`py-2.5 rounded-none text-sm font-medium border transition-all tabular-nums ${
                             isTaken
-                              ? 'border-line text-taupe/40 line-through bg-ink/[0.03] cursor-not-allowed'
+                              ? 'border-black/10 text-ink/30 line-through bg-ink/[0.03] cursor-not-allowed'
                               : active
-                                ? 'bg-coral text-ink border-coral shadow-[0_8px_18px_-9px_rgba(241,159,88,0.9)]'
-                                : 'border-line bg-white text-ink hover:border-coral hover:text-coral-deep'
+                                ? 'bg-ink text-ink border-ink shadow-[0_8px_18px_-9px_rgba(241,159,88,0.9)]'
+                                : 'border-black/10 bg-white text-ink hover:border-ink hover:text-ink'
                           }`}
                         >
                           {slot}
@@ -434,11 +431,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </div>
               )}
 
-              <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-end gap-3">
+              <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-black/10 flex items-center justify-end gap-3">
                 <button
                   onClick={() => setStep(2)}
                   disabled={!date || !time || (needsPackage && !pkg)}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-none bg-ink text-ink text-sm font-semibold hover:bg-black hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
                 >
                   {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
                 </button>
@@ -449,15 +446,15 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 2 — details */}
           {step === 2 && (
             <div>
-              <p className="text-sm text-ink-soft mb-5 flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-coral-deep" />
+              <p className="text-sm text-ink/70 mb-5 flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-ink" />
                 {summaryLine}
               </p>
 
               <div className="space-y-3">
                 {service?.packages && !scheduled && (
                   <div>
-                    <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-2">{t('Pilih paket', 'Choose a package')}</span>
+                    <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-2">{t('Pilih paket', 'Choose a package')}</span>
                     <div className="grid grid-cols-3 gap-2">
                       {service.packages.map((p) => {
                         const [pName, ...pRest] = p.split(' · ');
@@ -468,10 +465,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                             key={p}
                             type="button"
                             onClick={() => setPkg(p)}
-                            className={`flex flex-col text-center rounded-lg border px-2 py-2.5 transition-colors ${active ? 'border-coral bg-coral/10 text-plum' : 'border-line bg-white text-ink-soft hover:border-coral/40'}`}
+                            className={`flex flex-col text-center rounded-none border px-2 py-2.5 transition-colors ${active ? 'border-ink bg-ink/[0.06] text-ink' : 'border-black/10 bg-white text-ink/70 hover:border-ink/40'}`}
                           >
                             <span className="text-xs font-medium leading-snug">{pName}</span>
-                            {pPrice && <span className={`mt-1 text-[0.7rem] leading-snug ${active ? 'text-plum/80' : 'text-taupe'}`}>{pPrice}</span>}
+                            {pPrice && <span className={`mt-1 text-[0.7rem] leading-snug ${active ? 'text-ink/70' : 'text-ink/50'}`}>{pPrice}</span>}
                           </button>
                         );
                       })}
@@ -479,41 +476,41 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   </div>
                 )}
                 <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">{t('Nama', 'Name')}</span>
+                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-1.5">{t('Nama', 'Name')}</span>
                   <input value={name} onChange={(e) => setName(e.target.value)} type="text"
-                    className="w-full rounded-lg bg-white border border-line px-3.5 py-2 text-sm text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
+                    className="w-full rounded-none bg-white border border-black/10 px-3.5 py-2 text-sm text-ink placeholder-ink/30 focus:border-ink focus:ring-2 focus:ring-ink/15 focus:outline-none transition-all"
                     placeholder={t('Nama kamu', 'Your name')} />
                 </label>
                 <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">{t('Tanggal Lahir', 'Date of Birth')}</span>
+                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-1.5">{t('Tanggal Lahir', 'Date of Birth')}</span>
                   <input value={dob} onChange={(e) => setDob(e.target.value)} type="date" max={toISODate(new Date())}
-                    className="w-full rounded-lg bg-white border border-line px-3.5 py-2 text-sm text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all" />
+                    className="w-full rounded-none bg-white border border-black/10 px-3.5 py-2 text-sm text-ink placeholder-ink/30 focus:border-ink focus:ring-2 focus:ring-ink/15 focus:outline-none transition-all" />
                 </label>
                 <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">WhatsApp</span>
+                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-1.5">WhatsApp</span>
                   <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value.replace(/[^\d+\s-]/g, ''))} type="tel" inputMode="tel"
-                    className="w-full rounded-lg bg-white border border-line px-3.5 py-2 text-sm text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
+                    className="w-full rounded-none bg-white border border-black/10 px-3.5 py-2 text-sm text-ink placeholder-ink/30 focus:border-ink focus:ring-2 focus:ring-ink/15 focus:outline-none transition-all"
                     placeholder={t('cth. 0812 3456 7890', 'e.g. +62 812 3456 7890')} />
                   {whatsapp.trim() !== '' && !whatsappValid && (
-                    <span className="block mt-1.5 text-xs text-coral-deep">{t('Masukkan nomor telepon yang valid (min. 8 angka).', 'Enter a valid phone number (at least 8 digits).')}</span>
+                    <span className="block mt-1.5 text-xs text-ink">{t('Masukkan nomor telepon yang valid (min. 8 angka).', 'Enter a valid phone number (at least 8 digits).')}</span>
                   )}
                 </label>
                 <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-taupe mb-1.5">Email <span className="text-taupe/70 normal-case tracking-normal">({t('opsional', 'optional')})</span></span>
+                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-1.5">Email <span className="text-ink/40 normal-case tracking-normal">({t('opsional', 'optional')})</span></span>
                   <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email"
-                    className="w-full rounded-lg bg-white border border-line px-3.5 py-2 text-sm text-ink placeholder-taupe/50 focus:border-coral focus:ring-2 focus:ring-coral/20 focus:outline-none transition-all"
+                    className="w-full rounded-none bg-white border border-black/10 px-3.5 py-2 text-sm text-ink placeholder-ink/30 focus:border-ink focus:ring-2 focus:ring-ink/15 focus:outline-none transition-all"
                     placeholder={t('nama@email.com', 'you@email.com')} />
                   {!emailValid && (
-                    <span className="block mt-1.5 text-xs text-coral-deep">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
+                    <span className="block mt-1.5 text-xs text-ink">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
                   )}
                 </label>
               </div>
 
-              <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-end gap-3">
+              <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-black/10 flex items-center justify-end gap-3">
                 <button
                   onClick={() => setStep(3)}
                   disabled={!detailsValid}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-none bg-ink text-ink text-sm font-semibold hover:bg-black hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
                 >
                   {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
                 </button>
@@ -524,53 +521,53 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 3 — review & confirm */}
           {step === 3 && (
             <div>
-              {error && <div className="mb-4 text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-4 py-3">{error}</div>}
+              {error && <div className="mb-4 text-sm text-ink bg-ink/[0.06] border border-ink/30 rounded-none px-4 py-3">{error}</div>}
 
               <div className="space-y-5">
               <div className={`grid gap-5 items-stretch ${isIndonesian ? 'md:grid-cols-2' : ''}`}>
-              <div className="rounded-2xl bg-white border border-line overflow-hidden flex flex-col">
-                <div className="px-4 py-3 bg-coral/[0.06] border-b border-line">
-                  <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Ringkasan', 'Summary')}</span>
+              <div className="rounded-none bg-white border border-black/10 overflow-hidden flex flex-col">
+                <div className="px-4 py-3 bg-ink/[0.05] border-b border-black/10">
+                  <span className="text-xs uppercase tracking-[0.16em] text-ink font-semibold">{t('Ringkasan', 'Summary')}</span>
                 </div>
                 <div className="divide-y divide-line flex-1">
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
-                  <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Layanan', 'Service')}</span>
+                  <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Layanan', 'Service')}</span>
                   <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
                 </div>
                 {pkg && (
                   <div className="flex items-start justify-between gap-4 px-4 py-3">
-                    <span className="text-xs uppercase tracking-[0.16em] text-taupe">{scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package')}</span>
+                    <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package')}</span>
                     <span className="text-sm text-ink font-medium text-right">{pkg}</span>
                   </div>
                 )}
                 {scheduled && date && (
                   <div className="flex items-start justify-between gap-4 px-4 py-3">
-                    <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Jadwal', 'Schedule')}</span>
+                    <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Jadwal', 'Schedule')}</span>
                     <span className="text-sm text-ink font-medium text-right">{toISODate(date)} · {time && timeRange(time)}</span>
                   </div>
                 )}
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
-                  <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Nama', 'Name')}</span>
+                  <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Nama', 'Name')}</span>
                   <span className="text-sm text-ink font-medium text-right">{name}</span>
                 </div>
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
-                  <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Tanggal Lahir', 'Date of Birth')}</span>
+                  <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Tanggal Lahir', 'Date of Birth')}</span>
                   <span className="text-sm text-ink font-medium text-right">{fmtLongDate(dob)}</span>
                 </div>
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
-                  <span className="text-xs uppercase tracking-[0.16em] text-taupe">WhatsApp</span>
+                  <span className="text-xs uppercase tracking-[0.16em] text-ink/50">WhatsApp</span>
                   <span className="text-sm text-ink font-medium text-right break-all">{whatsapp}</span>
                 </div>
                 {email.trim() && (
                   <div className="flex items-start justify-between gap-4 px-4 py-3">
-                    <span className="text-xs uppercase tracking-[0.16em] text-taupe">Email</span>
+                    <span className="text-xs uppercase tracking-[0.16em] text-ink/50">Email</span>
                     <span className="text-sm text-ink font-medium text-right break-all">{email}</span>
                   </div>
                 )}
                 </div>
-                <div className="flex items-center justify-between gap-4 px-4 py-3.5 bg-coral/[0.06] border-t border-line">
-                  <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Total', 'Total')}</span>
-                  <span className="text-base text-plum font-serif font-bold text-right">{totalPrice || '—'}</span>
+                <div className="flex items-center justify-between gap-4 px-4 py-3.5 bg-ink/[0.05] border-t border-black/10">
+                  <span className="text-xs uppercase tracking-[0.16em] text-ink font-semibold">{t('Total', 'Total')}</span>
+                  <span className="text-base text-ink font-serif font-bold text-right">{totalPrice || '—'}</span>
                 </div>
               </div>
 
@@ -578,8 +575,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </div>
 
               {isIndonesian && (
-                <div className="rounded-2xl bg-white border border-line p-5">
-                  <div className="text-xs uppercase tracking-[0.16em] text-plum font-semibold mb-4">{t('Cara & Ketentuan', 'How it works')}</div>
+                <div className="rounded-none bg-white border border-black/10 p-5">
+                  <div className="text-xs uppercase tracking-[0.16em] text-ink font-semibold mb-4">{t('Cara & Ketentuan', 'How it works')}</div>
                   <ol className="grid gap-4 sm:grid-cols-2">
                     {[
                       t('Setelah konfirmasi, kirim bukti pembayaran melalui WhatsApp.', 'After confirming, send your payment proof via WhatsApp.'),
@@ -587,9 +584,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                     ].map((txt, i, arr) => {
                       const warn = i === arr.length - 1;
                       return (
-                        <li key={i} className="flex gap-2.5 text-xs text-ink-soft leading-relaxed">
-                          <span className={`shrink-0 grid place-items-center w-5 h-5 rounded-full text-[0.6rem] font-bold ${warn ? 'bg-coral-deep/15 text-coral-deep' : 'bg-coral/15 text-coral-deep'}`}>{i + 1}</span>
-                          <span className={warn ? 'text-coral-deep font-medium' : ''}>{txt}</span>
+                        <li key={i} className="flex gap-2.5 text-xs text-ink/70 leading-relaxed">
+                          <span className={`shrink-0 grid place-items-center w-5 h-5 rounded-none text-[0.6rem] font-bold ${warn ? 'bg-ink/[0.08] text-ink' : 'bg-ink/[0.08] text-ink'}`}>{i + 1}</span>
+                          <span className={warn ? 'text-ink font-medium' : ''}>{txt}</span>
                         </li>
                       );
                     })}
@@ -598,11 +595,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               )}
               </div>
 
-              <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-line flex items-center justify-end gap-3">
+              <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-[#EFE9F2]/92 backdrop-blur-sm border-t border-black/10 flex items-center justify-end gap-3">
                 <button
                   onClick={submit}
                   disabled={submitting}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-ink text-sm font-semibold hover:bg-coral-deep hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-none bg-ink text-ink text-sm font-semibold hover:bg-black hover:text-cream shadow-[0_12px_26px_-14px_rgba(218,134,54,0.8)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
                 >
                   {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', 'Confirm booking')}
                 </button>
@@ -613,44 +610,44 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 4 — done */}
           {step === 4 && (
             <div className="text-center py-6">
-              <div className="mx-auto w-16 h-16 rounded-full bg-coral/15 ring-4 ring-coral/10 grid place-items-center text-coral-deep mb-5">
+              <div className="mx-auto w-16 h-16 rounded-none bg-ink/[0.08] ring-4 ring-ink/10 grid place-items-center text-ink mb-5">
                 <Check className="w-8 h-8" />
               </div>
-              <h3 className="font-serif font-semibold text-2xl text-plum">{t('Booking diterima!', 'You’re booked!')}</h3>
-              <p className="mt-3 text-ink-soft leading-relaxed max-w-sm mx-auto">
+              <h3 className="font-serif font-semibold text-2xl text-ink">{t('Booking diterima!', 'You’re booked!')}</h3>
+              <p className="mt-3 text-ink/70 leading-relaxed max-w-sm mx-auto">
                 {t('Terima kasih, ', 'Thank you, ')}{name || t('kamu', 'friend')}. {t('Aku akan menghubungimu via WhatsApp', 'I’ll reach out on WhatsApp')} ({whatsapp}) {t('untuk konfirmasi.', 'to confirm.')}
               </p>
               {/* booking details — labelled rows for easy reading */}
-              <div className="mt-6 text-left rounded-2xl bg-white border border-line divide-y divide-line overflow-hidden">
+              <div className="mt-6 text-left rounded-none bg-white border border-black/10 divide-y divide-line overflow-hidden">
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
-                  <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Layanan', 'Service')}</span>
+                  <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Layanan', 'Service')}</span>
                   <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
                 </div>
                 {pkg && (
                   <div className="flex items-start justify-between gap-4 px-4 py-3">
-                    <span className="text-xs uppercase tracking-[0.16em] text-taupe">{scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package')}</span>
+                    <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package')}</span>
                     <span className="text-sm text-ink font-medium text-right">{pkg.split(' · ')[0]}</span>
                   </div>
                 )}
                 {scheduled && date && (
                   <>
                     <div className="flex items-start justify-between gap-4 px-4 py-3">
-                      <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Tanggal', 'Date')}</span>
+                      <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Tanggal', 'Date')}</span>
                       <span className="text-sm text-ink font-medium text-right">{toISODate(date)}</span>
                     </div>
                     <div className="flex items-start justify-between gap-4 px-4 py-3">
-                      <span className="text-xs uppercase tracking-[0.16em] text-taupe">{t('Waktu', 'Time')}</span>
+                      <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Waktu', 'Time')}</span>
                       <span className="text-sm text-ink font-medium text-right">{time ? timeRange(time) : ''}</span>
                     </div>
                   </>
                 )}
-                <div className="flex items-center justify-between gap-4 px-4 py-3.5 bg-coral/[0.06]">
-                  <span className="text-xs uppercase tracking-[0.16em] text-plum font-semibold">{t('Total', 'Total')}</span>
-                  <span className="text-base text-plum font-serif font-bold text-right">{totalPrice || '—'}</span>
+                <div className="flex items-center justify-between gap-4 px-4 py-3.5 bg-ink/[0.05]">
+                  <span className="text-xs uppercase tracking-[0.16em] text-ink font-semibold">{t('Total', 'Total')}</span>
+                  <span className="text-base text-ink font-serif font-bold text-right">{totalPrice || '—'}</span>
                 </div>
               </div>
 
-              <p className="mt-5 text-sm text-ink-soft max-w-sm mx-auto leading-relaxed">
+              <p className="mt-5 text-sm text-ink/70 max-w-sm mx-auto leading-relaxed">
                 {t('Kirim bukti pembayaran melalui WhatsApp. Tanpa pembayaran, booking akan otomatis dibatalkan.', 'Send your payment proof via WhatsApp. Without payment, your booking will be auto-cancelled.')}
               </p>
 
@@ -663,12 +660,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   href={waLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-[#25D366] text-white text-sm font-semibold hover:brightness-95 shadow-[0_12px_26px_-12px_rgba(37,211,102,0.9)] transition"
+                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-none bg-[#25D366] text-white text-sm font-semibold hover:brightness-95 shadow-[0_12px_26px_-12px_rgba(37,211,102,0.9)] transition"
                 >
                   <FaWhatsapp className="w-5 h-5" /> {t('Kirim Bukti Pembayaran', 'Send Payment Proof')}
                 </a>
                 {isIndonesian && (
-                  <button onClick={() => setShowPay((v) => !v)} className="text-sm font-medium text-coral-deep hover:text-plum underline underline-offset-4 transition-colors">
+                  <button onClick={() => setShowPay((v) => !v)} className="text-sm font-medium text-ink hover:text-ink underline underline-offset-4 transition-colors">
                     {showPay ? t('Sembunyikan detail pembayaran', 'Hide payment details') : t('Lihat detail pembayaran', 'View payment details')}
                   </button>
                 )}

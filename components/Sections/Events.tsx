@@ -66,7 +66,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
               <div className="flex items-center gap-6 shrink-0">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-elegant font-medium text-5xl md:text-6xl text-plum leading-none tracking-tight">{eventList.length}+</span>
+                  <span className="font-elegant font-medium text-5xl md:text-6xl text-ink leading-none tracking-tight">{eventList.length}+</span>
                   <span className="text-[0.66rem] uppercase tracking-[0.22em] text-ink/60 leading-snug max-w-[6rem]">
                     {isIndonesian ? "Event sejak 2016" : "Events since 2016"}
                   </span>
@@ -75,7 +75,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                   href="https://wa.link/5peyhb"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-plum-deep text-cream hover:bg-ink text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 shadow-[0_16px_36px_-20px_rgba(0,0,0,0.5)]"
+                  className="inline-flex items-center justify-center px-7 py-3 rounded-none bg-ink text-cream hover:bg-ink text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 shadow-[0_16px_36px_-20px_rgba(0,0,0,0.5)]"
                 >
                   {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
                 </a>
@@ -84,7 +84,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
             {/* PHOTO GALLERY — a few moments from past events */}
             <div className="mb-10 md:mb-14">
-              <span className="block text-[0.66rem] uppercase tracking-[0.22em] text-plum/85 mb-4">
+              <span className="block text-[0.66rem] uppercase tracking-[0.22em] text-ink/70 mb-4">
                 {isIndonesian ? "Momen dari beberapa event" : "Moments from past events"}
               </span>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -93,7 +93,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                     <button
                       type="button"
                       onClick={() => setLightbox(src)}
-                      className="group relative block w-full overflow-hidden rounded-xl md:rounded-2xl aspect-[3/4] bg-black/5"
+                      className="group relative block w-full overflow-hidden rounded-none aspect-[3/4] bg-black/5"
                       aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
                     >
                       <ImageReveal
@@ -103,7 +103,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
                         delay={i * 90}
                       />
-                      <span className="pointer-events-none absolute inset-0 rounded-xl md:rounded-2xl ring-1 ring-inset ring-black/10 group-hover:ring-plum/50 transition-all" />
+                      <span className="pointer-events-none absolute inset-0 rounded-none ring-1 ring-inset ring-black/10 group-hover:ring-ink/40 transition-all" />
                       <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
                   </FadeIn>
@@ -117,7 +117,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 <FadeIn key={index} delay={Math.min(index, 6) * 40} dir="up">
                   <div className="group grid grid-cols-12 items-center gap-x-4 py-2.5 md:py-3 border-b border-black/12 transition-colors duration-300 hover:bg-black/[0.03]">
                     {/* year */}
-                    <span className="col-span-3 md:col-span-2 font-medium text-[0.62rem] md:text-xs uppercase tracking-[0.18em] text-plum tabular-nums pl-0 md:pl-2">
+                    <span className="col-span-3 md:col-span-2 font-medium text-[0.62rem] md:text-xs uppercase tracking-[0.18em] text-ink tabular-nums pl-0 md:pl-2">
                       {event.year}
                     </span>
                     {/* title */}
@@ -136,7 +136,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             {visibleCount < eventList.length && (
               <button
                 onClick={handleLoadMore}
-                className="mt-8 inline-flex items-center gap-2 px-7 py-2.5 rounded-full border border-ink/25 hover:border-ink hover:bg-ink hover:text-cream text-sm font-medium text-ink transition-all duration-300 group"
+                className="mt-8 inline-flex items-center gap-2 px-7 py-2.5 rounded-none border border-ink/25 hover:border-ink hover:bg-ink hover:text-cream text-sm font-medium text-ink transition-all duration-300 group"
               >
                 {isIndonesian ? "Lihat Lainnya" : "Load More Events"} <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
               </button>
@@ -153,13 +153,13 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
           <img
             src={lightbox}
             alt=""
-            className="max-h-[90vh] max-w-full rounded-2xl shadow-2xl object-contain"
+            className="max-h-[90vh] max-w-full rounded-none shadow-2xl object-contain"
             onClick={(e) => e.stopPropagation()}
           />
           <button
             onClick={() => setLightbox(null)}
             aria-label="Close"
-            className="absolute top-5 right-5 w-10 h-10 grid place-items-center rounded-full bg-white/15 text-white hover:bg-white/25 transition-colors"
+            className="absolute top-5 right-5 w-10 h-10 grid place-items-center rounded-none bg-white/15 text-white hover:bg-white/25 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

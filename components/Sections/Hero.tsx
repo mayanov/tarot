@@ -40,24 +40,24 @@ const OrbitField: React.FC = () => {
     >
       <svg viewBox="0 0 600 600" className="w-full h-full" fill="none">
         <circle cx="300" cy="300" r="150" fill="url(#moonGlow)" />
-        <g stroke="#C6B2E4" strokeWidth="0.6">
-          <circle cx="300" cy="300" r="120" opacity="0.55" />
-          <ellipse cx="300" cy="300" rx="188" ry="120" opacity="0.4" className="origin-center animate-[spin_38s_linear_infinite]" style={{ transformBox: 'fill-box' }} />
-          <ellipse cx="300" cy="300" rx="120" ry="230" opacity="0.28" />
-          <circle cx="300" cy="300" r="262" opacity="0.16" strokeDasharray="2 7" />
+        <g stroke="#FFFFFF" strokeWidth="0.6">
+          <circle cx="300" cy="300" r="120" opacity="0.5" />
+          <ellipse cx="300" cy="300" rx="188" ry="120" opacity="0.36" className="origin-center animate-[spin_38s_linear_infinite]" style={{ transformBox: 'fill-box' }} />
+          <ellipse cx="300" cy="300" rx="120" ry="230" opacity="0.24" />
+          <circle cx="300" cy="300" r="262" opacity="0.14" strokeDasharray="2 7" />
         </g>
         <g className="origin-center animate-[spin_46s_linear_infinite]" style={{ transformBox: 'fill-box' }}>
-          <circle cx="300" cy="180" r="3.4" fill="#DBCDF2" />
-          <circle cx="300" cy="180" r="8" fill="#C6B2E4" opacity="0.28" />
+          <circle cx="300" cy="180" r="3.4" fill="#FFFFFF" />
+          <circle cx="300" cy="180" r="8" fill="#FFFFFF" opacity="0.24" />
         </g>
         <g className="origin-center animate-[spin-reverse_60s_linear_infinite]" style={{ transformBox: 'fill-box' }}>
-          <circle cx="488" cy="300" r="2.4" fill="#DBCDF2" opacity="0.9" />
+          <circle cx="488" cy="300" r="2.4" fill="#FFFFFF" opacity="0.9" />
         </g>
         <defs>
           <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#DBCDF2" stopOpacity="0.28" />
-            <stop offset="55%" stopColor="#C6B2E4" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="#C6B2E4" stopOpacity="0" />
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.22" />
+            <stop offset="55%" stopColor="#FFFFFF" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
           </radialGradient>
         </defs>
       </svg>
@@ -139,9 +139,9 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           <Rise delay={320}>
             <p className="font-elegant font-medium leading-[1.12] tracking-[-0.01em] text-[1.6rem] sm:text-[1.95rem] lg:text-[2.1rem] text-cream [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
               {isIndonesian ? (
-                <>Pandangan <span className="italic text-moon">jernih</span> untuk langkah berikutnya.</>
+                <>Pandangan <span className="italic">jernih</span> untuk langkah berikutnya.</>
               ) : (
-                <>A <span className="italic text-moon">clearer</span> view of what comes next.</>
+                <>A <span className="italic">clearer</span> view of what comes next.</>
               )}
             </p>
           </Rise>
@@ -159,12 +159,10 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
               <a
                 href="#services"
                 onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                className="group inline-flex items-center gap-2.5 rounded-full bg-moon text-plum-deep pl-7 pr-5 py-3.5 text-sm font-semibold hover:bg-moon-bright hover:-translate-y-0.5 transition-all duration-300 shadow-[0_0_0_1px_rgba(219,205,242,0.35),0_20px_50px_-18px_rgba(198,178,228,0.7)]"
+                className="group inline-flex items-center gap-3 rounded-none bg-cream text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors duration-300"
               >
                 {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                <span className="grid place-items-center w-7 h-7 rounded-full bg-plum-deep/15 group-hover:bg-plum-deep/25 transition-colors">
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </a>
             </div>
           </Rise>
@@ -176,7 +174,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           <Rise delay={80} className="relative">
             <h1 className="font-serif font-bold uppercase leading-[0.9] tracking-[-0.01em] text-center text-[3.6rem] sm:text-[5rem] lg:text-[5.6rem] xl:text-[6.6rem] [text-shadow:0_6px_50px_rgba(6,4,14,0.55)]">
               <span className="block text-cream">Mayanov</span>
-              <span className="block text-moon">Tarot</span>
+              <span className="block text-cream/50">Tarot</span>
             </h1>
           </Rise>
         </div>
@@ -185,7 +183,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       {/* Stats — a quiet, left-aligned strip on a moonstone hairline */}
       <Rise delay={620}>
         <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pb-11 md:pb-14">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-6 pt-6 border-t border-moon/20 max-w-3xl">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-6 pt-6 border-t border-cream/20 max-w-3xl">
             {metrics.map((m, i) => (
               <div key={i} className="text-left">
                 <div className="font-elegant font-medium text-2xl md:text-[1.9rem] tabular-nums text-cream">

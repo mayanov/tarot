@@ -137,7 +137,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                         <span className="font-serif font-medium text-base md:text-lg leading-snug tracking-tight text-ink">
                           {faq.question}
                         </span>
-                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-300 ${open ? 'text-plum rotate-180' : 'text-ink/60'}`} />
+                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-300 ${open ? 'text-ink rotate-180' : 'text-ink/60'}`} />
                       </button>
 
                       <div className={`grid transition-all duration-300 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>

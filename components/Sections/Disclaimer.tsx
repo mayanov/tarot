@@ -28,7 +28,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         <div className="grid lg:grid-cols-12 gap-y-9 lg:gap-x-16">
                             {/* LEFT — title + subtitle */}
                             <div className="lg:col-span-4">
-                                <h2 className="font-elegant font-medium text-plum text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
+                                <h2 className="font-elegant font-medium text-ink text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                                     Disclaimer
                                 </h2>
                                 <p className="mt-5 text-sm text-ink/60 font-light leading-relaxed max-w-xs">
@@ -43,7 +43,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                                 <div className="border-t border-black/10">
                                     {disclaimers.map((item, index) => (
                                         <div key={index} className="flex gap-5 py-5 border-b border-black/10">
-                                            <span className="font-serif font-semibold text-plum text-sm tabular-nums pt-0.5 shrink-0 w-6">0{index + 1}</span>
+                                            <span className="font-serif font-semibold text-ink text-sm tabular-nums pt-0.5 shrink-0 w-6">0{index + 1}</span>
                                             <p className="text-ink/70 text-sm md:text-[0.95rem] leading-relaxed font-light">
                                                 {item}
                                             </p>

@@ -338,7 +338,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen relative font-sans text-cream selection:bg-moon/25">
+    <div className="min-h-screen relative font-sans text-cream selection:bg-ink/20">
       <Loader ready={!isLoading} isIndonesian={isIndonesian} />
 
       <Background />
@@ -379,7 +379,7 @@ function App() {
         {showBackToTop && (
           <button
             onClick={scrollToTop}
-            className="p-3 rounded-full bg-plum-deep/70 backdrop-blur-md text-moon shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] hover:bg-moon hover:text-plum-deep transition-all duration-300 border border-moon/25 hover:-translate-y-1"
+            className="p-3 rounded-none bg-ink/80 backdrop-blur-md text-cream shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] hover:bg-cream hover:text-ink transition-all duration-300 border border-cream/25 hover:-translate-y-1"
             title="Back to Top"
           >
             <ArrowUp className="w-5 h-5" />

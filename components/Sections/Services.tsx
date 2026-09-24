@@ -10,7 +10,7 @@ interface ServicesProps {
 }
 
 // Dark order pill on the light ground — opens the on-site booking flow.
-const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-full bg-plum-deep text-cream text-sm font-semibold hover:bg-ink hover:-translate-y-0.5 transition-all duration-300 shadow-[0_16px_36px_-20px_rgba(0,0,0,0.5)]";
+const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-none border border-ink text-ink text-sm font-semibold hover:bg-ink hover:text-cream transition-colors duration-300";
 
 // A per-category tint — subtle warm-bone panels that alternate for a gentle rhythm on light.
 const PANELS = ['rgba(255,253,248,0.6)', 'rgba(0,0,0,0.028)', 'rgba(255,253,248,0.6)', 'rgba(0,0,0,0.028)'];
@@ -23,11 +23,11 @@ const OfferRow: React.FC<{ o: any }> = ({ o }) => (
                 <h4 className="text-[1.05rem] font-serif font-semibold text-ink leading-tight tracking-tight">
                     {o.name}{o.sub && <span className="text-sm text-ink/55 font-sans font-normal ml-2">{o.sub}</span>}
                 </h4>
-                {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-full ${o.badgeTone || 'bg-black/[0.06] text-ink'}`}>{o.badge}</span>}
+                {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-none ${o.badgeTone || 'bg-black/[0.06] text-ink'}`}>{o.badge}</span>}
             </div>
             <div className="text-right shrink-0">
                 {o.oldPrice && <span className="text-xs text-ink/45 line-through leading-none block">{o.oldPrice}</span>}
-                <span className="text-lg md:text-xl font-serif font-semibold text-plum leading-none whitespace-nowrap">{o.price}</span>
+                <span className="text-lg md:text-xl font-serif font-semibold text-ink leading-none whitespace-nowrap">{o.price}</span>
             </div>
         </div>
         {o.desc && <p className="mt-2 text-sm text-ink/70 font-light leading-relaxed max-w-2xl">{o.desc}</p>}
@@ -146,7 +146,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                     },
                     {
                         name: 'Beli 3 Dapat 5 Pertanyaan', price: 'Rp 315K',
-                        badge: 'Promo', badgeTone: 'bg-plum/10 text-plum',
+                        badge: 'Promo', badgeTone: 'bg-black/[0.06] text-ink',
                         features: 'Bayar 3, dapat 5 pertanyaan (dipakai di hari yang sama).',
                         book: [{ href: 'http://lynk.id/mayanovtarot/mm7ykgdwndez/', onClick: handlePromoBuy3Get5 }],
                     },
@@ -169,7 +169,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             },
             {
                 id: 'service-meetup', type: 'Sesi Tatap Muka', tags: ['JAKSEL', '1 JAM'],
-                blurb: <>Temu langsung di Jakarta Selatan — energi lebih terasa, analisa lebih personal. <a href="https://maps.app.goo.gl/LE2YwZiM2exhqunh8" target="_blank" rel="noopener noreferrer" className="text-plum border-b border-plum/40 hover:border-plum">Rekomendasi tempat</a></>,
+                blurb: <>Temu langsung di Jakarta Selatan — energi lebih terasa, analisa lebih personal. <a href="https://maps.app.goo.gl/LE2YwZiM2exhqunh8" target="_blank" rel="noopener noreferrer" className="text-ink border-b border-ink/40 hover:border-ink">Rekomendasi tempat</a></>,
                 priceLabel: 'Rp 450K',
                 offers: [
                     {
@@ -203,7 +203,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 priceLabel: '$20',
                 offers: [
                     {
-                        name: '5-Card Deep', price: '$20', badge: 'Most Popular', badgeTone: 'bg-plum-deep text-cream',
+                        name: '5-Card Deep', price: '$20', badge: 'Most Popular', badgeTone: 'bg-ink text-cream',
                         desc: "The bigger picture — hidden influences and what's coming next, read in depth.",
                         features: <>5-card spread · high-res photo · priority 24h · <span className="text-ink font-medium">1 qty = 1 question</span></>,
                         book: [{ href: 'https://www.paypal.com/ncp/payment/V6U4QMAU642KA', onClick: handleBookDeep }],
@@ -272,11 +272,11 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     className="w-full flex items-center justify-between gap-4 py-7 md:py-9 text-left group"
                                 >
                                     <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap min-w-0">
-                                        <h3 className="font-elegant font-medium text-ink text-[1.55rem] md:text-[2.2rem] leading-none tracking-tight transition-colors group-hover:text-plum">
+                                        <h3 className="font-elegant font-medium text-ink text-[1.55rem] md:text-[2.2rem] leading-none tracking-tight transition-colors group-hover:text-ink">
                                             {g.type}
                                         </h3>
                                         {g.seasonal && (
-                                            <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-full bg-plum/10 text-plum">
+                                            <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-none bg-black/[0.06] text-ink">
                                                 {isIndonesian ? 'Musiman' : 'Seasonal'}
                                             </span>
                                         )}
@@ -284,9 +284,9 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     <div className="flex items-center gap-4 md:gap-6 shrink-0">
                                         <span className="hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap">
                                             <span className="text-ink/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
-                                            <span className="font-serif font-semibold text-plum">{g.priceLabel}</span>
+                                            <span className="font-serif font-semibold text-ink">{g.priceLabel}</span>
                                         </span>
-                                        <span className={`grid place-items-center w-9 h-9 rounded-full border border-ink/25 transition-transform duration-300 ${open ? 'rotate-180 border-plum/60' : ''}`}>
+                                        <span className={`grid place-items-center w-9 h-9 rounded-none border border-ink/25 transition-transform duration-300 ${open ? 'rotate-180 border-ink' : ''}`}>
                                             <ChevronDown className="w-4 h-4 text-ink" />
                                         </span>
                                     </div>
@@ -328,7 +328,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         <ol className="mt-12 md:mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-5">
                             {steps.map((step, i) => (
                                 <li key={i} className="animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
-                                    <span className="font-serif text-plum text-lg tabular-nums tracking-tight">
+                                    <span className="font-serif text-ink text-lg tabular-nums tracking-tight">
                                         {String(i + 1).padStart(2, '0')}
                                     </span>
                                     <div className="mt-4 h-px w-full bg-cream/15" />
