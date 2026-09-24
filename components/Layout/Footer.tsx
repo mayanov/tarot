@@ -4,7 +4,6 @@ import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
 import FadeIn from '../UI/FadeIn';
-import SkyLayer from '../UI/SkyLayer';
 
 interface FooterProps {
     isIndonesian?: boolean;
@@ -54,13 +53,21 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         <footer
             ref={footerRef}
             className="relative z-20 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-40px_90px_-50px_rgba(0,0,0,0.5)]"
-            style={{ background: 'linear-gradient(180deg, #14204A 0%, #0E1636 55%, #080A1C 100%)' }}
+            style={{ background: '#0C1430' }}
         >
-            {/* midnight-blue sky — stars + small clouds + a cool bloom */}
-            <SkyLayer
-                cloud="rgba(180,202,240,0.11)"
-                star="rgba(238,244,255,0.9)"
-                glow="radial-gradient(70% 90% at 50% -10%, rgba(120,150,220,0.22) 0%, rgba(90,110,190,0.08) 46%, transparent 76%)"
+            {/* deep-blue dusk sky photo */}
+            <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                    backgroundImage: `url(${import.meta.env.BASE_URL}sky-footer.jpg)`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center 40%',
+                }}
+            />
+            {/* dark overlay so the footer text stays readable over the dusk */}
+            <div
+                className="pointer-events-none absolute inset-0"
+                style={{ background: 'linear-gradient(180deg, rgba(10,12,30,0.82) 0%, rgba(10,12,30,0.66) 46%, rgba(20,12,14,0.72) 100%)' }}
             />
 
             {/* film grain — matches the site background (subtle) */}

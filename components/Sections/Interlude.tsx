@@ -1,6 +1,5 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
-import SkyLayer from '../UI/SkyLayer';
 
 interface InterludeProps {
   isIndonesian?: boolean;
@@ -20,16 +19,21 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
     <section
       id="interlude"
       className="relative overflow-hidden isolate text-cream py-24 md:py-32 border-y border-white/[0.08]"
-      style={{
-        background:
-          'linear-gradient(165deg, #241546 0%, #3A1C46 55%, #4A2247 100%)',
-      }}
+      style={{ background: '#2A1330' }}
     >
-      {/* rose-dusk sky — stars + small clouds + a warm bloom from below */}
-      <SkyLayer
-        cloud="rgba(236,188,216,0.13)"
-        star="rgba(255,238,247,0.9)"
-        glow="radial-gradient(60% 80% at 50% 116%, rgba(232,150,190,0.26) 0%, rgba(180,120,180,0.10) 44%, transparent 74%)"
+      {/* fiery sunset sky photo */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: `url(${import.meta.env.BASE_URL}sky-interlude.jpg)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 32%',
+        }}
+      />
+      {/* dark overlay so the quote reads cleanly */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'linear-gradient(180deg, rgba(22,8,20,0.58) 0%, rgba(22,8,20,0.42) 50%, rgba(22,8,20,0.66) 100%)' }}
       />
 
       {/* film grain */}
@@ -44,9 +48,9 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
             {/* pull-quote */}
             <p className="font-elegant italic text-cream text-[2rem] sm:text-[2.6rem] md:text-[3.4rem] lg:text-[3.9rem] leading-[1.08] tracking-[-0.01em]">
               {isIndonesian ? (
-                <>Tarot bukan meramal masa depan — tapi memberi <span className="text-moon">kejelasan</span> untuk kamu bentuk sendiri.</>
+                <>Tarot bukan meramal masa depan — tapi memberi <span className="italic">kejelasan</span> untuk kamu bentuk sendiri.</>
               ) : (
-                <>Tarot won&rsquo;t predict your future — it hands you the <span className="text-moon">clarity</span> to shape it.</>
+                <>Tarot won&rsquo;t predict your future — it hands you the <span className="italic">clarity</span> to shape it.</>
               )}
             </p>
 
