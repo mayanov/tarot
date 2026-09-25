@@ -44,9 +44,6 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   const eventList = [...rawEventList].reverse();
   const displayedEvents = eventList.slice(0, visibleCount);
 
-  const handleLoadMore = () => {
-    setVisibleCount(prev => prev + 10);
-  };
 
   return (
     <section
@@ -63,24 +60,11 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       />
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10 text-cream">
           <FadeIn>
-            {/* HEADER — title on the left, count + CTA on the right */}
-            <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between mb-10 md:mb-14">
-              <div>
-                <h2 className="font-elegant font-medium text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
-                  {isIndonesian ? "Event & collaboration" : "Community & events"}
-                </h2>
-              </div>
-
-              <div className="flex items-center gap-6 shrink-0">
-                <a
-                  href="https://wa.link/5peyhb"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-7 py-3 rounded-lg bg-cream text-ink hover:bg-white text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 shadow-[0_16px_36px_-20px_rgba(0,0,0,0.6)]"
-                >
-                  {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
-                </a>
-              </div>
+            {/* HEADER — centered title */}
+            <div className="mb-10 md:mb-14 text-center">
+              <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+                {isIndonesian ? "Event & collaboration" : "Community & events"}
+              </h2>
             </div>
 
             {/* PHOTO GALLERY — a few moments from past events */}
@@ -134,14 +118,24 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               ))}
             </div>
 
-            {visibleCount < eventList.length && (
-              <button
-                onClick={handleLoadMore}
-                className="mt-8 inline-flex items-center gap-2 px-7 py-2.5 rounded-lg border border-cream/30 hover:border-cream hover:bg-cream hover:text-ink text-sm font-medium text-cream transition-all duration-300 group"
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              {visibleCount < eventList.length && (
+                <button
+                  onClick={() => setVisibleCount(eventList.length)}
+                  className="inline-flex items-center gap-2 px-7 py-2.5 rounded-lg border border-cream/30 hover:border-cream hover:bg-cream hover:text-ink text-sm font-medium text-cream transition-all duration-300 group"
+                >
+                  {isIndonesian ? "Lihat Semua" : "View All"} <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+                </button>
+              )}
+              <a
+                href="https://wa.link/5peyhb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-7 py-2.5 rounded-lg bg-cream text-ink hover:bg-white text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 shadow-[0_16px_36px_-20px_rgba(0,0,0,0.6)]"
               >
-                {isIndonesian ? "Lihat Lainnya" : "Load More Events"} <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-              </button>
-            )}
+                {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
+              </a>
+            </div>
           </FadeIn>
       </div>
 

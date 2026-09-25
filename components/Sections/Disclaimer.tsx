@@ -28,7 +28,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         <div className="grid lg:grid-cols-12 gap-y-9 lg:gap-x-16">
                             {/* LEFT — title + subtitle */}
                             <div className="lg:col-span-4">
-                                <h2 className="font-elegant font-medium text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
+                                <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                                     Disclaimer
                                 </h2>
                                 <p className="mt-5 text-sm text-cream/60 font-light leading-relaxed max-w-xs">

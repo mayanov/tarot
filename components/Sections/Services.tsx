@@ -232,7 +232,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 <FadeIn>
                     <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
                         <div className="lg:col-span-7">
-                            <h2 className="font-elegant font-medium text-ink text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
+                            <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                                 {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
                             </h2>
                         </div>

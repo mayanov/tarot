@@ -149,13 +149,6 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 {/* Bottom bar */}
                 <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-ink/10 text-xs text-ink/55 tracking-wide">
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
-                    <button
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                        className="group inline-flex items-center gap-2 uppercase tracking-[0.2em] text-[10px] text-ink/60 hover:text-moon-deep transition-colors"
-                    >
-                        {isIndonesian ? 'Kembali ke atas' : 'Back to top'}
-                        <ArrowRight className="w-3.5 h-3.5 -rotate-90 group-hover:-translate-y-0.5 transition-transform" />
-                    </button>
                 </div>
             </FadeIn>
         </footer>

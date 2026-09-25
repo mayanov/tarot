@@ -53,7 +53,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
           <div className="mt-12 md:mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 60} dir="up">
-                <div className="group/card relative flex h-full min-h-[18rem] md:min-h-[23rem] flex-col rounded-lg bg-[#141A3D] p-6 md:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#1B2350] hover:shadow-[0_30px_60px_-30px_rgba(20,26,61,0.55)]">
+                <div className="group/card relative flex h-full min-h-[18rem] md:min-h-[23rem] flex-col rounded-lg bg-[#141A3D]/85 p-6 md:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#1B2350]/90 hover:shadow-[0_30px_60px_-30px_rgba(20,26,61,0.45)]">
                   {/* eyebrow */}
                   <div className="flex items-center gap-2.5 text-sm md:text-[0.95rem] text-cream/70">
                     <span className="w-1.5 h-1.5 rounded-full bg-cream/70 shrink-0" />
