@@ -391,9 +391,10 @@ function App() {
         </React.Suspense>
       </main>
 
-      {/* White backdrop matching the footer, so the footer's rise animation blends
-          into it instead of exposing the dark section / star background. */}
-      <div className="relative z-10" style={{ background: '#ffffff' }}>
+      {/* Transparent backdrop so the fixed cosmic star field shows around the footer
+          (revealed at its rounded corners + the rise); the footer panel itself stays
+          white, keeping contrast with the dark Disclaimer above. */}
+      <div className="relative z-10">
         <Footer isIndonesian={isIndonesian} />
       </div>
 

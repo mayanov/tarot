@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FadeIn from '../UI/FadeIn';
 import { ImageReveal } from '../UI/Reveal';
 import { ChevronDown, X } from 'lucide-react';
+import { smoothScrollToId } from '../UI/scroll';
 
 interface EventsProps {
   isIndonesian?: boolean;
@@ -144,7 +145,15 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 const expanded = visibleCount >= eventList.length;
                 return (
                   <button
-                    onClick={() => setVisibleCount(expanded ? 10 : eventList.length)}
+                    onClick={() => {
+                      if (expanded) {
+                        setVisibleCount(10);
+                        // keep the viewer anchored to this section after it collapses
+                        setTimeout(() => smoothScrollToId('events', 90), 60);
+                      } else {
+                        setVisibleCount(eventList.length);
+                      }
+                    }}
                     className="inline-flex items-center justify-center gap-2 min-w-[11rem] px-7 py-2.5 rounded-lg border border-ink/25 hover:border-ink hover:bg-ink hover:text-cream text-sm font-medium text-ink transition-all duration-300 group"
                   >
                     {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
