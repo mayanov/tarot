@@ -64,11 +64,22 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     backgroundPosition: 'center 40%',
                 }}
             />
-            {/* dark overlay so the footer text stays readable over the dusk */}
+            {/* overlay — light enough that the dusk sky photo actually reads (so the
+                footer is a twilight photograph, distinct from the flat Disclaimer),
+                darker toward the bottom so the wordmark + text stay legible */}
             <div
                 className="pointer-events-none absolute inset-0"
-                style={{ background: 'linear-gradient(180deg, rgba(10,12,30,0.82) 0%, rgba(10,12,30,0.66) 46%, rgba(20,12,14,0.72) 100%)' }}
+                style={{ background: 'linear-gradient(180deg, rgba(10,12,30,0.58) 0%, rgba(10,12,30,0.40) 42%, rgba(9,7,20,0.82) 100%)' }}
             />
+
+            {/* horizon glow along the rounded top edge — a band of moonstone light so
+                the footer reads as a glowing panel rising out of the dark Disclaimer */}
+            <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-40 md:h-56"
+                style={{ background: 'linear-gradient(180deg, rgba(219,205,242,0.30) 0%, rgba(198,178,228,0.10) 34%, transparent 100%)' }}
+            />
+            {/* crisp light catch on the very top rim to define the fold */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/15" />
 
             {/* film grain — matches the site background (subtle) */}
             <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
