@@ -147,12 +147,15 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50">
-        {/* frosted twilight glass — a violet-tinted gradient blur (fades in on scroll) */}
+        {/* frosted twilight glass — a violet-tinted gradient blur (fades in on scroll)
+            that dissolves to fully transparent at the bottom, so it has no hard edge */}
         <div
           className={`absolute inset-0 backdrop-blur-2xl transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
           style={{
-            background: 'linear-gradient(180deg, rgba(22,16,48,0.72) 0%, rgba(11,11,16,0.46) 100%)',
-            boxShadow: '0 18px 50px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)',
+            background: 'linear-gradient(180deg, rgba(22,16,48,0.72) 0%, rgba(16,12,36,0.34) 52%, rgba(11,11,16,0) 100%)',
+            maskImage: 'linear-gradient(180deg, #000 0%, #000 55%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(180deg, #000 0%, #000 55%, transparent 100%)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
           }}
         />
 
@@ -174,7 +177,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <div className="flex">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-                className="hidden sm:inline-flex items-center px-5 py-3 rounded-l-lg border border-cream/40 text-cream text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-cream hover:text-ink transition-colors duration-300"
+                className="hidden sm:inline-flex items-center px-5 py-3 rounded-l-lg border border-ink/10 bg-cream text-ink text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-ink hover:text-cream transition-colors duration-300"
               >
                 {isIndonesian ? 'Pesan' : 'Book'}
               </button>
@@ -183,7 +186,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 onClick={() => setMenuOpen(true)}
                 aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
                 aria-expanded={menuOpen}
-                className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-lg sm:rounded-l-none sm:rounded-r-lg border sm:border-l-0 border-cream/40 text-cream text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-cream hover:text-ink transition-colors duration-300"
+                className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-lg sm:rounded-l-none sm:rounded-r-lg border sm:border-l-0 border-ink/10 bg-cream text-ink text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-ink hover:text-cream transition-colors duration-300"
               >
                 <span>Menu</span>
                 <span className="flex flex-col items-end gap-[4px] w-4">
