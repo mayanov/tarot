@@ -250,7 +250,9 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           {/* Bottom — language toggle + book */}
           <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-5 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '480ms' }}>
             {onSwitchRegion ? (
-              <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
+              <div className="self-start sm:self-auto">
+                <RegionSwitcher compact isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
+              </div>
             ) : <span />}
             <button
               onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}

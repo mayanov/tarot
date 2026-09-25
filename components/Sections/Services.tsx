@@ -291,9 +291,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                             <span className="text-cream/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
                                             <span className="font-serif font-semibold text-cream">{g.priceLabel}</span>
                                         </span>
-                                        <span className={`grid place-items-center w-9 h-9 rounded-lg border border-cream/25 transition-transform duration-300 ${open ? 'rotate-180 border-cream' : ''}`}>
-                                            <ChevronDown className="w-4 h-4 text-cream" />
-                                        </span>
+                                        <ChevronDown className={`w-5 h-5 text-cream/70 transition-transform duration-300 ${open ? 'rotate-180 text-cream' : ''}`} />
                                     </div>
                                 </button>
 

@@ -404,7 +404,7 @@ function App() {
         {showBackToTop && (
           <button
             onClick={scrollToTop}
-            className="p-3 rounded-lg bg-ink/80 backdrop-blur-md text-cream shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] hover:bg-cream hover:text-ink transition-all duration-300 border border-cream/25 hover:-translate-y-1"
+            className="p-3 rounded-lg bg-ink/30 backdrop-blur-md text-cream/70 hover:text-cream hover:bg-ink/55 transition-all duration-300 border border-cream/15 hover:-translate-y-1"
             title="Back to Top"
           >
             <ArrowUp className="w-5 h-5" />

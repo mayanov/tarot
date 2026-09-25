@@ -140,14 +140,18 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             </div>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              {visibleCount < eventList.length && (
-                <button
-                  onClick={() => setVisibleCount(eventList.length)}
-                  className="inline-flex items-center gap-2 px-7 py-2.5 rounded-lg border border-ink/25 hover:border-ink hover:bg-ink hover:text-cream text-sm font-medium text-ink transition-all duration-300 group"
-                >
-                  {isIndonesian ? "Lihat Semua" : "View All"} <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-                </button>
-              )}
+              {(() => {
+                const expanded = visibleCount >= eventList.length;
+                return (
+                  <button
+                    onClick={() => setVisibleCount(expanded ? 10 : eventList.length)}
+                    className="inline-flex items-center justify-center gap-2 min-w-[11rem] px-7 py-2.5 rounded-lg border border-ink/25 hover:border-ink hover:bg-ink hover:text-cream text-sm font-medium text-ink transition-all duration-300 group"
+                  >
+                    {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
+                    <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
+                  </button>
+                );
+              })()}
               <a
                 href="https://wa.link/5peyhb"
                 target="_blank"

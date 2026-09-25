@@ -7,8 +7,8 @@ interface MarqueeProps {
 // A quiet, slim ticker — small drifting phrases, not a bold selling banner.
 const Marquee: React.FC<MarqueeProps> = ({ isIndonesian = false }) => {
   const words = isIndonesian
-    ? ['ruang untuk bernapas', 'nggak buru-buru', 'datang apa adanya', 'dengar diri sendiri', 'cukup jadi diri sendiri']
-    : ['space to breathe', 'no rush', 'come as you are', 'listen inward', 'just be'];
+    ? ['santai aja', 'nggak ada tekanan', 'kamu diterima di sini', 'ruang aman buat cerita', 'datang apa adanya']
+    : ['take your time', 'no pressure', "you're welcome here", 'a safe space to talk', 'come as you are'];
 
   const Row = () => (
     <div className="flex items-center shrink-0">
