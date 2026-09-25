@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ArrowUpRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 
 interface FAQProps {
@@ -129,44 +129,63 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
       style={{ background: '#ffffff' }}
     >
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16">
-          {/* LEFT — sticky intro + category filter */}
-          <div className="lg:col-span-4">
+        <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
+          {/* LEFT — sticky intro + category filter (sticky lives on the column so a
+              transformed reveal wrapper can't break it) */}
+          <div className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
             <FadeIn>
-              <div className="lg:sticky lg:top-28">
-                <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
-                  {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
-                </h2>
-                <p className="mt-5 text-ink/60 font-light leading-relaxed max-w-xs">
-                  {isIndonesian
-                    ? 'Segala hal tentang proses bacaan, etika, dan cara penyampaian.'
-                    : 'Everything about the reading process, ethics, and delivery.'}
-                </p>
+              <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+                {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
+              </h2>
+              <p className="mt-5 text-ink/60 font-light leading-relaxed max-w-xs">
+                {isIndonesian
+                  ? 'Segala hal tentang proses bacaan, etika, dan cara penyampaian.'
+                  : 'Everything about the reading process, ethics, and delivery.'}
+              </p>
 
-                {/* category filter */}
-                <div className="mt-8 flex flex-wrap gap-2">
-                  {categories.map((cat) => {
-                    const active = showAll ? cat === allLabel : cat === activeCat;
-                    return (
-                      <button
-                        key={cat}
-                        onClick={() => setActiveCat(cat)}
-                        aria-pressed={active}
-                        className={`rounded-lg px-4 py-2 text-xs uppercase tracking-[0.14em] font-medium transition-colors duration-300 ${active
-                          ? 'bg-ink text-cream'
-                          : 'border border-ink/15 text-ink/55 hover:border-ink/40 hover:text-ink'}`}
-                      >
-                        {cat}
-                      </button>
-                    );
-                  })}
-                </div>
+              {/* category filter */}
+              <div className="mt-8 flex flex-wrap gap-2">
+                {categories.map((cat) => {
+                  const active = showAll ? cat === allLabel : cat === activeCat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCat(cat)}
+                      aria-pressed={active}
+                      className={`rounded-lg px-4 py-2 text-xs uppercase tracking-[0.14em] font-medium transition-colors duration-300 ${active
+                        ? 'bg-ink text-cream'
+                        : 'border border-ink/15 text-ink/55 hover:border-ink/40 hover:text-ink'}`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* still have questions? — contact card */}
+              <div className="mt-8 rounded-lg border border-ink/12 bg-black/[0.015] p-5 max-w-xs">
+                <p className="text-sm font-serif font-semibold text-ink">
+                  {isIndonesian ? 'Masih ada pertanyaan?' : 'Still have a question?'}
+                </p>
+                <p className="mt-1.5 text-xs text-ink/55 font-light leading-relaxed">
+                  {isIndonesian ? 'Chat langsung — dijawab dengan senang hati.' : 'Chat directly — happy to help.'}
+                </p>
+                <a
+                  href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ada%20pertanyaan%20tentang%20tarot%20reading"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group mt-4 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-ink hover:text-moon-deep transition-colors"
+                >
+                  {isIndonesian ? 'Tanya via WhatsApp' : 'Ask on WhatsApp'}
+                  <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </a>
               </div>
             </FadeIn>
           </div>
 
-          {/* RIGHT — accordion */}
-          <div className="lg:col-span-8">
+          {/* RIGHT — accordion (min-height reserves the full-list height so the
+              section doesn't shrink when a category is filtered) */}
+          <div className="lg:col-span-8 lg:min-h-[var(--faqH)]" style={{ ['--faqH' as string]: `${faqs.length * 68}px` } as React.CSSProperties}>
             <div className="border-t border-black/10">
               {filtered.map((faq, index) => {
                 const open = openKey === faq.question;
