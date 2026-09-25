@@ -4,30 +4,28 @@ interface MarqueeProps {
   isIndonesian?: boolean;
 }
 
-// A full-bleed kinetic strip — big words drifting sideways over a dark cosmic band.
-// Breaks the run of white panels with motion and a change of texture.
+// A quiet, slim ticker — small drifting phrases, not a bold selling banner.
 const Marquee: React.FC<MarqueeProps> = ({ isIndonesian = false }) => {
-  // Gentle self-care phrases rather than value/selling words.
   const words = isIndonesian
-    ? ['Tarik napas', 'Pelan-pelan aja', 'Datang apa adanya', 'Kamu berhak jeda', 'Lembut sama diri sendiri', 'Dengar hatimu', 'Nggak apa-apa nggak tahu']
-    : ['Breathe', 'Slow down', 'Come as you are', "You're allowed to pause", 'Be gentle with yourself', 'Listen inward', "It's okay to not know"];
+    ? ['ruang untuk bernapas', 'nggak buru-buru', 'datang apa adanya', 'dengar diri sendiri', 'cukup jadi diri sendiri']
+    : ['space to breathe', 'no rush', 'come as you are', 'listen inward', 'just be'];
 
   const Row = () => (
     <div className="flex items-center shrink-0">
       {words.map((w, i) => (
         <span key={i} className="flex items-center">
-          <span className="px-8 md:px-12 font-elegant font-medium text-cream/90 text-[2rem] md:text-[3.2rem] leading-none tracking-[-0.02em]">
+          <span className="px-6 md:px-9 font-elegant italic text-cream/45 text-base md:text-lg leading-none">
             {w}
           </span>
-          <span aria-hidden className="text-moon-deep text-lg md:text-2xl leading-none">✦</span>
+          <span aria-hidden className="text-cream/20 text-xs leading-none">&middot;</span>
         </span>
       ))}
     </div>
   );
 
   return (
-    <section aria-hidden className="relative overflow-hidden isolate py-8 md:py-12 border-y border-white/[0.06]" style={{ background: 'linear-gradient(180deg, #0C0C0D 0%, #14102E 100%)' }}>
-      <div className="flex w-max animate-[marquee_34s_linear_infinite] will-change-transform">
+    <section aria-hidden className="relative overflow-hidden isolate py-5 md:py-6 border-y border-white/[0.05]" style={{ background: 'linear-gradient(180deg, #0B0B12 0%, #12112A 100%)' }}>
+      <div className="flex w-max animate-[marquee_55s_linear_infinite] will-change-transform">
         <Row />
         <Row />
       </div>
