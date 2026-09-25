@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Globe } from 'lucide-react';
 import { smoothScrollTo, smoothScrollToId } from '../UI/scroll';
 
 interface HeaderProps {
@@ -8,9 +8,22 @@ interface HeaderProps {
 }
 
 const REGIONS = {
-  global: { flag: '🌐', name: 'Global', sub: 'English · USD' },
-  id: { flag: '🇮🇩', name: 'Indonesia', sub: 'Bahasa · IDR' },
+  global: { name: 'Global', cur: 'USD' },
+  id: { name: 'Indonesia', cur: 'IDR' },
 } as const;
+
+// Custom region icons (crisp + consistent across devices, unlike emoji flags).
+const RegionIcon: React.FC<{ region: 'global' | 'id'; className?: string }> = ({ region, className = '' }) =>
+  region === 'id' ? (
+    <span className={`inline-block overflow-hidden rounded-[3px] ring-1 ring-black/10 ${className}`}>
+      <svg viewBox="0 0 3 2" className="block w-full h-full" preserveAspectRatio="none">
+        <rect width="3" height="1" fill="#E4002B" />
+        <rect y="1" width="3" height="1" fill="#FFFFFF" />
+      </svg>
+    </span>
+  ) : (
+    <Globe strokeWidth={1.6} className={className} />
+  );
 
 // Region switcher: a two-segment toggle with a sliding moonstone thumb.
 // `compact` is the small variant used directly in the nav bar.
@@ -36,10 +49,20 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
             onClick={() => onSwitch(toID)}
             aria-pressed={active}
             title={`Switch to the ${r.name} version`}
-            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-1.5 rounded-md font-semibold whitespace-nowrap transition-colors duration-300 ${compact ? 'px-2.5 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} ${active ? 'text-plum-deep' : 'text-cream/55 hover:text-cream/80'}`}
+            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-1.5 rounded-md font-semibold whitespace-nowrap transition-colors duration-300 ${compact ? 'px-2 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} ${active ? 'text-plum-deep' : 'text-cream/55 hover:text-cream/80'}`}
           >
-            <span className={`leading-none transition-[filter,opacity] duration-300 ${compact ? 'text-sm' : 'text-base'} ${active ? '' : 'grayscale opacity-70'}`}>{r.flag}</span>
-            {r.name}
+            <RegionIcon
+              region={key}
+              className={`shrink-0 transition-opacity duration-300 ${key === 'id' ? (compact ? 'w-[15px] h-[10px]' : 'w-[18px] h-3') : (compact ? 'w-[15px] h-[15px]' : 'w-[17px] h-[17px]')} ${active ? '' : 'opacity-75'}`}
+            />
+            {compact ? (
+              <span>{r.cur}</span>
+            ) : (
+              <span className="flex items-baseline gap-1.5">
+                <span>{r.name}</span>
+                <span className="text-[0.8em] opacity-55">({r.cur})</span>
+              </span>
+            )}
           </button>
         );
       })}
