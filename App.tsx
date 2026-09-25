@@ -391,10 +391,9 @@ function App() {
         </React.Suspense>
       </main>
 
-      {/* Footer as a white rounded card floating on the cosmic star field — the
-          padding lets the stars show around it, and the white card contrasts the
-          dark Disclaimer above. */}
-      <div className="relative z-10 px-3 sm:px-5 md:px-8 pb-3 sm:pb-5 md:pb-8">
+      {/* White section holding the footer as a dark starry rounded card — the white
+          padding frames the card and contrasts the dark Disclaimer above. */}
+      <div className="relative z-10 bg-white p-3 sm:p-5 md:p-8">
         <Footer isIndonesian={isIndonesian} />
       </div>
 
