@@ -380,8 +380,11 @@ function App() {
 
         <React.Suspense fallback={<div className="h-96 flex items-center justify-center text-white/20">Loading...</div>}>
           <Services isIndonesian={isIndonesian} />
-          <WhyChoose isIndonesian={isIndonesian} />
+          {/* Dark cosmic pull-quote as a deliberate break between the pricelist and
+              the "why" section — so two white panels never touch, and WhyChoose rises
+              over a dark section (its rounded-corner peek reveals sky, not a notch). */}
           <Interlude isIndonesian={isIndonesian} />
+          <WhyChoose isIndonesian={isIndonesian} />
           <Events isIndonesian={isIndonesian} />
           <FAQ isIndonesian={isIndonesian} />
           <Disclaimer isIndonesian={isIndonesian} />
