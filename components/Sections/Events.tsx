@@ -97,8 +97,9 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* AWARD-LIST — full-width rows: year · title · venue · arrow */}
-            {/* the list sits on its own white panel to lighten the dark section */}
-            <div className="rounded-lg bg-white text-ink px-5 md:px-8 py-2 md:py-3">
+            {/* the list sits on a frosted-glass panel — translucent light card that
+                lets the dusk show through, lightening the section without a flat box */}
+            <div className="rounded-2xl bg-white/70 backdrop-blur-xl text-ink px-5 md:px-8 py-2 md:py-4 border border-white/40 shadow-[0_36px_90px_-48px_rgba(0,0,0,0.7)]">
               {displayedEvents.map((event, index) => (
                 <FadeIn key={index} delay={Math.min(index, 6) * 40} dir="up">
                   <div className="group grid grid-cols-12 items-center gap-x-4 py-2.5 md:py-3 border-b border-black/10 last:border-b-0 transition-colors duration-300 hover:bg-black/[0.03]">
