@@ -7,9 +7,10 @@ interface MarqueeProps {
 // A full-bleed kinetic strip — big words drifting sideways over a dark cosmic band.
 // Breaks the run of white panels with motion and a change of texture.
 const Marquee: React.FC<MarqueeProps> = ({ isIndonesian = false }) => {
+  // Gentle self-care phrases rather than value/selling words.
   const words = isIndonesian
-    ? ['Kejelasan', 'Refleksi', 'Ketenangan', 'Arah', 'Empati', 'Jujur']
-    : ['Clarity', 'Reflection', 'Calm', 'Direction', 'Empathy', 'Honesty'];
+    ? ['Tarik napas', 'Pelan-pelan aja', 'Datang apa adanya', 'Kamu berhak jeda', 'Lembut sama diri sendiri', 'Dengar hatimu', 'Nggak apa-apa nggak tahu']
+    : ['Breathe', 'Slow down', 'Come as you are', "You're allowed to pause", 'Be gentle with yourself', 'Listen inward', "It's okay to not know"];
 
   const Row = () => (
     <div className="flex items-center shrink-0">
