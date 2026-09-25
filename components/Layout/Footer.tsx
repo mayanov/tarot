@@ -52,7 +52,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     return (
         <footer
             ref={footerRef}
-            className="relative z-20 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-30px_70px_-40px_rgba(0,0,0,0.35)]"
+            className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-12 md:pt-16 pb-8 md:pb-10 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.6)]"
             style={{ background: '#ffffff' }}
         >
             {/* film grain — subtle tooth on the paper */}
