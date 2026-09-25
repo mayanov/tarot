@@ -43,58 +43,38 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     }, []);
 
     // Square, bordered social button — fills with cream on hover.
-    const socialClass = "grid place-items-center w-11 h-11 rounded-lg border border-white/20 text-white hover:text-plum-deep hover:bg-moon hover:border-moon transition-all duration-300 hover:-translate-y-0.5";
-    const labelClass = "text-[11px] uppercase tracking-[0.24em] text-moon mb-5";
-    const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-white/80 font-light leading-relaxed";
+    const socialClass = "grid place-items-center w-11 h-11 rounded-lg border border-ink/20 text-ink hover:text-cream hover:bg-ink hover:border-ink transition-all duration-300 hover:-translate-y-0.5";
+    const labelClass = "text-[11px] uppercase tracking-[0.24em] text-moon-deep mb-5";
+    const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-ink/70 font-light leading-relaxed";
 
     const goTo = (id: string) => smoothScrollToId(id, 80);
 
     return (
         <footer
             ref={footerRef}
-            className="relative z-20 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-40px_90px_-50px_rgba(0,0,0,0.5)]"
-            style={{ background: '#0C1430' }}
+            className="relative z-20 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-30px_70px_-40px_rgba(0,0,0,0.35)]"
+            style={{ background: '#F4F1FA' }}
         >
-            {/* deep-blue dusk sky photo */}
+            {/* soft moonstone wash from the top so the light footer isn't a flat slab */}
             <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                    backgroundImage: `url(${import.meta.env.BASE_URL}sky-footer.jpg)`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center 40%',
-                }}
-            />
-            {/* overlay — light enough that the dusk sky photo actually reads (so the
-                footer is a twilight photograph, distinct from the flat Disclaimer),
-                darker toward the bottom so the wordmark + text stay legible */}
-            <div
-                className="pointer-events-none absolute inset-0"
-                style={{ background: 'linear-gradient(180deg, rgba(10,12,30,0.58) 0%, rgba(10,12,30,0.40) 42%, rgba(9,7,20,0.82) 100%)' }}
+                className="pointer-events-none absolute inset-x-0 top-0 h-48 md:h-64"
+                style={{ background: 'linear-gradient(180deg, rgba(198,178,228,0.22) 0%, transparent 100%)' }}
             />
 
-            {/* horizon glow along the rounded top edge — a band of moonstone light so
-                the footer reads as a glowing panel rising out of the dark Disclaimer */}
-            <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-40 md:h-56"
-                style={{ background: 'linear-gradient(180deg, rgba(219,205,242,0.30) 0%, rgba(198,178,228,0.10) 34%, transparent 100%)' }}
-            />
-            {/* crisp light catch on the very top rim to define the fold */}
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/15" />
-
-            {/* film grain — matches the site background (subtle) */}
-            <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
+            {/* film grain — subtle tooth on the paper */}
+            <div className="pointer-events-none absolute inset-0 opacity-[0.18] mix-blend-multiply" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
 
             <FadeIn className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 {/* Top — CTA line */}
-                <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 border-b border-white/10">
-                    <h2 className="lg:col-span-8 font-elegant font-medium text-white text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]">
+                <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 border-b border-ink/10">
+                    <h2 className="lg:col-span-8 font-elegant font-medium text-ink text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]">
                         {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                     </h2>
                     <div className="lg:col-span-4 lg:justify-self-end">
                         <a
                             href="#services"
                             onClick={(e) => { e.preventDefault(); goTo('services'); }}
-                            className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-lg bg-cream text-ink text-sm font-semibold hover:bg-white transition-colors duration-200"
+                            className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-lg bg-ink text-cream text-sm font-semibold hover:bg-plum-deep transition-colors duration-200"
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -107,12 +87,12 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     {/* Brand */}
                     <div className="md:col-span-6">
                         <div className="flex items-center gap-3">
-                            <span className="grid place-items-center w-10 h-10 rounded-lg border border-white/40 text-white font-serif text-lg leading-none">M</span>
-                            <span className="text-xl font-serif font-semibold text-white tracking-tight">
-                                Mayanov <span className="font-normal text-white/70">Tarot</span>
+                            <span className="grid place-items-center w-10 h-10 rounded-lg border border-ink/30 text-ink font-serif text-lg leading-none">M</span>
+                            <span className="text-xl font-serif font-semibold text-ink tracking-tight">
+                                Mayanov <span className="font-normal text-ink/50">Tarot</span>
                             </span>
                         </div>
-                        <p className="mt-5 text-[0.9rem] md:text-[0.95rem] text-white/60 font-light leading-relaxed max-w-sm">
+                        <p className="mt-5 text-[0.9rem] md:text-[0.95rem] text-ink/60 font-light leading-relaxed max-w-sm">
                             {isIndonesian
                                 ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi.'
                                 : 'Tarot as a space for reflection — analytical, warm, and grounded.'}
@@ -124,11 +104,11 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         <h4 className={labelClass}>{isIndonesian ? 'Kunjungi' : 'Visit'}</h4>
                         <ul className="space-y-3.5">
                             <li className={infoClass}>
-                                <Clock className="w-4 h-4 mt-0.5 text-moon shrink-0" />
+                                <Clock className="w-4 h-4 mt-0.5 text-moon-deep shrink-0" />
                                 <span>{isIndonesian ? 'Waktu Layanan: 11:00 – 20:00' : 'Service Hours: 11:00 – 20:00'}</span>
                             </li>
                             <li className={infoClass}>
-                                <MapPin className="w-4 h-4 mt-0.5 text-moon shrink-0" />
+                                <MapPin className="w-4 h-4 mt-0.5 text-moon-deep shrink-0" />
                                 <span>{isIndonesian ? 'Jakarta Selatan' : 'South Jakarta'}</span>
                             </li>
                         </ul>
@@ -157,15 +137,15 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
-                {/* Oversized brand wordmark — reads like the name glowing on the dusk
-                    horizon (moonstone at the top, fading into the dark). Turns the
-                    footer into a signature close rather than a utility block. */}
+                {/* Oversized outline wordmark — a light, hollow display mark that
+                    anchors the footer as a signature close rather than a utility block. */}
                 <div className="pt-6 md:pt-10 -mb-3 md:-mb-6" aria-hidden>
                     <span
-                        className="block whitespace-nowrap text-center font-elegant font-semibold leading-[0.78] tracking-[-0.045em] text-transparent bg-clip-text select-none"
+                        className="block whitespace-nowrap text-center font-elegant font-semibold leading-[0.78] tracking-[-0.045em] select-none"
                         style={{
                             fontSize: 'clamp(3.2rem, 19vw, 17rem)',
-                            backgroundImage: 'linear-gradient(180deg, rgba(219,205,242,0.46) 0%, rgba(198,178,228,0.16) 50%, rgba(12,20,48,0) 92%)',
+                            color: 'transparent',
+                            WebkitTextStroke: '1.5px rgba(57,35,78,0.28)',
                         }}
                     >
                         Mayanov
@@ -173,11 +153,11 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 </div>
 
                 {/* Bottom bar */}
-                <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10 text-xs text-white/55 tracking-wide">
+                <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-ink/10 text-xs text-ink/55 tracking-wide">
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
                     <button
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                        className="group inline-flex items-center gap-2 uppercase tracking-[0.2em] text-[10px] text-white/60 hover:text-moon transition-colors"
+                        className="group inline-flex items-center gap-2 uppercase tracking-[0.2em] text-[10px] text-ink/60 hover:text-moon-deep transition-colors"
                     >
                         {isIndonesian ? 'Kembali ke atas' : 'Back to top'}
                         <ArrowRight className="w-3.5 h-3.5 -rotate-90 group-hover:-translate-y-0.5 transition-transform" />
