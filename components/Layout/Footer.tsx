@@ -70,9 +70,9 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 aria-hidden
                 className="pointer-events-none absolute inset-0 will-change-transform"
                 style={{
-                    backgroundImage: `url(${import.meta.env.BASE_URL}aurora-footer.jpg)`,
+                    backgroundImage: `url(${import.meta.env.BASE_URL}footer-sky.jpg)`,
                     backgroundSize: 'cover',
-                    backgroundPosition: 'center 40%',
+                    backgroundPosition: 'center 45%',
                     transform: 'scale(1.12)',
                 }}
             />
@@ -80,7 +80,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
             <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0"
-                style={{ background: 'rgba(9,9,20,0.55)' }}
+                style={{ background: 'rgba(9,9,20,0.4)' }}
             />
 
             <FadeIn className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
