@@ -37,47 +37,49 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                 style={{ background: 'radial-gradient(90% 70% at 88% 0%, rgba(198,178,228,0.10) 0%, transparent 55%)' }}
             />
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
-                {/* header — title + alert notice */}
-                <FadeIn>
-                    <div className="max-w-2xl">
-                        <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
-                            Disclaimer
-                        </h2>
-                        {/* alert notice — meant to be noticed */}
-                        <div className="mt-6 inline-flex items-start gap-3 rounded-lg border border-moon/35 bg-moon/[0.09] px-4 py-3.5">
-                            <AlertCircle className="w-5 h-5 text-moon shrink-0 mt-0.5" strokeWidth={1.8} />
-                            <p className="text-sm text-cream/90 leading-relaxed">
-                                {isIndonesian
-                                    ? 'Dengan melakukan booking, kamu telah menyetujui syarat dan ketentuan ini.'
-                                    : 'By making a booking, you have agreed to these terms and conditions.'}
-                            </p>
-                        </div>
-                    </div>
-                </FadeIn>
-
-                {/* bold editorial numbered notes */}
-                <div className="mt-10 md:mt-14">
-                    {items.map((it, index) => (
-                        <FadeIn key={index} delay={Math.min(index, 4) * 80} dir="up">
-                            <div className="group grid grid-cols-[auto_1fr] items-start gap-x-5 md:gap-x-12 py-7 md:py-9 border-t border-white/10 first:border-t-0">
-                                <span
-                                    aria-hidden
-                                    className="font-elegant font-semibold leading-none text-transparent text-[3rem] md:text-[5.5rem] transition-all duration-300 group-hover:text-moon"
-                                    style={{ WebkitTextStroke: '1.5px rgba(198,178,228,0.55)' }}
-                                >
-                                    {String(index + 1).padStart(2, '0')}
-                                </span>
-                                <div className="pt-1 md:pt-3 max-w-2xl">
-                                    <h3 className="font-elegant font-semibold text-cream text-xl md:text-3xl leading-snug tracking-tight">
-                                        {it.label}
-                                    </h3>
-                                    <p className="mt-2 md:mt-3 text-cream/60 text-sm md:text-base leading-relaxed font-light">
-                                        {it.text}
-                                    </p>
-                                </div>
+                <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
+                    {/* LEFT — sticky title + alert notice */}
+                    <div className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
+                        <FadeIn>
+                            <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+                                Disclaimer
+                            </h2>
+                            {/* alert notice — meant to be noticed */}
+                            <div className="mt-6 flex items-start gap-3 rounded-lg border border-moon/35 bg-moon/[0.09] px-4 py-3.5 max-w-sm">
+                                <AlertCircle className="w-5 h-5 text-moon shrink-0 mt-0.5" strokeWidth={1.8} />
+                                <p className="text-sm text-cream/90 leading-relaxed">
+                                    {isIndonesian
+                                        ? 'Dengan melakukan booking, kamu telah menyetujui syarat dan ketentuan ini.'
+                                        : 'By making a booking, you have agreed to these terms and conditions.'}
+                                </p>
                             </div>
                         </FadeIn>
-                    ))}
+                    </div>
+
+                    {/* RIGHT — bold editorial numbered notes (fills the column) */}
+                    <div className="lg:col-span-8">
+                        {items.map((it, index) => (
+                            <FadeIn key={index} delay={Math.min(index, 4) * 80} dir="up">
+                                <div className="group grid grid-cols-[auto_1fr] items-start gap-x-5 md:gap-x-10 py-7 md:py-9 border-t border-white/10 first:border-t-0 first:pt-0 lg:first:pt-0">
+                                    <span
+                                        aria-hidden
+                                        className="font-elegant font-semibold leading-none text-transparent text-[3rem] md:text-[5.5rem] transition-all duration-300 group-hover:text-moon"
+                                        style={{ WebkitTextStroke: '1.5px rgba(198,178,228,0.55)' }}
+                                    >
+                                        {String(index + 1).padStart(2, '0')}
+                                    </span>
+                                    <div className="pt-1 md:pt-3">
+                                        <h3 className="font-elegant font-semibold text-cream text-xl md:text-3xl leading-snug tracking-tight">
+                                            {it.label}
+                                        </h3>
+                                        <p className="mt-2 md:mt-3 text-cream/60 text-sm md:text-base leading-relaxed font-light">
+                                            {it.text}
+                                        </p>
+                                    </div>
+                                </div>
+                            </FadeIn>
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>
