@@ -44,6 +44,14 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   const eventList = [...rawEventList].reverse();
   const displayedEvents = eventList.slice(0, visibleCount);
 
+  // Group the shown events by year (list is already newest-first) for the timeline
+  const timeline: { year: string; items: typeof eventList }[] = [];
+  displayedEvents.forEach((ev) => {
+    const last = timeline[timeline.length - 1];
+    if (last && last.year === ev.year) last.items.push(ev);
+    else timeline.push({ year: ev.year, items: [ev] });
+  });
+
 
   return (
     <section
@@ -96,25 +104,41 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               </div>
             </div>
 
-            {/* AWARD-LIST — full-width rows: year · title · venue · arrow */}
-            {/* the list sits on a frosted-glass panel — translucent light card that
-                lets the dusk show through, lightening the section without a flat box */}
-            <div className="rounded-2xl bg-white/70 backdrop-blur-xl text-ink px-5 md:px-8 py-2 md:py-4 border border-white/40 shadow-[0_36px_90px_-48px_rgba(0,0,0,0.7)]">
-              {displayedEvents.map((event, index) => (
-                <FadeIn key={index} delay={Math.min(index, 6) * 40} dir="up">
-                  <div className="group grid grid-cols-12 items-center gap-x-4 py-2.5 md:py-3 border-b border-black/10 last:border-b-0 transition-colors duration-300 hover:bg-black/[0.03]">
+            {/* TIMELINE — a light spine with a glowing node per year; events branch off it */}
+            <div className="relative pl-7 md:pl-10">
+              {/* the spine */}
+              <span
+                aria-hidden
+                className="absolute left-[3px] md:left-[5px] top-2 bottom-2 w-px"
+                style={{ background: 'linear-gradient(180deg, rgba(230,224,248,0.55) 0%, rgba(198,178,228,0.28) 55%, rgba(198,178,228,0) 100%)' }}
+              />
+              {timeline.map((grp, gi) => (
+                <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 60} dir="up">
+                  <div className="relative pb-9 md:pb-11 last:pb-0">
+                    {/* node */}
+                    <span aria-hidden className="absolute -left-[26px] md:-left-[34px] top-1.5 grid place-items-center">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#E6E0F8] shadow-[0_0_14px_2px_rgba(198,178,228,0.6)] ring-4 ring-[#141A3D]" />
+                    </span>
                     {/* year */}
-                    <span className="col-span-3 md:col-span-2 font-medium text-[0.62rem] md:text-xs uppercase tracking-[0.18em] text-ink tabular-nums pl-0 md:pl-2">
-                      {event.year}
-                    </span>
-                    {/* title */}
-                    <h3 className="col-span-9 md:col-span-7 font-serif font-semibold uppercase text-ink text-sm md:text-base xl:text-lg leading-[1.15] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5">
-                      {event.title}
-                    </h3>
-                    {/* venue */}
-                    <span className="hidden md:block md:col-span-3 text-[0.66rem] uppercase tracking-[0.14em] text-ink/55 font-light leading-snug">
-                      {event.loc}
-                    </span>
+                    <div className="font-elegant font-semibold text-[#DBCDF2] text-2xl md:text-3xl leading-none tracking-tight mb-4">
+                      {grp.year}
+                    </div>
+                    {/* that year's events */}
+                    <ul>
+                      {grp.items.map((event, ii) => (
+                        <li
+                          key={ii}
+                          className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-white/10 first:border-t-0"
+                        >
+                          <h3 className="font-serif font-semibold uppercase text-cream/90 text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-cream">
+                            {event.title}
+                          </h3>
+                          <span className="shrink-0 text-[0.66rem] uppercase tracking-[0.14em] text-cream/45 font-light leading-snug sm:text-right">
+                            {event.loc}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </FadeIn>
               ))}
