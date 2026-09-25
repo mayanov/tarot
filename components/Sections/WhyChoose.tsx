@@ -33,7 +33,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   const reasons = isIndonesian ? reasonsID : reasonsGlobal;
 
   return (
-    <section id="why-choose" className="relative isolate overflow-hidden rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]">
+    <section id="why-choose" className="relative isolate overflow-hidden">
       {/* LIGHT band — white with dark text (no seam lines) */}
       <div className="text-ink" style={{ background: '#ffffff' }}>
         <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-12 md:pt-16">
@@ -53,20 +53,20 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
           <div className="mt-12 md:mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 60} dir="up">
-                <div className="group/card relative flex h-full min-h-[18rem] md:min-h-[23rem] flex-col rounded-lg bg-[#F3F0F9] p-6 md:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#EDE8F6] hover:shadow-[0_30px_60px_-30px_rgba(90,70,140,0.4)]">
+                <div className="group/card relative flex h-full min-h-[18rem] md:min-h-[23rem] flex-col rounded-lg bg-[#141A3D] p-6 md:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#1B2350] hover:shadow-[0_30px_60px_-30px_rgba(20,26,61,0.55)]">
                   {/* eyebrow */}
-                  <div className="flex items-center gap-2.5 text-sm md:text-[0.95rem] text-ink/70">
-                    <span className="w-1.5 h-1.5 rounded-full bg-moon-deep shrink-0" />
+                  <div className="flex items-center gap-2.5 text-sm md:text-[0.95rem] text-cream/70">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cream/70 shrink-0" />
                     <span>{reason.label}</span>
                   </div>
                   {/* big statement */}
                   <div className="flex-1 grid place-items-center py-8">
-                    <p className="text-center font-semibold text-ink text-[1.55rem] md:text-[1.9rem] leading-[1.12] tracking-[-0.02em] max-w-[15ch]">
+                    <p className="text-center font-semibold text-cream text-[1.55rem] md:text-[1.9rem] leading-[1.12] tracking-[-0.02em] max-w-[15ch]">
                       {reason.stat}
                     </p>
                   </div>
                   {/* index */}
-                  <div className="text-sm text-ink/40 tabular-nums">{String(index + 1).padStart(2, '0')}</div>
+                  <div className="text-sm text-cream/40 tabular-nums">{String(index + 1).padStart(2, '0')}</div>
                 </div>
               </FadeIn>
             ))}

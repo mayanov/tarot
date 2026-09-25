@@ -51,7 +51,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="events"
-      className="py-12 md:py-16 relative overflow-hidden isolate rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-30px_70px_-34px_rgba(0,0,0,0.5)]"
+      className="py-12 md:py-16 relative overflow-hidden isolate"
     >
       {/* deep dusk-blue — a dark twilight break in the white run; rises over the
           white "Why" panel so its rounded corners reveal the cosmic sky (a peek,
@@ -72,12 +72,6 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               </div>
 
               <div className="flex items-center gap-6 shrink-0">
-                <div className="flex items-baseline gap-2.5">
-                  <span className="font-elegant font-medium text-5xl md:text-6xl text-cream leading-none tracking-tight">{eventList.length}+</span>
-                  <span className="text-[0.66rem] uppercase tracking-[0.22em] text-cream/60 leading-snug max-w-[6rem]">
-                    {isIndonesian ? "Event sejak 2016" : "Events since 2016"}
-                  </span>
-                </div>
                 <a
                   href="https://wa.link/5peyhb"
                   target="_blank"

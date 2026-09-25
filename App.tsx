@@ -391,9 +391,9 @@ function App() {
         </React.Suspense>
       </main>
 
-      {/* Light backdrop matching the cream footer, so the footer's rise animation
-          blends into it instead of exposing the dark section / star background. */}
-      <div className="relative z-10" style={{ background: '#F4F1FA' }}>
+      {/* White backdrop matching the footer, so the footer's rise animation blends
+          into it instead of exposing the dark section / star background. */}
+      <div className="relative z-10" style={{ background: '#ffffff' }}>
         <Footer isIndonesian={isIndonesian} />
       </div>
 

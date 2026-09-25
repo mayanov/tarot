@@ -53,14 +53,8 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         <footer
             ref={footerRef}
             className="relative z-20 rounded-t-[1.75rem] md:rounded-t-[2.75rem] pt-12 md:pt-16 pb-6 overflow-hidden isolate will-change-transform shadow-[0_-30px_70px_-40px_rgba(0,0,0,0.35)]"
-            style={{ background: '#F4F1FA' }}
+            style={{ background: '#ffffff' }}
         >
-            {/* soft moonstone wash from the top so the light footer isn't a flat slab */}
-            <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-48 md:h-64"
-                style={{ background: 'linear-gradient(180deg, rgba(198,178,228,0.22) 0%, transparent 100%)' }}
-            />
-
             {/* film grain — subtle tooth on the paper */}
             <div className="pointer-events-none absolute inset-0 opacity-[0.18] mix-blend-multiply" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
 

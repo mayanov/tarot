@@ -21,7 +21,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     const disclaimers = isIndonesian ? disclaimersID : disclaimersEN;
 
     return (
-        <section id="disclaimer" className="py-12 md:py-16 relative overflow-hidden isolate rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-30px_70px_-34px_rgba(0,0,0,0.5)] text-cream" style={{ background: '#0C1430' }}>
+        <section id="disclaimer" className="py-12 md:py-16 relative overflow-hidden isolate text-cream" style={{ background: '#0C1430' }}>
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 <FadeIn>
                     <div>
