@@ -12,18 +12,19 @@ const REGIONS = {
   id: { flag: '🇮🇩', name: 'Indonesia', sub: 'Bahasa · IDR' },
 } as const;
 
-// Region switcher: a two-segment toggle with a sliding white thumb (used in the overlay).
-const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void }> = ({ isIndonesian, onSwitch }) => {
+// Region switcher: a two-segment toggle with a sliding moonstone thumb.
+// `compact` is the small variant used directly in the nav bar.
+const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; compact?: boolean }> = ({ isIndonesian, onSwitch, compact = false }) => {
   const options = [['global', false], ['id', true]] as const;
   return (
     <div
       role="group"
       aria-label="Site version"
-      className="relative flex w-full max-w-none sm:max-w-[17rem] items-center p-0.5 rounded-none border border-cream/40"
+      className={`relative flex items-center p-0.5 rounded-lg border border-cream/40 ${compact ? 'w-[13.5rem]' : 'w-full max-w-none sm:max-w-[17rem]'}`}
     >
       <span
         aria-hidden
-        className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-none bg-moon transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-moon transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{ transform: isIndonesian ? 'translateX(100%)' : 'translateX(0)' }}
       />
       {options.map(([key, toID]) => {
@@ -35,9 +36,9 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
             onClick={() => onSwitch(toID)}
             aria-pressed={active}
             title={`Switch to the ${r.name} version`}
-            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-none text-sm font-semibold whitespace-nowrap transition-colors duration-300 ${active ? 'text-plum-deep' : 'text-cream/55 hover:text-cream/80'}`}
+            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-1.5 rounded-md font-semibold whitespace-nowrap transition-colors duration-300 ${compact ? 'px-2.5 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} ${active ? 'text-plum-deep' : 'text-cream/55 hover:text-cream/80'}`}
           >
-            <span className={`text-base leading-none transition-[filter,opacity] duration-300 ${active ? '' : 'grayscale opacity-70'}`}>{r.flag}</span>
+            <span className={`leading-none transition-[filter,opacity] duration-300 ${compact ? 'text-sm' : 'text-base'} ${active ? '' : 'grayscale opacity-70'}`}>{r.flag}</span>
             {r.name}
           </button>
         );
@@ -103,12 +104,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     { name: isIndonesian ? 'FAQ' : 'FAQ', id: 'faq' },
   ];
 
-  // The floating bar has no container; its text/marks flip from cream (over the
-  // dark hero) to ink once a light frosted scrim fades in on scroll.
-  const dark = !isScrolled; // cream marks over the hero
+  // The floating bar's marks stay cream throughout; on scroll a translucent dark
+  // glass fades in behind them (readable over both the light and dark sections).
 
   // Brand mark — badge always; full wordmark eases in once scrolled.
-  const Wordmark: React.FC<{ onDark?: boolean }> = ({ onDark = dark }) => (
+  const Wordmark: React.FC<{ onDark?: boolean }> = ({ onDark = true }) => (
     <div className="flex items-center gap-2.5 cursor-pointer group whitespace-nowrap" onClick={handleLogoClick}>
       <span className={`grid place-items-center w-8 h-8 shrink-0 rounded-full border font-serif text-lg leading-none transition-colors duration-300 ${onDark ? 'border-cream/40 text-cream group-hover:bg-cream group-hover:text-ink' : 'border-ink/30 text-ink group-hover:bg-ink group-hover:text-cream'}`}>
         M
@@ -124,8 +124,8 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50">
-        {/* frosted scrim — fades in only once scrolled, keeps text legible over white */}
-        <div className={`absolute inset-0 transition-opacity duration-300 bg-white/70 backdrop-blur-xl border-b border-black/[0.06] ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`} />
+        {/* translucent dark glass — fades in on scroll; readable over any section */}
+        <div className={`absolute inset-0 transition-opacity duration-300 bg-[#0C0C0D]/55 backdrop-blur-xl border-b border-white/10 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`} />
 
         <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex justify-between items-center py-4 md:py-5">
           {/* LEFT — brand (hidden while the overlay owns the top row) */}
@@ -133,20 +133,26 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <Wordmark />
           </div>
 
-          {/* RIGHT — Book Now + Menu trigger (matched square buttons) */}
-          <div className={`flex items-stretch transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          {/* RIGHT — language toggle + Pesan + Menu */}
+          <div className={`flex items-center gap-2.5 transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            {onSwitchRegion && (
+              <div className="hidden md:block mr-1">
+                <RegionSwitcher compact isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
+              </div>
+            )}
+
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-              className={`hidden sm:inline-flex items-center px-5 py-3 border text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap transition-colors duration-300 ${dark ? 'border-cream/40 text-cream hover:bg-cream hover:text-ink' : 'border-ink/25 text-ink hover:bg-ink hover:text-cream'}`}
+              className="hidden sm:inline-flex items-center px-5 py-3 rounded-lg border border-cream/40 text-cream text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-cream hover:text-ink transition-colors duration-300"
             >
-              {isIndonesian ? 'Pesan Sekarang' : 'Book Now'}
+              {isIndonesian ? 'Pesan' : 'Book'}
             </button>
 
             <button
               onClick={() => setMenuOpen(true)}
               aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
               aria-expanded={menuOpen}
-              className={`group inline-flex items-center gap-2.5 px-5 py-3 border sm:border-l-0 text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap transition-colors duration-300 ${dark ? 'border-cream/40 text-cream hover:bg-cream hover:text-ink' : 'border-ink/25 text-ink hover:bg-ink hover:text-cream'}`}
+              className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-lg border border-cream/40 text-cream text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-cream hover:text-ink transition-colors duration-300"
             >
               <span>Menu</span>
               <span className="flex flex-col items-end gap-[4px] w-4">
@@ -212,7 +218,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             ) : <span />}
             <button
               onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
-              className="group self-start sm:self-auto inline-flex items-center gap-3 px-6 py-3 rounded-none border border-cream/40 text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300"
+              className="group self-start sm:self-auto inline-flex items-center gap-3 px-6 py-3 rounded-lg border border-cream/40 text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300"
             >
               {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
               <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
