@@ -391,9 +391,9 @@ function App() {
         </React.Suspense>
       </main>
 
-      {/* Footer rises over the now-dark Disclaimer; its rounded corners reveal the
-          cosmic sky (a dark peek that blends), so no white backdrop here. */}
-      <div className="relative z-10">
+      {/* Deep dusk backdrop matching the Disclaimer + footer, so the footer's
+          rise animation blends into it instead of exposing the star background. */}
+      <div className="relative z-10" style={{ background: '#0C1430' }}>
         <Footer isIndonesian={isIndonesian} />
       </div>
 
