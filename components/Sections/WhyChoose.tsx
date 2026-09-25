@@ -7,63 +7,27 @@ interface WhyChooseProps {
 }
 
 interface ReasonItem {
-  title: string;
-  description: string;
+  label: string; // small eyebrow category
+  stat: string;  // the big punchy statement
 }
 
 const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   const reasonsGlobal: ReasonItem[] = [
-    {
-      title: 'Your Power, First',
-      description: 'I focus on actionable steps. This is about strategy and choices, not just fate.',
-    },
-    {
-      title: 'Therapeutic Insight, Friendly Vibe',
-      description: 'A unique blend of therapeutic insight and warm friendship. Safe, non-judgmental, and deeply supportive.',
-    },
-    {
-      title: 'Here For You, Anywhere',
-      description: 'Get detailed readings via chat, call, or meet face-to-face — whatever suits you.',
-    },
-    {
-      title: 'Strictly Confidential',
-      description: 'What we discuss stays between us. Your privacy is my top priority.',
-    },
-    {
-      title: 'Rooted in Real Experience',
-      description: 'Reading the cards since 2009 — over 15 years of grounded, practical wisdom.',
-    },
-    {
-      title: 'Honest, Even When It Stings',
-      description: 'You get the real read — not just what is comfortable to hear — always delivered with care.',
-    },
+    { label: 'Empowering', stat: 'Your power, first' },
+    { label: 'Warm & safe', stat: 'Therapy meets a best friend' },
+    { label: 'Flexible', stat: 'Chat, call, or in person' },
+    { label: 'Confidential', stat: 'Stays between us' },
+    { label: 'Experienced', stat: 'Reading since 2009' },
+    { label: 'Honest', stat: 'The real read, with care' },
   ];
 
   const reasonsID: ReasonItem[] = [
-    {
-      title: 'Bukan Nakutin, Tapi Empowering',
-      description: 'Pembacaan jujur yang fokus pada langkah nyata yang bisa kamu ambil. Baca tarot jadi soal susun strategi dan menentukan pilihan, bukan hanya pasrah pada keadaan',
-    },
-    {
-      title: 'Sesi Tarot yang Hangat Seperti Curhat',
-      description: 'Sesi tarot jadi ruangnya buat kamu bercerita dan dapat insight dengan aman dan tanpa penghakiman.',
-    },
-    {
-      title: 'Ada untuk Kamu di Mana Saja',
-      description: 'Dapatkan bacaan detil via chat, call/video call, ataupun temu langsung. Super fleksibel sesuai dengan kebutuhanmu.',
-    },
-    {
-      title: 'Rahasia Terjamin',
-      description: 'Apa yang kita bahas berhenti di antara kita. Cerita kamu dijamin aman.',
-    },
-    {
-      title: 'Berpengalaman Sejak 2009',
-      description: 'Lebih dari 15 tahun membaca kartu — insight yang teruji, bukan sekadar tebakan.',
-    },
-    {
-      title: 'Jujur, Meski Kadang Nampol',
-      description: 'Kamu dapat bacaan apa adanya — bukan cuma yang enak didengar — tapi selalu disampaikan dengan hati.',
-    },
+    { label: 'Empowering', stat: 'Fokus ke langkah nyata' },
+    { label: 'Hangat & aman', stat: 'Senyaman curhat ke bestie' },
+    { label: 'Fleksibel', stat: 'Chat, call, atau tatap muka' },
+    { label: 'Rahasia', stat: 'Berhenti di antara kita' },
+    { label: 'Berpengalaman', stat: 'Membaca sejak 2009' },
+    { label: 'Jujur', stat: 'Apa adanya, dengan hati' },
   ];
 
   const reasons = isIndonesian ? reasonsID : reasonsGlobal;
@@ -85,18 +49,24 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             </p>
           </FadeIn>
 
-          {/* Feature prose blocks — titled paragraphs in a generous 2-column grid */}
-          <div className="mt-16 md:mt-24 grid md:grid-cols-2 gap-x-12 lg:gap-x-28 gap-y-12 md:gap-y-16">
+          {/* Big-stat panels — eyebrow label, a bold centered statement, an index number */}
+          <div className="mt-12 md:mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {reasons.map((reason, index) => (
-              <FadeIn key={index} delay={Math.min(index, 6) * 70} dir="up">
-                <div className="max-w-xl">
-                  <span aria-hidden className="block text-moon-deep text-base leading-none mb-4">✦</span>
-                  <h3 className="font-serif font-semibold text-ink text-xl md:text-[1.7rem] leading-[1.15] tracking-[-0.015em]">
-                    {reason.title}
-                  </h3>
-                  <p className="mt-4 text-[0.95rem] md:text-base text-ink/65 font-light leading-relaxed">
-                    {reason.description}
-                  </p>
+              <FadeIn key={index} delay={Math.min(index, 6) * 60} dir="up">
+                <div className="relative flex h-full min-h-[18rem] md:min-h-[23rem] flex-col rounded-lg bg-[#F3F0F9] p-6 md:p-8">
+                  {/* eyebrow */}
+                  <div className="flex items-center gap-2.5 text-sm md:text-[0.95rem] text-ink/70">
+                    <span className="w-1.5 h-1.5 rounded-full bg-moon-deep shrink-0" />
+                    <span>{reason.label}</span>
+                  </div>
+                  {/* big statement */}
+                  <div className="flex-1 grid place-items-center py-8">
+                    <p className="text-center font-semibold text-ink text-[1.55rem] md:text-[1.9rem] leading-[1.12] tracking-[-0.02em] max-w-[15ch]">
+                      {reason.stat}
+                    </p>
+                  </div>
+                  {/* index */}
+                  <div className="text-sm text-ink/40 tabular-nums">{String(index + 1).padStart(2, '0')}</div>
                 </div>
               </FadeIn>
             ))}
