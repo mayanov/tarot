@@ -249,18 +249,11 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             <div className="border-t border-white/[0.08]">
                 {groups.map((g: any, i: number) => {
                     const open = openIdx === i;
-                    const on = shown[i];
                     return (
                         <div
                             key={g.type}
                             id={g.id || undefined}
-                            ref={(el) => { bandRefs.current[i] = el; }}
-                            data-idx={i}
-                            className="relative overflow-hidden scroll-mt-28 border-b border-white/[0.08] will-change-transform"
-                            style={{
-                                transform: on ? 'translateY(0)' : 'translateY(56px)',
-                                transition: `transform 0.9s ${REVEAL_EASE} ${i * 90}ms`,
-                            }}
+                            className="relative overflow-hidden scroll-mt-28 border-b border-white/[0.08]"
                         >
                             {/* per-category twilight sky + dark overlay (lighter at the header, darker over the pricelist for legibility) */}
                             <div
@@ -281,7 +274,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     type="button"
                                     onClick={() => toggle(i)}
                                     aria-expanded={open}
-                                    className="w-full flex items-center justify-between gap-4 py-7 md:py-9 text-left group [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]"
+                                    className="w-full flex items-center justify-between gap-4 pt-7 md:pt-9 pb-3 text-left group [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]"
                                 >
                                     <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap min-w-0">
                                         <h3 className="font-elegant font-medium text-cream text-[1.55rem] md:text-[2.2rem] leading-none tracking-tight transition-colors group-hover:text-cream">
@@ -304,6 +297,11 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     </div>
                                 </button>
 
+                                {/* short explanation — always visible, even before expanding */}
+                                {g.blurb && (
+                                    <p className="pb-7 md:pb-9 text-sm text-cream/70 font-light leading-relaxed max-w-2xl [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">{g.blurb}</p>
+                                )}
+
                                 {/* body — collapses smoothly via grid-rows trick */}
                                 <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
                                     <div className="overflow-hidden min-h-0">
@@ -313,8 +311,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                                     <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-cream/20 text-cream/55 rounded">{t}</span>
                                                 ))}
                                             </div>
-                                            <p className="mt-4 text-sm text-cream/65 font-light leading-relaxed max-w-2xl">{g.blurb}</p>
-                                            <div className="mt-6 border-t border-white/10">
+                                            <div className="mt-2 border-t border-white/10">
                                                 {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
                                             </div>
                                             <div className="mt-6">
