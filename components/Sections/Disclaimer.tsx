@@ -38,26 +38,8 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
             />
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
-                    {/* LEFT — sticky title + alert notice */}
-                    <div className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
-                        <FadeIn>
-                            <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
-                                Disclaimer
-                            </h2>
-                            {/* alert notice — meant to be noticed */}
-                            <div className="mt-6 flex items-start gap-3 rounded-lg border border-moon/35 bg-moon/[0.09] px-4 py-3.5 max-w-sm">
-                                <AlertCircle className="w-5 h-5 text-moon shrink-0 mt-0.5" strokeWidth={1.8} />
-                                <p className="text-sm text-cream/90 leading-relaxed">
-                                    {isIndonesian
-                                        ? 'Dengan melakukan booking, kamu telah menyetujui syarat dan ketentuan ini.'
-                                        : 'By making a booking, you have agreed to these terms and conditions.'}
-                                </p>
-                            </div>
-                        </FadeIn>
-                    </div>
-
-                    {/* RIGHT — bold editorial numbered notes (fills the column) */}
-                    <div className="lg:col-span-8">
+                    {/* LEFT — bold editorial numbered notes (fills the column) */}
+                    <div className="lg:col-span-8 lg:order-1">
                         {items.map((it, index) => (
                             <FadeIn key={index} delay={Math.min(index, 4) * 80} dir="up">
                                 <div className="group grid grid-cols-[auto_1fr] items-start gap-x-5 md:gap-x-10 py-7 md:py-9 border-t border-white/10 first:border-t-0 first:pt-0 lg:first:pt-0">
@@ -79,6 +61,24 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                                 </div>
                             </FadeIn>
                         ))}
+                    </div>
+
+                    {/* RIGHT — sticky title + alert notice */}
+                    <div className="lg:col-span-4 lg:order-2 lg:sticky lg:top-28 lg:self-start">
+                        <FadeIn>
+                            <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+                                Disclaimer
+                            </h2>
+                            {/* alert notice — meant to be noticed */}
+                            <div className="mt-6 flex items-start gap-3 rounded-lg border border-moon/35 bg-moon/[0.09] px-4 py-3.5 max-w-sm">
+                                <AlertCircle className="w-5 h-5 text-moon shrink-0 mt-0.5" strokeWidth={1.8} />
+                                <p className="text-sm text-cream/90 leading-relaxed">
+                                    {isIndonesian
+                                        ? 'Dengan melakukan booking, kamu telah menyetujui syarat dan ketentuan ini.'
+                                        : 'By making a booking, you have agreed to these terms and conditions.'}
+                                </p>
+                            </div>
+                        </FadeIn>
                     </div>
                 </div>
             </div>
