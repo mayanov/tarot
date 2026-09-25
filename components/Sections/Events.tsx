@@ -59,7 +59,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       className="py-12 md:py-16 relative overflow-hidden isolate"
     >
       {/* light periwinkle-blue — keeps the blue identity but reads bright, not dark */}
-      <div className="absolute inset-0" style={{ background: '#E7EAFA' }} />
+      <div className="absolute inset-0" style={{ background: '#D9E4F7' }} />
       <div
         className="pointer-events-none absolute inset-0"
         style={{ background: 'radial-gradient(120% 90% at 85% 0%, rgba(32,42,92,0.06) 0%, transparent 55%)' }}
@@ -115,7 +115,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                   <div className="relative pb-9 md:pb-11 last:pb-0">
                     {/* node */}
                     <span aria-hidden className="absolute -left-[26px] md:-left-[34px] top-1.5 grid place-items-center">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#202A5C] shadow-[0_0_12px_1px_rgba(32,42,92,0.35)] ring-4 ring-[#E7EAFA]" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#202A5C] shadow-[0_0_12px_1px_rgba(32,42,92,0.35)] ring-4 ring-[#D9E4F7]" />
                     </span>
                     {/* year */}
                     <div className="font-elegant font-semibold text-[#202A5C] text-2xl md:text-3xl leading-none tracking-tight mb-4">
