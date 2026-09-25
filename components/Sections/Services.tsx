@@ -226,7 +226,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
         ];
 
     return (
-        <section id="services" className="relative isolate text-ink" style={{ background: '#ffffff' }}>
+        <section id="services" className="relative isolate overflow-hidden text-ink rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]" style={{ background: '#ffffff' }}>
             {/* HEADER — transparent over the sky */}
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-12 md:pt-16 pb-10 md:pb-14">
                 <FadeIn>

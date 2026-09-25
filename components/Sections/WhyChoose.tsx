@@ -33,7 +33,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   const reasons = isIndonesian ? reasonsID : reasonsGlobal;
 
   return (
-    <section id="why-choose" className="relative isolate">
+    <section id="why-choose" className="relative isolate overflow-hidden rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]">
       {/* LIGHT band — white with dark text (no seam lines) */}
       <div className="text-ink" style={{ background: '#ffffff' }}>
         <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-12 md:pt-16">
