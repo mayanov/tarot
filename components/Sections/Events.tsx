@@ -75,7 +75,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                   href="https://wa.link/5peyhb"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-7 py-3 rounded-none bg-ink text-cream hover:bg-ink text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 shadow-[0_16px_36px_-20px_rgba(0,0,0,0.5)]"
+                  className="inline-flex items-center justify-center px-7 py-3 rounded-lg bg-ink text-cream hover:bg-ink text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 shadow-[0_16px_36px_-20px_rgba(0,0,0,0.5)]"
                 >
                   {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
                 </a>
@@ -93,7 +93,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                     <button
                       type="button"
                       onClick={() => setLightbox(src)}
-                      className="group relative block w-full overflow-hidden rounded-none aspect-[3/4] bg-black/5"
+                      className="group relative block w-full overflow-hidden rounded-lg aspect-[3/4] bg-black/5"
                       aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
                     >
                       <ImageReveal
@@ -103,7 +103,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
                         delay={i * 90}
                       />
-                      <span className="pointer-events-none absolute inset-0 rounded-none ring-1 ring-inset ring-black/10 group-hover:ring-ink/40 transition-all" />
+                      <span className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-black/10 group-hover:ring-ink/40 transition-all" />
                       <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
                   </FadeIn>
@@ -136,7 +136,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             {visibleCount < eventList.length && (
               <button
                 onClick={handleLoadMore}
-                className="mt-8 inline-flex items-center gap-2 px-7 py-2.5 rounded-none border border-ink/25 hover:border-ink hover:bg-ink hover:text-cream text-sm font-medium text-ink transition-all duration-300 group"
+                className="mt-8 inline-flex items-center gap-2 px-7 py-2.5 rounded-lg border border-ink/25 hover:border-ink hover:bg-ink hover:text-cream text-sm font-medium text-ink transition-all duration-300 group"
               >
                 {isIndonesian ? "Lihat Lainnya" : "Load More Events"} <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
               </button>
@@ -153,13 +153,13 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
           <img
             src={lightbox}
             alt=""
-            className="max-h-[90vh] max-w-full rounded-none shadow-2xl object-contain"
+            className="max-h-[90vh] max-w-full rounded-lg shadow-2xl object-contain"
             onClick={(e) => e.stopPropagation()}
           />
           <button
             onClick={() => setLightbox(null)}
             aria-label="Close"
-            className="absolute top-5 right-5 w-10 h-10 grid place-items-center rounded-none bg-white/15 text-white hover:bg-white/25 transition-colors"
+            className="absolute top-5 right-5 w-10 h-10 grid place-items-center rounded-lg bg-white/15 text-white hover:bg-white/25 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

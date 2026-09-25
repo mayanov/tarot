@@ -10,7 +10,7 @@ interface ServicesProps {
 }
 
 // Dark order pill on the light ground — opens the on-site booking flow.
-const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-none border border-cream text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300";
+const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-lg border border-cream text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300";
 
 // Each pricing category gets its own twilight sky, so the categories feel distinct.
 const CAT_SKIES = ['sky-hero.jpg', 'catsky-aurora.jpg', 'sky-footer.jpg', 'sky-interlude.jpg'];
@@ -23,7 +23,7 @@ const OfferRow: React.FC<{ o: any }> = ({ o }) => (
                 <h4 className="text-[1.05rem] font-serif font-semibold text-cream leading-tight tracking-tight">
                     {o.name}{o.sub && <span className="text-sm text-cream/55 font-sans font-normal ml-2">{o.sub}</span>}
                 </h4>
-                {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-none ${o.badgeTone || 'bg-white/[0.06] text-cream'}`}>{o.badge}</span>}
+                {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-lg ${o.badgeTone || 'bg-white/[0.06] text-cream'}`}>{o.badge}</span>}
             </div>
             <div className="text-right shrink-0">
                 {o.oldPrice && <span className="text-xs text-cream/45 line-through leading-none block">{o.oldPrice}</span>}
@@ -281,7 +281,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                             {g.type}
                                         </h3>
                                         {g.seasonal && (
-                                            <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-none bg-white/[0.06] text-cream">
+                                            <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-lg bg-white/[0.06] text-cream">
                                                 {isIndonesian ? 'Musiman' : 'Seasonal'}
                                             </span>
                                         )}
@@ -291,7 +291,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                             <span className="text-cream/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
                                             <span className="font-serif font-semibold text-cream">{g.priceLabel}</span>
                                         </span>
-                                        <span className={`grid place-items-center w-9 h-9 rounded-none border border-cream/25 transition-transform duration-300 ${open ? 'rotate-180 border-cream' : ''}`}>
+                                        <span className={`grid place-items-center w-9 h-9 rounded-lg border border-cream/25 transition-transform duration-300 ${open ? 'rotate-180 border-cream' : ''}`}>
                                             <ChevronDown className="w-4 h-4 text-cream" />
                                         </span>
                                     </div>

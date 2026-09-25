@@ -43,7 +43,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     }, []);
 
     // Square, bordered social button — fills with cream on hover.
-    const socialClass = "grid place-items-center w-11 h-11 rounded-none border border-white/20 text-white hover:text-plum-deep hover:bg-moon hover:border-moon transition-all duration-300 hover:-translate-y-0.5";
+    const socialClass = "grid place-items-center w-11 h-11 rounded-lg border border-white/20 text-white hover:text-plum-deep hover:bg-moon hover:border-moon transition-all duration-300 hover:-translate-y-0.5";
     const labelClass = "text-[11px] uppercase tracking-[0.24em] text-moon mb-5";
     const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-white/80 font-light leading-relaxed";
 
@@ -83,7 +83,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         <a
                             href="#services"
                             onClick={(e) => { e.preventDefault(); goTo('services'); }}
-                            className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-none bg-cream text-ink text-sm font-semibold hover:bg-white transition-colors duration-200"
+                            className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-lg bg-cream text-ink text-sm font-semibold hover:bg-white transition-colors duration-200"
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -96,7 +96,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     {/* Brand */}
                     <div className="md:col-span-6">
                         <div className="flex items-center gap-3">
-                            <span className="grid place-items-center w-10 h-10 rounded-none border border-white/40 text-white font-serif text-lg leading-none">M</span>
+                            <span className="grid place-items-center w-10 h-10 rounded-lg border border-white/40 text-white font-serif text-lg leading-none">M</span>
                             <span className="text-xl font-serif font-semibold text-white tracking-tight">
                                 Mayanov <span className="font-normal text-white/70">Tarot</span>
                             </span>

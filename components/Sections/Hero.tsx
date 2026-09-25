@@ -159,7 +159,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
               <a
                 href="#services"
                 onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                className="group inline-flex items-center gap-3 rounded-none bg-cream text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors duration-300"
+                className="group inline-flex items-center gap-3 rounded-lg bg-cream text-ink px-7 py-3.5 text-sm font-semibold hover:bg-white transition-colors duration-300"
               >
                 {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

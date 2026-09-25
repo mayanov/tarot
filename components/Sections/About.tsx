@@ -37,9 +37,9 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           <div className="font-elegant text-cream text-xl md:text-2xl leading-none">Mayanov</div>
           <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-cream/80">
             <span>{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</span>
-            <span className="w-1 h-1 rounded-none bg-moon" />
+            <span className="w-1 h-1 rounded-full bg-moon" />
             <span>{isIndonesian ? 'Sejak 2009' : 'Since 2009'}</span>
-            <span className="w-1 h-1 rounded-none bg-moon" />
+            <span className="w-1 h-1 rounded-full bg-moon" />
             <span>{isIndonesian ? '15+ Tahun' : '15+ Years'}</span>
           </div>
         </div>

@@ -17,7 +17,7 @@ const NotFound: React.FC<NotFoundProps> = ({ isIndonesian = false }) => {
             <main className="flex-grow flex items-center justify-center w-full px-4 relative z-10 pt-20">
                 <div className="max-w-md w-full text-center space-y-6">
                     <div className="flex justify-center mb-6">
-                        <div className="w-20 h-20 rounded-none bg-ink/[0.06] flex items-center justify-center border border-ink/20">
+                        <div className="w-20 h-20 rounded-lg bg-ink/[0.06] flex items-center justify-center border border-ink/20">
                             <AlertCircle className="w-10 h-10 text-terracotta" strokeWidth={1.5} />
                         </div>
                     </div>
@@ -34,7 +34,7 @@ const NotFound: React.FC<NotFoundProps> = ({ isIndonesian = false }) => {
 
                     <a
                         href="/"
-                        className="inline-flex items-center gap-2 px-8 py-3 rounded-none bg-ink text-cream font-medium text-lg hover:bg-black transition-all duration-300 hover:-translate-y-1 group"
+                        className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-ink text-cream font-medium text-lg hover:bg-black transition-all duration-300 hover:-translate-y-1 group"
                     >
                         <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         {isIndonesian ? 'Kembali ke Beranda' : 'Back to Home'}

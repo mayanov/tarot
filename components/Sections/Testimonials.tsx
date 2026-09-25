@@ -304,7 +304,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           href="https://share.google/4LrmhpcgHNXX9bTzr"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-none border border-cream/30 hover:border-cream hover:bg-cream hover:text-ink transition-all duration-300 text-cream font-medium group"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-cream/30 hover:border-cream hover:bg-cream hover:text-ink transition-all duration-300 text-cream font-medium group"
         >
           <span>{isIndonesian ? 'Lihat Semua Review di Google' : 'Read All Reviews on Google'}</span>
         </a>

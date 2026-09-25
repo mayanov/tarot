@@ -299,7 +299,7 @@ html.lenis body {
   --rdp-day-height: 40px;
   --rdp-day_button-width: 38px;
   --rdp-day_button-height: 38px;
-  --rdp-day_button-border-radius: 0px;
+  --rdp-day_button-border-radius: 8px;
   margin: 0;
 }
 .booking-cal .rdp-month_caption {
