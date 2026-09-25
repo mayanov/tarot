@@ -167,7 +167,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         style={{ fontSize: 'clamp(2rem, 9vw, 7rem)' }}
                     >
                         <span className="text-white">Mayanov</span>
-                        <span className="text-[#E4C48E]">Tarot</span>
+                        <span className="text-moon">Tarot</span>
                     </div>
                     {/* thin centered flourish */}
                     <div className="mx-auto mt-6 md:mt-8 h-px w-40 md:w-64 bg-gradient-to-r from-transparent via-white/25 to-transparent" />

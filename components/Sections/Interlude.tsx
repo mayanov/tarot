@@ -53,13 +53,13 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
                 <>Tarot won&rsquo;t predict your future — it hands you the <span className="italic">clarity</span> to shape it.</>
               )}
             </p>
-
-            {/* signature */}
-            <div className="mt-10 md:mt-12 text-[0.72rem] uppercase tracking-[0.26em] text-cream/50">
-              {isIndonesian ? 'Mayanov · Pembaca Tarot' : 'Mayanov · Tarot Reader'}
-            </div>
           </div>
         </FadeIn>
+      </div>
+
+      {/* signature — bottom-right, off-axis so it feels hand-signed, not templated */}
+      <div className="absolute bottom-6 right-6 md:bottom-10 md:right-12 z-10">
+        <span className="font-elegant italic text-cream/60 text-xl md:text-3xl leading-none">Mayanov</span>
       </div>
     </section>
   );
