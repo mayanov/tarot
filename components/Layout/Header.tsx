@@ -20,7 +20,7 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
     <div
       role="group"
       aria-label="Site version"
-      className={`relative flex items-center p-0.5 rounded-lg border border-cream/40 ${compact ? 'w-[13.5rem]' : 'w-full max-w-none sm:max-w-[17rem]'}`}
+      className={`relative flex items-center p-0.5 rounded-lg border border-cream/40 ${compact ? 'w-[13.5rem] h-full' : 'w-full max-w-none sm:max-w-[17rem]'}`}
     >
       <span
         aria-hidden
@@ -124,8 +124,20 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50">
-        {/* translucent dark glass — fades in on scroll; readable over any section */}
-        <div className={`absolute inset-0 transition-opacity duration-300 bg-[#0C0C0D]/55 backdrop-blur-xl border-b border-white/10 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`} />
+        {/* frosted twilight glass — a violet-tinted gradient blur with a moonstone hairline (fades in on scroll) */}
+        <div
+          className={`absolute inset-0 backdrop-blur-2xl transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
+          style={{
+            background: 'linear-gradient(180deg, rgba(22,16,48,0.72) 0%, rgba(11,11,16,0.46) 100%)',
+            borderBottom: '1px solid rgba(198,178,228,0.22)',
+            boxShadow: '0 18px 50px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)',
+          }}
+        />
+        {/* a soft moonstone glow riding the bottom edge */}
+        <div
+          className={`pointer-events-none absolute inset-x-0 bottom-0 h-px transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
+          style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(198,178,228,0.55) 50%, transparent 100%)' }}
+        />
 
         <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex justify-between items-center py-4 md:py-5">
           {/* LEFT — brand (hidden while the overlay owns the top row) */}
@@ -133,33 +145,36 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <Wordmark />
           </div>
 
-          {/* RIGHT — language toggle + Pesan + Menu */}
-          <div className={`flex items-center gap-2.5 transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          {/* RIGHT — language toggle + the Pesan/Menu pair (joined) */}
+          <div className={`flex items-stretch gap-2.5 transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {onSwitchRegion && (
-              <div className="hidden md:block mr-1">
+              <div className="hidden md:flex mr-1">
                 <RegionSwitcher compact isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
               </div>
             )}
 
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-              className="hidden sm:inline-flex items-center px-5 py-3 rounded-lg border border-cream/40 text-cream text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-cream hover:text-ink transition-colors duration-300"
-            >
-              {isIndonesian ? 'Pesan' : 'Book'}
-            </button>
+            {/* Pesan + Menu — a joined, rounded pair */}
+            <div className="flex">
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
+                className="hidden sm:inline-flex items-center px-5 py-3 rounded-l-lg border border-cream/40 text-cream text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-cream hover:text-ink transition-colors duration-300"
+              >
+                {isIndonesian ? 'Pesan' : 'Book'}
+              </button>
 
-            <button
-              onClick={() => setMenuOpen(true)}
-              aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
-              aria-expanded={menuOpen}
-              className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-lg border border-cream/40 text-cream text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-cream hover:text-ink transition-colors duration-300"
-            >
-              <span>Menu</span>
-              <span className="flex flex-col items-end gap-[4px] w-4">
-                <span className="block h-px w-4 bg-current transition-all duration-300" />
-                <span className="block h-px w-2.5 bg-current group-hover:w-4 transition-all duration-300" />
-              </span>
-            </button>
+              <button
+                onClick={() => setMenuOpen(true)}
+                aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
+                aria-expanded={menuOpen}
+                className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-lg sm:rounded-l-none sm:rounded-r-lg border sm:border-l-0 border-cream/40 text-cream text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-cream hover:text-ink transition-colors duration-300"
+              >
+                <span>Menu</span>
+                <span className="flex flex-col items-end gap-[4px] w-4">
+                  <span className="block h-px w-4 bg-current transition-all duration-300" />
+                  <span className="block h-px w-2.5 bg-current group-hover:w-4 transition-all duration-300" />
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
