@@ -8,8 +8,8 @@ interface HeaderProps {
 }
 
 const REGIONS = {
-  global: { name: 'Global', cur: 'USD' },
-  id: { name: 'Indonesia', cur: 'IDR' },
+  global: { name: 'Global', cur: 'EN' },
+  id: { name: 'Indonesia', cur: 'ID' },
 } as const;
 
 // Custom region icons (crisp + consistent across devices, unlike emoji flags).
