@@ -14,7 +14,6 @@ import { FaWhatsapp } from 'react-icons/fa';
 
 // Lazy Load below-the-fold components
 const Services = React.lazy(() => import('./components/Sections/Services'));
-const Testimonials = React.lazy(() => import('./components/Sections/Testimonials'));
 const Interlude = React.lazy(() => import('./components/Sections/Interlude'));
 const Events = React.lazy(() => import('./components/Sections/Events'));
 const FAQ = React.lazy(() => import('./components/Sections/FAQ'));
@@ -380,7 +379,6 @@ function App() {
         <React.Suspense fallback={<div className="h-96 flex items-center justify-center text-white/20">Loading...</div>}>
           <Services isIndonesian={isIndonesian} />
           <WhyChoose isIndonesian={isIndonesian} />
-          <Testimonials isIndonesian={isIndonesian} />
           <Interlude isIndonesian={isIndonesian} />
           <Events isIndonesian={isIndonesian} />
           <FAQ isIndonesian={isIndonesian} />

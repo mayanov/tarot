@@ -223,28 +223,21 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   const go = (dir: number) => setIndex((i) => (i + dir + reviews.length) % reviews.length);
 
   return (
-    <section id="testimonials" className="py-12 md:py-16 relative overflow-hidden isolate border-y border-white/[0.08] text-cream">
-      {/* spotlight band — a soft lit stage glowing out of the near-black ground */}
-      <div aria-hidden className="absolute inset-0 -z-10" style={{ background: '#0B0B0D' }}>
-        <div
-          className="absolute left-1/2 top-1/2 h-[130%] w-[80%] max-w-[1050px] -translate-x-1/2 -translate-y-1/2"
-          style={{ background: 'radial-gradient(closest-side, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.025) 42%, transparent 72%)' }}
-        />
-      </div>
+    <div id="testimonials" className="relative overflow-hidden isolate text-ink scroll-mt-28">
       <FadeIn>
         <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 mb-12 md:mb-14">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-8">
             <div>
-              <h2 className="text-[1.9rem] md:text-[2.5rem] leading-[1.05] font-elegant font-medium text-cream tracking-[-0.02em]">
+              <h2 className="text-[1.9rem] md:text-[2.5rem] leading-[1.05] font-elegant font-medium text-ink tracking-[-0.02em]">
                 {isIndonesian ? 'Apa kata mereka' : 'What others are saying'}
               </h2>
             </div>
             <div className="flex items-center gap-2 text-sm shrink-0 md:pb-2">
-              <div className="flex text-cream">
+              <div className="flex text-ink">
                 {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
               </div>
-              <span className="text-cream font-medium ml-1">5.0</span>
-              <span className="text-cream/70">· {isIndonesian ? 'Rating rata-rata di Google' : 'Average rating on Google'}</span>
+              <span className="text-ink font-medium ml-1">5.0</span>
+              <span className="text-ink/60">· {isIndonesian ? 'Rating rata-rata di Google' : 'Average rating on Google'}</span>
             </div>
           </div>
         </div>
@@ -262,7 +255,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           type="button"
           onClick={() => go(-1)}
           aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
-          className="absolute left-3 md:left-8 lg:left-10 top-1/2 -translate-y-1/2 z-10 p-2 text-cream/45 hover:text-moon transition-colors duration-300"
+          className="absolute left-3 md:left-8 lg:left-10 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/40 hover:text-moon-deep transition-colors duration-300"
         >
           <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
         </button>
@@ -271,7 +264,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           type="button"
           onClick={() => go(1)}
           aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
-          className="absolute right-3 md:right-8 lg:right-10 top-1/2 -translate-y-1/2 z-10 p-2 text-cream/45 hover:text-moon transition-colors duration-300"
+          className="absolute right-3 md:right-8 lg:right-10 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/40 hover:text-moon-deep transition-colors duration-300"
         >
           <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
         </button>
@@ -286,12 +279,12 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                 style={{ gridArea: '1 / 1' }}
                 className={`flex flex-col items-center justify-center text-center transition-opacity duration-500 ${active ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
               >
-                <p className="text-cream text-xl md:text-3xl leading-relaxed font-normal">
-                  <span className="font-elegant text-moon/70 align-baseline">&ldquo;</span>{r.text}<span className="font-elegant text-moon/70 align-baseline">&rdquo;</span>
+                <p className="text-ink text-xl md:text-3xl leading-relaxed font-normal">
+                  <span className="font-elegant text-moon-deep/70 align-baseline">&ldquo;</span>{r.text}<span className="font-elegant text-moon-deep/70 align-baseline">&rdquo;</span>
                 </p>
                 {/* attribution — italic serif with a dash */}
-                <div className="mt-8 font-elegant italic text-cream/90 text-lg md:text-xl">
-                  <span className="not-italic text-moon mr-2">&mdash;</span>{r.author}
+                <div className="mt-8 font-elegant italic text-ink/90 text-lg md:text-xl">
+                  <span className="not-italic text-moon-deep mr-2">&mdash;</span>{r.author}
                 </div>
               </div>
             );
@@ -304,12 +297,12 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           href="https://share.google/4LrmhpcgHNXX9bTzr"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-cream/30 hover:border-cream hover:bg-cream hover:text-ink transition-all duration-300 text-cream font-medium group"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-ink/30 hover:border-ink hover:bg-ink hover:text-cream transition-all duration-300 text-ink font-medium group"
         >
           <span>{isIndonesian ? 'Lihat Semua Review di Google' : 'Read All Reviews on Google'}</span>
         </a>
       </div>
-    </section>
+    </div>
   );
 };
 

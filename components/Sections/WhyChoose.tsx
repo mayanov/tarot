@@ -1,5 +1,6 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
+import Testimonials from './Testimonials';
 
 interface WhyChooseProps {
   isIndonesian?: boolean;
@@ -69,9 +70,9 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
 
   return (
     <section id="why-choose" className="relative isolate">
-      {/* LIGHT band — warm bone with dark text (noho-style) */}
-      <div className="border-y border-black/[0.08] text-ink" style={{ background: '#ffffff' }}>
-        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-12 md:py-16">
+      {/* LIGHT band — white with dark text (no seam lines) */}
+      <div className="text-ink" style={{ background: '#ffffff' }}>
+        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-12 md:pt-16">
           {/* Big lead statement */}
           <FadeIn>
             <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl">
@@ -100,6 +101,11 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
               </FadeIn>
             ))}
           </div>
+        </div>
+
+        {/* ===== Social proof — testimonials merged into this section ===== */}
+        <div className="pt-16 md:pt-24 pb-12 md:pb-16">
+          <Testimonials isIndonesian={isIndonesian} />
         </div>
       </div>
     </section>
