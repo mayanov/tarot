@@ -146,6 +146,21 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
+                {/* Oversized brand wordmark — reads like the name glowing on the dusk
+                    horizon (moonstone at the top, fading into the dark). Turns the
+                    footer into a signature close rather than a utility block. */}
+                <div className="pt-6 md:pt-10 -mb-3 md:-mb-6" aria-hidden>
+                    <span
+                        className="block whitespace-nowrap text-center font-elegant font-semibold leading-[0.78] tracking-[-0.045em] text-transparent bg-clip-text select-none"
+                        style={{
+                            fontSize: 'clamp(3.2rem, 19vw, 17rem)',
+                            backgroundImage: 'linear-gradient(180deg, rgba(219,205,242,0.46) 0%, rgba(198,178,228,0.16) 50%, rgba(12,20,48,0) 92%)',
+                        }}
+                    >
+                        Mayanov
+                    </span>
+                </div>
+
                 {/* Bottom bar */}
                 <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10 text-xs text-white/55 tracking-wide">
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
