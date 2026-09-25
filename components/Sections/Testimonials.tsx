@@ -223,7 +223,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   const go = (dir: number) => setIndex((i) => (i + dir + reviews.length) % reviews.length);
 
   return (
-    <section id="testimonials" className="py-20 md:py-28 relative overflow-hidden isolate border-y border-white/[0.08] text-cream">
+    <section id="testimonials" className="py-12 md:py-16 relative overflow-hidden isolate border-y border-white/[0.08] text-cream">
       {/* spotlight band — a soft lit stage glowing out of the near-black ground */}
       <div aria-hidden className="absolute inset-0 -z-10" style={{ background: '#0B0B0D' }}>
         <div

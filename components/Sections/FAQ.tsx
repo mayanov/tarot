@@ -100,7 +100,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="faq"
-      className="py-20 md:py-28 relative overflow-hidden isolate border-y border-white/[0.08] text-cream"
+      className="py-12 md:py-16 relative overflow-hidden isolate border-y border-white/[0.08] text-cream"
       style={{ background: '#0B0B0D' }}
     >
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">

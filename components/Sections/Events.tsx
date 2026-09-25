@@ -51,7 +51,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="events"
-      className="py-16 md:py-24 relative overflow-hidden isolate border-y border-black/[0.08]"
+      className="py-12 md:py-16 relative overflow-hidden isolate border-y border-black/[0.08]"
     >
       <div className="absolute inset-0" style={{ background: '#ffffff' }} />
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10 text-ink">

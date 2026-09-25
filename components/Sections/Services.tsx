@@ -228,7 +228,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     return (
         <section id="services" className="relative isolate text-cream border-y border-white/[0.08]" style={{ background: '#0B0B0D' }}>
             {/* HEADER — transparent over the sky */}
-            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-20 md:pt-28 pb-10 md:pb-14">
+            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-12 md:pt-16 pb-10 md:pb-14">
                 <FadeIn>
                     <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
                         <div className="lg:col-span-7">
@@ -327,7 +327,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* ===== How it works — editorial numbered steps, transparent over the sky ===== */}
-            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-16 md:py-24">
+            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-12 md:py-16">
                 <FadeIn>
                     <div id="process" className="scroll-mt-24">
                         <h3 className="font-elegant font-medium text-cream text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em] max-w-xl">
