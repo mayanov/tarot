@@ -330,7 +330,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-12 md:py-16">
                 <FadeIn>
                     <div id="process" className="scroll-mt-24">
-                        <span aria-hidden className="block text-moon-deep text-lg leading-none mb-4">✦</span>
                         <h3 className="font-elegant font-medium text-ink text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em] max-w-xl">
                             {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
                         </h3>

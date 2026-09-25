@@ -48,7 +48,6 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       {/* text — inside the page container, held to the left so the portrait can bleed right */}
       <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 lg:min-h-[90vh] flex items-center">
         <FadeIn className="w-full lg:w-[53%] lg:pr-14 py-14 md:py-20">
-          <span aria-hidden className="block text-moon-deep text-lg leading-none mb-5">✦</span>
           <h2 className="font-elegant font-medium text-ink text-[2.8rem] sm:text-[3.8rem] lg:text-[4.8rem] leading-[0.96] tracking-[-0.035em]">
             {isIndonesian ? 'Tentang Saya' : 'About Me'}
           </h2>
