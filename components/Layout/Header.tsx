@@ -37,7 +37,7 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
     >
       <span
         aria-hidden
-        className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-[#A6B6F0] transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-[#2E3E8C] transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{ transform: isIndonesian ? 'translateX(100%)' : 'translateX(0)' }}
       />
       {options.map(([key, toID]) => {
@@ -49,7 +49,7 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
             onClick={() => onSwitch(toID)}
             aria-pressed={active}
             title={`Switch to the ${r.name} version`}
-            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-1.5 rounded-md font-semibold whitespace-nowrap transition-colors duration-300 ${compact ? 'px-2 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} ${active ? 'text-[#1B2550]' : 'text-cream/55 hover:text-cream/80'}`}
+            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-1.5 rounded-md font-semibold whitespace-nowrap transition-colors duration-300 ${compact ? 'px-2 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} ${active ? 'text-cream' : 'text-cream/55 hover:text-cream/80'}`}
           >
             <RegionIcon
               region={key}
