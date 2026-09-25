@@ -148,13 +148,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     <>
       <header className="fixed inset-x-0 top-0 z-50">
         {/* frosted twilight glass — a violet-tinted gradient blur (fades in on scroll)
-            that dissolves to fully transparent at the bottom, so it has no hard edge */}
+            that dissolves smoothly to fully transparent (extends below the bar so the
+            fall-off has room to be gradual, not a hard edge) */}
         <div
-          className={`absolute inset-0 backdrop-blur-2xl transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
+          className={`pointer-events-none absolute inset-x-0 top-0 h-[240%] backdrop-blur-2xl transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
           style={{
-            background: 'linear-gradient(180deg, rgba(22,16,48,0.72) 0%, rgba(16,12,36,0.34) 52%, rgba(11,11,16,0) 100%)',
-            maskImage: 'linear-gradient(180deg, #000 0%, #000 55%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(180deg, #000 0%, #000 55%, transparent 100%)',
+            background: 'linear-gradient(180deg, rgba(22,16,48,0.70) 0%, rgba(19,14,42,0.56) 24%, rgba(16,12,36,0.38) 46%, rgba(14,11,30,0.20) 66%, rgba(12,10,24,0.08) 84%, rgba(11,11,16,0) 100%)',
+            maskImage: 'linear-gradient(180deg, #000 0%, rgba(0,0,0,0.92) 34%, rgba(0,0,0,0.6) 62%, rgba(0,0,0,0.26) 82%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(180deg, #000 0%, rgba(0,0,0,0.92) 34%, rgba(0,0,0,0.6) 62%, rgba(0,0,0,0.26) 82%, transparent 100%)',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
           }}
         />
