@@ -9,10 +9,6 @@ interface FooterProps {
     isIndonesian?: boolean;
 }
 
-// Film-grain noise — same texture the site background uses.
-const GRAIN =
-    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E\")";
-
 const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const currentYear = new Date().getFullYear();
     const footerRef = useRef<HTMLElement>(null);
@@ -40,14 +36,12 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     backgroundPosition: 'center 30%',
                 }}
             />
-            {/* dark overlay so the content stays readable over the stars */}
+            {/* even, neutral darkening so the stars read cleanly (no muddy colour cast) */}
             <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0"
-                style={{ background: 'linear-gradient(180deg, rgba(11,11,22,0.72) 0%, rgba(11,11,22,0.55) 45%, rgba(11,11,22,0.82) 100%)' }}
+                style={{ background: 'rgba(9,9,20,0.55)' }}
             />
-            {/* film grain — light specks over the dark */}
-            <div aria-hidden className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
 
             <FadeIn className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 {/* Top — CTA line */}
