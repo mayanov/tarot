@@ -124,19 +124,13 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50">
-        {/* frosted twilight glass — a violet-tinted gradient blur with a moonstone hairline (fades in on scroll) */}
+        {/* frosted twilight glass — a violet-tinted gradient blur (fades in on scroll) */}
         <div
           className={`absolute inset-0 backdrop-blur-2xl transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
           style={{
             background: 'linear-gradient(180deg, rgba(22,16,48,0.72) 0%, rgba(11,11,16,0.46) 100%)',
-            borderBottom: '1px solid rgba(198,178,228,0.22)',
             boxShadow: '0 18px 50px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)',
           }}
-        />
-        {/* a soft moonstone glow riding the bottom edge */}
-        <div
-          className={`pointer-events-none absolute inset-x-0 bottom-0 h-px transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
-          style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(198,178,228,0.55) 50%, transparent 100%)' }}
         />
 
         <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex justify-between items-center py-4 md:py-5">
