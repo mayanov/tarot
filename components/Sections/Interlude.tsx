@@ -18,12 +18,12 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="interlude"
-      className="relative overflow-hidden isolate text-cream py-12 md:py-16 rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]"
+      className="relative overflow-hidden isolate text-cream py-20 md:py-32"
       style={{ background: '#2A1330' }}
     >
-      {/* fiery sunset sky photo */}
+      {/* purple-dusk sky photo — gentle slow zoom for life */}
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 animate-[slowZoom_26s_ease-in-out_infinite]"
         style={{
           backgroundImage: `url(${import.meta.env.BASE_URL}sky-interlude.jpg)`,
           backgroundSize: 'cover',

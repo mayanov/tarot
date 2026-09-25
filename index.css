@@ -84,6 +84,11 @@ html.lenis body {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+/* ---- Slow Ken-Burns zoom for feature imagery ---- */
+@keyframes slowZoom {
+  0%, 100% { transform: scale(1.04); }
+  50%      { transform: scale(1.13); }
+}
 @media (prefers-reduced-motion: reduce) {
   [class*="animate-[blob"] { animation: none !important; }
 }
