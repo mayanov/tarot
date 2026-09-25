@@ -13,7 +13,7 @@ interface ServicesProps {
 const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-lg border border-cream text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300";
 
 // Each pricing category gets its own twilight sky, so the categories feel distinct.
-const CAT_SKIES = ['sky-hero.jpg', 'catsky-aurora.jpg', 'sky-footer.jpg', 'sky-interlude.jpg'];
+const CAT_SKIES = ['sky-hero.jpg', 'catsky-aurora.jpg', 'sky-footer.jpg', 'aurora-meetup.jpg'];
 
 // One offer line inside a category row: name (+ inline badge) left, price right.
 const OfferRow: React.FC<{ o: any }> = ({ o }) => (

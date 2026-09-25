@@ -21,19 +21,19 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       className="relative overflow-hidden isolate text-cream py-20 md:py-32"
       style={{ background: '#2A1330' }}
     >
-      {/* purple-dusk sky photo — gentle slow zoom for life */}
+      {/* aurora sky photo — gentle slow zoom for life */}
       <div
         className="pointer-events-none absolute inset-0 animate-[slowZoom_26s_ease-in-out_infinite]"
         style={{
-          backgroundImage: `url(${import.meta.env.BASE_URL}sky-interlude.jpg)`,
+          backgroundImage: `url(${import.meta.env.BASE_URL}aurora-quote.jpg)`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center 32%',
+          backgroundPosition: 'center 38%',
         }}
       />
-      {/* dark overlay so the quote reads cleanly */}
+      {/* cool, lighter overlay so the quote reads without feeling gloomy */}
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(22,8,20,0.58) 0%, rgba(22,8,20,0.42) 50%, rgba(22,8,20,0.66) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, rgba(6,12,24,0.52) 0%, rgba(6,12,24,0.36) 50%, rgba(6,12,24,0.62) 100%)' }}
       />
 
       {/* film grain */}

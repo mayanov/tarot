@@ -70,9 +70,9 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 aria-hidden
                 className="pointer-events-none absolute inset-0 will-change-transform"
                 style={{
-                    backgroundImage: `url(${import.meta.env.BASE_URL}sky-hero.jpg)`,
+                    backgroundImage: `url(${import.meta.env.BASE_URL}aurora-footer.jpg)`,
                     backgroundSize: 'cover',
-                    backgroundPosition: 'center 30%',
+                    backgroundPosition: 'center 40%',
                     transform: 'scale(1.12)',
                 }}
             />
@@ -161,11 +161,11 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     <span
                         className={`block whitespace-nowrap text-center font-elegant font-semibold leading-[0.82] tracking-[-0.045em] text-transparent bg-clip-text select-none transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[110%]'}`}
                         style={{
-                            fontSize: 'clamp(3.2rem, 19vw, 17rem)',
+                            fontSize: 'clamp(1.9rem, 11vw, 9.5rem)',
                             backgroundImage: 'linear-gradient(180deg, rgba(235,229,252,0.95) 0%, rgba(214,196,240,0.7) 55%, rgba(198,178,228,0.35) 100%)',
                         }}
                     >
-                        Mayanov
+                        Mayanov Tarot
                     </span>
                 </div>
 
