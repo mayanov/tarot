@@ -100,8 +100,8 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="faq"
-      className="py-12 md:py-16 relative overflow-hidden isolate rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)] text-cream"
-      style={{ background: '#0B0B0D' }}
+      className="py-12 md:py-16 relative overflow-hidden isolate rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)] text-ink"
+      style={{ background: '#ffffff' }}
     >
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
         <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16">
@@ -109,10 +109,10 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           <div className="lg:col-span-4">
             <FadeIn>
               <div className="lg:sticky lg:top-28">
-                <h2 className="font-elegant font-medium text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
+                <h2 className="font-elegant font-medium text-ink text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                   {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
                 </h2>
-                <p className="mt-5 text-cream font-light leading-relaxed max-w-xs">
+                <p className="mt-5 text-ink/60 font-light leading-relaxed max-w-xs">
                   {isIndonesian
                     ? 'Segala hal tentang proses bacaan, etika, dan cara penyampaian.'
                     : 'Everything about the reading process, ethics, and delivery.'}
@@ -123,26 +123,26 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
 
           {/* RIGHT — accordion */}
           <div className="lg:col-span-8">
-            <div className="border-t border-white/10">
+            <div className="border-t border-black/10">
               {faqs.map((faq, index) => {
                 const open = openSet.has(index);
                 return (
                   <FadeIn key={index} delay={Math.min(index, 6) * 40}>
-                    <div className="border-b border-white/10">
+                    <div className="border-b border-black/10">
                       <button
                         onClick={() => toggleFAQ(index)}
                         className="w-full flex items-center justify-between gap-5 py-4 md:py-5 text-left focus:outline-none"
                         aria-expanded={open}
                       >
-                        <span className="font-serif font-medium text-base md:text-lg leading-snug tracking-tight text-cream">
+                        <span className="font-serif font-medium text-base md:text-lg leading-snug tracking-tight text-ink">
                           {faq.question}
                         </span>
-                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-300 ${open ? 'text-moon rotate-180' : 'text-cream/60'}`} />
+                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-300 ${open ? 'text-moon-deep rotate-180' : 'text-ink/40'}`} />
                       </button>
 
                       <div className={`grid transition-all duration-300 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                         <div className="overflow-hidden">
-                          <p className="pb-5 pr-10 text-cream text-[0.95rem] md:text-base leading-relaxed whitespace-pre-line font-light">
+                          <p className="pb-5 pr-10 text-ink/70 text-[0.95rem] md:text-base leading-relaxed whitespace-pre-line font-light">
                             {faq.answer}
                           </p>
                         </div>

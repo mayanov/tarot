@@ -391,8 +391,9 @@ function App() {
         </React.Suspense>
       </main>
 
-      {/* white backdrop so the footer's rise + rounded corners reveal white, not the sky */}
-      <div className="relative z-10 bg-white">
+      {/* Footer rises over the now-dark Disclaimer; its rounded corners reveal the
+          cosmic sky (a dark peek that blends), so no white backdrop here. */}
+      <div className="relative z-10">
         <Footer isIndonesian={isIndonesian} />
       </div>
 

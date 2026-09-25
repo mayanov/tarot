@@ -21,17 +21,17 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     const disclaimers = isIndonesian ? disclaimersID : disclaimersEN;
 
     return (
-        <section id="disclaimer" className="py-12 md:py-16 relative overflow-hidden isolate rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)] text-ink" style={{ background: '#ffffff' }}>
+        <section id="disclaimer" className="py-12 md:py-16 relative overflow-hidden isolate rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-30px_70px_-34px_rgba(0,0,0,0.5)] text-cream" style={{ background: '#0B0B0D' }}>
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 <FadeIn>
                     <div>
                         <div className="grid lg:grid-cols-12 gap-y-9 lg:gap-x-16">
                             {/* LEFT — title + subtitle */}
                             <div className="lg:col-span-4">
-                                <h2 className="font-elegant font-medium text-ink text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
+                                <h2 className="font-elegant font-medium text-cream text-[1.9rem] md:text-[2.5rem] leading-[1.05] tracking-[-0.02em]">
                                     Disclaimer
                                 </h2>
-                                <p className="mt-5 text-sm text-ink/60 font-light leading-relaxed max-w-xs">
+                                <p className="mt-5 text-sm text-cream/60 font-light leading-relaxed max-w-xs">
                                     {isIndonesian
                                         ? 'Dengan melakukan booking, kamu telah menyetujui syarat dan ketentuan ini.'
                                         : 'By making a booking, you have agreed to these terms and conditions.'}
@@ -40,11 +40,11 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
 
                             {/* RIGHT — terms */}
                             <div className="lg:col-span-8">
-                                <div className="border-t border-black/10">
+                                <div className="border-t border-white/10">
                                     {disclaimers.map((item, index) => (
-                                        <div key={index} className="flex gap-5 py-5 border-b border-black/10">
-                                            <span className="font-serif font-semibold text-ink text-sm tabular-nums pt-0.5 shrink-0 w-6">0{index + 1}</span>
-                                            <p className="text-ink/70 text-sm md:text-[0.95rem] leading-relaxed font-light">
+                                        <div key={index} className="flex gap-5 py-5 border-b border-white/10">
+                                            <span className="font-serif font-semibold text-cream text-sm tabular-nums pt-0.5 shrink-0 w-6">0{index + 1}</span>
+                                            <p className="text-cream/70 text-sm md:text-[0.95rem] leading-relaxed font-light">
                                                 {item}
                                             </p>
                                         </div>
