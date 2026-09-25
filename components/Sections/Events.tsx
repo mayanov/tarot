@@ -53,7 +53,9 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       id="events"
       className="py-12 md:py-16 relative overflow-hidden isolate -mt-8 md:-mt-12 rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]"
     >
-      <div className="absolute inset-0" style={{ background: '#ffffff' }} />
+      {/* soft lilac tone (vs the pure-white "Why" panel above) so the boundary reads
+          as a real panel change, not a faint white-on-white crease */}
+      <div className="absolute inset-0" style={{ background: '#F4F1FA' }} />
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10 text-ink">
           <FadeIn>
             {/* HEADER — title on the left, count + CTA on the right */}
