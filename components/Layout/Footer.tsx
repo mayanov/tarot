@@ -14,18 +14,30 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const footerRef = useRef<HTMLElement>(null);
     const starRef = useRef<HTMLDivElement>(null);
 
-    // Gentle parallax — the star field drifts as the footer scrolls up.
+    // Star parallax + wordmark reveal, both driven directly from the scroll handler
+    // (reliable where IntersectionObserver / FadeIn get throttled).
     useEffect(() => {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         let raf = 0;
+        let shown = false;
         const update = () => {
             const el = footerRef.current;
-            const star = starRef.current;
-            if (!el || !star) return;
-            const rect = el.getBoundingClientRect();
             const vh = window.innerHeight;
-            const t = Math.min(Math.max((vh - rect.top) / (vh + rect.height), 0), 1);
-            star.style.transform = `translate3d(0, ${((t - 0.5) * 40).toFixed(1)}px, 0) scale(1.12)`;
+            // reveal the wordmark once it scrolls into view (query live DOM so it's
+            // not affected by ref timing inside the FadeIn wrapper)
+            const mark = el ? el.querySelector<HTMLElement>('[data-mark]') : null;
+            if (mark && !shown && mark.getBoundingClientRect().top < vh * 0.88) {
+                shown = true;
+                mark.style.opacity = '1';
+                mark.style.transform = 'translateY(0)';
+            }
+            // parallax the star field
+            const star = starRef.current;
+            if (!reduce && el && star) {
+                const rect = el.getBoundingClientRect();
+                const t = Math.min(Math.max((vh - rect.top) / (vh + rect.height), 0), 1);
+                star.style.transform = `translate3d(0, ${((t - 0.5) * 40).toFixed(1)}px, 0) scale(1.12)`;
+            }
         };
         const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
         update();
@@ -143,20 +155,23 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
-                {/* Signature wordmark — refined two-tone, revealed on scroll */}
-                <FadeIn dir="up" className="pt-8 md:pt-12">
-                    <div aria-hidden>
-                        <div
-                            className="flex items-baseline justify-center gap-[0.28em] whitespace-nowrap leading-[1.05] select-none"
-                            style={{ fontSize: 'clamp(2rem, 9vw, 7rem)' }}
-                        >
-                            <span className="font-elegant font-semibold text-white tracking-[-0.03em]">Mayanov</span>
-                            <span className="font-elegant italic font-light text-moon tracking-[-0.01em]">Tarot</span>
-                        </div>
-                        {/* thin centered flourish */}
-                        <div className="mx-auto mt-6 md:mt-8 h-px w-40 md:w-64 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+                {/* Signature wordmark — two-tone, revealed (rise + fade) on scroll */}
+                <div
+                    data-mark
+                    aria-hidden
+                    className="pt-8 md:pt-12"
+                    style={{ opacity: 0, transform: 'translateY(48px)', transition: 'opacity 900ms cubic-bezier(0.16,1,0.3,1), transform 900ms cubic-bezier(0.16,1,0.3,1)' }}
+                >
+                    <div
+                        className="flex items-baseline justify-center gap-[0.28em] whitespace-nowrap leading-[1.05] select-none font-elegant font-semibold tracking-[-0.03em]"
+                        style={{ fontSize: 'clamp(2rem, 9vw, 7rem)' }}
+                    >
+                        <span className="text-white">Mayanov</span>
+                        <span className="text-[#E4C48E]">Tarot</span>
                     </div>
-                </FadeIn>
+                    {/* thin centered flourish */}
+                    <div className="mx-auto mt-6 md:mt-8 h-px w-40 md:w-64 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+                </div>
 
                 {/* Bottom bar (no divider line) */}
                 <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white tracking-wide">
