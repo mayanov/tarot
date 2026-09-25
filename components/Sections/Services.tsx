@@ -307,7 +307,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 {/* body — collapses smoothly via grid-rows trick */}
                                 <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
                                     <div className="overflow-hidden min-h-0">
-                                        <div className="pb-9 md:pb-12 -mx-6 md:-mx-10 lg:-mx-12 px-6 md:px-10 lg:px-12 bg-[rgba(9,9,11,0.5)] backdrop-blur-[2px]">
+                                        <div className="pb-9 md:pb-12">
                                             <div className="flex flex-wrap gap-1.5">
                                                 {g.tags.map((t: string) => (
                                                     <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-cream/20 text-cream/55 rounded">{t}</span>
