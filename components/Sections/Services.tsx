@@ -226,17 +226,17 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
         ];
 
     return (
-        <section id="services" className="relative isolate text-cream border-y border-white/[0.08]" style={{ background: '#0B0B0D' }}>
+        <section id="services" className="relative isolate text-ink" style={{ background: '#ffffff' }}>
             {/* HEADER — transparent over the sky */}
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-12 md:pt-16 pb-10 md:pb-14">
                 <FadeIn>
                     <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
                         <div className="lg:col-span-7">
-                            <h2 className="font-elegant font-medium text-cream text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
+                            <h2 className="font-elegant font-medium text-ink text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
                                 {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
                             </h2>
                         </div>
-                        <p className="lg:col-span-4 lg:col-start-9 text-[0.95rem] text-cream/60 font-light leading-relaxed lg:pb-2">
+                        <p className="lg:col-span-4 lg:col-start-9 text-[0.95rem] text-ink/60 font-light leading-relaxed lg:pb-2">
                             {isIndonesian
                                 ? 'Pilih metode yang paling nyaman — analisa tajam, solutif, tanpa basa-basi.'
                                 : 'Clear options, no hidden fees. Just choose the depth you need.'}
@@ -245,8 +245,8 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 </FadeIn>
             </div>
 
-            {/* ===== Pricelist — full-width translucent twilight-glass bands, one open at a time ===== */}
-            <div className="border-t border-white/[0.08]">
+            {/* ===== Pricelist — full-width twilight-sky bands, one open at a time ===== */}
+            <div className="border-t border-black/[0.08]">
                 {groups.map((g: any, i: number) => {
                     const open = openIdx === i;
                     return (
@@ -329,8 +329,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {/* ===== How it works — editorial numbered steps, transparent over the sky ===== */}
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-12 md:py-16">
                 <FadeIn>
-                    {/* light panel — pops off the dark pricelist */}
-                    <div id="process" className="scroll-mt-24 rounded-2xl bg-white text-ink p-7 md:p-14 shadow-[0_40px_110px_-45px_rgba(0,0,0,0.7)]">
+                    <div id="process" className="scroll-mt-24">
                         <span aria-hidden className="block text-moon-deep text-lg leading-none mb-4">✦</span>
                         <h3 className="font-elegant font-medium text-ink text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em] max-w-xl">
                             {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
