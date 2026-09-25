@@ -106,11 +106,17 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
             {/* TIMELINE — a light spine with a glowing node per year; events branch off it */}
             <div className="relative pl-7 md:pl-10">
+              {/* soft, edgeless light wash so the list area reads lighter (no boxy container) */}
+              <span
+                aria-hidden
+                className="absolute -z-10 -left-6 -right-4 -top-6 -bottom-6 rounded-[2rem]"
+                style={{ background: 'radial-gradient(85% 70% at 30% 22%, rgba(228,222,247,0.16) 0%, rgba(210,200,238,0.06) 45%, transparent 74%)' }}
+              />
               {/* the spine */}
               <span
                 aria-hidden
                 className="absolute left-[3px] md:left-[5px] top-2 bottom-2 w-px"
-                style={{ background: 'linear-gradient(180deg, rgba(230,224,248,0.55) 0%, rgba(198,178,228,0.28) 55%, rgba(198,178,228,0) 100%)' }}
+                style={{ background: 'linear-gradient(180deg, rgba(235,230,250,0.75) 0%, rgba(210,196,238,0.4) 55%, rgba(198,178,228,0) 100%)' }}
               />
               {timeline.map((grp, gi) => (
                 <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 60} dir="up">
@@ -130,10 +136,10 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                           key={ii}
                           className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-white/10 first:border-t-0"
                         >
-                          <h3 className="font-serif font-semibold uppercase text-cream/90 text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-cream">
+                          <h3 className="font-serif font-semibold uppercase text-cream text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5">
                             {event.title}
                           </h3>
-                          <span className="shrink-0 text-[0.66rem] uppercase tracking-[0.14em] text-cream/45 font-light leading-snug sm:text-right">
+                          <span className="shrink-0 text-[0.66rem] uppercase tracking-[0.14em] text-cream/65 font-light leading-snug sm:text-right">
                             {event.loc}
                           </span>
                         </li>
