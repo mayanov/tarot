@@ -60,23 +60,28 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         </FadeIn>
                     </div>
 
-                    {/* RIGHT — warm, plain-spoken notes (no legal numbering) */}
-                    <div className="lg:col-span-8">
+                    {/* RIGHT — each note as a little tarot card (double frame + roman numeral) */}
+                    <div className="lg:col-span-8 space-y-4 md:space-y-5">
                         {items.map((it, index) => (
                             <FadeIn key={index} delay={Math.min(index, 4) * 70}>
-                                <div className="group relative flex items-start gap-4 md:gap-5 rounded-lg px-3 md:px-4 py-5 md:py-6 border-t border-white/10 first:border-t-0 transition-colors duration-300 hover:bg-white/[0.03]">
-                                    {/* left accent bar (grows on hover) */}
-                                    <span aria-hidden className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-0 bg-moon rounded-full transition-all duration-300 group-hover:h-[55%]" />
-                                    {/* icon */}
-                                    <span className="shrink-0 grid place-items-center w-11 h-11 rounded-full bg-white/[0.05] border border-white/12 text-moon transition-colors duration-300 group-hover:border-moon/40">
-                                        <it.Icon className="w-5 h-5" strokeWidth={1.6} />
-                                    </span>
-                                    {/* body */}
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-serif font-semibold text-cream text-base md:text-lg leading-snug tracking-tight">
+                                {/* outer frame */}
+                                <div className="group relative rounded-2xl border border-moon/25 bg-gradient-to-br from-white/[0.07] to-white/[0.015] p-1.5 transition-all duration-300 hover:-translate-y-1 hover:border-moon/50 hover:shadow-[0_30px_70px_-34px_rgba(198,178,228,0.3)]">
+                                    {/* inner frame */}
+                                    <div className="relative overflow-hidden rounded-xl border border-white/10 px-5 md:px-8 py-6 md:py-7">
+                                        {/* big ghosted icon watermark */}
+                                        <it.Icon aria-hidden className="pointer-events-none absolute -right-5 -bottom-6 w-32 h-32 text-white/[0.035] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6" strokeWidth={1} />
+                                        {/* roman numeral — the tarot signature */}
+                                        <span aria-hidden className="absolute top-5 right-5 font-serif text-moon/45 text-sm tracking-[0.25em]">
+                                            {['I', 'II', 'III'][index]}
+                                        </span>
+                                        {/* emblem */}
+                                        <span className="relative grid place-items-center w-12 h-12 rounded-full border border-moon/30 bg-moon/[0.08] text-moon">
+                                            <it.Icon className="w-5 h-5" strokeWidth={1.6} />
+                                        </span>
+                                        <h3 className="relative mt-5 font-elegant font-semibold text-cream text-xl md:text-2xl leading-snug tracking-tight">
                                             {it.label}
                                         </h3>
-                                        <p className="mt-1.5 text-cream/60 text-sm md:text-[0.95rem] leading-relaxed font-light">
+                                        <p className="relative mt-2 text-cream/60 text-sm md:text-[0.95rem] leading-relaxed font-light max-w-xl">
                                             {it.text}
                                         </p>
                                     </div>
