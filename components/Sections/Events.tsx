@@ -97,20 +97,21 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* AWARD-LIST — full-width rows: year · title · venue · arrow */}
-            <div className="border-t border-white/12">
+            {/* the list sits on its own white panel to lighten the dark section */}
+            <div className="rounded-lg bg-white text-ink px-5 md:px-8 py-2 md:py-3">
               {displayedEvents.map((event, index) => (
                 <FadeIn key={index} delay={Math.min(index, 6) * 40} dir="up">
-                  <div className="group grid grid-cols-12 items-center gap-x-4 py-2.5 md:py-3 border-b border-white/12 transition-colors duration-300 hover:bg-white/[0.04]">
+                  <div className="group grid grid-cols-12 items-center gap-x-4 py-2.5 md:py-3 border-b border-black/10 last:border-b-0 transition-colors duration-300 hover:bg-black/[0.03]">
                     {/* year */}
-                    <span className="col-span-3 md:col-span-2 font-medium text-[0.62rem] md:text-xs uppercase tracking-[0.18em] text-cream tabular-nums pl-0 md:pl-2">
+                    <span className="col-span-3 md:col-span-2 font-medium text-[0.62rem] md:text-xs uppercase tracking-[0.18em] text-ink tabular-nums pl-0 md:pl-2">
                       {event.year}
                     </span>
                     {/* title */}
-                    <h3 className="col-span-9 md:col-span-7 font-serif font-semibold uppercase text-cream text-sm md:text-base xl:text-lg leading-[1.15] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5">
+                    <h3 className="col-span-9 md:col-span-7 font-serif font-semibold uppercase text-ink text-sm md:text-base xl:text-lg leading-[1.15] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5">
                       {event.title}
                     </h3>
                     {/* venue */}
-                    <span className="hidden md:block md:col-span-3 text-[0.66rem] uppercase tracking-[0.14em] text-cream/55 font-light leading-snug">
+                    <span className="hidden md:block md:col-span-3 text-[0.66rem] uppercase tracking-[0.14em] text-ink/55 font-light leading-snug">
                       {event.loc}
                     </span>
                   </div>
