@@ -54,7 +54,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                                         <h3 className="font-elegant font-semibold text-cream text-xl md:text-3xl leading-snug tracking-tight">
                                             {it.label}
                                         </h3>
-                                        <p className="mt-2 md:mt-3 text-cream/60 text-sm md:text-base leading-relaxed font-light">
+                                        <p className="mt-2 md:mt-3 text-cream text-sm md:text-base leading-relaxed font-light">
                                             {it.text}
                                         </p>
                                     </div>

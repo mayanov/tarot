@@ -75,9 +75,6 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
             {/* PHOTO GALLERY — a few moments from past events */}
             <div className="mb-10 md:mb-14">
-              <span className="block text-[0.66rem] uppercase tracking-[0.22em] text-ink/55 mb-4">
-                {isIndonesian ? "Momen dari beberapa event" : "Moments from past events"}
-              </span>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 {EVENT_PHOTOS.map((src, i) => (
                   <FadeIn key={src} delay={i * 60} dir="up">

@@ -53,20 +53,27 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
           <div className="mt-12 md:mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 60} dir="up">
-                <div className="group/card relative flex h-full min-h-[18rem] md:min-h-[23rem] flex-col rounded-lg bg-[#202A5C] p-6 md:p-8 transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#28346E] hover:shadow-[0_30px_60px_-30px_rgba(20,26,61,0.5)]">
-                  {/* eyebrow */}
-                  <div className="flex items-center gap-2.5 text-sm md:text-[0.95rem] text-cream/70">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cream/70 shrink-0" />
-                    <span>{reason.label}</span>
+                <div className="group/card relative overflow-hidden flex h-full min-h-[18rem] md:min-h-[23rem] flex-col rounded-lg bg-[#202A5C] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-30px_rgba(74,46,119,0.6)]">
+                  {/* purple reveal — a diagonal gradient that wipes up from the corner on hover */}
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 origin-bottom translate-y-full scale-y-100 bg-gradient-to-tr from-[#33205C] via-[#4A2E77] to-[#6B3FA0] transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:translate-y-0"
+                  />
+                  <div className="relative z-10 flex flex-1 flex-col p-6 md:p-8">
+                    {/* eyebrow */}
+                    <div className="flex items-center gap-2.5 text-sm md:text-[0.95rem] text-cream/70 transition-colors duration-300 group-hover/card:text-cream/90">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cream/70 shrink-0 transition-all duration-300 group-hover/card:bg-moon group-hover/card:scale-125" />
+                      <span>{reason.label}</span>
+                    </div>
+                    {/* big statement */}
+                    <div className="flex-1 grid place-items-center py-8">
+                      <p className="text-center font-semibold text-cream text-[1.55rem] md:text-[1.9rem] leading-[1.12] tracking-[-0.02em] max-w-[15ch] transition-transform duration-300 group-hover/card:-translate-y-0.5">
+                        {reason.stat}
+                      </p>
+                    </div>
+                    {/* index */}
+                    <div className="text-sm text-cream/40 tabular-nums transition-colors duration-300 group-hover/card:text-moon">{String(index + 1).padStart(2, '0')}</div>
                   </div>
-                  {/* big statement */}
-                  <div className="flex-1 grid place-items-center py-8">
-                    <p className="text-center font-semibold text-cream text-[1.55rem] md:text-[1.9rem] leading-[1.12] tracking-[-0.02em] max-w-[15ch]">
-                      {reason.stat}
-                    </p>
-                  </div>
-                  {/* index */}
-                  <div className="text-sm text-cream/40 tabular-nums">{String(index + 1).padStart(2, '0')}</div>
                 </div>
               </FadeIn>
             ))}
