@@ -19,8 +19,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
 
   return (
     <section id="about" className="relative isolate text-ink">
-      {/* LIGHT relief band — cool pale-lilac (same light tone as Interlude); soft seams into the dark neighbours */}
-      <div className="border-y border-black/[0.08]" style={{ background: '#ffffff' }}>
+      {/* light band — no seam lines */}
+      <div style={{ background: '#ffffff' }}>
         <FadeIn>
           <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-[1fr_44%] items-stretch">
             {/* RIGHT (on desktop) — portrait, tall + immersive */}
@@ -32,9 +32,10 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 imgClassName="w-full h-full object-cover object-top"
                 loading="eager"
               />
-              {/* credentials, set onto the portrait */}
-              <div className="absolute inset-x-0 bottom-0 p-5 md:p-7 bg-gradient-to-t from-[#0E0B24]/90 via-[#0E0B24]/30 to-transparent">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-cream/85">
+              {/* feature caption — name + credentials, set onto the portrait */}
+              <div className="absolute inset-x-0 bottom-0 p-5 md:p-7 bg-gradient-to-t from-[#0E0B24]/92 via-[#0E0B24]/35 to-transparent">
+                <div className="font-elegant text-cream text-xl md:text-2xl leading-none">Mayanov</div>
+                <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-cream/80">
                   <span>{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</span>
                   <span className="w-1 h-1 rounded-none bg-moon" />
                   <span>{isIndonesian ? 'Sejak 2009' : 'Since 2009'}</span>
@@ -47,6 +48,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             {/* LEFT (on desktop) — content, aligned to the page margin */}
             <div className="order-2 lg:order-1 flex items-center">
               <div className="w-full max-w-2xl py-12 md:py-16 lg:pr-16">
+                <span aria-hidden className="block text-moon-deep text-lg leading-none mb-5">✦</span>
                 <h2 className="font-elegant font-medium text-ink text-[2.6rem] sm:text-[3.4rem] lg:text-[4.2rem] leading-[1.0] tracking-[-0.03em]">
                   {isIndonesian ? 'Tentang Saya' : 'About Me'}
                 </h2>
@@ -74,12 +76,18 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 </div>
 
                 {/* closing statement */}
-                <div className="mt-8 md:mt-10 pt-6 border-t border-ink/15">
+                <div className="mt-8 md:mt-10">
                   <p className="font-elegant text-ink text-[1.2rem] md:text-[1.4rem] lg:text-[1.55rem] leading-[1.25] tracking-[-0.015em]">
                     {isIndonesian
                       ? 'Tujuan saya simpel: memberi kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                       : 'My goal is simple — the clarity you need to make decisions with confidence.'}
                   </p>
+                  {/* signature */}
+                  <div className="mt-6 flex items-center gap-3">
+                    <span className="font-elegant italic text-ink text-lg md:text-xl">Mayanov</span>
+                    <span aria-hidden className="text-moon-deep leading-none">✦</span>
+                    <span className="text-[11px] uppercase tracking-[0.22em] text-ink/45">{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</span>
+                  </div>
                 </div>
               </div>
             </div>
