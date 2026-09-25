@@ -329,20 +329,21 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {/* ===== How it works — editorial numbered steps, transparent over the sky ===== */}
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-12 md:py-16">
                 <FadeIn>
-                    <div id="process" className="scroll-mt-24">
-                        <h3 className="font-elegant font-medium text-cream text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em] max-w-xl">
+                    {/* light panel — pops off the dark pricelist */}
+                    <div id="process" className="scroll-mt-24 rounded-2xl bg-white text-ink p-7 md:p-14 shadow-[0_40px_110px_-45px_rgba(0,0,0,0.7)]">
+                        <span aria-hidden className="block text-moon-deep text-lg leading-none mb-4">✦</span>
+                        <h3 className="font-elegant font-medium text-ink text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em] max-w-xl">
                             {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
                         </h3>
 
-                        <ol className="mt-12 md:mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-5">
+                        <ol className="mt-10 md:mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
                             {steps.map((step, i) => (
                                 <li key={i} className="animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
-                                    <span className="font-serif text-cream text-lg tabular-nums tracking-tight">
+                                    <span className="font-serif text-moon-deep text-2xl md:text-3xl tabular-nums tracking-tight">
                                         {String(i + 1).padStart(2, '0')}
                                     </span>
-                                    <div className="mt-4 h-px w-full bg-cream/15" />
-                                    <h4 className="mt-4 text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-cream tracking-tight">{step.title}</h4>
-                                    <p className="mt-2 text-sm leading-relaxed font-light text-cream/60">{step.desc}</p>
+                                    <h4 className="mt-4 text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
+                                    <p className="mt-2 text-sm leading-relaxed font-light text-ink/60">{step.desc}</p>
                                 </li>
                             ))}
                         </ol>
