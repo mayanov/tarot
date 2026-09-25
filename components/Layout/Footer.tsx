@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Instagram, Clock, ArrowRight, MapPin } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
@@ -13,19 +13,6 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const currentYear = new Date().getFullYear();
     const footerRef = useRef<HTMLElement>(null);
     const starRef = useRef<HTMLDivElement>(null);
-    const [revealed, setRevealed] = useState(false);
-
-    // Reveal the wordmark once the footer scrolls into view.
-    useEffect(() => {
-        const el = footerRef.current;
-        if (!el) return;
-        const obs = new IntersectionObserver(
-            (entries) => entries.forEach((e) => e.isIntersecting && setRevealed(true)),
-            { threshold: 0.35 }
-        );
-        obs.observe(el);
-        return () => obs.disconnect();
-    }, []);
 
     // Gentle parallax — the star field drifts as the footer scrolls up.
     useEffect(() => {
@@ -156,18 +143,20 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
-                {/* Oversized wordmark — glows on the star field */}
-                <div className="pt-6 md:pt-10 -mb-3 md:-mb-6 overflow-hidden" aria-hidden>
-                    <span
-                        className={`block whitespace-nowrap text-center font-elegant font-semibold leading-[0.82] tracking-[-0.045em] text-transparent bg-clip-text select-none transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[110%]'}`}
-                        style={{
-                            fontSize: 'clamp(1.9rem, 11vw, 9.5rem)',
-                            backgroundImage: 'linear-gradient(180deg, rgba(235,229,252,0.95) 0%, rgba(214,196,240,0.7) 55%, rgba(198,178,228,0.35) 100%)',
-                        }}
-                    >
-                        Mayanov Tarot
-                    </span>
-                </div>
+                {/* Signature wordmark — refined two-tone, revealed on scroll */}
+                <FadeIn dir="up" className="pt-8 md:pt-12">
+                    <div aria-hidden>
+                        <div
+                            className="flex items-baseline justify-center gap-[0.28em] whitespace-nowrap leading-[1.05] select-none"
+                            style={{ fontSize: 'clamp(2rem, 9vw, 7rem)' }}
+                        >
+                            <span className="font-elegant font-semibold text-white tracking-[-0.03em]">Mayanov</span>
+                            <span className="font-elegant italic font-light text-moon tracking-[-0.01em]">Tarot</span>
+                        </div>
+                        {/* thin centered flourish */}
+                        <div className="mx-auto mt-6 md:mt-8 h-px w-40 md:w-64 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+                    </div>
+                </FadeIn>
 
                 {/* Bottom bar (no divider line) */}
                 <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white tracking-wide">
