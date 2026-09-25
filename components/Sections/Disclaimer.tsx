@@ -60,28 +60,29 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         </FadeIn>
                     </div>
 
-                    {/* RIGHT — each note as a little tarot card (double frame + roman numeral) */}
-                    <div className="lg:col-span-8 space-y-4 md:space-y-5">
+                    {/* RIGHT — each note as a small white tarot card (frame + roman numeral) */}
+                    <div className="lg:col-span-8 space-y-3 md:space-y-4">
                         {items.map((it, index) => (
                             <FadeIn key={index} delay={Math.min(index, 4) * 70}>
-                                {/* outer frame */}
-                                <div className="group relative rounded-2xl border border-moon/25 bg-gradient-to-br from-white/[0.07] to-white/[0.015] p-1.5 transition-all duration-300 hover:-translate-y-1 hover:border-moon/50 hover:shadow-[0_30px_70px_-34px_rgba(198,178,228,0.3)]">
-                                    {/* inner frame */}
-                                    <div className="relative overflow-hidden rounded-xl border border-white/10 px-5 md:px-8 py-6 md:py-7">
-                                        {/* big ghosted icon watermark */}
-                                        <it.Icon aria-hidden className="pointer-events-none absolute -right-5 -bottom-6 w-32 h-32 text-white/[0.035] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6" strokeWidth={1} />
+                                {/* white card w/ tarot frame */}
+                                <div className="group relative rounded-xl bg-white p-1.5 shadow-[0_18px_44px_-28px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_56px_-26px_rgba(0,0,0,0.55)]">
+                                    <div className="relative overflow-hidden rounded-lg border border-ink/10 px-5 md:px-6 py-4 md:py-5">
+                                        {/* ghosted icon watermark */}
+                                        <it.Icon aria-hidden className="pointer-events-none absolute -right-4 -bottom-5 w-24 h-24 text-ink/[0.04] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6" strokeWidth={1} />
                                         {/* roman numeral — the tarot signature */}
-                                        <span aria-hidden className="absolute top-5 right-5 font-serif text-moon/45 text-sm tracking-[0.25em]">
+                                        <span aria-hidden className="absolute top-4 right-5 font-serif text-moon-deep/50 text-xs tracking-[0.25em]">
                                             {['I', 'II', 'III'][index]}
                                         </span>
-                                        {/* emblem */}
-                                        <span className="relative grid place-items-center w-12 h-12 rounded-full border border-moon/30 bg-moon/[0.08] text-moon">
-                                            <it.Icon className="w-5 h-5" strokeWidth={1.6} />
-                                        </span>
-                                        <h3 className="relative mt-5 font-elegant font-semibold text-cream text-xl md:text-2xl leading-snug tracking-tight">
-                                            {it.label}
-                                        </h3>
-                                        <p className="relative mt-2 text-cream/60 text-sm md:text-[0.95rem] leading-relaxed font-light max-w-xl">
+                                        <div className="relative flex items-center gap-3.5">
+                                            {/* emblem */}
+                                            <span className="shrink-0 grid place-items-center w-10 h-10 rounded-full border border-ink/10 bg-moon/15 text-moon-deep">
+                                                <it.Icon className="w-[18px] h-[18px]" strokeWidth={1.7} />
+                                            </span>
+                                            <h3 className="font-serif font-semibold text-ink text-base md:text-lg leading-snug tracking-tight">
+                                                {it.label}
+                                            </h3>
+                                        </div>
+                                        <p className="relative mt-2.5 text-ink/55 text-sm leading-relaxed font-light max-w-xl">
                                             {it.text}
                                         </p>
                                     </div>
