@@ -225,21 +225,15 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   return (
     <div id="testimonials" className="relative overflow-hidden isolate text-ink scroll-mt-28">
       <FadeIn>
-        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 mb-12 md:mb-14">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-8">
-            <div>
-              <h2 className="text-[1.9rem] md:text-[2.5rem] leading-[1.05] font-elegant font-medium text-ink tracking-[-0.02em]">
-                {isIndonesian ? 'Apa kata mereka' : 'What others are saying'}
-              </h2>
-            </div>
-            <div className="flex items-center gap-2 text-sm shrink-0 md:pb-2">
-              <div className="flex text-ink">
-                {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-4 h-4 fill-current" />))}
-              </div>
-              <span className="text-ink font-medium ml-1">5.0</span>
-              <span className="text-ink/60">· {isIndonesian ? 'Rating rata-rata di Google' : 'Average rating on Google'}</span>
-            </div>
+        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 mb-12 md:mb-16 text-center">
+          <div className="flex items-center justify-center gap-1.5 text-moon-deep">
+            {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-5 h-5 md:w-6 md:h-6 fill-current" />))}
           </div>
+          <p className="mt-5 mx-auto max-w-2xl font-elegant font-medium text-ink text-[1.7rem] sm:text-[2.2rem] lg:text-[2.6rem] leading-[1.15] tracking-[-0.02em]">
+            {isIndonesian
+              ? <>Rating sempurna <span className="text-moon-deep">5.0</span> dari ratusan sesi di Google.</>
+              : <>A perfect <span className="text-moon-deep">5.0</span> across hundreds of readings on Google.</>}
+          </p>
         </div>
       </FadeIn>
 
