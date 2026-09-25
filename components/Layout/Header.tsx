@@ -37,7 +37,7 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
     >
       <span
         aria-hidden
-        className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-[#141A3D] transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-[#141A3D]/60 backdrop-blur-sm transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{ transform: isIndonesian ? 'translateX(100%)' : 'translateX(0)' }}
       />
       {options.map(([key, toID]) => {
