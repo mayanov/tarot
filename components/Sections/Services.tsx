@@ -276,18 +276,19 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     aria-expanded={open}
                                     className="w-full flex items-center justify-between gap-4 pt-7 md:pt-9 pb-3 text-left group [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]"
                                 >
-                                    <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap min-w-0">
+                                    <div className="flex items-center gap-x-3 gap-y-2 flex-wrap min-w-0">
                                         <h3 className="font-elegant font-medium text-cream text-[1.55rem] md:text-[2.2rem] leading-none tracking-tight transition-colors group-hover:text-cream">
                                             {g.type}
                                         </h3>
-                                        {g.seasonal && (
-                                            <span className="text-[10px] uppercase tracking-[0.16em] font-semibold px-2.5 py-1 rounded-lg bg-white/[0.06] text-cream">
-                                                {isIndonesian ? 'Musiman' : 'Seasonal'}
-                                            </span>
-                                        )}
+                                        {/* category labels, next to the title */}
+                                        <span className="flex flex-wrap gap-1.5">
+                                            {g.tags.map((t: string) => (
+                                                <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-cream/25 text-cream/75 rounded">{t}</span>
+                                            ))}
+                                        </span>
                                     </div>
                                     <div className="flex items-center gap-4 md:gap-6 shrink-0">
-                                        <span className="hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap">
+                                        <span className={`hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap transition-all duration-300 ${open ? 'opacity-0 -translate-x-1 pointer-events-none' : 'opacity-100'}`}>
                                             <span className="font-serif font-semibold text-cream">{g.priceLabel}</span>
                                         </span>
                                         <ChevronDown className={`w-5 h-5 text-cream/70 transition-transform duration-300 ${open ? 'rotate-180 text-cream' : ''}`} />
@@ -303,12 +304,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
                                     <div className="overflow-hidden min-h-0">
                                         <div className="pb-9 md:pb-12">
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {g.tags.map((t: string) => (
-                                                    <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-cream/20 text-cream/55 rounded">{t}</span>
-                                                ))}
-                                            </div>
-                                            <div className="mt-2 border-t border-white/10">
+                                            <div className="border-t border-white/10">
                                                 {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
                                             </div>
                                             <div className="mt-6">
