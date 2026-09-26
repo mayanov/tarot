@@ -69,7 +69,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 aria-hidden
                 className="pointer-events-none absolute inset-0 will-change-transform"
                 style={{
-                    backgroundImage: `url(${import.meta.env.BASE_URL}footer-sky.jpg)`,
+                    backgroundImage: `url(${import.meta.env.BASE_URL}footer-sky-hd.jpg)`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center 45%',
                     transform: 'scale(1.12)',

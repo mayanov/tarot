@@ -246,7 +246,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `url(${import.meta.env.BASE_URL}footer-sky.jpg)`,
+            backgroundImage: `url(${import.meta.env.BASE_URL}footer-sky-hd.jpg)`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
