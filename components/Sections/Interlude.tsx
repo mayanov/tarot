@@ -59,7 +59,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
 
       {/* signature — bottom-right, off-axis so it feels hand-signed, not templated */}
       <div className="absolute bottom-6 right-6 md:bottom-10 md:right-12 z-10">
-        <span className="font-elegant text-cream/60 text-xl md:text-3xl leading-none">Mayanov</span>
+        <span className="font-elegant text-white text-xl md:text-3xl leading-none">Mayanov</span>
       </div>
     </section>
   );

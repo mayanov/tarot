@@ -327,23 +327,24 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {/* ===== How it works — editorial numbered steps, transparent over the sky ===== */}
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-12 md:py-16">
                 <FadeIn>
-                    <div id="process" className="scroll-mt-24">
-                        <h3 className="font-elegant font-medium text-ink text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em] max-w-xl">
+                    <div id="process" className="scroll-mt-24 text-center">
+                        <h3 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                             {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
                         </h3>
 
-                        {/* connected step flow — numbered nodes linked along a line */}
-                        <ol className="relative mt-12 md:mt-16 grid gap-x-6 gap-y-11 sm:grid-cols-2 lg:grid-cols-5">
-                            {/* the connecting line (desktop), sitting at the node centres */}
-                            <span aria-hidden className="hidden lg:block absolute top-7 left-[10%] right-[10%] h-px bg-ink/12" />
+                        {/* editorial steps — big moonstone numerals, centered */}
+                        <ol className="mt-12 md:mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-5">
                             {steps.map((step, i) => (
-                                <li key={i} className="group relative animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
-                                    {/* numbered node */}
-                                    <span className="relative z-10 grid place-items-center w-14 h-14 rounded-full bg-white border border-moon-deep/30 font-serif text-lg text-moon-deep tabular-nums transition-all duration-300 group-hover:bg-moon-deep group-hover:text-cream group-hover:border-moon-deep group-hover:-translate-y-1 shadow-[0_10px_30px_-16px_rgba(90,70,140,0.5)]">
+                                <li key={i} className="group flex flex-col items-center text-center animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                                    <span
+                                        aria-hidden
+                                        className="font-elegant font-semibold text-[3.4rem] md:text-[4rem] leading-none text-transparent transition-all duration-300 group-hover:text-moon-deep"
+                                        style={{ WebkitTextStroke: '1.5px rgba(158,134,201,0.7)' }}
+                                    >
                                         {String(i + 1).padStart(2, '0')}
                                     </span>
                                     <h4 className="mt-5 text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
-                                    <p className="mt-2 text-sm leading-relaxed font-light text-ink/60 max-w-[22ch]">{step.desc}</p>
+                                    <p className="mt-2 text-sm leading-relaxed font-light text-ink/60 max-w-[24ch]">{step.desc}</p>
                                 </li>
                             ))}
                         </ol>

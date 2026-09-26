@@ -241,8 +241,18 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
-      {/* backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-2xl" onClick={close} />
+      {/* backdrop — a calm dark starry sky behind the popup */}
+      <div className="absolute inset-0" onClick={close}>
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${import.meta.env.BASE_URL}footer-sky.jpg)`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        <div className="absolute inset-0 bg-[#0A0A16]/80 backdrop-blur-sm" />
+      </div>
 
       {/* panel — clean white, sharp corners */}
       <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-lg bg-white text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] ring-1 ring-black/10 border border-black/10 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${(step === 3 && isIndonesian) || step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
