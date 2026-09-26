@@ -32,16 +32,12 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'linear-gradient(215deg, rgba(58,42,94,0.20) 0%, transparent 38%, rgba(18,14,44,0.5) 100%)' }} />
         {/* soft left fade so the photo dissolves into the white page (no hard seam) */}
         <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-28 hidden lg:block bg-gradient-to-r from-white to-transparent" />
-        {/* name only */}
-        <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 bg-gradient-to-t from-[#0E0B24]/92 via-[#0E0B24]/30 to-transparent">
-          <div className="font-elegant text-cream text-xl md:text-2xl leading-none">Mayanov</div>
-        </div>
       </div>
 
       {/* text — inside the page container, held to the left so the portrait can bleed right */}
       <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 lg:min-h-[90vh] flex items-center">
         <FadeIn className="w-full lg:w-[53%] lg:pr-14 py-14 md:py-20">
-          <h2 className="font-elegant font-medium text-ink text-[2.8rem] sm:text-[3.8rem] lg:text-[4.8rem] leading-[0.96] tracking-[-0.035em]">
+          <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
             {isIndonesian ? 'Tentang Saya' : 'About Me'}
           </h2>
 

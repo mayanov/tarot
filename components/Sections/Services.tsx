@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import { trackEvent } from '../../services/analytics';
 
@@ -10,7 +10,7 @@ interface ServicesProps {
 }
 
 // Dark order pill on the light ground — opens the on-site booking flow.
-const btnCard = "inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-lg border border-cream text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300";
+const btnCard = "inline-flex items-center justify-center px-6 py-3 rounded-lg bg-cream text-ink text-sm font-semibold hover:bg-white transition-colors duration-300";
 
 // Each pricing category gets its own twilight sky, so the categories feel distinct.
 const CAT_SKIES = ['sky-hero.jpg', 'catsky-aurora.jpg', 'sky-footer.jpg', 'aurora-meetup.jpg'];
@@ -53,10 +53,10 @@ const openBooking = (serviceId?: string) =>
 
 // The order button for a category — opens the on-site booking flow.
 const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndonesian }) => {
-    const label = isIndonesian ? 'Pesan Sekarang' : 'Book a Reading';
+    const label = isIndonesian ? 'Pesan' : 'Book a Reading';
     return (
         <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={btnCard}>
-            {label} <ChevronRight className="w-4 h-4" />
+            {label}
         </button>
     );
 };
@@ -288,7 +288,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     </div>
                                     <div className="flex items-center gap-4 md:gap-6 shrink-0">
                                         <span className="hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap">
-                                            <span className="text-cream/45">{isIndonesian ? 'Mulai ' : 'From '}</span>
                                             <span className="font-serif font-semibold text-cream">{g.priceLabel}</span>
                                         </span>
                                         <ChevronDown className={`w-5 h-5 text-cream/70 transition-transform duration-300 ${open ? 'rotate-180 text-cream' : ''}`} />
