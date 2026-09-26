@@ -251,7 +251,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
             backgroundPosition: 'center',
           }}
         />
-        <div className="absolute inset-0 bg-[#0A0A16]/80 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-[#0A0A16]/45" />
       </div>
 
       {/* panel — clean white, sharp corners */}
