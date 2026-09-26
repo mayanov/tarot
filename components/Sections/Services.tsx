@@ -332,14 +332,18 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
                         </h3>
 
-                        <ol className="mt-10 md:mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
+                        {/* connected step flow — numbered nodes linked along a line */}
+                        <ol className="relative mt-12 md:mt-16 grid gap-x-6 gap-y-11 sm:grid-cols-2 lg:grid-cols-5">
+                            {/* the connecting line (desktop), sitting at the node centres */}
+                            <span aria-hidden className="hidden lg:block absolute top-7 left-[10%] right-[10%] h-px bg-ink/12" />
                             {steps.map((step, i) => (
-                                <li key={i} className="animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
-                                    <span className="font-serif text-moon-deep text-2xl md:text-3xl tabular-nums tracking-tight">
+                                <li key={i} className="group relative animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                                    {/* numbered node */}
+                                    <span className="relative z-10 grid place-items-center w-14 h-14 rounded-full bg-white border border-moon-deep/30 font-serif text-lg text-moon-deep tabular-nums transition-all duration-300 group-hover:bg-moon-deep group-hover:text-cream group-hover:border-moon-deep group-hover:-translate-y-1 shadow-[0_10px_30px_-16px_rgba(90,70,140,0.5)]">
                                         {String(i + 1).padStart(2, '0')}
                                     </span>
-                                    <h4 className="mt-4 text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
-                                    <p className="mt-2 text-sm leading-relaxed font-light text-ink/60">{step.desc}</p>
+                                    <h4 className="mt-5 text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
+                                    <p className="mt-2 text-sm leading-relaxed font-light text-ink/60 max-w-[22ch]">{step.desc}</p>
                                 </li>
                             ))}
                         </ol>
