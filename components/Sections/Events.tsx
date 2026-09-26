@@ -129,7 +129,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                           <h3 className="font-serif font-semibold uppercase text-ink text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-[#202A5C]">
                             {event.title}
                           </h3>
-                          <span className="shrink-0 text-[0.66rem] uppercase tracking-[0.14em] text-ink/50 font-light leading-snug sm:text-right">
+                          <span className="shrink-0 text-[0.66rem] uppercase tracking-[0.14em] text-ink font-light leading-snug sm:text-right">
                             {event.loc}
                           </span>
                         </li>

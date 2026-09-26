@@ -32,16 +32,9 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'linear-gradient(215deg, rgba(58,42,94,0.20) 0%, transparent 38%, rgba(18,14,44,0.5) 100%)' }} />
         {/* soft left fade so the photo dissolves into the white page (no hard seam) */}
         <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-28 hidden lg:block bg-gradient-to-r from-white to-transparent" />
-        {/* feature caption */}
-        <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 bg-gradient-to-t from-[#0E0B24]/92 via-[#0E0B24]/35 to-transparent">
+        {/* name only */}
+        <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 bg-gradient-to-t from-[#0E0B24]/92 via-[#0E0B24]/30 to-transparent">
           <div className="font-elegant text-cream text-xl md:text-2xl leading-none">Mayanov</div>
-          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-cream/80">
-            <span>{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</span>
-            <span className="w-1 h-1 rounded-full bg-moon" />
-            <span>{isIndonesian ? 'Sejak 2009' : 'Since 2009'}</span>
-            <span className="w-1 h-1 rounded-full bg-moon" />
-            <span>{isIndonesian ? '15+ Tahun' : '15+ Years'}</span>
-          </div>
         </div>
       </div>
 
@@ -74,18 +67,13 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </p>
           </div>
 
-          {/* closing statement + signature */}
+          {/* closing statement */}
           <div className="mt-8 md:mt-10">
             <p className="font-elegant text-ink text-[1.2rem] md:text-[1.4rem] lg:text-[1.55rem] leading-[1.25] tracking-[-0.015em]">
               {isIndonesian
                 ? 'Tujuan saya simpel: memberi kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                 : 'My goal is simple — the clarity you need to make decisions with confidence.'}
             </p>
-            <div className="mt-6 flex items-center gap-3">
-              <span className="font-elegant italic text-ink text-lg md:text-xl">Mayanov</span>
-              <span aria-hidden className="text-moon-deep leading-none">✦</span>
-              <span className="text-[11px] uppercase tracking-[0.22em] text-ink/45">{isIndonesian ? 'Pembaca Tarot' : 'Tarot Reader'}</span>
-            </div>
           </div>
         </FadeIn>
       </div>

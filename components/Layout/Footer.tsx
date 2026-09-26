@@ -51,7 +51,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     }, []);
 
     // Square, bordered social button — fills with moonstone on hover.
-    const socialClass = "grid place-items-center w-11 h-11 rounded-lg border border-white/30 text-white hover:text-plum-deep hover:bg-moon hover:border-moon transition-all duration-300 hover:-translate-y-0.5";
+    const socialClass = "inline-flex items-center justify-center p-1 text-white hover:text-moon transition-all duration-300 hover:-translate-y-0.5";
     const labelClass = "text-[11px] uppercase tracking-[0.24em] text-white mb-5";
     const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-white font-light leading-relaxed";
 
@@ -135,21 +135,21 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     {/* Follow */}
                     <div className="md:col-span-2">
                         <h4 className={labelClass}>{isIndonesian ? 'Ikuti' : 'Follow'}</h4>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap items-center gap-5">
                             <a href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
                                 onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
                                 className={socialClass} aria-label="Instagram">
-                                <Instagram className="w-5 h-5" />
+                                <Instagram className="w-[22px] h-[22px]" />
                             </a>
                             <a href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
                                 onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
                                 className={socialClass} aria-label="TikTok">
-                                <FaTiktok size={16} />
+                                <FaTiktok size={20} />
                             </a>
                             <a href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
                                 onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
                                 className={socialClass} aria-label="WhatsApp">
-                                <FaWhatsapp size={20} />
+                                <FaWhatsapp size={23} />
                             </a>
                         </div>
                     </div>
