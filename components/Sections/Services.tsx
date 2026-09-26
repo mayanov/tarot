@@ -283,7 +283,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                         {/* category labels, next to the title */}
                                         <span className="flex flex-wrap items-center gap-1.5">
                                             {g.tags.map((t: string) => (
-                                                <span key={t} className="inline-flex items-center rounded-full bg-moon/[0.14] px-2.5 py-[3px] text-[10px] font-medium uppercase tracking-[0.16em] text-moon-bright ring-1 ring-inset ring-moon/25 backdrop-blur-sm">{t}</span>
+                                                <span key={t} className="inline-flex items-center rounded-full bg-white/[0.12] px-2.5 py-[3px] text-[10px] font-medium uppercase tracking-[0.16em] text-cream ring-1 ring-inset ring-white/25 backdrop-blur-sm">{t}</span>
                                             ))}
                                         </span>
                                     </div>
