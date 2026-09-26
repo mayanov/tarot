@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 
@@ -10,60 +10,6 @@ const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 
 // Plays the hero count-up only the first time it mounts, never again on re-render.
 let heroStatsPlayed = false;
-
-// A faint celestial instrument — concentric orbit rings with drifting moonstone
-// nodes. The site's signature motif: astral line-work, not decoration. Offset to
-// the right on desktop so the composition reads editorial (Co-Star), not centred.
-const OrbitField: React.FC = () => {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        if (ref.current) ref.current.style.transform = `translateY(${(window.scrollY * 0.08).toFixed(1)}px)`;
-      });
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
-  }, []);
-  return (
-    <div
-      ref={ref}
-      aria-hidden
-      className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(120vw,660px)] aspect-square opacity-[0.5] lg:opacity-[0.7]"
-      style={{
-        maskImage: 'radial-gradient(closest-side, #000 58%, transparent 85%)',
-        WebkitMaskImage: 'radial-gradient(closest-side, #000 58%, transparent 85%)',
-      }}
-    >
-      <svg viewBox="0 0 600 600" className="w-full h-full" fill="none">
-        <circle cx="300" cy="300" r="150" fill="url(#moonGlow)" />
-        <g stroke="#C6B2E4" strokeWidth="0.6">
-          <circle cx="300" cy="300" r="120" opacity="0.55" />
-          <ellipse cx="300" cy="300" rx="188" ry="120" opacity="0.4" className="origin-center animate-[spin_38s_linear_infinite]" style={{ transformBox: 'fill-box' }} />
-          <ellipse cx="300" cy="300" rx="120" ry="230" opacity="0.28" />
-          <circle cx="300" cy="300" r="262" opacity="0.16" strokeDasharray="2 7" />
-        </g>
-        <g className="origin-center animate-[spin_46s_linear_infinite]" style={{ transformBox: 'fill-box' }}>
-          <circle cx="300" cy="180" r="3.4" fill="#DBCDF2" />
-          <circle cx="300" cy="180" r="8" fill="#C6B2E4" opacity="0.28" />
-        </g>
-        <g className="origin-center animate-[spin-reverse_60s_linear_infinite]" style={{ transformBox: 'fill-box' }}>
-          <circle cx="488" cy="300" r="2.4" fill="#DBCDF2" opacity="0.9" />
-        </g>
-        <defs>
-          <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#DBCDF2" stopOpacity="0.28" />
-            <stop offset="55%" stopColor="#C6B2E4" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="#C6B2E4" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-      </svg>
-    </div>
-  );
-};
 
 const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const [shown, setShown] = useState(false);
@@ -170,7 +116,6 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
         {/* RIGHT — dominant brand title anchored over the orbit motif (the #1) */}
         <div className="relative lg:col-span-7 order-1 lg:order-2 flex items-center justify-center min-h-[42vh] lg:min-h-[66vh]">
-          <OrbitField />
           <Rise delay={80} className="relative">
             <h1 className="font-serif font-bold uppercase leading-[0.9] tracking-[-0.01em] text-center text-[3.6rem] sm:text-[5rem] lg:text-[5.6rem] xl:text-[6.6rem] [text-shadow:0_6px_50px_rgba(6,4,14,0.55)]">
               <span className="block text-cream">Mayanov</span>

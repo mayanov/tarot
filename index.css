@@ -116,6 +116,10 @@ html.lenis body {
   0%, 100% { opacity: 0.35; }
   50%      { opacity: 0.9; }
 }
+@keyframes ldShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-hide::-webkit-scrollbar {
