@@ -178,7 +178,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <div className="flex">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-                className="hidden sm:inline-flex items-center px-5 py-3 rounded-l-lg border border-ink/10 bg-cream text-ink text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-moon-deep hover:text-cream transition-colors duration-300"
+                className="hidden sm:inline-flex items-center px-5 py-3 rounded-l-lg border border-ink/10 bg-cream text-ink text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-300"
               >
                 {isIndonesian ? 'Pesan' : 'Book'}
               </button>
@@ -187,7 +187,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 onClick={() => setMenuOpen(true)}
                 aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
                 aria-expanded={menuOpen}
-                className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-lg sm:rounded-l-none sm:rounded-r-lg border sm:border-l-0 border-ink/10 bg-cream text-ink text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-moon-deep hover:text-cream transition-colors duration-300"
+                className="group inline-flex items-center gap-2.5 px-5 py-3 rounded-lg sm:rounded-l-none sm:rounded-r-lg border sm:border-l-0 border-ink/10 bg-cream text-ink text-[11px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-300"
               >
                 <span>Menu</span>
                 <span className="flex flex-col items-end gap-[4px] w-4">
