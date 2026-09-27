@@ -152,7 +152,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         <div
           className={`pointer-events-none absolute inset-x-0 top-0 h-[150%] transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
           style={{
-            background: 'linear-gradient(180deg, rgba(11,10,22,0.78) 0%, rgba(11,10,22,0.5) 42%, rgba(11,10,22,0.18) 74%, rgba(11,10,22,0) 100%)',
+            background: 'linear-gradient(180deg, rgba(10,16,44,0.85) 0%, rgba(11,18,50,0.55) 42%, rgba(12,20,52,0.2) 74%, rgba(12,20,52,0) 100%)',
           }}
         />
 
