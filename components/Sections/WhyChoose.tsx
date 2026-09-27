@@ -53,7 +53,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
           <div className="mt-12 md:mt-16 grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 60} dir="up">
-                <div className="group/card relative overflow-hidden flex h-full min-h-[13rem] sm:min-h-[18rem] md:min-h-[23rem] flex-col rounded-lg bg-[#202A5C] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-30px_rgba(74,46,119,0.6)]">
+                <div className="group/card relative overflow-hidden flex h-full min-h-[13rem] sm:min-h-[16rem] md:min-h-[18rem] flex-col rounded-lg bg-[#202A5C] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-30px_rgba(74,46,119,0.6)]">
                   {/* purple reveal — a diagonal gradient that wipes up from the corner on hover */}
                   <span
                     aria-hidden
@@ -67,7 +67,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
                     </div>
                     {/* big statement */}
                     <div className="flex-1 grid place-items-center py-5 sm:py-8">
-                      <p className="text-center font-semibold text-cream text-[1.15rem] sm:text-[1.55rem] md:text-[1.9rem] leading-[1.12] tracking-[-0.02em] max-w-[15ch] transition-transform duration-300 group-hover/card:-translate-y-0.5">
+                      <p className="text-center font-semibold text-cream text-[1.15rem] sm:text-[1.45rem] md:text-[1.6rem] leading-[1.14] tracking-[-0.02em] max-w-[15ch] transition-transform duration-300 group-hover/card:-translate-y-0.5">
                         {reason.stat}
                       </p>
                     </div>
