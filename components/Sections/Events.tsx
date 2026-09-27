@@ -62,7 +62,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       {/* aurora sky background */}
       <div
         className="absolute inset-0"
-        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}aurora-events.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}aurora-sky.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center 28%' }}
       />
       <div
         className="pointer-events-none absolute inset-0"
@@ -103,25 +103,25 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               </div>
             </div>
 
-            {/* TIMELINE — on its own frosted-dark panel (a different background from
-                the aurora section) so the list reads clearly */}
-            <div className="rounded-2xl bg-[#0B0B16]/55 backdrop-blur-md ring-1 ring-white/10 p-6 md:p-9">
+            {/* TIMELINE — on its own white panel (a different background from the
+                aurora section) so the list reads clearly */}
+            <div className="rounded-2xl bg-white text-ink p-6 md:p-9 shadow-[0_30px_70px_-40px_rgba(0,0,0,0.6)]">
               <div className="relative pl-7 md:pl-10">
                 {/* the spine */}
                 <span
                   aria-hidden
                   className="absolute left-[3px] md:left-[5px] top-2 bottom-2 w-px"
-                  style={{ background: 'linear-gradient(180deg, rgba(230,224,248,0.6) 0%, rgba(198,178,228,0.28) 55%, rgba(198,178,228,0) 100%)' }}
+                  style={{ background: 'linear-gradient(180deg, rgba(32,42,92,0.5) 0%, rgba(32,42,92,0.25) 55%, rgba(32,42,92,0) 100%)' }}
                 />
                 {timeline.map((grp, gi) => (
                   <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 60} dir="up">
                     <div className="relative pb-9 md:pb-11 last:pb-0">
                       {/* node */}
                       <span aria-hidden className="absolute -left-[26px] md:-left-[34px] top-1.5 grid place-items-center">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#E6E0F8] shadow-[0_0_12px_1px_rgba(198,178,228,0.5)] ring-4 ring-[#100f22]" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#202A5C] shadow-[0_0_12px_1px_rgba(32,42,92,0.3)] ring-4 ring-white" />
                       </span>
                       {/* year */}
-                      <div className="font-elegant font-semibold text-[#DBCDF2] text-2xl md:text-3xl leading-none tracking-tight mb-4">
+                      <div className="font-elegant font-semibold text-[#202A5C] text-2xl md:text-3xl leading-none tracking-tight mb-4">
                         {grp.year}
                       </div>
                       {/* that year's events */}
@@ -129,12 +129,12 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         {grp.items.map((event, ii) => (
                           <li
                             key={ii}
-                            className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-white/10 first:border-t-0"
+                            className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-black/10 first:border-t-0"
                           >
-                            <h3 className="font-serif font-semibold uppercase text-cream text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5">
+                            <h3 className="font-serif font-semibold uppercase text-ink text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-[#202A5C]">
                               {event.title}
                             </h3>
-                            <span className="shrink-0 text-[0.66rem] uppercase tracking-[0.14em] text-cream font-light leading-snug sm:text-right">
+                            <span className="shrink-0 text-[0.66rem] uppercase tracking-[0.14em] text-ink font-light leading-snug sm:text-right">
                               {event.loc}
                             </span>
                           </li>
