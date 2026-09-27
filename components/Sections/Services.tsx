@@ -338,18 +338,18 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         </h3>
 
                         {/* editorial steps — big moonstone numerals, centered */}
-                        <ol className="mt-12 md:mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-5">
+                        <ol className="mt-8 md:mt-16 grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-12 lg:grid-cols-5">
                             {steps.map((step, i) => (
                                 <li key={i} className="group flex flex-col items-center text-center animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
                                     <span
                                         aria-hidden
-                                        className="font-elegant font-semibold text-[3.4rem] md:text-[4rem] leading-none text-transparent transition-all duration-300 group-hover:text-moon-deep"
-                                        style={{ WebkitTextStroke: '1.5px rgba(158,134,201,0.7)' }}
+                                        className="font-elegant font-semibold text-[2rem] sm:text-[3.4rem] md:text-[4rem] leading-none text-transparent transition-all duration-300 group-hover:text-moon-deep"
+                                        style={{ WebkitTextStroke: '1.25px rgba(158,134,201,0.7)' }}
                                     >
                                         {String(i + 1).padStart(2, '0')}
                                     </span>
-                                    <h4 className="mt-5 text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
-                                    <p className="mt-2 text-sm leading-relaxed font-light text-ink/60 max-w-[24ch]">{step.desc}</p>
+                                    <h4 className="mt-2.5 sm:mt-5 text-[0.9rem] sm:text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
+                                    <p className="mt-1.5 sm:mt-2 text-[0.8rem] sm:text-sm leading-relaxed font-light text-ink/60 max-w-[24ch]">{step.desc}</p>
                                 </li>
                             ))}
                         </ol>

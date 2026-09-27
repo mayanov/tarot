@@ -59,14 +59,14 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       id="events"
       className="py-12 md:py-16 relative overflow-hidden isolate"
     >
-      {/* aurora sky background */}
+      {/* aurora sky background — zoomed toward the top so the horizon/ground is cropped out (sky only) */}
       <div
         className="absolute inset-0"
-        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}aurora-sky.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center 28%' }}
+        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}aurora-sky.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center top', transform: 'scale(1.35)', transformOrigin: 'center top' }}
       />
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(6,10,16,0.58) 0%, rgba(6,10,16,0.44) 45%, rgba(6,10,16,0.72) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, rgba(6,10,16,0.58) 0%, rgba(6,10,16,0.44) 45%, rgba(6,10,16,0.9) 100%)' }}
       />
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10 text-cream">
           <FadeIn>
