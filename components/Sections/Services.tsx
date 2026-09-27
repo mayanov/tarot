@@ -9,8 +9,10 @@ interface ServicesProps {
     isIndonesian?: boolean;
 }
 
-// Dark order pill on the light ground — opens the on-site booking flow.
-const btnCard = "inline-flex items-center justify-center px-6 py-3 rounded-lg bg-cream text-ink text-sm font-semibold hover:bg-white transition-colors duration-300";
+// Standardised button styles (used across the pricelist bands, which sit on dark sky):
+// primary = solid cream fill (hover → brand plum); secondary = cream outline.
+const btnPrimary = "inline-flex items-center justify-center px-6 py-3 rounded-lg bg-cream text-ink text-sm font-semibold hover:bg-plum hover:text-cream transition-colors duration-300";
+const btnSecondary = "inline-flex items-center justify-center px-6 py-3 rounded-lg border border-cream/40 text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300";
 
 // Each pricing category gets its own twilight sky, so the categories feel distinct.
 const CAT_SKIES = ['sky-hero.jpg', 'catsky-aurora.jpg', 'sky-footer.jpg', 'aurora-meetup.jpg'];
@@ -55,9 +57,16 @@ const openBooking = (serviceId?: string) =>
 const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndonesian }) => {
     const label = isIndonesian ? 'Pesan' : 'Book a Reading';
     return (
-        <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={btnCard}>
-            {label}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+            <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={btnPrimary}>
+                {label}
+            </button>
+            {g.mapUrl && (
+                <a href={g.mapUrl} target="_blank" rel="noopener noreferrer" className={btnSecondary}>
+                    {isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}
+                </a>
+            )}
+        </div>
     );
 };
 
@@ -169,7 +178,8 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             },
             {
                 id: 'service-meetup', type: 'Sesi Tatap Muka', tags: ['JAKSEL', '1 JAM'],
-                blurb: <>Temu langsung di Jakarta Selatan — energi lebih terasa, analisa lebih personal. <a href="https://maps.app.goo.gl/LE2YwZiM2exhqunh8" target="_blank" rel="noopener noreferrer" className="text-cream border-b border-cream/40 hover:border-cream">Rekomendasi tempat</a></>,
+                blurb: 'Temu langsung di Jakarta Selatan — energi lebih terasa, analisa lebih personal.',
+                mapUrl: 'https://maps.app.goo.gl/LE2YwZiM2exhqunh8',
                 priceLabel: 'Rp 450K',
                 offers: [
                     {
