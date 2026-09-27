@@ -150,9 +150,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         {/* soft twilight veil (fades in on scroll) — a gradient tint only, no blur,
             so it gives the nav marks contrast without blurring the page below */}
         <div
-          className={`pointer-events-none absolute inset-x-0 top-0 h-[150%] transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
+          className={`pointer-events-none absolute inset-x-0 top-0 h-[140%] backdrop-blur-sm transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
           style={{
-            background: 'linear-gradient(180deg, rgba(10,16,44,0.85) 0%, rgba(11,18,50,0.55) 42%, rgba(12,20,52,0.2) 74%, rgba(12,20,52,0) 100%)',
+            background: 'linear-gradient(180deg, rgba(9,16,54,0.9) 0%, rgba(10,18,58,0.62) 42%, rgba(11,20,58,0.24) 74%, rgba(11,20,58,0) 100%)',
+            maskImage: 'linear-gradient(180deg, #000 0%, #000 55%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(180deg, #000 0%, #000 55%, transparent 100%)',
           }}
         />
 
