@@ -6,12 +6,12 @@ interface LoaderProps {
   isIndonesian?: boolean;
 }
 
-// White loader: a sun fills from empty to full (its glow grows with it), then the
-// overlay lifts away with a curved bottom to unveil the dark starry hero — a
-// day→night "curtain reveal".
+// Black loader: a real moon waxes from new → full (a soft shadow slides off it as
+// it loads, its glow growing), then the black panel lifts away with a curved
+// bottom to unveil the dark starry hero — a night "curtain reveal".
 const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const MIN = reduce ? 500 : 2200;
+  const MIN = reduce ? 500 : 2400;
   const mounted = useRef(Date.now());
   const [pct, setPct] = useState(0);
   const [leaving, setLeaving] = useState(false);
@@ -23,7 +23,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Count 0 → 100 (eased) over the minimum, driving the sun fill.
+  // Count 0 → 100 (eased) over the minimum, driving the moon's waxing.
   useEffect(() => {
     let raf = 0;
     const t0 = performance.now();
@@ -55,16 +55,20 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
 
   if (gone) return null;
 
+  // how far the shadow disc has slid off the moon (0 = new moon, 100 = full)
+  const wax = pct;
+
   return (
     <div
       aria-hidden
       onTransitionEnd={(e) => { if (leaving && e.propertyName === 'transform') setGone(true); }}
-      className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-white"
+      className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
       style={{
+        background: '#000000',
         transform: leaving ? 'translateY(-100%)' : 'translateY(0)',
-        borderBottomLeftRadius: leaving ? '50% 14%' : '0',
-        borderBottomRightRadius: leaving ? '50% 14%' : '0',
-        transition: 'transform 1050ms cubic-bezier(0.76,0,0.24,1), border-radius 1050ms cubic-bezier(0.76,0,0.24,1)',
+        borderBottomLeftRadius: leaving ? '50% 16%' : '0',
+        borderBottomRightRadius: leaving ? '50% 16%' : '0',
+        transition: 'transform 1150ms cubic-bezier(0.76,0,0.24,1), border-radius 1150ms cubic-bezier(0.76,0,0.24,1)',
         willChange: 'transform',
       }}
     >
@@ -72,36 +76,44 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         className="relative flex flex-col items-center"
         style={{
           opacity: leaving ? 0 : 1,
-          transform: leaving ? 'translateY(-24px)' : 'translateY(0)',
-          transition: 'opacity 500ms ease, transform 600ms cubic-bezier(0.16,1,0.3,1)',
+          transform: leaving ? 'translateY(-40px) scale(1.04)' : 'translateY(0) scale(1)',
+          transition: 'opacity 620ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
-        {/* the disc — empty, fills from the bottom with moonstone light, its glow growing */}
+        {/* the moon — a real photo, revealed as the shadow disc slides off */}
         <div
-          className="relative w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden ring-1 ring-moon/40"
-          style={{ boxShadow: `0 0 ${pct * 0.9}px ${pct * 0.18}px rgba(158,134,201,${0.12 + pct / 320})` }}
+          className="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden"
+          style={{ boxShadow: `0 0 ${wax * 1.1}px ${wax * 0.22}px rgba(198,178,228,${0.06 + wax / 260})` }}
         >
-          {/* rising moonstone fill */}
+          <img
+            src={`${import.meta.env.BASE_URL}moon.jpg`}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ transform: 'scale(1.04)' }}
+            draggable={false}
+          />
+          {/* faint moonstone tint so the grey moon reads on-brand */}
+          <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 70% at 42% 38%, rgba(219,205,242,0.14) 0%, transparent 70%)', mixBlendMode: 'screen' }} />
+          {/* the shadow that retreats to the right, waxing the moon (soft terminator) */}
           <div
-            className="absolute inset-x-0 bottom-0"
+            className="absolute inset-0 rounded-full"
             style={{
-              height: `${pct}%`,
-              background: 'linear-gradient(0deg, #9E86C9 0%, #C6B2E4 55%, #E6E0F8 100%)',
-              transition: reduce ? undefined : 'height 120ms linear',
+              background: '#000000',
+              transform: `translateX(${wax * 1.02}%)`,
+              filter: 'blur(2px)',
+              transition: reduce ? undefined : 'transform 120ms linear',
             }}
           />
-          {/* soft highlight */}
-          <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(60% 55% at 38% 30%, rgba(255,255,255,0.45) 0%, transparent 60%)' }} />
         </div>
 
         {/* wordmark */}
-        <div className="mt-8 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
-          <span className="text-ink">Mayanov</span>
-          <span className="text-moon-deep">Tarot</span>
+        <div className="mt-9 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
+          <span className="text-cream">Mayanov</span>
+          <span className="text-moon">Tarot</span>
         </div>
 
         {/* label */}
-        <div className="mt-3 text-[11px] uppercase tracking-[0.28em] text-ink/45">
+        <div className="mt-3 text-[11px] uppercase tracking-[0.28em] text-cream/40">
           {isIndonesian ? 'Menyiapkan ruangmu' : 'Preparing your space'}
         </div>
       </div>
