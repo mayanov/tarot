@@ -6,9 +6,9 @@ interface LoaderProps {
   isIndonesian?: boolean;
 }
 
-// Light loader with a real moon + a progress ring that draws around it; on
-// hand-off the light overlay lifts away (curved bottom) to unveil the dark
-// starry hero — a bright→night "curtain reveal" for a wow moment.
+// White loader: a sun fills from empty to full (its glow grows with it), then the
+// overlay lifts away with a curved bottom to unveil the dark starry hero — a
+// day→night "curtain reveal".
 const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const MIN = reduce ? 500 : 2200;
@@ -23,7 +23,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Count 0 → 100 (eased) over the minimum, driving the ring.
+  // Count 0 → 100 (eased) over the minimum, driving the sun fill.
   useEffect(() => {
     let raf = 0;
     const t0 = performance.now();
@@ -55,16 +55,12 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
 
   if (gone) return null;
 
-  const R = 52;
-  const C = 2 * Math.PI * R;
-
   return (
     <div
       aria-hidden
       onTransitionEnd={(e) => { if (leaving && e.propertyName === 'transform') setGone(true); }}
-      className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-white"
       style={{
-        background: 'linear-gradient(180deg, #F6F2FB 0%, #ECE7F6 100%)',
         transform: leaving ? 'translateY(-100%)' : 'translateY(0)',
         borderBottomLeftRadius: leaving ? '50% 14%' : '0',
         borderBottomRightRadius: leaving ? '50% 14%' : '0',
@@ -72,7 +68,6 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         willChange: 'transform',
       }}
     >
-      {/* content — fades/rises out just before the curtain lifts */}
       <div
         className="relative flex flex-col items-center"
         style={{
@@ -81,26 +76,22 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           transition: 'opacity 500ms ease, transform 600ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
-        {/* moon + progress ring */}
-        <div className="relative w-32 h-32 md:w-36 md:h-36">
-          {/* progress ring */}
-          <svg viewBox="0 0 120 120" className="absolute inset-0 w-full h-full -rotate-90">
-            <circle cx="60" cy="60" r={R} fill="none" stroke="rgba(57,35,78,0.12)" strokeWidth="1.5" />
-            <circle
-              cx="60" cy="60" r={R} fill="none" stroke="#9E86C9" strokeWidth="1.5" strokeLinecap="round"
-              strokeDasharray={C} strokeDashoffset={C * (1 - pct / 100)}
-            />
-          </svg>
-          {/* real moon, cropped to a clean disc */}
+        {/* the sun — an empty disc that fills from the bottom, its glow growing with it */}
+        <div
+          className="relative w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden ring-1 ring-[#E9D2A0]"
+          style={{ boxShadow: `0 0 ${pct * 0.9}px ${pct * 0.18}px rgba(245,196,90,${0.15 + pct / 250})` }}
+        >
+          {/* rising sun fill */}
           <div
-            className="absolute inset-[14px] rounded-full shadow-[0_10px_40px_-8px_rgba(57,35,78,0.35)]"
+            className="absolute inset-x-0 bottom-0"
             style={{
-              backgroundImage: `url(${import.meta.env.BASE_URL}moon.jpg)`,
-              backgroundSize: '158%',
-              backgroundPosition: 'center',
-              animation: reduce ? undefined : 'ldSpin 60s linear infinite',
+              height: `${pct}%`,
+              background: 'linear-gradient(0deg, #F0AE3E 0%, #FBD27E 55%, #FFF0C8 100%)',
+              transition: reduce ? undefined : 'height 120ms linear',
             }}
           />
+          {/* soft highlight */}
+          <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(60% 55% at 38% 30%, rgba(255,255,255,0.45) 0%, transparent 60%)' }} />
         </div>
 
         {/* wordmark */}
@@ -109,11 +100,9 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           <span className="text-moon-deep">Tarot</span>
         </div>
 
-        {/* count + label */}
-        <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.28em] text-ink/45">
-          <span className="tabular-nums text-ink/70">{pct.toString().padStart(3, '0')}</span>
-          <span className="w-px h-3 bg-ink/20" />
-          <span>{isIndonesian ? 'Menyiapkan ruangmu' : 'Preparing your space'}</span>
+        {/* label */}
+        <div className="mt-3 text-[11px] uppercase tracking-[0.28em] text-ink/45">
+          {isIndonesian ? 'Menyiapkan ruangmu' : 'Preparing your space'}
         </div>
       </div>
     </div>
