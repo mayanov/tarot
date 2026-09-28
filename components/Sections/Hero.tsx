@@ -25,17 +25,17 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     return () => { window.removeEventListener('mt:reveal', play); clearTimeout(t); };
   }, []);
 
-  // Soft fade-and-rise for each piece. `hero` gives the big title an extra
-  // scale + de-blur "settle" so it blooms open with the aperture.
+  // Soft fade-and-rise for each piece — opacity + transform only, so it's fully
+  // GPU-composited and stays smooth. `hero` gives the big title an extra scale
+  // "settle" so it blooms up in sync with the loader dissolve.
   const Rise: React.FC<{ children: React.ReactNode; delay?: number; className?: string; hero?: boolean }> = ({ children, delay = 0, className = '', hero = false }) => (
     <div
       className={className}
       style={{
         opacity: shown ? 1 : 0,
-        transform: shown ? 'translateY(0) scale(1)' : `translateY(${hero ? 14 : 22}px) scale(${hero ? 0.93 : 1})`,
-        filter: shown ? 'blur(0px)' : `blur(${hero ? 12 : 6}px)`,
-        transition: `opacity ${hero ? 1.3 : 1}s ease ${delay}ms, transform ${hero ? 1.5 : 1.1}s ${EASE} ${delay}ms, filter ${hero ? 1.3 : 1}s ease ${delay}ms`,
-        willChange: 'opacity, transform, filter',
+        transform: shown ? 'translateY(0) scale(1)' : `translateY(${hero ? 16 : 22}px) scale(${hero ? 0.95 : 1})`,
+        transition: `opacity ${hero ? 1.2 : 1}s ease ${delay}ms, transform ${hero ? 1.4 : 1.1}s ${EASE} ${delay}ms`,
+        willChange: 'opacity, transform',
       }}
     >
       {children}

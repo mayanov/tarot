@@ -48,7 +48,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   // Drive the waxing on a single rAF (no CSS transition chasing it, so it stays
   // buttery). Finish just before MIN so it flows straight into the reveal.
   useEffect(() => {
-    const dur = reduce ? MIN : MIN * 0.92;
+    const dur = reduce ? MIN : MIN * 0.96;
     let raf = 0;
     const t0 = performance.now();
     const tick = (now: number) => {
@@ -89,26 +89,30 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   return (
     <div
       aria-hidden
-      onAnimationEnd={(e) => { if (leaving && e.animationName === 'ldAperture') setGone(true); }}
-      onTransitionEnd={(e) => { if (leaving && reduce && e.propertyName === 'opacity') setGone(true); }}
+      onTransitionEnd={(e) => { if (leaving && e.propertyName === 'opacity') setGone(true); }}
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
       style={{
         background: '#000000',
-        WebkitMaskImage: 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))',
-        maskImage: 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))',
-        animation: leaving && !reduce ? 'ldAperture 1200ms cubic-bezier(0.33,0,0.2,1) 110ms forwards' : undefined,
-        opacity: leaving && reduce ? 0 : 1,
-        transition: reduce ? 'opacity 300ms ease' : undefined,
-        willChange: 'mask',
+        // One flowing, GPU-composited dissolve: the whole scene gently lifts +
+        // fades while the hero rises in underneath (black → starfield is seamless).
+        opacity: leaving ? 0 : 1,
+        transform: leaving ? 'scale(1.06)' : 'scale(1)',
+        transition: leaving
+          ? (reduce ? 'opacity 320ms ease' : 'opacity 1000ms cubic-bezier(0.4,0,0.2,1), transform 1300ms cubic-bezier(0.33,0,0.15,1)')
+          : undefined,
+        willChange: 'opacity, transform',
       }}
     >
       <div
         className="relative flex flex-col items-center"
         style={{
-          animation: leaving && !reduce ? 'ldBloom 900ms cubic-bezier(0.4,0,0.2,1) forwards' : undefined,
-          opacity: leaving ? (reduce ? 0 : 1) : enter ? 1 : 0,
-          transform: leaving ? undefined : `translateY(${enter ? 0 : 12}px)`,
-          transition: leaving ? (reduce ? 'opacity 250ms ease' : undefined) : 'opacity 800ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
+          // the moon keeps growing as it dissolves — continuing its "filling"
+          // energy into the reveal rather than stopping and restarting.
+          opacity: leaving ? 0 : enter ? 1 : 0,
+          transform: leaving ? 'scale(1.16)' : `translateY(${enter ? 0 : 12}px) scale(1)`,
+          transition: leaving
+            ? (reduce ? 'opacity 260ms ease' : 'opacity 720ms ease, transform 1300ms cubic-bezier(0.16,1,0.3,1)')
+            : 'opacity 800ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
         {/* the moon — a real photo, revealed as the shadow disc slides off */}
