@@ -16,6 +16,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   const mounted = useRef(Date.now());
   const [wax, setWax] = useState(0); // 0 = new moon, 100 = full
   const [enter, setEnter] = useState(false);
+  const [heroReady, setHeroReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
 
@@ -31,10 +32,23 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     return () => cancelAnimationFrame(r);
   }, []);
 
-  // Drive the waxing on a single rAF (no CSS transition chasing it, so it stays
-  // buttery). Finish a touch before MIN so the moon rests full before the reveal.
+  // Pre-decode the page's hero background so it doesn't decode on the reveal frame
+  // (which was causing a stutter the instant the aperture uncovered it).
   useEffect(() => {
-    const dur = reduce ? MIN : MIN * 0.76;
+    let cancelled = false;
+    const done = () => { if (!cancelled) setHeroReady(true); };
+    const img = new Image();
+    img.src = `${import.meta.env.BASE_URL}sky-hero.jpg`;
+    if ('decode' in img && typeof img.decode === 'function') img.decode().then(done).catch(done);
+    else { img.onload = done; img.onerror = done; }
+    const t = window.setTimeout(done, 2200); // never block forever
+    return () => { cancelled = true; clearTimeout(t); };
+  }, []);
+
+  // Drive the waxing on a single rAF (no CSS transition chasing it, so it stays
+  // buttery). Finish just before MIN so it flows straight into the reveal.
+  useEffect(() => {
+    const dur = reduce ? MIN : MIN * 0.92;
     let raf = 0;
     const t0 = performance.now();
     const tick = (now: number) => {
@@ -47,8 +61,10 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     return () => cancelAnimationFrame(raf);
   }, [MIN, reduce]);
 
+  // Only start the reveal once the app has resolved AND the hero image is decoded,
+  // so the transition never competes with a decode/paint on its first frame.
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !heroReady) return;
     let t: number | undefined;
     const begin = () => {
       const wait = Math.max(0, MIN - (Date.now() - mounted.current));
@@ -62,7 +78,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       return () => { window.removeEventListener('load', onLoad); if (t) clearTimeout(t); };
     }
     return () => { if (t) clearTimeout(t); };
-  }, [ready, MIN]);
+  }, [ready, heroReady, MIN]);
 
   if (gone) return null;
 
@@ -76,7 +92,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         background: '#000000',
         WebkitMaskImage: 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))',
         maskImage: 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))',
-        animation: leaving && !reduce ? 'ldAperture 1250ms cubic-bezier(0.45,0,0.15,1) 240ms forwards' : undefined,
+        animation: leaving && !reduce ? 'ldAperture 1200ms cubic-bezier(0.33,0,0.2,1) 110ms forwards' : undefined,
         opacity: leaving && reduce ? 0 : 1,
         transition: reduce ? 'opacity 300ms ease' : undefined,
         willChange: 'mask',
