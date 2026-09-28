@@ -76,17 +76,17 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           transition: 'opacity 500ms ease, transform 600ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
-        {/* the sun — an empty disc that fills from the bottom, its glow growing with it */}
+        {/* the disc — empty, fills from the bottom with moonstone light, its glow growing */}
         <div
-          className="relative w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden ring-1 ring-[#E9D2A0]"
-          style={{ boxShadow: `0 0 ${pct * 0.9}px ${pct * 0.18}px rgba(245,196,90,${0.15 + pct / 250})` }}
+          className="relative w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden ring-1 ring-moon/40"
+          style={{ boxShadow: `0 0 ${pct * 0.9}px ${pct * 0.18}px rgba(158,134,201,${0.12 + pct / 320})` }}
         >
-          {/* rising sun fill */}
+          {/* rising moonstone fill */}
           <div
             className="absolute inset-x-0 bottom-0"
             style={{
               height: `${pct}%`,
-              background: 'linear-gradient(0deg, #F0AE3E 0%, #FBD27E 55%, #FFF0C8 100%)',
+              background: 'linear-gradient(0deg, #9E86C9 0%, #C6B2E4 55%, #E6E0F8 100%)',
               transition: reduce ? undefined : 'height 120ms linear',
             }}
           />
