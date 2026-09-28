@@ -14,19 +14,28 @@ let heroStatsPlayed = false;
 const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const [shown, setShown] = useState(false);
 
+  // Hold the entrance until the loader's aperture opens, so the hero animates
+  // INTO the reveal instead of being already static behind it. Falls back to a
+  // timer in case the reveal event is missed (e.g. no loader / hot reload).
   useEffect(() => {
-    const id = requestAnimationFrame(() => setShown(true));
-    return () => cancelAnimationFrame(id);
+    let done = false;
+    const play = () => { if (!done) { done = true; setShown(true); } };
+    window.addEventListener('mt:reveal', play, { once: true });
+    const t = window.setTimeout(play, 5000);
+    return () => { window.removeEventListener('mt:reveal', play); clearTimeout(t); };
   }, []);
 
-  // Soft fade-and-rise for each piece.
-  const Rise: React.FC<{ children: React.ReactNode; delay?: number; className?: string }> = ({ children, delay = 0, className = '' }) => (
+  // Soft fade-and-rise for each piece. `hero` gives the big title an extra
+  // scale + de-blur "settle" so it blooms open with the aperture.
+  const Rise: React.FC<{ children: React.ReactNode; delay?: number; className?: string; hero?: boolean }> = ({ children, delay = 0, className = '', hero = false }) => (
     <div
       className={className}
       style={{
         opacity: shown ? 1 : 0,
-        transform: shown ? 'translateY(0)' : 'translateY(22px)',
-        transition: `opacity 1s ease ${delay}ms, transform 1.1s ${EASE} ${delay}ms`,
+        transform: shown ? 'translateY(0) scale(1)' : `translateY(${hero ? 14 : 22}px) scale(${hero ? 0.93 : 1})`,
+        filter: shown ? 'blur(0px)' : `blur(${hero ? 12 : 6}px)`,
+        transition: `opacity ${hero ? 1.3 : 1}s ease ${delay}ms, transform ${hero ? 1.5 : 1.1}s ${EASE} ${delay}ms, filter ${hero ? 1.3 : 1}s ease ${delay}ms`,
+        willChange: 'opacity, transform, filter',
       }}
     >
       {children}
@@ -116,7 +125,24 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
         {/* RIGHT — dominant brand title anchored over the orbit motif (the #1) */}
         <div className="relative lg:col-span-7 order-1 lg:order-2 flex items-center justify-center min-h-[42vh] lg:min-h-[66vh]">
-          <Rise delay={80} className="relative">
+          {/* moonstone glow that blooms in behind the title with the reveal */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center"
+          >
+            <div
+              style={{
+                width: '82%',
+                height: '82%',
+                opacity: shown ? 1 : 0,
+                transform: shown ? 'scale(1)' : 'scale(0.55)',
+                transition: `opacity 1.6s ease 160ms, transform 1.8s ${EASE} 160ms`,
+                background: 'radial-gradient(50% 50% at 50% 50%, rgba(198,178,228,0.24) 0%, rgba(198,178,228,0.08) 42%, transparent 70%)',
+                filter: 'blur(6px)',
+              }}
+            />
+          </div>
+          <Rise delay={80} hero className="relative">
             <h1 className="font-serif font-bold uppercase leading-[0.9] tracking-[-0.01em] text-center text-[3.6rem] sm:text-[5rem] lg:text-[5.6rem] xl:text-[6.6rem] [text-shadow:0_6px_50px_rgba(6,4,14,0.55)]">
               <span className="block text-cream">Mayanov</span>
               <span className="block text-moon">Tarot</span>

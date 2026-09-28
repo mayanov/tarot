@@ -68,7 +68,11 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     let t: number | undefined;
     const begin = () => {
       const wait = Math.max(0, MIN - (Date.now() - mounted.current));
-      t = window.setTimeout(() => setLeaving(true), wait);
+      t = window.setTimeout(() => {
+        setLeaving(true);
+        // tell the hero to play its entrance as the aperture opens
+        try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
+      }, wait);
     };
     if (document.readyState === 'complete') begin();
     else {
