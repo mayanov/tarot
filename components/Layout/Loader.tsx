@@ -6,9 +6,9 @@ interface LoaderProps {
   isIndonesian?: boolean;
 }
 
-// Celestial loader: a moon fills with moonstone light as it loads, the wordmark
-// sits below, then the whole overlay lifts away on a strong ease with a curved
-// bottom edge — a "curtain reveal" hand-off to the page.
+// Light loader with a real moon + a progress ring that draws around it; on
+// hand-off the light overlay lifts away (curved bottom) to unveil the dark
+// starry hero — a bright→night "curtain reveal" for a wow moment.
 const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const MIN = reduce ? 500 : 2200;
@@ -17,14 +17,13 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
 
-  // Lock scroll while the loader is up.
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Count 0 → 100 (eased) over the minimum, to drive the moon fill.
+  // Count 0 → 100 (eased) over the minimum, driving the ring.
   useEffect(() => {
     let raf = 0;
     const t0 = performance.now();
@@ -37,7 +36,6 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     return () => cancelAnimationFrame(raf);
   }, [MIN]);
 
-  // Dismiss once ready + window loaded + minimum time elapsed.
   useEffect(() => {
     if (!ready) return;
     let t: number | undefined;
@@ -57,13 +55,16 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
 
   if (gone) return null;
 
+  const R = 52;
+  const C = 2 * Math.PI * R;
+
   return (
     <div
       aria-hidden
       onTransitionEnd={(e) => { if (leaving && e.propertyName === 'transform') setGone(true); }}
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
       style={{
-        background: 'radial-gradient(120% 90% at 50% 38%, #16123A 0%, #0B0B16 60%, #08060F 100%)',
+        background: 'linear-gradient(180deg, #F6F2FB 0%, #ECE7F6 100%)',
         transform: leaving ? 'translateY(-100%)' : 'translateY(0)',
         borderBottomLeftRadius: leaving ? '50% 14%' : '0',
         borderBottomRightRadius: leaving ? '50% 14%' : '0',
@@ -71,18 +72,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         willChange: 'transform',
       }}
     >
-      {/* faint stars */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-60"
-        style={{
-          backgroundImage:
-            'radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.7), transparent), radial-gradient(1px 1px at 80% 25%, rgba(219,205,242,0.7), transparent), radial-gradient(1px 1px at 65% 72%, rgba(255,255,255,0.5), transparent), radial-gradient(1px 1px at 32% 78%, rgba(219,205,242,0.5), transparent), radial-gradient(1.5px 1.5px at 50% 12%, rgba(255,255,255,0.6), transparent)',
-          backgroundRepeat: 'no-repeat',
-        }}
-      />
-
-      {/* content — exits (fade + rise) just before the curtain lifts */}
+      {/* content — fades/rises out just before the curtain lifts */}
       <div
         className="relative flex flex-col items-center"
         style={{
@@ -91,41 +81,40 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           transition: 'opacity 500ms ease, transform 600ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
-        {/* the moon — outline ring with a moonstone tide that fills as it loads */}
-        <div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden ring-1 ring-moon/40 shadow-[0_0_50px_-10px_rgba(198,178,228,0.45)]">
-          {/* dark moon face */}
-          <div className="absolute inset-0" style={{ background: 'radial-gradient(120% 120% at 30% 25%, #1a1640 0%, #0d0b1e 70%)' }} />
-          {/* rising moonstone light */}
+        {/* moon + progress ring */}
+        <div className="relative w-32 h-32 md:w-36 md:h-36">
+          {/* progress ring */}
+          <svg viewBox="0 0 120 120" className="absolute inset-0 w-full h-full -rotate-90">
+            <circle cx="60" cy="60" r={R} fill="none" stroke="rgba(57,35,78,0.12)" strokeWidth="1.5" />
+            <circle
+              cx="60" cy="60" r={R} fill="none" stroke="#9E86C9" strokeWidth="1.5" strokeLinecap="round"
+              strokeDasharray={C} strokeDashoffset={C * (1 - pct / 100)}
+            />
+          </svg>
+          {/* real moon, cropped to a clean disc */}
           <div
-            className="absolute inset-x-0 bottom-0"
+            className="absolute inset-[14px] rounded-full shadow-[0_10px_40px_-8px_rgba(57,35,78,0.35)]"
             style={{
-              height: `${pct}%`,
-              background: 'linear-gradient(180deg, #E6E0F8 0%, #C6B2E4 45%, #9E86C9 100%)',
-              transition: reduce ? undefined : 'height 120ms linear',
-              boxShadow: '0 -8px 24px rgba(198,178,228,0.5)',
+              backgroundImage: `url(${import.meta.env.BASE_URL}moon.jpg)`,
+              backgroundSize: '158%',
+              backgroundPosition: 'center',
+              animation: reduce ? undefined : 'ldSpin 60s linear infinite',
             }}
           />
-          {/* soft craters / texture */}
-          <div className="absolute inset-0 opacity-30 mix-blend-overlay" style={{ background: 'radial-gradient(circle at 62% 40%, rgba(0,0,0,0.5) 0 8%, transparent 9%), radial-gradient(circle at 40% 62%, rgba(0,0,0,0.4) 0 6%, transparent 7%)' }} />
         </div>
 
         {/* wordmark */}
         <div className="mt-8 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
-          <span className="text-cream">Mayanov</span>
-          <span className="text-moon">Tarot</span>
+          <span className="text-ink">Mayanov</span>
+          <span className="text-moon-deep">Tarot</span>
         </div>
 
         {/* count + label */}
-        <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.28em] text-cream/45">
-          <span className="tabular-nums text-cream/70">{pct.toString().padStart(3, '0')}</span>
-          <span className="w-px h-3 bg-cream/20" />
+        <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.28em] text-ink/45">
+          <span className="tabular-nums text-ink/70">{pct.toString().padStart(3, '0')}</span>
+          <span className="w-px h-3 bg-ink/20" />
           <span>{isIndonesian ? 'Menyiapkan ruangmu' : 'Preparing your space'}</span>
         </div>
-      </div>
-
-      {/* thin progress line pinned near the bottom, fills with the count */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 h-px w-48 md:w-64 bg-white/10 overflow-hidden">
-        <div className="h-full" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #9E86C9, #DBCDF2)' }} />
       </div>
     </div>
   );
