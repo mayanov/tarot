@@ -120,6 +120,22 @@ html.lenis body {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+/* Loader "aperture" reveal — the full moon dilates open, a circle of light
+   growing outward from its center to unveil the page. */
+@property --ldIris {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+@keyframes ldAperture {
+  from { --ldIris: 0%; }
+  to   { --ldIris: 165%; }
+}
+@keyframes ldBloom {
+  0%   { transform: scale(1); filter: brightness(1); opacity: 1; }
+  35%  { transform: scale(1.14); filter: brightness(1.7); opacity: 1; }
+  100% { transform: scale(1.32); filter: brightness(2.4); opacity: 0; }
+}
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-hide::-webkit-scrollbar {

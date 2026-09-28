@@ -7,9 +7,9 @@ interface LoaderProps {
 }
 
 // Black loader: a real moon waxes from new → full (a soft shadow slides off it as
-// it loads, its glow growing), then the whole night scene collapses inward into
-// the moon while zooming slightly toward the viewer, and the page emerges around
-// it — a "pull into the moon" reveal.
+// it loads, its glow growing), then the full moon blooms brighter and dilates
+// open — a circle of light expanding outward from its center to unveil the page,
+// continuing the moon's growth as one flowing motion (an "aperture" reveal).
 const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const MIN = reduce ? 500 : 2400;
@@ -62,22 +62,25 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   return (
     <div
       aria-hidden
-      onTransitionEnd={(e) => { if (leaving && e.propertyName === 'clip-path') setGone(true); }}
+      onAnimationEnd={(e) => { if (leaving && e.animationName === 'ldAperture') setGone(true); }}
+      onTransitionEnd={(e) => { if (leaving && reduce && e.propertyName === 'opacity') setGone(true); }}
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
       style={{
         background: '#000000',
-        clipPath: leaving ? 'circle(0% at 50% 43%)' : 'circle(150% at 50% 43%)',
-        transform: leaving ? 'scale(1.12)' : 'scale(1)',
-        transition: 'clip-path 1100ms cubic-bezier(0.83,0,0.17,1), transform 1200ms cubic-bezier(0.83,0,0.17,1)',
-        willChange: 'clip-path, transform',
+        WebkitMaskImage: 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))',
+        maskImage: 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))',
+        animation: leaving && !reduce ? 'ldAperture 1050ms cubic-bezier(0.7,0,0.25,1) 140ms forwards' : undefined,
+        opacity: leaving && reduce ? 0 : 1,
+        transition: reduce ? 'opacity 300ms ease' : undefined,
+        willChange: 'mask',
       }}
     >
       <div
         className="relative flex flex-col items-center"
         style={{
-          opacity: leaving ? 0 : 1,
-          transform: leaving ? 'scale(1.06)' : 'scale(1)',
-          transition: 'opacity 720ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
+          animation: leaving && !reduce ? 'ldBloom 760ms ease-out forwards' : undefined,
+          opacity: leaving && reduce ? 0 : 1,
+          transition: reduce ? 'opacity 250ms ease' : undefined,
         }}
       >
         {/* the moon — a real photo, revealed as the shadow disc slides off */}
