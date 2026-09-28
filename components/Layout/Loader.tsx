@@ -7,14 +7,15 @@ interface LoaderProps {
 }
 
 // Black loader: a real moon waxes from new → full (a soft shadow slides off it as
-// it loads, its glow growing), then the full moon blooms brighter and dilates
-// open — a circle of light expanding outward from its center to unveil the page,
-// continuing the moon's growth as one flowing motion (an "aperture" reveal).
+// it loads, its glow growing), settles full for a beat, then the full moon blooms
+// brighter and dilates open — a circle of light expanding outward from its center
+// to unveil the page, continuing the moon's growth as one flowing motion.
 const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const MIN = reduce ? 500 : 2400;
+  const MIN = reduce ? 500 : 2500;
   const mounted = useRef(Date.now());
-  const [pct, setPct] = useState(0);
+  const [wax, setWax] = useState(0); // 0 = new moon, 100 = full
+  const [enter, setEnter] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
 
@@ -24,18 +25,27 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Count 0 → 100 (eased) over the minimum, driving the moon's waxing.
+  // gentle entrance for the content
   useEffect(() => {
+    const r = requestAnimationFrame(() => setEnter(true));
+    return () => cancelAnimationFrame(r);
+  }, []);
+
+  // Drive the waxing on a single rAF (no CSS transition chasing it, so it stays
+  // buttery). Finish a touch before MIN so the moon rests full before the reveal.
+  useEffect(() => {
+    const dur = reduce ? MIN : MIN * 0.76;
     let raf = 0;
     const t0 = performance.now();
     const tick = (now: number) => {
-      const t = Math.min((now - t0) / MIN, 1);
-      setPct(Math.round((1 - Math.pow(1 - t, 2)) * 100));
+      const t = Math.min((now - t0) / dur, 1);
+      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic — slows softly into full
+      setWax(Math.round(eased * 1000) / 10);
       if (t < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [MIN]);
+  }, [MIN, reduce]);
 
   useEffect(() => {
     if (!ready) return;
@@ -56,9 +66,6 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
 
   if (gone) return null;
 
-  // how far the shadow disc has slid off the moon (0 = new moon, 100 = full)
-  const wax = pct;
-
   return (
     <div
       aria-hidden
@@ -69,7 +76,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         background: '#000000',
         WebkitMaskImage: 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))',
         maskImage: 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))',
-        animation: leaving && !reduce ? 'ldAperture 1050ms cubic-bezier(0.7,0,0.25,1) 140ms forwards' : undefined,
+        animation: leaving && !reduce ? 'ldAperture 1250ms cubic-bezier(0.45,0,0.15,1) 240ms forwards' : undefined,
         opacity: leaving && reduce ? 0 : 1,
         transition: reduce ? 'opacity 300ms ease' : undefined,
         willChange: 'mask',
@@ -78,9 +85,10 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       <div
         className="relative flex flex-col items-center"
         style={{
-          animation: leaving && !reduce ? 'ldBloom 760ms ease-out forwards' : undefined,
-          opacity: leaving && reduce ? 0 : 1,
-          transition: reduce ? 'opacity 250ms ease' : undefined,
+          animation: leaving && !reduce ? 'ldBloom 900ms cubic-bezier(0.4,0,0.2,1) forwards' : undefined,
+          opacity: leaving ? (reduce ? 0 : 1) : enter ? 1 : 0,
+          transform: leaving ? undefined : `translateY(${enter ? 0 : 12}px)`,
+          transition: leaving ? (reduce ? 'opacity 250ms ease' : undefined) : 'opacity 800ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
         {/* the moon — a real photo, revealed as the shadow disc slides off */}
@@ -103,8 +111,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
             style={{
               background: '#000000',
               transform: `translateX(${wax * 1.02}%)`,
-              filter: 'blur(2px)',
-              transition: reduce ? undefined : 'transform 120ms linear',
+              filter: 'blur(3px)',
             }}
           />
         </div>
