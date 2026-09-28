@@ -7,8 +7,9 @@ interface LoaderProps {
 }
 
 // Black loader: a real moon waxes from new → full (a soft shadow slides off it as
-// it loads, its glow growing), then the black panel lifts away with a curved
-// bottom to unveil the dark starry hero — a night "curtain reveal".
+// it loads, its glow growing), then the whole night scene collapses inward into
+// the moon while zooming slightly toward the viewer, and the page emerges around
+// it — a "pull into the moon" reveal.
 const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const MIN = reduce ? 500 : 2400;
@@ -61,23 +62,22 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   return (
     <div
       aria-hidden
-      onTransitionEnd={(e) => { if (leaving && e.propertyName === 'transform') setGone(true); }}
+      onTransitionEnd={(e) => { if (leaving && e.propertyName === 'clip-path') setGone(true); }}
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
       style={{
         background: '#000000',
-        transform: leaving ? 'translateY(-100%)' : 'translateY(0)',
-        borderBottomLeftRadius: leaving ? '50% 16%' : '0',
-        borderBottomRightRadius: leaving ? '50% 16%' : '0',
-        transition: 'transform 1150ms cubic-bezier(0.76,0,0.24,1), border-radius 1150ms cubic-bezier(0.76,0,0.24,1)',
-        willChange: 'transform',
+        clipPath: leaving ? 'circle(0% at 50% 43%)' : 'circle(150% at 50% 43%)',
+        transform: leaving ? 'scale(1.12)' : 'scale(1)',
+        transition: 'clip-path 1100ms cubic-bezier(0.83,0,0.17,1), transform 1200ms cubic-bezier(0.83,0,0.17,1)',
+        willChange: 'clip-path, transform',
       }}
     >
       <div
         className="relative flex flex-col items-center"
         style={{
           opacity: leaving ? 0 : 1,
-          transform: leaving ? 'translateY(-40px) scale(1.04)' : 'translateY(0) scale(1)',
-          transition: 'opacity 620ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
+          transform: leaving ? 'scale(1.06)' : 'scale(1)',
+          transition: 'opacity 720ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
         {/* the moon — a real photo, revealed as the shadow disc slides off */}
@@ -114,7 +114,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
 
         {/* label */}
         <div className="mt-3 text-[11px] uppercase tracking-[0.28em] text-cream/40">
-          {isIndonesian ? 'Menyiapkan ruangmu' : 'Preparing your space'}
+          Loading
         </div>
       </div>
     </div>
