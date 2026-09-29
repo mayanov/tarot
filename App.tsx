@@ -374,7 +374,11 @@ function App() {
       )}
 
       <main className="relative z-10">
-        <Hero isIndonesian={isIndonesian} />
+        {/* Hero pins to the top so the sections below scroll up and over it —
+            the page feels like it's pushing the hero up as you scroll. */}
+        <div className="sticky top-0 z-0">
+          <Hero isIndonesian={isIndonesian} />
+        </div>
         <About isIndonesian={isIndonesian} />
         <Marquee isIndonesian={isIndonesian} />
 
