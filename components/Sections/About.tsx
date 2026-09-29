@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import FadeIn from '../UI/FadeIn';
+import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import { trackEvent } from '../../services/analytics';
 
@@ -38,7 +39,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 lg:min-h-[90vh] flex items-center">
         <FadeIn className="w-full lg:w-[53%] lg:pr-14 py-14 md:py-20">
           <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
-            {isIndonesian ? 'Tentang Saya' : 'About Me'}
+            <MaskReveal>{isIndonesian ? 'Tentang Saya' : 'About Me'}</MaskReveal>
           </h2>
 
           {/* pull quote — big, with a single violet accent */}

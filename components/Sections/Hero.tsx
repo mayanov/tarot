@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
+import Magnetic from '../UI/Magnetic';
 
 interface HeroProps {
   isIndonesian?: boolean;
@@ -136,14 +137,16 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
           <Rise delay={560}>
             <div className="mt-8">
-              <a
-                href="#services"
-                onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                className="group inline-flex items-center gap-3 rounded-lg bg-cream text-ink px-7 py-3.5 text-sm font-semibold hover:bg-plum hover:text-cream transition-colors duration-300"
-              >
-                {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </a>
+              <Magnetic>
+                <a
+                  href="#services"
+                  onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
+                  className="group inline-flex items-center gap-3 rounded-lg bg-cream text-ink px-7 py-3.5 text-sm font-semibold hover:bg-plum hover:text-cream transition-colors duration-300"
+                >
+                  {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </a>
+              </Magnetic>
             </div>
           </Rise>
         </div>

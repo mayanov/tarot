@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FadeIn from '../UI/FadeIn';
+import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import { ChevronDown, X } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
@@ -73,7 +74,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             {/* HEADER — centered title */}
             <div className="mb-10 md:mb-14 text-center">
               <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
-                {isIndonesian ? "Event & collaboration" : "Community & events"}
+                <MaskReveal>{isIndonesian ? "Event & collaboration" : "Community & events"}</MaskReveal>
               </h2>
             </div>
 

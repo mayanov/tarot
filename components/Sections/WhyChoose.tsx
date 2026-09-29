@@ -1,5 +1,6 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
+import MaskReveal from '../UI/MaskReveal';
 import Testimonials from './Testimonials';
 
 interface WhyChooseProps {
@@ -40,7 +41,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
           {/* Big lead statement */}
           <FadeIn>
             <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl">
-              {isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}
+              <MaskReveal>{isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}</MaskReveal>
             </h2>
             <p className="mt-6 text-lg md:text-xl text-ink/60 font-light leading-relaxed max-w-2xl">
               {isIndonesian
