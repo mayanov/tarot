@@ -123,7 +123,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
             src={`${import.meta.env.BASE_URL}moon.jpg`}
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ transform: 'scale(1.04)' }}
+            style={{ objectPosition: 'center', transform: 'scale(1.06)' }}
             draggable={false}
           />
           {/* faint moonstone tint so the grey moon reads on-brand */}
