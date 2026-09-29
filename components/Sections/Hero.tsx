@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 
@@ -13,6 +13,29 @@ let heroStatsPlayed = false;
 
 const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const [shown, setShown] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
+
+  // Parallax: as the page scrolls up over the pinned hero, drift the hero content
+  // up (and fade it) so it feels like it's being pushed up, not just covered.
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const h = window.innerHeight || 1;
+        const p = Math.min(Math.max(window.scrollY / h, 0), 1);
+        el.style.transform = `translate3d(0, ${(-p * 120).toFixed(1)}px, 0)`;
+        el.style.opacity = String(1 - p * 0.8);
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, []);
 
   // Hold the entrance until the loader's aperture opens, so the hero animates
   // INTO the reveal instead of being already static behind it. Falls back to a
@@ -83,8 +106,10 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
   return (
     <section
+      ref={heroRef}
       id="hero"
       className="relative min-h-screen flex flex-col overflow-hidden isolate text-cream"
+      style={{ willChange: 'transform, opacity' }}
     >
       {/* Brand-led hero — MAYANOV TAROT is the clear #1 (right, over the orbit);
           the statement is a smaller supporting subhead + CTA on the left. */}
