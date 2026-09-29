@@ -107,9 +107,10 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       <div
         className="relative flex flex-col items-center"
         style={{
-          animation: leaving && !reduce ? 'ldBloom 900ms cubic-bezier(0.4,0,0.2,1) forwards' : undefined,
+          // No bloom/scale on exit — the moon holds still and the aperture simply
+          // opens from its center (the mask reveals straight through it).
           opacity: leaving ? (reduce ? 0 : 1) : enter ? 1 : 0,
-          transform: leaving ? undefined : `translateY(${enter ? 0 : 12}px) scale(1)`,
+          transform: `translateY(${!leaving && !enter ? 12 : 0}px) scale(1)`,
           transition: leaving ? (reduce ? 'opacity 250ms ease' : undefined) : 'opacity 800ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
