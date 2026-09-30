@@ -38,39 +38,38 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       {/* text — inside the page container, held to the left so the portrait can bleed right */}
       <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 lg:min-h-[90vh] flex items-center">
         <FadeIn className="w-full lg:w-[53%] lg:pr-14 py-14 md:py-20">
-          <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
-            <MaskReveal>{isIndonesian ? 'Tentang Saya' : 'About Me'}</MaskReveal>
-          </h2>
-
-          {/* pull quote — big, with a single violet accent */}
-          <p className="mt-7 md:mt-9 font-elegant italic text-ink text-[1.35rem] md:text-[1.65rem] lg:text-[1.9rem] leading-[1.28] tracking-[-0.01em]">
-            {isIndonesian ? (
-              <>Tarot, buat saya, bukan soal takdir yang menakutkan — melainkan ruang tenang untuk berhenti sejenak, mendengarkan diri, dan menemukan <span className="text-moon-deep">kejernihan</span> di tengah hiruk-pikuk.</>
-            ) : (
-              <>Tarot, for me, isn’t about scary fate — it’s a calm space to pause, listen to yourself, and find <span className="text-moon-deep">clarity</span> in the middle of the noise.</>
-            )}
-          </p>
-
-          <div className="mt-7 md:mt-9 space-y-4 text-[15px] md:text-base text-ink/70 font-light leading-[1.7] max-w-xl">
-            <p>
-              {isIndonesian
-                ? 'Saya sudah mendalami seni membaca Tarot sejak 2009 — lebih dari 15 tahun menjadikannya medium untuk refleksi diri dan menemukan solusi yang nyata. Sesi bersama saya terasa seperti percakapan jujur, bukan ramalan. Kita bedah situasimu, kenali pola yang bikin stuck, lalu susun langkah konkret — analitis, hangat, tanpa menghakimi.'
-                : 'I’ve been reading Tarot since 2009 — over 15 years using the cards as a medium for self-reflection and finding real solutions. A session feels like an honest conversation, not a prediction. We unpack your situation, spot what keeps you stuck, and map concrete next steps — analytical, warm, never judgmental.'}
-            </p>
-            <p>
-              {isIndonesian
-                ? 'Kamu tidak perlu tahu apa-apa soal Tarot. Datang saja apa adanya — dengan pertanyaan besar, kegelisahan kecil, atau sekadar butuh didengar. Yang kamu bawa pulang bukan ketakutan, tapi ketenangan dan arah yang lebih jelas untuk melangkah.'
-                : 'You don’t need to know anything about Tarot. Just come as you are — with the big questions, the small worries, or simply the need to be heard. What you leave with isn’t fear, but calm and a clearer sense of direction for your next step.'}
-            </p>
+          {/* eyebrow */}
+          <div className="flex items-center gap-3 text-[10px] sm:text-[11px] uppercase tracking-[0.34em] text-ink/50">
+            <span aria-hidden className="h-px w-8 sm:w-12 bg-moon-deep/50" />
+            <span>{isIndonesian ? 'Tentang Saya' : 'About Me'}</span>
           </div>
 
-          {/* closing statement */}
-          <div className="mt-8 md:mt-10">
-            <p className="font-elegant text-ink text-[1.2rem] md:text-[1.4rem] lg:text-[1.55rem] leading-[1.25] tracking-[-0.015em]">
-              {isIndonesian
-                ? 'Tujuan saya simpel: memberi kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
-                : 'My goal is simple — the clarity you need to make decisions with confidence.'}
-            </p>
+          {/* lead statement — the section's headline (shortened) */}
+          <h2 className="mt-6 md:mt-8 font-elegant font-medium text-ink text-[1.9rem] sm:text-[2.5rem] lg:text-[3.05rem] leading-[1.12] tracking-[-0.02em]">
+            <MaskReveal>
+              {isIndonesian ? (
+                <>Tarot bukan soal takdir menakutkan — tapi ruang tenang untuk menemukan <span className="text-moon-deep italic">kejernihan</span>.</>
+              ) : (
+                <>Tarot isn’t about scary fate — it’s a calm space to find <span className="text-moon-deep italic">clarity</span>.</>
+              )}
+            </MaskReveal>
+          </h2>
+
+          {/* one tight bio line */}
+          <p className="mt-6 md:mt-7 text-[15px] md:text-base text-ink/70 font-light leading-[1.7] max-w-lg">
+            {isIndonesian
+              ? 'Saya Mayanov — membaca Tarot sejak 2009. Lebih dari 15 tahun menjadikannya percakapan jujur untuk refleksi, bukan ramalan. Datang apa adanya, pulang dengan arah yang lebih jelas.'
+              : 'I’m Mayanov — reading Tarot since 2009. Over 15 years turning the cards into honest conversations for reflection, not prediction. Come as you are, leave with a clearer direction.'}
+          </p>
+
+          {/* approach — a small editorial tag row */}
+          <div className="mt-8 md:mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-ink/10 pt-6">
+            {(isIndonesian ? ['Analitis', 'Hangat', 'Jujur'] : ['Analytical', 'Warm', 'Honest']).map((w) => (
+              <span key={w} className="flex items-center gap-2 text-[13px] md:text-sm text-ink/75">
+                <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-moon-deep/70" />
+                {w}
+              </span>
+            ))}
           </div>
         </FadeIn>
       </div>
