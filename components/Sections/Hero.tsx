@@ -127,14 +127,14 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           an offset caption to the right of it. */}
       <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex-1 flex flex-col justify-center py-4 md:py-6">
         <Rise delay={140} hero>
-          <h1 className="font-serif font-bold uppercase leading-[0.84] tracking-[-0.03em] text-[clamp(3.1rem,13.5vw,12.5rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
+          <h1 className="font-serif font-bold uppercase leading-[0.84] tracking-[-0.03em] text-[clamp(2.7rem,min(11.5vw,14vh),10rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
             <span className="block text-cream">Mayanov</span>
             <span className="block text-moon">Tarot</span>
           </h1>
         </Rise>
 
         {/* caption — offset to the right on desktop for an asymmetric, editorial feel */}
-        <div className="mt-9 md:mt-12 lg:self-end w-full lg:max-w-[30rem]">
+        <div className="mt-6 md:mt-8 lg:self-end w-full lg:max-w-[30rem]">
           <Rise delay={340}>
             <p className="font-elegant font-medium leading-[1.14] tracking-[-0.01em] text-[1.45rem] sm:text-[1.8rem] text-cream [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
               {isIndonesian ? (
