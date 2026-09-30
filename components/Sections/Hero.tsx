@@ -113,17 +113,6 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       className="relative min-h-screen flex flex-col justify-between overflow-hidden isolate text-cream pt-28 md:pt-32 pb-8 md:pb-12"
       style={{ willChange: 'filter' }}
     >
-      {/* moonstone glow that blooms in behind the masthead */}
-      <div aria-hidden className="pointer-events-none absolute -z-10 left-[-6%] top-[24%] w-[70%] h-[60%]"
-        style={{
-          opacity: shown ? 1 : 0,
-          transform: shown ? 'scale(1)' : 'scale(0.6)',
-          transition: `opacity 1.8s ease 180ms, transform 2s ${EASE} 180ms`,
-          background: 'radial-gradient(45% 45% at 40% 45%, rgba(198,178,228,0.22) 0%, rgba(198,178,228,0.06) 45%, transparent 72%)',
-          filter: 'blur(10px)',
-        }}
-      />
-
       {/* TOP — editorial kicker */}
       <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
         <Rise delay={60}>
@@ -177,20 +166,30 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </div>
       </div>
 
-      {/* BOTTOM — metrics as a full-width editorial data row with hairline rules */}
+      {/* BOTTOM — metrics as an editorial index: a label + a drawn-in rule over a
+          big number, each column's rule wiping in, staggered, on reveal. */}
       <Rise delay={680}>
         <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 border-t border-cream/15">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 md:gap-x-10 gap-y-7 md:gap-y-0">
             {metrics.map((m, i) => (
-              <div
-                key={i}
-                className="pt-4 md:pt-5 md:pl-6 md:border-l md:border-cream/12 md:first:border-l-0 md:first:pl-0"
-              >
-                <div className="font-elegant font-medium tabular-nums text-cream text-[1.7rem] md:text-[2.15rem] leading-none">
-                  <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
+              <div key={i} className="group">
+                {/* label */}
+                <div className="flex items-center gap-2">
+                  <span aria-hidden className="w-1 h-1 rounded-full bg-moon/70 transition-transform duration-300 group-hover:scale-150" />
+                  <span className="text-[9px] md:text-[10px] uppercase tracking-[0.24em] text-cream/55">{m.label}</span>
                 </div>
-                <div className="mt-2 text-[9px] md:text-[10px] uppercase tracking-[0.22em] leading-tight text-cream/45">
-                  {m.label}
+                {/* drawn-in rule */}
+                <span
+                  aria-hidden
+                  className="mt-3 block h-px w-full bg-cream/20 origin-left"
+                  style={{
+                    transform: shown ? 'scaleX(1)' : 'scaleX(0)',
+                    transition: `transform 0.9s ${EASE} ${820 + i * 130}ms`,
+                  }}
+                />
+                {/* number */}
+                <div className="mt-3 font-elegant font-medium tabular-nums leading-none text-cream text-[2rem] md:text-[2.6rem] transition-colors duration-300 group-hover:text-moon">
+                  <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
                 </div>
               </div>
             ))}
