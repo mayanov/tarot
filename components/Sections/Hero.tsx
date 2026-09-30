@@ -129,7 +129,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         <Rise delay={140} hero>
           <h1 className="font-serif font-bold uppercase leading-[0.84] tracking-[-0.03em] text-[clamp(2.7rem,min(11.5vw,14vh),10rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
             <span className="block text-cream">Mayanov</span>
-            <span className="block text-moon">Tarot</span>
+            <span className="block text-cream">Tarot</span>
           </h1>
         </Rise>
 
@@ -138,9 +138,9 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           <Rise delay={340}>
             <p className="font-elegant font-medium leading-[1.14] tracking-[-0.01em] text-[1.45rem] sm:text-[1.8rem] text-cream [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
               {isIndonesian ? (
-                <>Pandangan <span className="italic text-moon">jernih</span> untuk langkah berikutnya.</>
+                <>Pandangan <span className="italic text-cream">jernih</span> untuk langkah berikutnya.</>
               ) : (
-                <>A <span className="italic text-moon">clearer</span> view of what comes next.</>
+                <>A <span className="italic text-cream">clearer</span> view of what comes next.</>
               )}
             </p>
           </Rise>
