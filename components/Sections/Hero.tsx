@@ -110,7 +110,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     <section
       ref={heroRef}
       id="hero"
-      className="relative min-h-screen flex flex-col justify-between overflow-hidden isolate text-cream pt-24 md:pt-28 pb-12 md:pb-14"
+      className="relative min-h-screen flex flex-col justify-between overflow-hidden isolate text-cream pt-24 md:pt-28 pb-8 md:pb-10"
       style={{ willChange: 'filter' }}
     >
       {/* TOP — editorial kicker */}
@@ -125,7 +125,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
       {/* MIDDLE — the masthead: oversized wordmark, with the statement tucked as
           an offset caption to the right of it. */}
-      <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex-1 flex flex-col justify-center py-6 md:py-8">
+      <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex-1 flex flex-col justify-center py-4 md:py-6">
         <Rise delay={140} hero>
           <h1 className="font-serif font-bold uppercase leading-[0.84] tracking-[-0.03em] text-[clamp(3.1rem,13.5vw,12.5rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
             <span className="block text-cream">Mayanov</span>
@@ -171,22 +171,19 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       <Rise delay={680}>
         <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
           <div
-            className="grid grid-cols-2 md:grid-cols-4 gap-y-6 md:gap-y-0 rounded-2xl ring-1 ring-white/10 backdrop-blur-md px-6 py-6 md:px-4 md:py-7 shadow-[0_24px_70px_-44px_rgba(0,0,0,0.85)]"
-            style={{ background: 'rgba(20,26,61,0.42)' }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-y-5 md:gap-y-0 rounded-2xl ring-1 ring-white/20 backdrop-blur-lg px-6 py-5 md:px-4 md:py-5 shadow-[0_24px_70px_-44px_rgba(0,0,0,0.6)]"
+            style={{ background: 'rgba(255,255,255,0.09)' }}
           >
             {metrics.map((m, i) => (
               <div
                 key={i}
-                className="group md:px-6 md:border-l md:border-white/12 md:first:border-l-0"
+                className="group md:px-6 md:border-l md:border-white/20 md:first:border-l-0"
               >
                 <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[1.9rem] md:text-[2.4rem] transition-all duration-300 group-hover:text-moon group-hover:-translate-y-0.5">
                   <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
                 </div>
-                <div className="mt-2.5 flex items-center gap-2">
-                  <span aria-hidden className="block h-px w-4 bg-moon/60 transition-all duration-300 group-hover:w-9" />
-                  <span className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] leading-tight text-cream/50 transition-colors duration-300 group-hover:text-cream/80">
-                    {m.label}
-                  </span>
+                <div className="mt-2 text-[9px] md:text-[10px] uppercase tracking-[0.2em] leading-tight text-cream/60 transition-colors duration-300 group-hover:text-cream/90">
+                  {m.label}
                 </div>
               </div>
             ))}
