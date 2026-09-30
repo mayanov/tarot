@@ -29,10 +29,11 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         const h = window.innerHeight || 1;
         const p = Math.min(Math.max(window.scrollY / h, 0), 1);
         const e = p * p * (3 - 2 * p); // smoothstep — holds, then eases away
-        // drift up + gently recede (scale down) so it settles into the distance
-        // as the section below rises over it, rather than just dimming.
-        el.style.transform = `translate3d(0, ${(-e * 108).toFixed(1)}px, 0) scale(${(1 - e * 0.055).toFixed(3)})`;
-        el.style.opacity = (1 - e * 0.95).toFixed(3);
+        // Defocus: the hero drifts up + eases back slightly and softly blurs out
+        // of focus as the section below rises over it — a dreamy recede, not a fade.
+        el.style.transform = `translate3d(0, ${(-e * 90).toFixed(1)}px, 0) scale(${(1 - e * 0.04).toFixed(3)})`;
+        el.style.filter = e > 0.001 ? `blur(${(e * 8).toFixed(2)}px)` : 'none';
+        el.style.opacity = '1';
       });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -112,7 +113,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       ref={heroRef}
       id="hero"
       className="relative min-h-screen flex flex-col overflow-hidden isolate text-cream"
-      style={{ willChange: 'transform, opacity' }}
+      style={{ willChange: 'transform, filter' }}
     >
       {/* Brand-led hero — MAYANOV TAROT is the clear #1 (right, over the orbit);
           the statement is a smaller supporting subhead + CTA on the left. */}
