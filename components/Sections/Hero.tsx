@@ -110,16 +110,44 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     <section
       ref={heroRef}
       id="hero"
-      className="relative min-h-screen flex flex-col overflow-hidden isolate text-cream"
+      className="relative min-h-screen flex flex-col justify-between overflow-hidden isolate text-cream pt-28 md:pt-32 pb-8 md:pb-12"
       style={{ willChange: 'filter' }}
     >
-      {/* Brand-led hero — MAYANOV TAROT is the clear #1 (right, over the orbit);
-          the statement is a smaller supporting subhead + CTA on the left. */}
-      <div className="relative flex-1 w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 grid lg:grid-cols-12 gap-10 lg:gap-12 items-center pt-32 pb-12">
-        {/* LEFT — supporting subhead + copy + single CTA */}
-        <div className="lg:col-span-5 order-2 lg:order-1">
-          <Rise delay={320}>
-            <p className="font-elegant font-medium leading-[1.12] tracking-[-0.01em] text-[1.6rem] sm:text-[1.95rem] lg:text-[2.1rem] text-cream [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
+      {/* moonstone glow that blooms in behind the masthead */}
+      <div aria-hidden className="pointer-events-none absolute -z-10 left-[-6%] top-[24%] w-[70%] h-[60%]"
+        style={{
+          opacity: shown ? 1 : 0,
+          transform: shown ? 'scale(1)' : 'scale(0.6)',
+          transition: `opacity 1.8s ease 180ms, transform 2s ${EASE} 180ms`,
+          background: 'radial-gradient(45% 45% at 40% 45%, rgba(198,178,228,0.22) 0%, rgba(198,178,228,0.06) 45%, transparent 72%)',
+          filter: 'blur(10px)',
+        }}
+      />
+
+      {/* TOP — editorial kicker */}
+      <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
+        <Rise delay={60}>
+          <div className="flex items-center gap-3 text-[10px] sm:text-[11px] uppercase tracking-[0.34em] text-cream/60">
+            <span aria-hidden className="h-px w-8 sm:w-12 bg-moon/60" />
+            <span>{isIndonesian ? 'Pembaca Tarot · Sejak 2009' : 'Tarot Reader · Since 2009'}</span>
+          </div>
+        </Rise>
+      </div>
+
+      {/* MIDDLE — the masthead: oversized wordmark, with the statement tucked as
+          an offset caption to the right of it. */}
+      <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex-1 flex flex-col justify-center py-10">
+        <Rise delay={140} hero>
+          <h1 className="font-serif font-bold uppercase leading-[0.84] tracking-[-0.03em] text-[clamp(3.1rem,13.5vw,12.5rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
+            <span className="block text-cream">Mayanov</span>
+            <span className="block text-moon">Tarot</span>
+          </h1>
+        </Rise>
+
+        {/* caption — offset to the right on desktop for an asymmetric, editorial feel */}
+        <div className="mt-9 md:mt-12 lg:self-end w-full lg:max-w-[30rem]">
+          <Rise delay={340}>
+            <p className="font-elegant font-medium leading-[1.14] tracking-[-0.01em] text-[1.45rem] sm:text-[1.8rem] text-cream [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
               {isIndonesian ? (
                 <>Pandangan <span className="italic text-moon">jernih</span> untuk langkah berikutnya.</>
               ) : (
@@ -127,17 +155,15 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
               )}
             </p>
           </Rise>
-
-          <Rise delay={440}>
-            <p className="mt-5 text-[14.5px] md:text-[15px] font-light leading-relaxed max-w-md text-cream/70 [text-shadow:0_1px_12px_rgba(6,4,14,0.7)]">
+          <Rise delay={460}>
+            <p className="mt-4 text-[14px] md:text-[14.5px] font-light leading-relaxed text-cream/70 [text-shadow:0_1px_12px_rgba(6,4,14,0.7)]">
               {isIndonesian
                 ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi. Percakapan jujur untuk melihat langkahmu lebih jelas.'
                 : 'Tarot as a space for reflection — analytical, warm, and grounded. An honest conversation that helps you see your next step clearly.'}
             </p>
           </Rise>
-
-          <Rise delay={560}>
-            <div className="mt-8">
+          <Rise delay={580}>
+            <div className="mt-7">
               <a
                 href="#services"
                 onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
@@ -149,45 +175,21 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
             </div>
           </Rise>
         </div>
-
-        {/* RIGHT — dominant brand title anchored over the orbit motif (the #1) */}
-        <div className="relative lg:col-span-7 order-1 lg:order-2 flex items-center justify-center min-h-[42vh] lg:min-h-[66vh]">
-          {/* moonstone glow that blooms in behind the title with the reveal */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center"
-          >
-            <div
-              style={{
-                width: '82%',
-                height: '82%',
-                opacity: shown ? 1 : 0,
-                transform: shown ? 'scale(1)' : 'scale(0.55)',
-                transition: `opacity 1.6s ease 160ms, transform 1.8s ${EASE} 160ms`,
-                background: 'radial-gradient(50% 50% at 50% 50%, rgba(198,178,228,0.24) 0%, rgba(198,178,228,0.08) 42%, transparent 70%)',
-                filter: 'blur(6px)',
-              }}
-            />
-          </div>
-          <Rise delay={80} hero className="relative">
-            <h1 className="font-serif font-bold uppercase leading-[0.9] tracking-[-0.01em] text-center text-[3.6rem] sm:text-[5rem] lg:text-[5.6rem] xl:text-[6.6rem] [text-shadow:0_6px_50px_rgba(6,4,14,0.55)]">
-              <span className="block text-cream">Mayanov</span>
-              <span className="block text-moon">Tarot</span>
-            </h1>
-          </Rise>
-        </div>
       </div>
 
-      {/* Stats — a quiet, left-aligned strip on a moonstone hairline */}
-      <Rise delay={620}>
-        <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pb-11 md:pb-14">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-6 pt-6 border-t border-moon/25 max-w-3xl">
+      {/* BOTTOM — metrics as a full-width editorial data row with hairline rules */}
+      <Rise delay={680}>
+        <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 border-t border-cream/15">
             {metrics.map((m, i) => (
-              <div key={i} className="text-left">
-                <div className="font-elegant font-medium text-2xl md:text-[1.9rem] tabular-nums text-cream">
+              <div
+                key={i}
+                className="pt-4 md:pt-5 md:pl-6 md:border-l md:border-cream/12 md:first:border-l-0 md:first:pl-0"
+              >
+                <div className="font-elegant font-medium tabular-nums text-cream text-[1.7rem] md:text-[2.15rem] leading-none">
                   <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
                 </div>
-                <div className="mt-1.5 text-[9px] md:text-[10px] uppercase tracking-[0.2em] leading-tight text-cream/45">
+                <div className="mt-2 text-[9px] md:text-[10px] uppercase tracking-[0.22em] leading-tight text-cream/45">
                   {m.label}
                 </div>
               </div>
