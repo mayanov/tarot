@@ -110,7 +110,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     <section
       ref={heroRef}
       id="hero"
-      className="relative min-h-screen flex flex-col justify-between overflow-hidden isolate text-cream pt-28 md:pt-32 pb-20 md:pb-28"
+      className="relative min-h-screen flex flex-col justify-between overflow-hidden isolate text-cream pt-24 md:pt-28 pb-12 md:pb-14"
       style={{ willChange: 'filter' }}
     >
       {/* TOP — editorial kicker */}
@@ -125,7 +125,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
       {/* MIDDLE — the masthead: oversized wordmark, with the statement tucked as
           an offset caption to the right of it. */}
-      <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex-1 flex flex-col justify-center py-10">
+      <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex-1 flex flex-col justify-center py-6 md:py-8">
         <Rise delay={140} hero>
           <h1 className="font-serif font-bold uppercase leading-[0.84] tracking-[-0.03em] text-[clamp(3.1rem,13.5vw,12.5rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
             <span className="block text-cream">Mayanov</span>
@@ -170,18 +170,24 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           a moonstone tick that grows and the number lifting to moon on hover. */}
       <Rise delay={680}>
         <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-7 md:gap-y-0 border-t border-cream/15">
+          <div className="relative grid grid-cols-2 md:grid-cols-4 gap-y-7 md:gap-y-0">
+            {/* top rule sweeps in across the full row on reveal */}
+            <span
+              aria-hidden
+              className="absolute left-0 top-0 h-px w-full bg-cream/18 origin-left"
+              style={{ transform: shown ? 'scaleX(1)' : 'scaleX(0)', transition: `transform 1.1s ${EASE} 720ms` }}
+            />
             {metrics.map((m, i) => (
               <div
                 key={i}
-                className="group pt-5 md:pt-6 md:pl-6 md:border-l md:border-cream/12 md:first:border-l-0 md:first:pl-0"
+                className="group relative pt-5 md:pt-6 md:pl-6 md:border-l md:border-cream/12 md:first:border-l-0 md:first:pl-0"
               >
-                <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[1.85rem] md:text-[2.3rem] transition-all duration-300 group-hover:text-moon group-hover:-translate-y-0.5">
+                <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[1.9rem] md:text-[2.4rem] transition-all duration-300 group-hover:text-moon group-hover:-translate-y-0.5">
                   <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
                 </div>
                 <div className="mt-2.5 flex items-center gap-2">
-                  <span aria-hidden className="block h-px w-4 bg-moon/60 transition-all duration-300 group-hover:w-8" />
-                  <span className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] leading-tight text-cream/45 transition-colors duration-300 group-hover:text-cream/70">
+                  <span aria-hidden className="block h-px w-4 bg-moon/60 transition-all duration-300 group-hover:w-9" />
+                  <span className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] leading-tight text-cream/45 transition-colors duration-300 group-hover:text-cream/75">
                     {m.label}
                   </span>
                 </div>
