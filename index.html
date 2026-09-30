@@ -37,110 +37,8 @@
   <!-- Google sign-in / API scripts are loaded on demand by the admin dashboard
        (services/ga4.ts), not on the public site. -->
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            // Switzer — one clean modern grotesque across the whole site (noho-style).
-            sans: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            serif: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            heading: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            display: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            elegant: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-          },
-          colors: {
-            // --- Brand palette v2.0 (jewel tones) ---
-            plum: '#39234E',
-            'plum-deep': '#2A1839',
-            blue: '#29527B',
-            mauve: '#8E5C86',
-            coral: '#F19F58',
-            'coral-deep': '#DA8636',
-            // --- Moonstone lilac: the brand accent for the public site (cosmic wellness) ---
-            moon: '#C6B2E4',          // soft silver-violet — the single glow accent
-            'moon-bright': '#DBCDF2', // luminous highlight on the dark sky
-            'moon-deep': '#9E86C9',   // deeper lilac for hover / weight
-            'moon-mist': '#8C7FB0',   // muted lilac for secondary text on dark
-            charcoal: '#564D4D',
-            'charcoal-deep': '#3A3234',
-            sage: '#4F8E62',
-            cream: '#FFFFFF',
-            ink: '#2B2426',
-            // --- Semantic tokens ---
-            'ink-soft': '#55494B',
-            taupe: '#8A7D7D',
-            paper: '#FFFFFF',
-            'paper-2': '#EAE0D5',
-            'paper-3': '#E0D4C6',
-            line: '#E7E5E1',
-            espresso: '#2C1B3E',          // dark band -> deep aubergine
-            // --- Back-compat aliases (remapped onto the jewel palette) ---
-            terracotta: '#F19F58',        // -> coral/orange
-            'terracotta-dark': '#DA8636',
-            gold: '#F19F58',
-            'gold-soft': '#F0A15C',
-            lilac: '#F19F58',
-            'lilac-dark': '#DA8636',
-            'gold-accent': '#F19F58',
-            // --- Admin dashboard dark theme (these aliases are used only by the
-            //     admin/dashboard; the public site uses paper/cream/line directly) ---
-            'teal-accent': '#C79BD6',     // light mauve accent, reads on dark
-            'teal-dark': '#8E5C86',
-            // Admin theme tokens — CSS variables so the dashboard can flip light/dark.
-            'bg-dark': 'var(--adm-bg-dark)',         // input wells
-            'bg-deep': 'var(--adm-bg-deep)',         // dashboard shell background
-            'surface-1': 'var(--adm-surface-1)',     // cards / sidebar
-            'surface-2': 'var(--adm-surface-2)',
-            'surface-highlight': 'var(--adm-surface-highlight)',
-            'text-light': 'var(--adm-text-light)',   // primary text
-            'text-subtle': 'var(--adm-text-subtle)', // muted text
-            // Admin neutral lines / hovers (replace black/white opacity literals).
-            'adm-line': 'var(--adm-line)',
-            'adm-line-2': 'var(--adm-line-2)',
-            'adm-line-3': 'var(--adm-line-3)',
-            'adm-hover': 'var(--adm-hover)',
-            'adm-hover-2': 'var(--adm-hover-2)',
-            'adm-hover-3': 'var(--adm-hover-3)',
-            'adm-ink': 'var(--adm-text-light)',
-          },
-          animation: {
-            'pulse-slow': 'pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            'pulse-slower': 'pulse 7s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            'spin-slow': 'spin 15s linear infinite',
-            'spin-reverse-slow': 'spin-reverse 20s linear infinite',
-            'float': 'float 6s ease-in-out infinite',
-            'float-delayed': 'float 6s ease-in-out 3s infinite',
-            'float-slow': 'float 10s ease-in-out infinite',
-            'float-slower': 'float 14s ease-in-out infinite',
-            'scroll': 'scroll 160s linear infinite',
-            'bounce-slow': 'bounce 2s infinite',
-            'fade-up': 'fade-up 0.55s cubic-bezier(0.22,1,0.36,1) both',
-          },
-          keyframes: {
-            'fade-up': {
-              '0%': { opacity: '0', transform: 'translateY(18px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' },
-            },
-            float: {
-              '0%, 100%': { transform: 'translateY(0)' },
-              '50%': { transform: 'translateY(-20px)' },
-            },
-            'spin-reverse': {
-              'from': { transform: 'rotate(360deg)' },
-              'to': { transform: 'rotate(0deg)' },
-            },
-            scroll: {
-              '0%': { transform: 'translateX(0)' },
-              '100%': { transform: 'translateX(-50%)' },
-            }
-          }
-        },
-      }
-    }
-  </script>
+  <!-- Tailwind is compiled at build time (tailwind.config.js + PostCSS); styles
+       are bundled via index.css, imported from index.tsx. -->
 
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KKX2C4PCVX"></script>
@@ -173,11 +71,10 @@
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3"
   }
 }
 </script>
-  <link rel="stylesheet" href="/index.css">
 </head>
 
 <body class="text-cream overflow-x-hidden selection:bg-ink/20 antialiased font-sans">

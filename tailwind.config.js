@@ -1,0 +1,105 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './index.html',
+    './index.tsx',
+    './App.tsx',
+    './components/**/*.{ts,tsx}',
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        // Switzer — one clean modern grotesque across the whole site.
+        sans: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        serif: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        heading: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        elegant: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      colors: {
+        // --- Brand palette v2.0 (jewel tones) ---
+        plum: '#39234E',
+        'plum-deep': '#2A1839',
+        blue: '#29527B',
+        mauve: '#8E5C86',
+        coral: '#F19F58',
+        'coral-deep': '#DA8636',
+        // --- Moonstone lilac: the brand accent for the public site ---
+        moon: '#C6B2E4',
+        'moon-bright': '#DBCDF2',
+        'moon-deep': '#9E86C9',
+        'moon-mist': '#8C7FB0',
+        charcoal: '#564D4D',
+        'charcoal-deep': '#3A3234',
+        sage: '#4F8E62',
+        cream: '#FFFFFF',
+        ink: '#2B2426',
+        // --- Semantic tokens ---
+        'ink-soft': '#55494B',
+        taupe: '#8A7D7D',
+        paper: '#FFFFFF',
+        'paper-2': '#EAE0D5',
+        'paper-3': '#E0D4C6',
+        line: '#E7E5E1',
+        espresso: '#2C1B3E',
+        // --- Back-compat aliases ---
+        terracotta: '#F19F58',
+        'terracotta-dark': '#DA8636',
+        gold: '#F19F58',
+        'gold-soft': '#F0A15C',
+        lilac: '#F19F58',
+        'lilac-dark': '#DA8636',
+        'gold-accent': '#F19F58',
+        // --- Admin dashboard dark theme ---
+        'teal-accent': '#C79BD6',
+        'teal-dark': '#8E5C86',
+        'bg-dark': 'var(--adm-bg-dark)',
+        'bg-deep': 'var(--adm-bg-deep)',
+        'surface-1': 'var(--adm-surface-1)',
+        'surface-2': 'var(--adm-surface-2)',
+        'surface-highlight': 'var(--adm-surface-highlight)',
+        'text-light': 'var(--adm-text-light)',
+        'text-subtle': 'var(--adm-text-subtle)',
+        'adm-line': 'var(--adm-line)',
+        'adm-line-2': 'var(--adm-line-2)',
+        'adm-line-3': 'var(--adm-line-3)',
+        'adm-hover': 'var(--adm-hover)',
+        'adm-hover-2': 'var(--adm-hover-2)',
+        'adm-hover-3': 'var(--adm-hover-3)',
+        'adm-ink': 'var(--adm-text-light)',
+      },
+      animation: {
+        'pulse-slow': 'pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-slower': 'pulse 7s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'spin-slow': 'spin 15s linear infinite',
+        'spin-reverse-slow': 'spin-reverse 20s linear infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'float-delayed': 'float 6s ease-in-out 3s infinite',
+        'float-slow': 'float 10s ease-in-out infinite',
+        'float-slower': 'float 14s ease-in-out infinite',
+        'scroll': 'scroll 160s linear infinite',
+        'bounce-slow': 'bounce 2s infinite',
+        'fade-up': 'fade-up 0.55s cubic-bezier(0.22,1,0.36,1) both',
+      },
+      keyframes: {
+        'fade-up': {
+          '0%': { opacity: '0', transform: 'translateY(18px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        'spin-reverse': {
+          'from': { transform: 'rotate(360deg)' },
+          'to': { transform: 'rotate(0deg)' },
+        },
+        scroll: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+      },
+    },
+  },
+  plugins: [],
+};

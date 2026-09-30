@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Self-hosted Switzer (was a Fontshare stylesheet round-trip) */
 @font-face { font-family: 'Switzer'; font-style: normal; font-weight: 300; font-display: swap; src: url('/fonts/switzer-300.woff2') format('woff2'); }
 @font-face { font-family: 'Switzer'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/switzer-400.woff2') format('woff2'); }
