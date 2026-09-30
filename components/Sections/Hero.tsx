@@ -110,7 +110,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     <section
       ref={heroRef}
       id="hero"
-      className="relative min-h-screen flex flex-col justify-between overflow-hidden isolate text-cream pt-28 md:pt-32 pb-8 md:pb-12"
+      className="relative min-h-screen flex flex-col justify-between overflow-hidden isolate text-cream pt-28 md:pt-32 pb-20 md:pb-28"
       style={{ willChange: 'filter' }}
     >
       {/* TOP — editorial kicker */}
@@ -166,30 +166,24 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </div>
       </div>
 
-      {/* BOTTOM — metrics as an editorial index: a label + a drawn-in rule over a
-          big number, each column's rule wiping in, staggered, on reveal. */}
+      {/* BOTTOM — metrics as a full-width data row: big number over a label, with
+          a moonstone tick that grows and the number lifting to moon on hover. */}
       <Rise delay={680}>
         <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 md:gap-x-10 gap-y-7 md:gap-y-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-7 md:gap-y-0 border-t border-cream/15">
             {metrics.map((m, i) => (
-              <div key={i} className="group">
-                {/* label */}
-                <div className="flex items-center gap-2">
-                  <span aria-hidden className="w-1 h-1 rounded-full bg-moon/70 transition-transform duration-300 group-hover:scale-150" />
-                  <span className="text-[9px] md:text-[10px] uppercase tracking-[0.24em] text-cream/55">{m.label}</span>
-                </div>
-                {/* drawn-in rule */}
-                <span
-                  aria-hidden
-                  className="mt-3 block h-px w-full bg-cream/20 origin-left"
-                  style={{
-                    transform: shown ? 'scaleX(1)' : 'scaleX(0)',
-                    transition: `transform 0.9s ${EASE} ${820 + i * 130}ms`,
-                  }}
-                />
-                {/* number */}
-                <div className="mt-3 font-elegant font-medium tabular-nums leading-none text-cream text-[2rem] md:text-[2.6rem] transition-colors duration-300 group-hover:text-moon">
+              <div
+                key={i}
+                className="group pt-5 md:pt-6 md:pl-6 md:border-l md:border-cream/12 md:first:border-l-0 md:first:pl-0"
+              >
+                <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[1.85rem] md:text-[2.3rem] transition-all duration-300 group-hover:text-moon group-hover:-translate-y-0.5">
                   <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
+                </div>
+                <div className="mt-2.5 flex items-center gap-2">
+                  <span aria-hidden className="block h-px w-4 bg-moon/60 transition-all duration-300 group-hover:w-8" />
+                  <span className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] leading-tight text-cream/45 transition-colors duration-300 group-hover:text-cream/70">
+                    {m.label}
+                  </span>
                 </div>
               </div>
             ))}
