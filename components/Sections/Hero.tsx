@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
-import Magnetic from '../UI/Magnetic';
 
 interface HeroProps {
   isIndonesian?: boolean;
@@ -29,8 +28,11 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         raf = 0;
         const h = window.innerHeight || 1;
         const p = Math.min(Math.max(window.scrollY / h, 0), 1);
-        el.style.transform = `translate3d(0, ${(-p * 120).toFixed(1)}px, 0)`;
-        el.style.opacity = String(1 - p * 0.8);
+        const e = p * p * (3 - 2 * p); // smoothstep — holds, then eases away
+        // drift up + gently recede (scale down) so it settles into the distance
+        // as the section below rises over it, rather than just dimming.
+        el.style.transform = `translate3d(0, ${(-e * 108).toFixed(1)}px, 0) scale(${(1 - e * 0.055).toFixed(3)})`;
+        el.style.opacity = (1 - e * 0.95).toFixed(3);
       });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -137,16 +139,14 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
           <Rise delay={560}>
             <div className="mt-8">
-              <Magnetic>
-                <a
-                  href="#services"
-                  onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                  className="group inline-flex items-center gap-3 rounded-lg bg-cream text-ink px-7 py-3.5 text-sm font-semibold hover:bg-plum hover:text-cream transition-colors duration-300"
-                >
-                  {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </a>
-              </Magnetic>
+              <a
+                href="#services"
+                onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
+                className="group inline-flex items-center gap-3 rounded-lg bg-cream text-ink px-7 py-3.5 text-sm font-semibold hover:bg-plum hover:text-cream transition-colors duration-300"
+              >
+                {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </a>
             </div>
           </Rise>
         </div>
