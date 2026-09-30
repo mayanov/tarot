@@ -15,8 +15,9 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const [shown, setShown] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
 
-  // Parallax: as the page scrolls up over the pinned hero, drift the hero content
-  // up (and fade it) so it feels like it's being pushed up, not just covered.
+  // The hero scrolls away at the same speed as the section below (it's pushed up
+  // by it), so we don't move it here — we only softly blur it out of focus as it
+  // goes, for a dreamy defocus rather than a plain scroll-off.
   useEffect(() => {
     const el = heroRef.current;
     if (!el) return;
@@ -28,14 +29,9 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         raf = 0;
         const h = window.innerHeight || 1;
         const p = Math.min(Math.max(window.scrollY / h, 0), 1);
-        const e = p * p * (3 - 2 * p); // smoothstep — holds, then eases away
-        // Defocus: the hero slides up and softly blurs out of focus as the section
-        // below rises over it — a dreamy recede, not a fade. The slide leads; the
-        // blur ramps in later (eased) so it doesn't snap out of focus too fast.
-        const blur = Math.pow(e, 1.7) * 7;
-        el.style.transform = `translate3d(0, ${(-e * 200).toFixed(1)}px, 0) scale(${(1 - e * 0.04).toFixed(3)})`;
+        const e = p * p * (3 - 2 * p);        // smoothstep
+        const blur = Math.pow(e, 1.7) * 7;    // ramps in later, not instantly
         el.style.filter = blur > 0.02 ? `blur(${blur.toFixed(2)}px)` : 'none';
-        el.style.opacity = '1';
       });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -115,7 +111,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       ref={heroRef}
       id="hero"
       className="relative min-h-screen flex flex-col overflow-hidden isolate text-cream"
-      style={{ willChange: 'transform, filter' }}
+      style={{ willChange: 'filter' }}
     >
       {/* Brand-led hero — MAYANOV TAROT is the clear #1 (right, over the orbit);
           the statement is a smaller supporting subhead + CTA on the left. */}

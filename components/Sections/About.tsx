@@ -19,7 +19,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
   }, [isIndonesian]);
 
   return (
-    <section id="about" className="relative z-10 isolate overflow-hidden text-ink lg:min-h-[90vh] rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]" style={{ background: '#ffffff' }}>
+    <section id="about" className="relative z-10 isolate overflow-hidden text-ink lg:min-h-[90vh] -mt-6 md:-mt-10 rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]" style={{ background: '#ffffff' }}>
       {/* full-bleed portrait — top on mobile, bleeds to the right viewport edge on desktop (breaks the page margin on purpose) */}
       <div className="relative lg:absolute lg:top-0 lg:right-0 lg:bottom-0 lg:w-[47%] min-h-[62vh] lg:min-h-0 overflow-hidden">
         <ImageReveal

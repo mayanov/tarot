@@ -15,9 +15,26 @@ let tokenClient: any;
 let gapiInited = false;
 let gisInited = false;
 
+// Load the Google API + Identity scripts on demand (they used to sit in
+// index.html and load for every public visitor; the dashboard needs them only
+// when it initializes, so inject them here instead).
+const ensureGoogleScripts = () => {
+    const add = (src: string) => {
+        if (document.querySelector(`script[src="${src}"]`)) return;
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.defer = true;
+        document.head.appendChild(s);
+    };
+    add('https://apis.google.com/js/api.js');
+    add('https://accounts.google.com/gsi/client');
+};
+
 // 1. Initialize API Client
 export const initGoogleAPI = (clientId: string) => {
     return new Promise<boolean>((resolve, reject) => {
+        ensureGoogleScripts();
         // Determine if scripts are loaded
         const checkScripts = setInterval(() => {
             if (typeof window.gapi !== 'undefined' && typeof window.google !== 'undefined') {

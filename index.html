@@ -30,13 +30,12 @@
   <link rel="preload" as="image" href="/sky-hero.jpg" fetchpriority="high" />
   <link rel="preload" as="image" href="/moon.jpg" />
 
-  <!-- Font: Switzer (modern grotesque) — one clean typeface across the whole site -->
-  <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
-  <link href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&display=swap" rel="stylesheet">
+  <!-- Font: Switzer (self-hosted woff2 — no third-party stylesheet round-trip) -->
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/switzer-400.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/switzer-600.woff2" crossorigin>
 
-  <!-- Google API Scripts (for Real Data Dashboard) -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://apis.google.com/js/api.js" async defer></script>
+  <!-- Google sign-in / API scripts are loaded on demand by the admin dashboard
+       (services/ga4.ts), not on the public site. -->
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
