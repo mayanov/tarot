@@ -26,6 +26,10 @@
 
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
+  <!-- Preload the first-paint imagery so the loader/hero appear without a fetch stall -->
+  <link rel="preload" as="image" href="/sky-hero.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="/moon.jpg" />
+
   <!-- Font: Switzer (modern grotesque) — one clean typeface across the whole site -->
   <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
   <link href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&display=swap" rel="stylesheet">

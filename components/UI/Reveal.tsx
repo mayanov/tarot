@@ -34,6 +34,7 @@ export const ImageReveal: React.FC<ImageRevealProps> = ({ src, alt, className = 
         src={src}
         alt={alt}
         loading={loading}
+        decoding="async"
         className={imgClassName}
         style={{
           clipPath: shown ? 'inset(0 0 0 0)' : 'inset(0 0 100% 0)',

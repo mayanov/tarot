@@ -29,10 +29,12 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         const h = window.innerHeight || 1;
         const p = Math.min(Math.max(window.scrollY / h, 0), 1);
         const e = p * p * (3 - 2 * p); // smoothstep — holds, then eases away
-        // Defocus: the hero drifts up + eases back slightly and softly blurs out
-        // of focus as the section below rises over it — a dreamy recede, not a fade.
-        el.style.transform = `translate3d(0, ${(-e * 90).toFixed(1)}px, 0) scale(${(1 - e * 0.04).toFixed(3)})`;
-        el.style.filter = e > 0.001 ? `blur(${(e * 8).toFixed(2)}px)` : 'none';
+        // Defocus: the hero slides up and softly blurs out of focus as the section
+        // below rises over it — a dreamy recede, not a fade. The slide leads; the
+        // blur ramps in later (eased) so it doesn't snap out of focus too fast.
+        const blur = Math.pow(e, 1.7) * 7;
+        el.style.transform = `translate3d(0, ${(-e * 200).toFixed(1)}px, 0) scale(${(1 - e * 0.04).toFixed(3)})`;
+        el.style.filter = blur > 0.02 ? `blur(${blur.toFixed(2)}px)` : 'none';
         el.style.opacity = '1';
       });
     };
