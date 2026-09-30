@@ -170,24 +170,21 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           a moonstone tick that grows and the number lifting to moon on hover. */}
       <Rise delay={680}>
         <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
-          <div className="relative grid grid-cols-2 md:grid-cols-4 gap-y-7 md:gap-y-0">
-            {/* top rule sweeps in across the full row on reveal */}
-            <span
-              aria-hidden
-              className="absolute left-0 top-0 h-px w-full bg-cream/18 origin-left"
-              style={{ transform: shown ? 'scaleX(1)' : 'scaleX(0)', transition: `transform 1.1s ${EASE} 720ms` }}
-            />
+          <div
+            className="grid grid-cols-2 md:grid-cols-4 gap-y-6 md:gap-y-0 rounded-2xl ring-1 ring-white/10 backdrop-blur-md px-6 py-6 md:px-4 md:py-7 shadow-[0_24px_70px_-44px_rgba(0,0,0,0.85)]"
+            style={{ background: 'rgba(20,26,61,0.42)' }}
+          >
             {metrics.map((m, i) => (
               <div
                 key={i}
-                className="group relative pt-5 md:pt-6 md:pl-6 md:border-l md:border-cream/12 md:first:border-l-0 md:first:pl-0"
+                className="group md:px-6 md:border-l md:border-white/12 md:first:border-l-0"
               >
                 <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[1.9rem] md:text-[2.4rem] transition-all duration-300 group-hover:text-moon group-hover:-translate-y-0.5">
                   <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
                 </div>
                 <div className="mt-2.5 flex items-center gap-2">
                   <span aria-hidden className="block h-px w-4 bg-moon/60 transition-all duration-300 group-hover:w-9" />
-                  <span className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] leading-tight text-cream/45 transition-colors duration-300 group-hover:text-cream/75">
+                  <span className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] leading-tight text-cream/50 transition-colors duration-300 group-hover:text-cream/80">
                     {m.label}
                   </span>
                 </div>
