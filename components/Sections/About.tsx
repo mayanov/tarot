@@ -43,11 +43,17 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       {/* text — inside the page container, held to the left so the portrait can bleed right */}
       <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 lg:min-h-[90vh] flex items-center">
         <FadeIn className="w-full lg:w-[53%] lg:pr-14 py-14 md:py-20">
-          <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3rem] lg:text-[3.6rem] leading-[1.04] tracking-[-0.025em]">
-            <MaskReveal>{isIndonesian ? 'Halo, saya Mayanov.' : 'Hi, I’m Mayanov.'}</MaskReveal>
+          <h2 className="font-elegant font-medium text-ink text-[1.95rem] sm:text-[2.5rem] lg:text-[3.1rem] leading-[1.12] tracking-[-0.02em]">
+            <MaskReveal>
+              {isIndonesian ? (
+                <>Tujuan saya simpel: memberikan <span className="text-moon-deep italic">kejelasan</span> agar kamu bisa mengambil keputusan dengan percaya diri.</>
+              ) : (
+                <>My goal is simple: to give you the <span className="text-moon-deep italic">clarity</span> to make decisions with confidence.</>
+              )}
+            </MaskReveal>
           </h2>
 
-          <div className="mt-6 md:mt-8 space-y-5 text-[15px] md:text-base text-ink/70 font-light leading-[1.75] max-w-xl">
+          <div className="mt-7 md:mt-9 space-y-5 text-[15px] md:text-base text-ink/70 font-light leading-[1.75] max-w-xl">
             <p>
               {isIndonesian
                 ? 'Saya telah mendalami seni membaca kartu Tarot sejak 2009. Dengan pengalaman lebih dari 15 tahun, saya menemukan bahwa kartu Tarot adalah medium yang baik untuk melakukan refleksi diri dan mencari solusi sebuah permasalahan.'
@@ -60,19 +66,6 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </p>
           </div>
 
-          {/* big closing statement — the section's bold finish */}
-          <figure className="relative mt-10 md:mt-14 pl-6 md:pl-7 border-l-2 border-moon">
-            <span aria-hidden className="pointer-events-none absolute -left-1 -top-9 font-serif text-[6.5rem] leading-none text-moon/20 select-none">“</span>
-            <blockquote className="relative font-elegant italic font-medium text-ink text-[1.7rem] sm:text-[2.1rem] lg:text-[2.55rem] leading-[1.16] tracking-[-0.02em]">
-              <MaskReveal>
-                {isIndonesian ? (
-                  <>Tujuan saya simpel: memberikan <span className="text-moon-deep">kejelasan</span> agar kamu bisa mengambil keputusan dengan percaya diri.</>
-                ) : (
-                  <>My goal is simple: to give you the <span className="text-moon-deep">clarity</span> to make decisions with confidence.</>
-                )}
-              </MaskReveal>
-            </blockquote>
-          </figure>
         </FadeIn>
       </div>
     </section>
