@@ -60,16 +60,19 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </p>
           </div>
 
-          {/* quote callout — a designed pull element */}
-          <div className="relative mt-9 md:mt-11 overflow-hidden rounded-xl bg-plum-deep text-cream px-7 py-6 md:py-7 max-w-xl">
-            <span aria-hidden className="absolute left-0 top-0 bottom-0 w-1 bg-moon" />
-            <span aria-hidden className="pointer-events-none absolute -top-2 right-3 font-serif text-[5.5rem] leading-none text-cream/10 select-none">”</span>
-            <p className="relative font-elegant italic font-semibold text-[1.05rem] md:text-[1.2rem] leading-[1.4]">
-              {isIndonesian
-                ? 'Tujuan saya simpel: memberikan kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
-                : 'My goal is simple: to give you the clarity to make decisions with confidence.'}
-            </p>
-          </div>
+          {/* big closing statement — the section's bold finish */}
+          <figure className="relative mt-10 md:mt-14 pl-6 md:pl-7 border-l-2 border-moon">
+            <span aria-hidden className="pointer-events-none absolute -left-1 -top-9 font-serif text-[6.5rem] leading-none text-moon/20 select-none">“</span>
+            <blockquote className="relative font-elegant italic font-medium text-ink text-[1.7rem] sm:text-[2.1rem] lg:text-[2.55rem] leading-[1.16] tracking-[-0.02em]">
+              <MaskReveal>
+                {isIndonesian ? (
+                  <>Tujuan saya simpel: memberikan <span className="text-moon-deep">kejelasan</span> agar kamu bisa mengambil keputusan dengan percaya diri.</>
+                ) : (
+                  <>My goal is simple: to give you the <span className="text-moon-deep">clarity</span> to make decisions with confidence.</>
+                )}
+              </MaskReveal>
+            </blockquote>
+          </figure>
         </FadeIn>
       </div>
     </section>
