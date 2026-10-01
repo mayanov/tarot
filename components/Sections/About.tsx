@@ -51,7 +51,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           </h2>
 
           <div className="mt-7 md:mt-9 max-w-xl space-y-5">
-            <p className="text-[1.08rem] md:text-[1.22rem] leading-[1.62] text-ink/90 first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-moon-deep first-letter:text-[3.6rem] first-letter:leading-[0.72]">
+            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-ink first-letter:text-[3.4rem] first-letter:leading-[0.72]">
               {isIndonesian
                 ? 'Saya telah mendalami seni membaca kartu Tarot sejak 2009. Dengan pengalaman lebih dari 15 tahun, saya menemukan bahwa kartu Tarot adalah medium yang baik untuk melakukan refleksi diri dan mencari solusi sebuah permasalahan.'
                 : 'I’ve been studying the art of reading Tarot since 2009. With over 15 years of experience, I’ve found that the cards are a wonderful medium for self-reflection and for working through a problem.'}
@@ -63,16 +63,19 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </p>
           </div>
 
-          {/* emphasized closing — the goal, as a confident last word */}
-          <div className="mt-8 md:mt-10 pt-6 border-t border-ink/10 max-w-xl">
-            <p className="font-elegant text-ink text-[1.25rem] md:text-[1.5rem] leading-[1.3] tracking-[-0.015em]">
-              {isIndonesian ? (
-                <>Tujuan saya simpel: memberikan <span className="text-moon-deep italic">kejelasan</span> agar kamu bisa mengambil keputusan dengan percaya diri.</>
-              ) : (
-                <>My goal is simple: to give you the <span className="text-moon-deep italic">clarity</span> to make decisions with confidence.</>
-              )}
-            </p>
-          </div>
+          {/* goal — a soft moonstone panel so it reads as a designed closing,
+              not another plain line */}
+          <figure className="relative mt-9 md:mt-12 max-w-xl overflow-hidden rounded-2xl p-7 md:p-8" style={{ background: 'rgba(198,178,228,0.13)' }}>
+            <span aria-hidden className="pointer-events-none absolute -top-5 right-4 font-serif text-[6.5rem] leading-none text-moon-deep/15 select-none">”</span>
+            <blockquote className="relative font-elegant text-ink text-[1.3rem] md:text-[1.65rem] leading-[1.26] tracking-[-0.015em]">
+              {isIndonesian
+                ? 'Tujuan saya simpel: memberikan kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
+                : 'My goal is simple: to give you the clarity to make decisions with confidence.'}
+            </blockquote>
+            <figcaption className="relative mt-5 flex items-center gap-2.5 text-[11px] uppercase tracking-[0.28em] text-moon-deep">
+              <span aria-hidden className="h-px w-6 bg-moon-deep/60" /> Mayanov
+            </figcaption>
+          </figure>
 
         </FadeIn>
       </div>
