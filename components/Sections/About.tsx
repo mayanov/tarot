@@ -8,6 +8,9 @@ interface AboutProps {
   isIndonesian?: boolean;
 }
 
+const GRAIN =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")";
+
 const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
   useEffect(() => {
     trackEvent(
@@ -29,47 +32,43 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           imgClassName="w-full h-full object-cover object-top"
           loading="eager"
         />
-        {/* cosmic tint — melts the portrait toward the twilight palette */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'linear-gradient(215deg, rgba(58,42,94,0.20) 0%, transparent 38%, rgba(18,14,44,0.5) 100%)' }} />
-        {/* soft left fade so the photo dissolves into the white page (no hard seam) */}
-        <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-28 hidden lg:block bg-gradient-to-r from-white to-transparent" />
+        {/* flat plum tint (no directional gradient) to cohere with the palette */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
+        {/* fine film grain — ties the portrait to the site's texture */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-50 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '140px 140px' }} />
+        {/* crisp editorial seam between the text and the portrait */}
+        <div aria-hidden className="hidden lg:block absolute inset-y-0 left-0 w-px bg-ink/10" />
       </div>
 
       {/* text — inside the page container, held to the left so the portrait can bleed right */}
       <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 lg:min-h-[90vh] flex items-center">
         <FadeIn className="w-full lg:w-[53%] lg:pr-14 py-14 md:py-20">
-          {/* eyebrow */}
-          <div className="flex items-center gap-3 text-[10px] sm:text-[11px] uppercase tracking-[0.34em] text-ink/50">
-            <span aria-hidden className="h-px w-8 sm:w-12 bg-moon-deep/50" />
-            <span>{isIndonesian ? 'Tentang Saya' : 'About Me'}</span>
-          </div>
-
-          {/* lead statement — the section's headline (shortened) */}
-          <h2 className="mt-6 md:mt-8 font-elegant font-medium text-ink text-[1.9rem] sm:text-[2.5rem] lg:text-[3.05rem] leading-[1.12] tracking-[-0.02em]">
-            <MaskReveal>
-              {isIndonesian ? (
-                <>Tarot bukan soal takdir menakutkan — tapi ruang tenang untuk menemukan <span className="text-moon-deep italic">kejernihan</span>.</>
-              ) : (
-                <>Tarot isn’t about scary fate — it’s a calm space to find <span className="text-moon-deep italic">clarity</span>.</>
-              )}
-            </MaskReveal>
+          <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3rem] lg:text-[3.6rem] leading-[1.04] tracking-[-0.025em]">
+            <MaskReveal>{isIndonesian ? 'Halo, saya Mayanov.' : 'Hi, I’m Mayanov.'}</MaskReveal>
           </h2>
 
-          {/* one tight bio line */}
-          <p className="mt-6 md:mt-7 text-[15px] md:text-base text-ink/70 font-light leading-[1.7] max-w-lg">
-            {isIndonesian
-              ? 'Saya Mayanov — membaca Tarot sejak 2009. Lebih dari 15 tahun menjadikannya percakapan jujur untuk refleksi, bukan ramalan. Datang apa adanya, pulang dengan arah yang lebih jelas.'
-              : 'I’m Mayanov — reading Tarot since 2009. Over 15 years turning the cards into honest conversations for reflection, not prediction. Come as you are, leave with a clearer direction.'}
-          </p>
+          <div className="mt-6 md:mt-8 space-y-5 text-[15px] md:text-base text-ink/70 font-light leading-[1.75] max-w-xl">
+            <p>
+              {isIndonesian
+                ? 'Saya telah mendalami seni membaca kartu Tarot sejak 2009. Dengan pengalaman lebih dari 15 tahun, saya menemukan bahwa kartu Tarot adalah medium yang baik untuk melakukan refleksi diri dan mencari solusi sebuah permasalahan.'
+                : 'I’ve been studying the art of reading Tarot since 2009. With over 15 years of experience, I’ve found that the cards are a wonderful medium for self-reflection and for working through a problem.'}
+            </p>
+            <p>
+              {isIndonesian
+                ? 'Karena pada dasarnya pembacaan Tarot bukanlah sesederhana ‘menerawang’ masa depan, melainkan menjadi sesi konsultasi yang mendewasakan baik Anda maupun saya.'
+                : 'Because a Tarot reading isn’t simply about ‘predicting’ the future — it becomes a consultation that helps both you and me grow.'}
+            </p>
+          </div>
 
-          {/* approach — a small editorial tag row */}
-          <div className="mt-8 md:mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-ink/10 pt-6">
-            {(isIndonesian ? ['Analitis', 'Hangat', 'Jujur'] : ['Analytical', 'Warm', 'Honest']).map((w) => (
-              <span key={w} className="flex items-center gap-2 text-[13px] md:text-sm text-ink/75">
-                <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-moon-deep/70" />
-                {w}
-              </span>
-            ))}
+          {/* quote callout — a designed pull element */}
+          <div className="relative mt-9 md:mt-11 overflow-hidden rounded-xl bg-plum-deep text-cream px-7 py-6 md:py-7 max-w-xl">
+            <span aria-hidden className="absolute left-0 top-0 bottom-0 w-1 bg-moon" />
+            <span aria-hidden className="pointer-events-none absolute -top-2 right-3 font-serif text-[5.5rem] leading-none text-cream/10 select-none">”</span>
+            <p className="relative font-elegant italic font-semibold text-[1.05rem] md:text-[1.2rem] leading-[1.4]">
+              {isIndonesian
+                ? 'Tujuan saya simpel: memberikan kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
+                : 'My goal is simple: to give you the clarity to make decisions with confidence.'}
+            </p>
           </div>
         </FadeIn>
       </div>
