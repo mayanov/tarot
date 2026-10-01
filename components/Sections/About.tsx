@@ -43,30 +43,20 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       {/* text — inside the page container, held to the left so the portrait can bleed right */}
       <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 lg:min-h-[90vh] flex items-center">
         <FadeIn className="w-full lg:w-[53%] lg:pr-14 py-14 md:py-20">
-          {/* credential overline */}
-          <div className="flex items-center gap-3 text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-ink/45">
-            <span aria-hidden className="h-px w-8 sm:w-10 bg-moon-deep/50" />
-            <span>{isIndonesian ? '15+ Tahun · Sejak 2009' : '15+ Years · Since 2009'}</span>
-          </div>
-
           {/* hook title */}
-          <h2 className="mt-5 md:mt-6 font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
+          <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>
-              {isIndonesian ? (
-                <><span className="text-moon-deep">Kejelasan</span>, bukan ramalan.</>
-              ) : (
-                <><span className="text-moon-deep">Clarity</span>, not fortune-telling.</>
-              )}
+              {isIndonesian ? 'Kejelasan, bukan ramalan.' : 'Clarity, not fortune-telling.'}
             </MaskReveal>
           </h2>
 
-          <div className="mt-7 md:mt-9 space-y-5 text-[15px] md:text-base text-ink/70 font-light leading-[1.75] max-w-xl">
-            <p className="first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:font-elegant first-letter:font-semibold first-letter:text-ink first-letter:text-[3.1rem] first-letter:leading-[0.78]">
+          <div className="mt-7 md:mt-9 max-w-xl space-y-5">
+            <p className="text-[1.08rem] md:text-[1.22rem] leading-[1.62] text-ink/90 first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-moon-deep first-letter:text-[3.6rem] first-letter:leading-[0.72]">
               {isIndonesian
                 ? 'Saya telah mendalami seni membaca kartu Tarot sejak 2009. Dengan pengalaman lebih dari 15 tahun, saya menemukan bahwa kartu Tarot adalah medium yang baik untuk melakukan refleksi diri dan mencari solusi sebuah permasalahan.'
                 : 'I’ve been studying the art of reading Tarot since 2009. With over 15 years of experience, I’ve found that the cards are a wonderful medium for self-reflection and for working through a problem.'}
             </p>
-            <p>
+            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light">
               {isIndonesian
                 ? 'Karena pada dasarnya pembacaan Tarot bukanlah sesederhana ‘menerawang’ masa depan, melainkan menjadi sesi konsultasi yang mendewasakan baik Anda maupun saya.'
                 : 'Because a Tarot reading isn’t simply about ‘predicting’ the future — it becomes a consultation that helps both you and me grow.'}

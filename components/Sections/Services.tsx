@@ -23,7 +23,7 @@ const OfferRow: React.FC<{ o: any }> = ({ o }) => (
         <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2.5 flex-wrap min-w-0">
                 <h4 className="text-[1.05rem] font-serif font-semibold text-cream leading-tight tracking-tight">
-                    {o.name}{o.sub && <span className="text-sm text-cream/55 font-sans font-normal ml-2">{o.sub}</span>}
+                    {o.name}{o.sub && <span className="text-sm text-cream/80 font-sans font-normal ml-2">{o.sub}</span>}
                 </h4>
                 {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-lg ${o.badgeTone || 'bg-white/[0.06] text-cream'}`}>{o.badge}</span>}
             </div>
@@ -32,8 +32,8 @@ const OfferRow: React.FC<{ o: any }> = ({ o }) => (
                 <span className="text-lg md:text-xl font-serif font-semibold text-cream leading-none whitespace-nowrap">{o.price}</span>
             </div>
         </div>
-        {o.desc && <p className="mt-2 text-sm text-cream/70 font-light leading-relaxed max-w-2xl">{o.desc}</p>}
-        {o.features && <p className="mt-1.5 text-xs text-cream/50 leading-relaxed max-w-2xl">{o.features}</p>}
+        {o.desc && <p className="mt-2 text-sm text-cream/95 font-light leading-relaxed max-w-2xl">{o.desc}</p>}
+        {o.features && <p className="mt-1.5 text-xs text-cream/80 leading-relaxed max-w-2xl">{o.features}</p>}
     </div>
 );
 
@@ -307,7 +307,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
 
                                 {/* short explanation — always visible, even before expanding */}
                                 {g.blurb && (
-                                    <p className="pb-7 md:pb-9 text-sm text-cream/70 font-light leading-relaxed max-w-2xl [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">{g.blurb}</p>
+                                    <p className="pb-7 md:pb-9 text-sm text-cream/95 font-light leading-relaxed max-w-2xl [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">{g.blurb}</p>
                                 )}
 
                                 {/* body — collapses smoothly via grid-rows trick */}
