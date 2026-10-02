@@ -24,7 +24,7 @@ const Marquee: React.FC<MarqueeProps> = ({ isIndonesian = false }) => {
   );
 
   return (
-    <section aria-hidden className="relative overflow-hidden isolate py-5 md:py-6 border-y border-white/[0.05]" style={{ background: 'linear-gradient(180deg, #0B0B12 0%, #12112A 100%)' }}>
+    <section aria-hidden className="relative overflow-hidden isolate py-5 md:py-6 border-y border-white/[0.05]" style={{ background: '#202A5C' }}>
       <div className="flex w-max animate-[marquee_55s_linear_infinite] will-change-transform">
         <Row />
         <Row />

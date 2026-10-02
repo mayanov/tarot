@@ -58,7 +58,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
                   {/* purple reveal — a diagonal gradient that wipes up from the corner on hover */}
                   <span
                     aria-hidden
-                    className="absolute inset-0 origin-bottom translate-y-full scale-y-100 bg-gradient-to-tr from-[#33205C] via-[#4A2E77] to-[#6B3FA0] transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:translate-y-0"
+                    className="absolute inset-0 origin-bottom translate-y-full scale-y-100 bg-gradient-to-tr from-[#39234E] to-[#6B3FA0] transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:translate-y-0"
                   />
                   <div className="relative z-10 flex flex-1 flex-col p-4 sm:p-6 md:p-8">
                     {/* eyebrow */}

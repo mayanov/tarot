@@ -29,7 +29,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     ];
 
     return (
-        <section id="disclaimer" className="py-12 md:py-16 relative isolate text-cream" style={{ background: '#0C1430' }}>
+        <section id="disclaimer" className="py-12 md:py-16 relative isolate text-cream" style={{ background: '#202A5C' }}>
             {/* soft moonstone bloom for depth */}
             <div
                 aria-hidden

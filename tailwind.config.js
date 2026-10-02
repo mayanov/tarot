@@ -19,7 +19,7 @@ export default {
       colors: {
         // --- Brand palette v2.0 (jewel tones) ---
         plum: '#39234E',
-        'plum-deep': '#2A1839',
+        'plum-deep': '#39234E',
         blue: '#29527B',
         mauve: '#8E5C86',
         coral: '#F19F58',
