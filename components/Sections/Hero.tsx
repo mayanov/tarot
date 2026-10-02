@@ -117,7 +117,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
         <Rise delay={60}>
           <div className="flex items-center gap-3 text-[10px] sm:text-[11px] uppercase tracking-[0.34em] text-cream/60">
-            <span aria-hidden className="h-px w-8 sm:w-12 bg-moon/60" />
+            <span aria-hidden className="h-px w-8 sm:w-12 bg-sky/70" />
             <span>{isIndonesian ? 'Pembaca Tarot · Sejak 2009' : 'Tarot Reader · Since 2009'}</span>
           </div>
         </Rise>
@@ -179,7 +179,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
                 key={i}
                 className="group md:px-6 md:border-l md:border-white/20 md:first:border-l-0"
               >
-                <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[1.9rem] md:text-[2.4rem] transition-all duration-300 group-hover:text-moon group-hover:-translate-y-0.5">
+                <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[1.9rem] md:text-[2.4rem] transition-all duration-300 group-hover:text-sky group-hover:-translate-y-0.5">
                   <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
                 </div>
                 <div className="mt-2 text-[9px] md:text-[10px] uppercase tracking-[0.2em] leading-tight text-cream/60 transition-colors duration-300 group-hover:text-cream/90">

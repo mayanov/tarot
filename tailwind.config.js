@@ -24,6 +24,8 @@ export default {
         mauve: '#8E5C86',
         coral: '#F19F58',
         'coral-deep': '#DA8636',
+        // --- Secondary accent: soft sky blue (pops on the dark sections) ---
+        sky: '#6EA2C4',
         // --- Accent: a single violet (plum family) for the whole public site ---
         moon: '#6B3FA0',
         'moon-bright': '#6B3FA0',

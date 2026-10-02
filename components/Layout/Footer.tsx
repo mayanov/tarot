@@ -51,7 +51,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     }, []);
 
     // Square, bordered social button — fills with moonstone on hover.
-    const socialClass = "inline-flex items-center justify-center p-1 text-white hover:text-moon transition-all duration-300 hover:-translate-y-0.5";
+    const socialClass = "inline-flex items-center justify-center p-1 text-white hover:text-sky transition-all duration-300 hover:-translate-y-0.5";
     const labelClass = "text-[11px] uppercase tracking-[0.24em] text-white mb-5";
     const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-white font-light leading-relaxed";
 
@@ -167,7 +167,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         style={{ fontSize: 'clamp(2rem, 9vw, 7rem)' }}
                     >
                         <span className="text-white">Mayanov</span>
-                        <span className="text-moon">Tarot</span>
+                        <span className="text-sky">Tarot</span>
                     </div>
                     {/* thin centered flourish */}
                     <div className="mx-auto mt-6 md:mt-8 h-px w-40 md:w-64 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
