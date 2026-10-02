@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Instagram, Clock, ArrowRight, MapPin } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
@@ -11,44 +11,6 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const currentYear = new Date().getFullYear();
-    const footerRef = useRef<HTMLElement>(null);
-    const starRef = useRef<HTMLDivElement>(null);
-
-    // Star parallax + wordmark reveal, both driven directly from the scroll handler
-    // (reliable where IntersectionObserver / FadeIn get throttled).
-    useEffect(() => {
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        let raf = 0;
-        let shown = false;
-        const update = () => {
-            const el = footerRef.current;
-            const vh = window.innerHeight;
-            // reveal the wordmark once it scrolls into view (query live DOM so it's
-            // not affected by ref timing inside the FadeIn wrapper)
-            const mark = el ? el.querySelector<HTMLElement>('[data-mark]') : null;
-            if (mark && !shown && mark.getBoundingClientRect().top < vh * 0.88) {
-                shown = true;
-                mark.style.opacity = '1';
-                mark.style.transform = 'translateY(0)';
-            }
-            // parallax the star field
-            const star = starRef.current;
-            if (!reduce && el && star) {
-                const rect = el.getBoundingClientRect();
-                const t = Math.min(Math.max((vh - rect.top) / (vh + rect.height), 0), 1);
-                star.style.transform = `translate3d(0, ${((t - 0.5) * 40).toFixed(1)}px, 0) scale(1.12)`;
-            }
-        };
-        const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
-        update();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-        return () => {
-            window.removeEventListener('scroll', onScroll);
-            window.removeEventListener('resize', onScroll);
-            cancelAnimationFrame(raf);
-        };
-    }, []);
 
     // Square, bordered social button — tints violet on hover.
     const socialClass = "inline-flex items-center justify-center p-1 text-ink hover:text-moon transition-all duration-300 hover:-translate-y-0.5";
@@ -59,7 +21,6 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
 
     return (
         <footer
-            ref={footerRef}
             className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-12 md:pt-16 pb-8 md:pb-10 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]"
             style={{ background: '#ffffff' }}
         >
@@ -85,13 +46,18 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-x-10 gap-y-10 py-10 md:py-12">
                     {/* Brand */}
                     <div className="md:col-span-6">
-                        <div className="flex items-center gap-3">
-                            <span className="grid place-items-center w-10 h-10 rounded-lg border border-ink/25 text-ink font-serif text-lg leading-none">M</span>
-                            <span className="text-xl font-serif font-semibold text-ink tracking-tight">
-                                Mayanov <span className="font-normal text-ink/55">Tarot</span>
+                        <div className="flex items-center gap-4">
+                            <span className="grid place-items-center w-12 h-12 rounded-xl bg-ink text-cream font-serif text-2xl leading-none shadow-[0_10px_24px_-10px_rgba(33,30,46,0.6)]">M</span>
+                            <span className="leading-none">
+                                <span className="block text-[1.4rem] font-serif font-semibold tracking-tight text-ink">
+                                    Mayanov <span className="text-moon">Tarot</span>
+                                </span>
+                                <span className="mt-2 block text-[9px] uppercase tracking-[0.34em] text-ink/40">
+                                    {isIndonesian ? 'Jakarta · Sejak 2016' : 'Jakarta · Est. 2016'}
+                                </span>
                             </span>
                         </div>
-                        <p className="mt-5 text-[0.9rem] md:text-[0.95rem] text-ink/60 font-light leading-relaxed max-w-sm">
+                        <p className="mt-6 text-[0.9rem] md:text-[0.95rem] text-ink/60 font-light leading-relaxed max-w-sm">
                             {isIndonesian
                                 ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi.'
                                 : 'Tarot as a space for reflection — analytical, warm, and grounded.'}
@@ -136,26 +102,8 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
-                {/* Signature wordmark — two-tone, revealed (rise + fade) on scroll */}
-                <div
-                    data-mark
-                    aria-hidden
-                    className="pt-8 md:pt-12"
-                    style={{ opacity: 0, transform: 'translateY(48px)', transition: 'opacity 900ms cubic-bezier(0.16,1,0.3,1), transform 900ms cubic-bezier(0.16,1,0.3,1)' }}
-                >
-                    <div
-                        className="flex items-baseline justify-center gap-[0.28em] whitespace-nowrap leading-[1.05] select-none font-elegant font-semibold tracking-[-0.03em]"
-                        style={{ fontSize: 'clamp(2rem, 9vw, 7rem)' }}
-                    >
-                        <span className="text-ink">Mayanov</span>
-                        <span className="text-moon">Tarot</span>
-                    </div>
-                    {/* thin centered flourish */}
-                    <div className="mx-auto mt-6 md:mt-8 h-px w-40 md:w-64 bg-gradient-to-r from-transparent via-ink/20 to-transparent" />
-                </div>
-
-                {/* Bottom bar (no divider line) */}
-                <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink/55 tracking-wide">
+                {/* Bottom bar */}
+                <div className="mt-2 pt-7 border-t border-ink/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink/55 tracking-wide">
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
                 </div>
             </FadeIn>
