@@ -64,15 +64,15 @@ const Background: React.FC = () => {
       {/* legibility overlays — darker at the left (statement) and along the bottom (stats) */}
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(90deg, rgba(8,6,20,0.58) 0%, rgba(8,6,20,0.26) 48%, rgba(8,6,20,0.08) 100%)' }}
+        style={{ background: 'linear-gradient(90deg, rgba(8,6,20,0.4) 0%, rgba(8,6,20,0.12) 42%, rgba(8,6,20,0) 72%)' }}
       />
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(8,6,20,0.2) 0%, transparent 30%, transparent 60%, rgba(8,6,20,0.42) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, rgba(8,6,20,0.08) 0%, transparent 26%, transparent 64%, rgba(8,6,20,0.3) 100%)' }}
       />
 
       {/* film grain — ties the photo to the rest of the site's texture */}
-      <div className="absolute inset-0 opacity-40 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
+      <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
     </div>
   );
 };
