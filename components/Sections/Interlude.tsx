@@ -1,5 +1,5 @@
 import React from 'react';
-import FadeIn from '../UI/FadeIn';
+import IlluminateText from '../UI/IlluminateText';
 
 interface InterludeProps {
   isIndonesian?: boolean;
@@ -43,18 +43,17 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       />
 
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
-        <FadeIn dir="blur" duration={1.3}>
-          <div className="max-w-5xl mx-auto text-center">
-            {/* pull-quote */}
-            <p className="font-elegant italic text-cream text-[2rem] sm:text-[2.6rem] md:text-[3.4rem] lg:text-[3.9rem] leading-[1.08] tracking-[-0.01em]">
-              {isIndonesian ? (
-                <>Tarot bukan meramal masa depan — tapi memberi <span className="italic">kejelasan</span> untuk kamu bentuk sendiri.</>
-              ) : (
-                <>Tarot won&rsquo;t predict your future — it hands you the <span className="italic">clarity</span> to shape it.</>
-              )}
-            </p>
-          </div>
-        </FadeIn>
+        <div className="max-w-5xl mx-auto text-center">
+          {/* pull-quote — words illuminate one-by-one as it scrolls through view */}
+          <IlluminateText
+            className="font-elegant italic text-cream text-[2rem] sm:text-[2.6rem] md:text-[3.4rem] lg:text-[3.9rem] leading-[1.08] tracking-[-0.01em]"
+            emphasize={isIndonesian ? 'kejelasan' : 'clarity'}
+            emphasizeClassName="text-sky"
+            text={isIndonesian
+              ? 'Tarot bukan meramal masa depan — tapi memberi kejelasan untuk kamu bentuk sendiri.'
+              : 'Tarot won’t predict your future — it hands you the clarity to shape it.'}
+          />
+        </div>
       </div>
 
       {/* signature — bottom-right, off-axis so it feels hand-signed, not templated */}
