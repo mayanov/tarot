@@ -46,16 +46,16 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-x-10 gap-y-10 py-10 md:py-12">
                     {/* Brand */}
                     <div className="md:col-span-6">
-                        <div className="flex items-center gap-4">
-                            <span className="grid place-items-center w-12 h-12 rounded-xl bg-ink text-cream font-serif text-2xl leading-none shadow-[0_10px_24px_-10px_rgba(33,30,46,0.6)]">M</span>
-                            <span className="leading-none">
-                                <span className="block text-[1.4rem] font-serif font-semibold tracking-tight text-ink">
-                                    Mayanov <span className="text-moon">Tarot</span>
-                                </span>
-                                <span className="mt-2 block text-[9px] uppercase tracking-[0.34em] text-ink/40">
-                                    {isIndonesian ? 'Jakarta · Sejak 2016' : 'Jakarta · Est. 2016'}
-                                </span>
+                        <div className="flex items-center gap-2.5 mb-4">
+                            <span className="grid place-items-center w-9 h-9 rounded-lg bg-ink text-cream font-serif text-lg leading-none shadow-[0_8px_20px_-10px_rgba(33,30,46,0.6)]">M</span>
+                            <span className="text-[10px] uppercase tracking-[0.34em] text-ink/40">
+                                {isIndonesian ? 'Jakarta · Sejak 2016' : 'Jakarta · Est. 2016'}
                             </span>
+                        </div>
+                        {/* oversized two-tone logotype — the footer's anchor */}
+                        <div className="font-elegant font-semibold leading-[0.92] tracking-[-0.035em] text-[clamp(3rem,13vw,5.5rem)] select-none">
+                            <span className="block text-ink">Mayanov</span>
+                            <span className="block text-moon">Tarot</span>
                         </div>
                         <p className="mt-6 text-[0.9rem] md:text-[0.95rem] text-ink/60 font-light leading-relaxed max-w-sm">
                             {isIndonesian
