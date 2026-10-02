@@ -10,46 +10,52 @@ interface FooterProps {
 
 const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
-const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
-    const currentYear = new Date().getFullYear();
-    const ref = useRef<HTMLElement>(null);
-    const [shown, setShown] = useState(false);
-
-    // Reveal once the footer scrolls into view (IntersectionObserver is reliable
-    // under Lenis). prefers-reduced-motion -> show immediately, no motion.
+// Small in-view hook: flips true once the element is sufficiently visible.
+const useInView = (threshold = 0.2, rootMargin = '0px 0px -12% 0px') => {
+    const ref = useRef<HTMLDivElement>(null);
+    const [inView, setInView] = useState(false);
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            setShown(true);
+            setInView(true);
             return;
         }
         const io = new IntersectionObserver(
             (entries) => {
                 if (entries.some((e) => e.isIntersecting)) {
-                    setShown(true);
+                    setInView(true);
                     io.disconnect();
                 }
             },
-            { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+            { threshold, rootMargin }
         );
         io.observe(el);
         return () => io.disconnect();
-    }, []);
+    }, [threshold, rootMargin]);
+    return { ref, inView };
+};
+
+const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
+    const currentYear = new Date().getFullYear();
+    // The supporting content reveals when the top of the footer arrives…
+    const top = useInView(0.15, '0px 0px -10% 0px');
+    // …and the giant logotype reveals on its own, as it scrolls into view.
+    const mark = useInView(0.35, '0px 0px -15% 0px');
 
     // supporting content: a soft blur-rise (defocus clears as it settles)
-    const rise = (delay: number): React.CSSProperties => ({
-        opacity: shown ? 1 : 0,
-        transform: shown ? 'translateY(0)' : 'translateY(18px)',
-        filter: shown ? 'blur(0px)' : 'blur(6px)',
+    const rise = (delay: number, on: boolean): React.CSSProperties => ({
+        opacity: on ? 1 : 0,
+        transform: on ? 'translateY(0)' : 'translateY(18px)',
+        filter: on ? 'blur(0px)' : 'blur(6px)',
         transition: `opacity 0.8s ease ${delay}ms, transform 0.9s ${EASE} ${delay}ms, filter 0.8s ease ${delay}ms`,
         willChange: 'transform, opacity, filter',
     });
 
     // logotype words: rise up from behind a clip mask (the wrapper is overflow-hidden)
-    const mask = (delay: number): React.CSSProperties => ({
-        display: 'inline-block',
-        transform: shown ? 'translateY(0)' : 'translateY(115%)',
+    const maskInner = (delay: number): React.CSSProperties => ({
+        display: 'block',
+        transform: mark.inView ? 'translateY(0)' : 'translateY(110%)',
         transition: `transform 1.15s ${EASE} ${delay}ms`,
         willChange: 'transform',
     });
@@ -62,20 +68,19 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
 
     return (
         <footer
-            ref={ref}
             className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-12 md:pt-16 pb-8 md:pb-10 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]"
             style={{ background: '#ffffff' }}
         >
-            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
+            <div ref={top.ref} className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 {/* Top — CTA line */}
                 <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 md:pb-12 border-b border-ink/10">
                     <h2
                         className="lg:col-span-8 font-elegant font-medium text-ink text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]"
-                        style={rise(0)}
+                        style={rise(0, top.inView)}
                     >
                         {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                     </h2>
-                    <div className="lg:col-span-4 lg:justify-self-end" style={rise(90)}>
+                    <div className="lg:col-span-4 lg:justify-self-end" style={rise(90, top.inView)}>
                         <a
                             href="#services"
                             onClick={(e) => { e.preventDefault(); goTo('services'); }}
@@ -87,10 +92,10 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
-                {/* Meta row — brand voice + visit + follow, bottom-aligned for a tidy baseline */}
-                <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-10 pt-10 md:pt-14 md:items-end">
+                {/* Meta row — brand voice + visit + follow (even columns, top-aligned) */}
+                <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-10 pt-10 md:pt-12">
                     {/* Brand voice */}
-                    <div className="col-span-2 md:col-span-5" style={rise(140)}>
+                    <div className="col-span-2 md:col-span-6" style={rise(140, top.inView)}>
                         <div className="flex items-center gap-2.5 mb-5">
                             <span className="grid place-items-center w-9 h-9 rounded-lg bg-ink text-cream font-serif text-lg leading-none shadow-[0_8px_20px_-10px_rgba(33,30,46,0.6)]">M</span>
                             <span className="text-[10px] uppercase tracking-[0.34em] text-ink/40">
@@ -105,7 +110,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
 
                     {/* Visit — hours + location (bilingual) */}
-                    <div className="md:col-span-3 md:col-start-7" style={rise(200)}>
+                    <div className="md:col-span-3" style={rise(200, top.inView)}>
                         <h4 className={labelClass}>{isIndonesian ? 'Kunjungi' : 'Visit'}</h4>
                         <ul className="space-y-3.5">
                             <li className={infoClass}>
@@ -120,7 +125,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
 
                     {/* Follow */}
-                    <div className="md:col-span-3 md:col-start-10 md:justify-self-end" style={rise(260)}>
+                    <div className="md:col-span-3" style={rise(260, top.inView)}>
                         <h4 className={labelClass}>{isIndonesian ? 'Ikuti' : 'Follow'}</h4>
                         <div className="flex flex-wrap items-center gap-5">
                             <a href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
@@ -142,17 +147,17 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
-                {/* Oversized logotype — full-width anchor, revealed line-by-line from a clip mask */}
-                <div className="mt-14 md:mt-20" aria-label="Mayanov Tarot">
+                {/* Oversized logotype — full-width anchor, revealed word-by-word from a clip mask */}
+                <div ref={mark.ref} className="mt-12 md:mt-16" aria-label="Mayanov Tarot">
                     <div
                         aria-hidden
-                        className="font-elegant font-semibold leading-[0.86] tracking-[-0.04em] text-[clamp(3.5rem,15.5vw,12rem)] select-none"
+                        className="flex flex-wrap items-baseline gap-x-[0.26em] font-elegant font-semibold leading-[0.9] tracking-[-0.045em] text-[clamp(3rem,13.5vw,13rem)] select-none"
                     >
-                        <span className="block overflow-hidden pb-[0.04em]">
-                            <span className="block text-ink" style={mask(320)}>Mayanov</span>
+                        <span className="inline-block overflow-hidden">
+                            <span className="text-ink pb-[0.18em]" style={maskInner(0)}>Mayanov</span>
                         </span>
-                        <span className="block overflow-hidden pb-[0.04em]">
-                            <span className="block text-moon" style={mask(440)}>Tarot</span>
+                        <span className="inline-block overflow-hidden">
+                            <span className="text-moon pb-[0.18em]" style={maskInner(130)}>Tarot</span>
                         </span>
                     </div>
                 </div>
@@ -160,7 +165,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 {/* Bottom bar */}
                 <div
                     className="mt-10 md:mt-12 pt-6 border-t border-ink/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ink/55 tracking-wide"
-                    style={rise(560)}
+                    style={rise(0, mark.inView)}
                 >
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
                     <button
