@@ -64,11 +64,11 @@ const Background: React.FC = () => {
       {/* legibility overlays — darker at the left (statement) and along the bottom (stats) */}
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(90deg, rgba(8,6,20,0.74) 0%, rgba(8,6,20,0.36) 48%, rgba(8,6,20,0.12) 100%)' }}
+        style={{ background: 'linear-gradient(90deg, rgba(8,6,20,0.58) 0%, rgba(8,6,20,0.26) 48%, rgba(8,6,20,0.08) 100%)' }}
       />
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(8,6,20,0.28) 0%, transparent 30%, transparent 60%, rgba(8,6,20,0.55) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, rgba(8,6,20,0.2) 0%, transparent 30%, transparent 60%, rgba(8,6,20,0.42) 100%)' }}
       />
 
       {/* film grain — ties the photo to the rest of the site's texture */}

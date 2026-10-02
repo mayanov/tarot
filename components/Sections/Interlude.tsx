@@ -33,7 +33,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       {/* cool, lighter overlay so the quote reads without feeling gloomy */}
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(6,12,24,0.52) 0%, rgba(6,12,24,0.36) 50%, rgba(6,12,24,0.62) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, rgba(6,12,24,0.36) 0%, rgba(6,12,24,0.22) 50%, rgba(6,12,24,0.44) 100%)' }}
       />
 
       {/* film grain */}
@@ -47,8 +47,6 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
           {/* pull-quote — words illuminate one-by-one as it scrolls through view */}
           <IlluminateText
             className="font-elegant italic text-cream text-[2rem] sm:text-[2.6rem] md:text-[3.4rem] lg:text-[3.9rem] leading-[1.08] tracking-[-0.01em]"
-            emphasize={isIndonesian ? 'kejelasan' : 'clarity'}
-            emphasizeClassName="text-sky"
             text={isIndonesian
               ? 'Tarot bukan meramal masa depan — tapi memberi kejelasan untuk kamu bentuk sendiri.'
               : 'Tarot won’t predict your future — it hands you the clarity to shape it.'}

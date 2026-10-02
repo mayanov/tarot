@@ -408,7 +408,7 @@ function App() {
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10"
-          style={{ background: 'linear-gradient(180deg, rgba(16,16,40,0.74) 0%, rgba(16,16,40,0.58) 48%, rgba(16,16,40,0.7) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(16,16,40,0.56) 0%, rgba(16,16,40,0.42) 48%, rgba(16,16,40,0.54) 100%)' }}
         />
 
         <React.Suspense fallback={<div className="h-96" />}>

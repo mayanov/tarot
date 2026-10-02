@@ -67,7 +67,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       />
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(6,10,16,0.58) 0%, rgba(6,10,16,0.44) 45%, rgba(6,10,16,0.9) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, rgba(6,10,16,0.42) 0%, rgba(6,10,16,0.3) 45%, rgba(6,10,16,0.72) 100%)' }}
       />
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10 text-cream">
           <FadeIn>

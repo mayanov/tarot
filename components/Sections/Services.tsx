@@ -276,7 +276,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             />
                             <div
                                 className="pointer-events-none absolute inset-0"
-                                style={{ background: 'linear-gradient(180deg, rgba(11,11,13,0.26) 0%, rgba(11,11,13,0.48) 42%, rgba(11,11,13,0.80) 100%)' }}
+                                style={{ background: 'linear-gradient(180deg, rgba(11,11,13,0.2) 0%, rgba(11,11,13,0.38) 42%, rgba(11,11,13,0.66) 100%)' }}
                             />
                             <div className="relative z-10 max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
                                 {/* header row — spans full width, toggles the band */}
