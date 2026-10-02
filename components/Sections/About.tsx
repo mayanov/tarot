@@ -63,16 +63,16 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </p>
           </div>
 
-          {/* goal — a soft moonstone panel so it reads as a designed closing,
-              not another plain line */}
-          <figure className="relative mt-9 md:mt-12 max-w-xl overflow-hidden rounded-2xl p-7 md:p-8" style={{ background: 'rgba(198,178,228,0.13)' }}>
-            <span aria-hidden className="pointer-events-none absolute -top-5 right-4 font-serif text-[6.5rem] leading-none text-moon-deep/15 select-none">”</span>
-            <blockquote className="relative font-elegant text-ink text-[1.3rem] md:text-[1.65rem] leading-[1.26] tracking-[-0.015em]">
+          {/* goal — a flush-left closing statement (aligned with the title), with
+              a decorative quote mark above and a signature, so it stays designed */}
+          <figure className="relative mt-10 md:mt-12 max-w-xl">
+            <span aria-hidden className="block font-serif text-moon-deep/30 text-[4rem] leading-[0.4] h-7 select-none">”</span>
+            <blockquote className="font-elegant text-ink text-[1.5rem] md:text-[1.9rem] leading-[1.24] tracking-[-0.02em]">
               {isIndonesian
                 ? 'Tujuan saya simpel: memberikan kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                 : 'My goal is simple: to give you the clarity to make decisions with confidence.'}
             </blockquote>
-            <figcaption className="relative mt-5 flex items-center gap-2.5 text-[11px] uppercase tracking-[0.28em] text-moon-deep">
+            <figcaption className="mt-5 flex items-center gap-2.5 text-[11px] uppercase tracking-[0.28em] text-moon-deep">
               <span aria-hidden className="h-px w-6 bg-moon-deep/60" /> Mayanov
             </figcaption>
           </figure>
