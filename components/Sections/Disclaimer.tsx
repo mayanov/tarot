@@ -26,6 +26,12 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                 ? 'Kartu menunjukkan gambaran saat ini, bukan takdir yang pasti. Usaha dan pilihanmu selalu bisa mengubah arah.'
                 : 'The cards show a snapshot of right now, not a fixed fate. Your effort and choices can always change where things go.',
         },
+        {
+            label: isIndonesian ? 'Privasimu terjaga' : 'Your privacy is safe',
+            text: isIndonesian
+                ? 'Cerita, pertanyaan, dan hasil reading kamu sepenuhnya rahasia — tidak akan dibagikan tanpa izinmu.'
+                : 'Your story, questions, and reading stay fully confidential — never shared without your consent.',
+        },
     ];
 
     return (
@@ -65,9 +71,19 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                     {/* RIGHT — sticky title + alert notice */}
                     <div className="lg:col-span-4 lg:order-2 lg:sticky lg:top-28 lg:self-start">
                         <FadeIn>
-                            <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+                            {/* eyebrow */}
+                            <div className="flex items-center gap-3 text-[10px] sm:text-[11px] uppercase tracking-[0.32em] text-sky">
+                                <span aria-hidden className="h-px w-8 sm:w-10 bg-sky/60" />
+                                <span>{isIndonesian ? 'Sebelum booking' : 'Before you book'}</span>
+                            </div>
+                            <h2 className="mt-5 font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                                 Disclaimer
                             </h2>
+                            <p className="mt-5 text-cream/65 font-light leading-relaxed max-w-xs">
+                                {isIndonesian
+                                    ? 'Beberapa hal kecil yang penting kamu tahu sebelum kita mulai — biar ekspektasinya sama.'
+                                    : 'A few small things worth knowing before we start — so we’re on the same page.'}
+                            </p>
                             {/* alert notice — meant to be noticed */}
                             <div className="mt-6 flex items-start gap-3 rounded-lg border border-moon/35 bg-moon/[0.09] px-4 py-3.5 max-w-sm">
                                 <AlertCircle className="w-5 h-5 text-moon shrink-0 mt-0.5" strokeWidth={1.8} />
@@ -77,6 +93,9 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                                         : 'By making a booking, you have agreed to these terms and conditions.'}
                                 </p>
                             </div>
+                            <p className="mt-5 text-[11px] uppercase tracking-[0.2em] text-cream/35">
+                                {isIndonesian ? 'Berlaku untuk semua layanan · 18+' : 'Applies to all services · 18+'}
+                            </p>
                         </FadeIn>
                     </div>
                 </div>
