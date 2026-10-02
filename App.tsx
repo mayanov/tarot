@@ -387,14 +387,37 @@ function App() {
           <WhyChoose isIndonesian={isIndonesian} />
           <Events isIndonesian={isIndonesian} />
           <FAQ isIndonesian={isIndonesian} />
-          <Disclaimer isIndonesian={isIndonesian} />
         </React.Suspense>
       </main>
 
-      {/* Indigo section (same as Disclaimer) holding the footer as a white rounded
-          card — the indigo padding frames the card and flows from the Disclaimer. */}
-      <div className="relative z-10 p-3 sm:p-5 md:p-8" style={{ background: '#202A5C' }}>
-        <Footer isIndonesian={isIndonesian} />
+      {/* Continuous night-sky backdrop shared by the Disclaimer and the Footer — the
+          sky flows unbroken from one section into the other; the footer rests on it as
+          a white card. */}
+      <div className="relative z-10 isolate overflow-hidden">
+        {/* the sky photo spanning the whole region (same sky as the hero — bookends the page) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{
+            backgroundImage: `url(${import.meta.env.BASE_URL}sky-hero.jpg)`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        {/* legibility veil so cream text stays readable over the brighter nebula */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{ background: 'linear-gradient(180deg, rgba(16,16,40,0.74) 0%, rgba(16,16,40,0.58) 48%, rgba(16,16,40,0.7) 100%)' }}
+        />
+
+        <React.Suspense fallback={<div className="h-96" />}>
+          <Disclaimer isIndonesian={isIndonesian} />
+        </React.Suspense>
+
+        <div className="p-3 sm:p-5 md:p-8">
+          <Footer isIndonesian={isIndonesian} />
+        </div>
       </div>
 
       <BookingModal isIndonesian={isIndonesian} />

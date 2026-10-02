@@ -40,8 +40,33 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const currentYear = new Date().getFullYear();
     // The supporting content reveals when the top of the footer arrives…
     const top = useInView(0.15, '0px 0px -10% 0px');
-    // …and the giant logotype reveals on its own, as it scrolls into view.
-    const mark = useInView(0.35, '0px 0px -15% 0px');
+    // …and the giant logotype reveals on its own, the moment it starts entering.
+    const mark = useInView(0.08, '0px 0px -6% 0px');
+
+    // Scroll-linked parallax drift on the logotype — it keeps moving as you scroll,
+    // so the reveal reads as a living scroll animation rather than a one-shot fade.
+    const parRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        let raf = 0;
+        const update = () => {
+            const el = parRef.current;
+            if (!el) return;
+            const r = el.getBoundingClientRect();
+            const vh = window.innerHeight;
+            const rel = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
+            el.style.transform = `translate3d(0, ${(rel * 44).toFixed(1)}px, 0)`;
+        };
+        const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+        return () => {
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('resize', onScroll);
+            cancelAnimationFrame(raf);
+        };
+    }, []);
 
     // supporting content: a soft blur-rise (defocus clears as it settles)
     const rise = (delay: number, on: boolean): React.CSSProperties => ({
@@ -150,8 +175,9 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 {/* Oversized logotype — full-width anchor, revealed word-by-word from a clip mask */}
                 <div ref={mark.ref} className="mt-12 md:mt-16" aria-label="Mayanov Tarot">
                     <div
+                        ref={parRef}
                         aria-hidden
-                        className="flex flex-wrap items-baseline gap-x-[0.26em] font-elegant font-semibold leading-[0.9] tracking-[-0.045em] text-[clamp(3rem,13.5vw,13rem)] select-none"
+                        className="flex flex-wrap items-baseline gap-x-[0.26em] font-elegant font-semibold leading-[0.9] tracking-[-0.045em] text-[clamp(3rem,13.5vw,13rem)] select-none will-change-transform"
                     >
                         <span className="inline-block overflow-hidden">
                             <span className="text-ink pb-[0.18em]" style={maskInner(0)}>Mayanov</span>

@@ -35,12 +35,12 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     ];
 
     return (
-        <section id="disclaimer" className="py-12 md:py-16 relative isolate text-cream" style={{ background: '#202A5C' }}>
-            {/* soft moonstone bloom for depth */}
+        <section id="disclaimer" className="py-12 md:py-16 relative isolate text-cream">
+            {/* soft violet bloom for depth over the shared sky backdrop */}
             <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0"
-                style={{ background: 'radial-gradient(90% 70% at 88% 0%, rgba(107,63,160,0.14) 0%, transparent 55%)' }}
+                style={{ background: 'radial-gradient(90% 70% at 88% 0%, rgba(107,63,160,0.18) 0%, transparent 55%)' }}
             />
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
