@@ -117,7 +117,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         {/* the moon — a real photo, revealed as the shadow disc slides off */}
         <div
           className="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden"
-          style={{ boxShadow: `0 0 ${wax * 1.1}px ${wax * 0.22}px rgba(107,63,160,${0.06 + wax / 260})` }}
+          style={{ boxShadow: `0 0 ${wax * 1.1}px ${wax * 0.22}px rgba(255,255,255,${0.06 + wax / 260})` }}
         >
           <img
             src={`${import.meta.env.BASE_URL}moon.jpg`}

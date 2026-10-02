@@ -37,7 +37,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
     <section id="why-choose" className="relative isolate overflow-hidden">
       {/* LIGHT band — white with dark text (no seam lines) */}
       <div className="text-ink" style={{ background: '#ffffff' }}>
-        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-12 md:pt-16">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-12">
           {/* Big lead statement */}
           <FadeIn>
             <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl">

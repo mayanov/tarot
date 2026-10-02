@@ -225,7 +225,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   return (
     <div id="testimonials" className="relative overflow-hidden isolate text-ink scroll-mt-28">
       <FadeIn>
-        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 mb-12 md:mb-16 text-center">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 mb-12 text-center">
           <div className="flex items-center justify-center gap-1.5 text-sky">
             {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-5 h-5 md:w-6 md:h-6 fill-current" />))}
           </div>

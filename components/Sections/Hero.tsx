@@ -113,16 +113,6 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       className="relative min-h-screen flex flex-col justify-between overflow-hidden isolate text-cream pt-24 md:pt-28 pb-8 md:pb-10"
       style={{ willChange: 'filter' }}
     >
-      {/* TOP — editorial kicker */}
-      <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
-        <Rise delay={60}>
-          <div className="flex items-center gap-3 text-[10px] sm:text-[11px] uppercase tracking-[0.34em] text-cream/60">
-            <span aria-hidden className="h-px w-8 sm:w-12 bg-sky/70" />
-            <span>{isIndonesian ? 'Pembaca Tarot · Sejak 2009' : 'Tarot Reader · Since 2009'}</span>
-          </div>
-        </Rise>
-      </div>
-
       {/* MIDDLE — the masthead: oversized wordmark, with the statement tucked as
           an offset caption to the right of it. */}
       <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex-1 flex flex-col justify-center py-4 md:py-6">

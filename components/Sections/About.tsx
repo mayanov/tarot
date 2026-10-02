@@ -22,7 +22,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
   }, [isIndonesian]);
 
   return (
-    <section id="about" className="relative z-10 isolate overflow-hidden text-ink lg:min-h-[90vh] rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]" style={{ background: '#ffffff' }}>
+    <section id="about" className="relative z-10 isolate overflow-hidden text-ink lg:min-h-[72vh] rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]" style={{ background: '#ffffff' }}>
       {/* full-bleed portrait — top on mobile, bleeds to the right viewport edge on desktop (breaks the page margin on purpose) */}
       <div className="relative lg:absolute lg:top-0 lg:right-0 lg:bottom-0 lg:w-[47%] min-h-[62vh] lg:min-h-0 overflow-hidden">
         <ImageReveal
@@ -41,8 +41,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       </div>
 
       {/* text — inside the page container, held to the left so the portrait can bleed right */}
-      <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 lg:min-h-[90vh] flex items-center">
-        <FadeIn className="w-full lg:w-[53%] lg:pr-14 py-14 md:py-20">
+      <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 lg:min-h-[72vh] flex items-center">
+        <FadeIn className="w-full lg:w-[53%] lg:pr-14 py-12 md:py-14">
           {/* hook title */}
           <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>

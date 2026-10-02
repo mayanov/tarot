@@ -6,12 +6,19 @@ let lenis: Lenis | null = null;
 // Initialise buttery inertia scrolling once, and keep the rAF loop running.
 export function initLenis(): Lenis {
     if (lenis) return lenis;
+    // Always start a fresh load at the top (don't let the browser restore the
+    // previous scroll position on refresh).
+    if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
     lenis = new Lenis({
         lerp: 0.09,
         wheelMultiplier: 1,
         smoothWheel: true,
         touchMultiplier: 1.6,
     });
+    lenis.scrollTo(0, { immediate: true });
     const raf = (time: number) => {
         lenis?.raf(time);
         requestAnimationFrame(raf);

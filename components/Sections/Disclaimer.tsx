@@ -35,7 +35,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     ];
 
     return (
-        <section id="disclaimer" className="py-12 md:py-16 relative isolate text-cream">
+        <section id="disclaimer" className="py-12 relative isolate text-cream">
             {/* soft violet bloom for depth over the shared sky backdrop */}
             <div
                 aria-hidden
