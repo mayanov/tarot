@@ -82,7 +82,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             <div className="mb-10 md:mb-14">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 {EVENT_PHOTOS.map((src, i) => (
-                  <FadeIn key={src} delay={i * 60} dir="up">
+                  <FadeIn key={src} delay={i * 90} dir={i % 2 === 0 ? 'up' : 'down'} distance={0.8}>
                     <button
                       type="button"
                       onClick={() => setLightbox(src)}
@@ -115,7 +115,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                   style={{ background: 'linear-gradient(180deg, rgba(122,127,209,0.9) 0%, rgba(122,127,209,0.45) 55%, rgba(122,127,209,0) 100%)' }}
                 />
                 {timeline.map((grp, gi) => (
-                  <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 60} dir="up">
+                  <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 70} dir="left" distance={0.7}>
                     <div className="relative pb-9 md:pb-11 last:pb-0">
                       {/* node */}
                       <span aria-hidden className="absolute -left-[26px] md:-left-[34px] top-1.5 grid place-items-center">

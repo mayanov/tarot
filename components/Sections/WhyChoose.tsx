@@ -53,7 +53,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
           {/* Big-stat panels — eyebrow label, a bold centered statement, an index number */}
           <div className="mt-12 md:mt-16 grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
             {reasons.map((reason, index) => (
-              <FadeIn key={index} delay={Math.min(index, 6) * 60} dir="up">
+              <FadeIn key={index} delay={Math.min(index, 6) * 90} dir="scale">
                 <div className="group/card relative overflow-hidden flex h-full min-h-[12rem] sm:min-h-[13.5rem] md:min-h-[15rem] flex-col rounded-lg bg-[#202A5C] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-30px_rgba(74,46,119,0.6)]">
                   {/* purple reveal — a diagonal gradient that wipes up from the corner on hover */}
                   <span

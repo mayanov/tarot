@@ -134,7 +134,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           {/* LEFT — sticky intro + category filter (sticky lives on the column so a
               transformed reveal wrapper can't break it) */}
           <div className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
-            <FadeIn>
+            <FadeIn dir="blur" duration={1.15}>
               <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                 {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
               </h2>
@@ -198,7 +198,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               {filtered.map((faq, index) => {
                 const open = openKey === faq.question;
                 return (
-                  <FadeIn key={faq.question} delay={Math.min(index, 6) * 40}>
+                  <FadeIn key={faq.question} delay={Math.min(index, 6) * 55} dir="up" distance={0.7}>
                     <div className="border-b border-black/10">
                       <button
                         onClick={() => toggleFAQ(faq.question)}

@@ -15,7 +15,7 @@ const CTA: React.FC<CTAProps> = ({ isIndonesian = false }) => {
   return (
     <section className="py-12 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 relative z-10">
-        <FadeIn>
+        <FadeIn dir="scale" duration={1.2}>
           {/* Main Card Container */}
           <div className="relative rounded-[2.5rem] p-10 md:p-20 overflow-hidden shadow-[0_40px_80px_-40px_rgba(62,48,80,0.6)]">
             {/* Accent pattern: cool TWILIGHT — blue + sage lead, plum depth, a coral pop. Distinct temperature from the warm hero. */}

@@ -47,7 +47,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                     {/* LEFT — bold editorial numbered notes (fills the column) */}
                     <div className="order-2 lg:order-1 lg:col-span-8">
                         {items.map((it, index) => (
-                            <FadeIn key={index} delay={Math.min(index, 4) * 80} dir="up">
+                            <FadeIn key={index} delay={Math.min(index, 4) * 90} dir="left">
                                 <div className="group grid grid-cols-[auto_1fr] items-start gap-x-5 md:gap-x-10 py-7 md:py-9 border-t border-white/10 first:border-t-0 first:pt-0 lg:first:pt-0">
                                     <span
                                         aria-hidden
@@ -70,7 +70,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
 
                     {/* RIGHT — sticky title + alert notice (above the notes on mobile) */}
                     <div className="order-1 lg:order-2 lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
-                        <FadeIn>
+                        <FadeIn dir="right">
                             <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                                 Disclaimer
                             </h2>

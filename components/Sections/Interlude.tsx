@@ -43,7 +43,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       />
 
       <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
-        <FadeIn>
+        <FadeIn dir="blur" duration={1.3}>
           <div className="max-w-5xl mx-auto text-center">
             {/* pull-quote */}
             <p className="font-elegant italic text-cream text-[2rem] sm:text-[2.6rem] md:text-[3.4rem] lg:text-[3.9rem] leading-[1.08] tracking-[-0.01em]">
