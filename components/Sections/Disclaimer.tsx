@@ -74,13 +74,8 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                             <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                                 Disclaimer
                             </h2>
-                            <p className="mt-5 text-cream/65 font-light leading-relaxed max-w-xs">
-                                {isIndonesian
-                                    ? 'Supaya jelas sejak awal — ini yang bisa dan tidak bisa kamu harapkan dari sesi bersamaku.'
-                                    : 'So it’s clear from the start — what you can and can’t expect from a session with me.'}
-                            </p>
-                            {/* agreement notice — accent bar + label so it reads as important */}
-                            <div className="mt-6 relative overflow-hidden rounded-xl border border-moon/30 bg-moon/[0.1] max-w-sm pl-5 pr-4 py-4">
+                            {/* agreement notice — darker inset panel for contrast, accent bar + label */}
+                            <div className="mt-6 relative overflow-hidden rounded-xl border border-white/10 bg-[#0C1230] shadow-[0_18px_40px_-24px_rgba(0,0,0,0.7)] max-w-sm pl-5 pr-4 py-4">
                                 <span aria-hidden className="absolute left-0 top-0 bottom-0 w-1 bg-moon" />
                                 <div className="flex items-center gap-2 text-moon">
                                     <AlertCircle className="w-4 h-4" strokeWidth={2} />
