@@ -340,7 +340,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         {/* editorial steps — big moonstone numerals, centered */}
                         <ol className="mt-8 md:mt-16 grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-12 lg:grid-cols-5">
                             {steps.map((step, i) => (
-                                <li key={i} className="group flex flex-col items-center text-center animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                                <li key={i} className="group flex flex-col items-center text-center animate-fade-up last:col-span-2 lg:last:col-span-1" style={{ animationDelay: `${i * 80}ms` }}>
                                     <span
                                         aria-hidden
                                         className="font-elegant font-semibold text-[2rem] sm:text-[3.4rem] md:text-[4rem] leading-none text-transparent transition-all duration-300 group-hover:text-moon-deep"
