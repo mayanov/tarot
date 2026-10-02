@@ -50,7 +50,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </MaskReveal>
           </h2>
 
-          <div className="mt-7 md:mt-9 max-w-xl space-y-5">
+          <div className="mt-7 md:mt-9 space-y-5">
             <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-ink first-letter:text-[3.4rem] first-letter:leading-[0.72]">
               {isIndonesian
                 ? 'Saya telah mendalami seni membaca kartu Tarot sejak 2009. Dengan pengalaman lebih dari 15 tahun, saya menemukan bahwa kartu Tarot adalah medium yang baik untuk melakukan refleksi diri dan mencari solusi sebuah permasalahan.'
@@ -65,7 +65,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
 
           {/* goal — a flush-left closing statement (aligned with the title), with
               a decorative quote mark above and a signature, so it stays designed */}
-          <figure className="relative mt-10 md:mt-12 max-w-xl">
+          <figure className="relative mt-10 md:mt-12">
             <span aria-hidden className="block font-serif text-moon-deep/30 text-[4rem] leading-[0.4] h-7 select-none">”</span>
             <blockquote className="font-elegant text-ink text-[1.5rem] md:text-[1.9rem] leading-[1.24] tracking-[-0.02em]">
               {isIndonesian
