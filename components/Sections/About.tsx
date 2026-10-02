@@ -58,6 +58,16 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </p>
             <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light">
               {isIndonesian
+                ? 'Tarot bekerja dengan membaca energi — gambaran dari situasi dan perasaan yang sedang kamu bawa saat ini. Dari situ kita bisa melihat pola yang mungkin belum kamu sadari, lalu menerjemahkannya menjadi langkah yang jelas dan bisa kamu ambil.'
+                : 'Tarot works by reading energy — a snapshot of the situation and the feelings you are carrying right now. From there we surface patterns you might not have noticed yet, and translate them into clear, practical steps you can actually take.'}
+            </p>
+            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light">
+              {isIndonesian
+                ? 'Banyak yang datang untuk hal seputar karier dan pekerjaan, hubungan dan percintaan, keuangan, keluarga, atau sekadar kebingungan ketika harus mengambil keputusan besar. Apa pun itu, kita bedah bersama dengan kepala dingin — bukan untuk menakut-nakuti, tapi untuk memberi arah yang bisa kamu pegang.'
+                : 'People come for all kinds of things — career and work, relationships and love, finances, family, or simply the confusion of facing a big decision. Whatever it is, we work through it together with a clear head — not to frighten you, but to give you a direction you can hold on to.'}
+            </p>
+            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light">
+              {isIndonesian
                 ? 'Karena pada dasarnya pembacaan Tarot bukanlah sesederhana ‘menerawang’ masa depan, melainkan menjadi sesi konsultasi yang mendewasakan baik Anda maupun saya.'
                 : 'Because a Tarot reading isn’t simply about ‘predicting’ the future — it becomes a consultation that helps both you and me grow.'}
             </p>
