@@ -45,8 +45,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                                 <div className="group grid grid-cols-[auto_1fr] items-start gap-x-5 md:gap-x-10 py-7 md:py-9 border-t border-white/10 first:border-t-0 first:pt-0 lg:first:pt-0">
                                     <span
                                         aria-hidden
-                                        className="font-elegant font-semibold leading-none text-transparent text-[3rem] md:text-[5.5rem] transition-all duration-300 group-hover:text-moon"
-                                        style={{ WebkitTextStroke: '1.5px rgba(107,63,160,0.6)' }}
+                                        className="font-elegant font-semibold leading-none text-moon text-[3rem] md:text-[5.5rem] transition-colors duration-300 group-hover:text-cream"
                                     >
                                         {String(index + 1).padStart(2, '0')}
                                     </span>
