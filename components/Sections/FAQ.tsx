@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ArrowUpRight } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import FadeIn from '../UI/FadeIn';
 
 interface FAQProps {
@@ -143,38 +144,45 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   : 'Everything about the reading process, ethics, and delivery.'}
               </p>
 
-              {/* category filter */}
+              {/* category filter — pills with a count per category */}
               <div className="mt-8 flex flex-wrap gap-2">
                 {categories.map((cat) => {
                   const active = showAll ? cat === allLabel : cat === activeCat;
+                  const count = cat === allLabel ? faqs.length : faqs.filter((f) => f.cat === cat).length;
                   return (
                     <button
                       key={cat}
                       onClick={() => setActiveCat(cat)}
                       aria-pressed={active}
-                      className={`rounded-lg px-4 py-2 text-xs uppercase tracking-[0.14em] font-medium transition-colors duration-300 ${active
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs uppercase tracking-[0.14em] font-medium transition-colors duration-300 ${active
                         ? 'bg-ink text-cream'
                         : 'border border-ink/15 text-ink/55 hover:border-ink/40 hover:text-ink'}`}
                     >
-                      {cat}
+                      <span>{cat}</span>
+                      <span className={`tabular-nums text-[10px] ${active ? 'text-sky' : 'text-ink/35'}`}>{count}</span>
                     </button>
                   );
                 })}
               </div>
 
               {/* still have questions? — contact card */}
-              <div className="mt-8 rounded-lg border border-ink/12 bg-black/[0.015] p-5 max-w-xs">
-                <p className="text-sm font-serif font-semibold text-ink">
-                  {isIndonesian ? 'Masih ada pertanyaan?' : 'Still have a question?'}
-                </p>
-                <p className="mt-1.5 text-xs text-ink/55 font-light leading-relaxed">
+              <div className="mt-8 rounded-xl border border-ink/12 bg-black/[0.02] p-5 max-w-xs">
+                <div className="flex items-center gap-2.5">
+                  <span className="grid place-items-center w-8 h-8 rounded-lg bg-[#25D366]/12 text-[#25D366] shrink-0">
+                    <FaWhatsapp size={16} />
+                  </span>
+                  <p className="text-sm font-serif font-semibold text-ink">
+                    {isIndonesian ? 'Masih ada pertanyaan?' : 'Still have a question?'}
+                  </p>
+                </div>
+                <p className="mt-3 text-xs text-ink/55 font-light leading-relaxed">
                   {isIndonesian ? 'Chat langsung — dijawab dengan senang hati.' : 'Chat directly — happy to help.'}
                 </p>
                 <a
                   href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ada%20pertanyaan%20tentang%20tarot%20reading"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group mt-4 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-ink hover:text-moon-deep transition-colors"
+                  className="group mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink text-cream px-4 py-2.5 text-[11px] uppercase tracking-[0.18em] font-semibold hover:bg-plum transition-colors duration-300"
                 >
                   {isIndonesian ? 'Tanya via WhatsApp' : 'Ask on WhatsApp'}
                   <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
