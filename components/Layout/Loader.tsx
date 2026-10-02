@@ -117,7 +117,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         {/* the moon — a real photo, revealed as the shadow disc slides off */}
         <div
           className="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden"
-          style={{ boxShadow: `0 0 ${wax * 1.1}px ${wax * 0.22}px rgba(198,178,228,${0.06 + wax / 260})` }}
+          style={{ boxShadow: `0 0 ${wax * 1.1}px ${wax * 0.22}px rgba(107,63,160,${0.06 + wax / 260})` }}
         >
           <img
             src={`${import.meta.env.BASE_URL}moon.jpg`}
@@ -127,7 +127,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
             draggable={false}
           />
           {/* faint moonstone tint so the grey moon reads on-brand */}
-          <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 70% at 42% 38%, rgba(219,205,242,0.14) 0%, transparent 70%)', mixBlendMode: 'screen' }} />
+          <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 70% at 42% 38%, rgba(107,63,160,0.16) 0%, transparent 70%)', mixBlendMode: 'screen' }} />
           {/* the shadow that retreats to the right, waxing the moon (soft terminator) */}
           <div
             className="absolute inset-0 rounded-full"

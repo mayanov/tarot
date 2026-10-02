@@ -204,7 +204,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         style={{ background: 'linear-gradient(180deg, #0C0C0D 0%, #050505 100%)' }}
         aria-hidden={!menuOpen}
       >
-        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(55% 55% at 82% 110%, rgba(198,178,228,0.09) 0%, transparent 62%)' }} />
+        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(55% 55% at 82% 110%, rgba(107,63,160,0.11) 0%, transparent 62%)' }} />
 
         <div className="relative h-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex flex-col">
           {/* Top row — brand + close */}

@@ -344,7 +344,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                     <span
                                         aria-hidden
                                         className="font-elegant font-semibold text-[2rem] sm:text-[3.4rem] md:text-[4rem] leading-none text-transparent transition-all duration-300 group-hover:text-moon-deep"
-                                        style={{ WebkitTextStroke: '1.25px rgba(158,134,201,0.7)' }}
+                                        style={{ WebkitTextStroke: '1.25px rgba(107,63,160,0.7)' }}
                                     >
                                         {String(i + 1).padStart(2, '0')}
                                     </span>

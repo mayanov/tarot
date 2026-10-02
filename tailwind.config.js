@@ -24,11 +24,11 @@ export default {
         mauve: '#8E5C86',
         coral: '#F19F58',
         'coral-deep': '#DA8636',
-        // --- Moonstone lilac: the brand accent for the public site ---
-        moon: '#C6B2E4',
-        'moon-bright': '#DBCDF2',
-        'moon-deep': '#9E86C9',
-        'moon-mist': '#8C7FB0',
+        // --- Accent: a single violet (plum family) for the whole public site ---
+        moon: '#6B3FA0',
+        'moon-bright': '#6B3FA0',
+        'moon-deep': '#6B3FA0',
+        'moon-mist': '#6B3FA0',
         charcoal: '#564D4D',
         'charcoal-deep': '#3A3234',
         sage: '#4F8E62',

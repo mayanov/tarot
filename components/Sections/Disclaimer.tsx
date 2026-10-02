@@ -34,7 +34,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
             <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0"
-                style={{ background: 'radial-gradient(90% 70% at 88% 0%, rgba(198,178,228,0.10) 0%, transparent 55%)' }}
+                style={{ background: 'radial-gradient(90% 70% at 88% 0%, rgba(107,63,160,0.14) 0%, transparent 55%)' }}
             />
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
@@ -46,7 +46,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                                     <span
                                         aria-hidden
                                         className="font-elegant font-semibold leading-none text-transparent text-[3rem] md:text-[5.5rem] transition-all duration-300 group-hover:text-moon"
-                                        style={{ WebkitTextStroke: '1.5px rgba(198,178,228,0.55)' }}
+                                        style={{ WebkitTextStroke: '1.5px rgba(107,63,160,0.6)' }}
                                     >
                                         {String(index + 1).padStart(2, '0')}
                                     </span>
