@@ -50,49 +50,30 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         };
     }, []);
 
-    // Square, bordered social button — fills with moonstone on hover.
-    const socialClass = "inline-flex items-center justify-center p-1 text-white hover:text-sky transition-all duration-300 hover:-translate-y-0.5";
-    const labelClass = "text-[11px] uppercase tracking-[0.24em] text-white mb-5";
-    const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-white font-light leading-relaxed";
+    // Square, bordered social button — tints violet on hover.
+    const socialClass = "inline-flex items-center justify-center p-1 text-ink hover:text-moon transition-all duration-300 hover:-translate-y-0.5";
+    const labelClass = "text-[11px] uppercase tracking-[0.24em] text-ink/50 mb-5";
+    const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-ink/70 font-light leading-relaxed";
 
     const goTo = (id: string) => smoothScrollToId(id, 80);
 
     return (
         <footer
             ref={footerRef}
-            className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-12 md:pt-16 pb-8 md:pb-10 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.55)]"
-            style={{ background: '#0B0B16' }}
+            className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-12 md:pt-16 pb-8 md:pb-10 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]"
+            style={{ background: '#ffffff' }}
         >
-            {/* cosmic star field — same image as the page background (slow parallax) */}
-            <div
-                ref={starRef}
-                aria-hidden
-                className="pointer-events-none absolute inset-0 will-change-transform"
-                style={{
-                    backgroundImage: `url(${import.meta.env.BASE_URL}footer-stars.jpg)`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center 45%',
-                    transform: 'scale(1.12)',
-                }}
-            />
-            {/* even, neutral darkening so the stars read cleanly (no muddy colour cast) */}
-            <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{ background: 'rgba(9,9,20,0.4)' }}
-            />
-
             <FadeIn className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 {/* Top — CTA line */}
-                <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 border-b border-white/10">
-                    <h2 className="lg:col-span-8 font-elegant font-medium text-white text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]">
+                <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 border-b border-ink/10">
+                    <h2 className="lg:col-span-8 font-elegant font-medium text-ink text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]">
                         {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                     </h2>
                     <div className="lg:col-span-4 lg:justify-self-end">
                         <a
                             href="#services"
                             onClick={(e) => { e.preventDefault(); goTo('services'); }}
-                            className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-lg bg-cream text-ink text-sm font-semibold hover:bg-plum hover:text-cream transition-colors duration-200"
+                            className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-lg bg-ink text-cream text-sm font-semibold hover:bg-plum transition-colors duration-200"
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -105,12 +86,12 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     {/* Brand */}
                     <div className="md:col-span-6">
                         <div className="flex items-center gap-3">
-                            <span className="grid place-items-center w-10 h-10 rounded-lg border border-white/40 text-white font-serif text-lg leading-none">M</span>
-                            <span className="text-xl font-serif font-semibold text-white tracking-tight">
-                                Mayanov <span className="font-normal text-white">Tarot</span>
+                            <span className="grid place-items-center w-10 h-10 rounded-lg border border-ink/25 text-ink font-serif text-lg leading-none">M</span>
+                            <span className="text-xl font-serif font-semibold text-ink tracking-tight">
+                                Mayanov <span className="font-normal text-ink/55">Tarot</span>
                             </span>
                         </div>
-                        <p className="mt-5 text-[0.9rem] md:text-[0.95rem] text-white font-light leading-relaxed max-w-sm">
+                        <p className="mt-5 text-[0.9rem] md:text-[0.95rem] text-ink/60 font-light leading-relaxed max-w-sm">
                             {isIndonesian
                                 ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi.'
                                 : 'Tarot as a space for reflection — analytical, warm, and grounded.'}
@@ -122,11 +103,11 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         <h4 className={labelClass}>{isIndonesian ? 'Kunjungi' : 'Visit'}</h4>
                         <ul className="space-y-3.5">
                             <li className={infoClass}>
-                                <Clock className="w-4 h-4 mt-0.5 text-white shrink-0" />
+                                <Clock className="w-4 h-4 mt-0.5 text-ink/50 shrink-0" />
                                 <span>{isIndonesian ? 'Waktu Layanan: 11:00 – 20:00' : 'Service Hours: 11:00 – 20:00'}</span>
                             </li>
                             <li className={infoClass}>
-                                <MapPin className="w-4 h-4 mt-0.5 text-white shrink-0" />
+                                <MapPin className="w-4 h-4 mt-0.5 text-ink/50 shrink-0" />
                                 <span>{isIndonesian ? 'Jakarta Selatan' : 'South Jakarta'}</span>
                             </li>
                         </ul>
@@ -166,15 +147,15 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         className="flex items-baseline justify-center gap-[0.28em] whitespace-nowrap leading-[1.05] select-none font-elegant font-semibold tracking-[-0.03em]"
                         style={{ fontSize: 'clamp(2rem, 9vw, 7rem)' }}
                     >
-                        <span className="text-white">Mayanov</span>
-                        <span className="text-sky">Tarot</span>
+                        <span className="text-ink">Mayanov</span>
+                        <span className="text-moon">Tarot</span>
                     </div>
                     {/* thin centered flourish */}
-                    <div className="mx-auto mt-6 md:mt-8 h-px w-40 md:w-64 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+                    <div className="mx-auto mt-6 md:mt-8 h-px w-40 md:w-64 bg-gradient-to-r from-transparent via-ink/20 to-transparent" />
                 </div>
 
                 {/* Bottom bar (no divider line) */}
-                <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white tracking-wide">
+                <div className="pt-7 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink/55 tracking-wide">
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
                 </div>
             </FadeIn>

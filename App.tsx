@@ -391,9 +391,9 @@ function App() {
         </React.Suspense>
       </main>
 
-      {/* White section holding the footer as a dark starry rounded card — the white
-          padding frames the card and contrasts the dark Disclaimer above. */}
-      <div className="relative z-10 bg-white p-3 sm:p-5 md:p-8">
+      {/* Indigo section (same as Disclaimer) holding the footer as a white rounded
+          card — the indigo padding frames the card and flows from the Disclaimer. */}
+      <div className="relative z-10 p-3 sm:p-5 md:p-8" style={{ background: '#202A5C' }}>
         <Footer isIndonesian={isIndonesian} />
       </div>
 
