@@ -1,18 +1,59 @@
-import React from 'react';
-import { Instagram, Clock, ArrowRight, MapPin } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Instagram, Clock, ArrowRight, MapPin, ArrowUp } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
-import FadeIn from '../UI/FadeIn';
 
 interface FooterProps {
     isIndonesian?: boolean;
 }
 
+const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
 const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const currentYear = new Date().getFullYear();
+    const ref = useRef<HTMLElement>(null);
+    const [shown, setShown] = useState(false);
 
-    // Square, bordered social button — tints violet on hover.
+    // Reveal once the footer scrolls into view (IntersectionObserver is reliable
+    // under Lenis). prefers-reduced-motion -> show immediately, no motion.
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            setShown(true);
+            return;
+        }
+        const io = new IntersectionObserver(
+            (entries) => {
+                if (entries.some((e) => e.isIntersecting)) {
+                    setShown(true);
+                    io.disconnect();
+                }
+            },
+            { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+        );
+        io.observe(el);
+        return () => io.disconnect();
+    }, []);
+
+    // supporting content: a soft blur-rise (defocus clears as it settles)
+    const rise = (delay: number): React.CSSProperties => ({
+        opacity: shown ? 1 : 0,
+        transform: shown ? 'translateY(0)' : 'translateY(18px)',
+        filter: shown ? 'blur(0px)' : 'blur(6px)',
+        transition: `opacity 0.8s ease ${delay}ms, transform 0.9s ${EASE} ${delay}ms, filter 0.8s ease ${delay}ms`,
+        willChange: 'transform, opacity, filter',
+    });
+
+    // logotype words: rise up from behind a clip mask (the wrapper is overflow-hidden)
+    const mask = (delay: number): React.CSSProperties => ({
+        display: 'inline-block',
+        transform: shown ? 'translateY(0)' : 'translateY(115%)',
+        transition: `transform 1.15s ${EASE} ${delay}ms`,
+        willChange: 'transform',
+    });
+
     const socialClass = "inline-flex items-center justify-center p-1 text-ink hover:text-moon transition-all duration-300 hover:-translate-y-0.5";
     const labelClass = "text-[11px] uppercase tracking-[0.24em] text-ink/50 mb-5";
     const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-ink/70 font-light leading-relaxed";
@@ -21,16 +62,20 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
 
     return (
         <footer
+            ref={ref}
             className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-12 md:pt-16 pb-8 md:pb-10 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]"
             style={{ background: '#ffffff' }}
         >
-            <FadeIn className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
+            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 {/* Top — CTA line */}
-                <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 border-b border-ink/10">
-                    <h2 className="lg:col-span-8 font-elegant font-medium text-ink text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]">
+                <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 md:pb-12 border-b border-ink/10">
+                    <h2
+                        className="lg:col-span-8 font-elegant font-medium text-ink text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]"
+                        style={rise(0)}
+                    >
                         {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                     </h2>
-                    <div className="lg:col-span-4 lg:justify-self-end">
+                    <div className="lg:col-span-4 lg:justify-self-end" style={rise(90)}>
                         <a
                             href="#services"
                             onClick={(e) => { e.preventDefault(); goTo('services'); }}
@@ -42,22 +87,17 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
-                {/* Middle — brand statement on the left, meta on the right */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-x-10 gap-y-10 py-10 md:py-12">
-                    {/* Brand */}
-                    <div className="md:col-span-6">
-                        <div className="flex items-center gap-2.5 mb-4">
+                {/* Meta row — brand voice + visit + follow, bottom-aligned for a tidy baseline */}
+                <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-10 pt-10 md:pt-14 md:items-end">
+                    {/* Brand voice */}
+                    <div className="col-span-2 md:col-span-5" style={rise(140)}>
+                        <div className="flex items-center gap-2.5 mb-5">
                             <span className="grid place-items-center w-9 h-9 rounded-lg bg-ink text-cream font-serif text-lg leading-none shadow-[0_8px_20px_-10px_rgba(33,30,46,0.6)]">M</span>
                             <span className="text-[10px] uppercase tracking-[0.34em] text-ink/40">
                                 {isIndonesian ? 'Jakarta · Sejak 2016' : 'Jakarta · Est. 2016'}
                             </span>
                         </div>
-                        {/* oversized two-tone logotype — the footer's anchor */}
-                        <div className="font-elegant font-semibold leading-[0.92] tracking-[-0.035em] text-[clamp(3rem,13vw,5.5rem)] select-none">
-                            <span className="block text-ink">Mayanov</span>
-                            <span className="block text-moon">Tarot</span>
-                        </div>
-                        <p className="mt-6 text-[0.9rem] md:text-[0.95rem] text-ink/60 font-light leading-relaxed max-w-sm">
+                        <p className="text-[0.9rem] md:text-[0.95rem] text-ink/60 font-light leading-relaxed max-w-sm">
                             {isIndonesian
                                 ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi.'
                                 : 'Tarot as a space for reflection — analytical, warm, and grounded.'}
@@ -65,7 +105,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
 
                     {/* Visit — hours + location (bilingual) */}
-                    <div className="md:col-span-3 md:col-start-8">
+                    <div className="md:col-span-3 md:col-start-7" style={rise(200)}>
                         <h4 className={labelClass}>{isIndonesian ? 'Kunjungi' : 'Visit'}</h4>
                         <ul className="space-y-3.5">
                             <li className={infoClass}>
@@ -80,7 +120,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
 
                     {/* Follow */}
-                    <div className="md:col-span-2">
+                    <div className="md:col-span-3 md:col-start-10 md:justify-self-end" style={rise(260)}>
                         <h4 className={labelClass}>{isIndonesian ? 'Ikuti' : 'Follow'}</h4>
                         <div className="flex flex-wrap items-center gap-5">
                             <a href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
@@ -102,11 +142,38 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
-                {/* Bottom bar */}
-                <div className="mt-2 pt-7 border-t border-ink/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink/55 tracking-wide">
-                    <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
+                {/* Oversized logotype — full-width anchor, revealed line-by-line from a clip mask */}
+                <div className="mt-14 md:mt-20" aria-label="Mayanov Tarot">
+                    <div
+                        aria-hidden
+                        className="font-elegant font-semibold leading-[0.86] tracking-[-0.04em] text-[clamp(3.5rem,15.5vw,12rem)] select-none"
+                    >
+                        <span className="block overflow-hidden pb-[0.04em]">
+                            <span className="block text-ink" style={mask(320)}>Mayanov</span>
+                        </span>
+                        <span className="block overflow-hidden pb-[0.04em]">
+                            <span className="block text-moon" style={mask(440)}>Tarot</span>
+                        </span>
+                    </div>
                 </div>
-            </FadeIn>
+
+                {/* Bottom bar */}
+                <div
+                    className="mt-10 md:mt-12 pt-6 border-t border-ink/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ink/55 tracking-wide"
+                    style={rise(560)}
+                >
+                    <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
+                    <button
+                        onClick={() => goTo('hero')}
+                        className="group inline-flex items-center gap-2 text-ink/55 hover:text-ink transition-colors duration-300"
+                    >
+                        <span className="uppercase tracking-[0.2em] text-[11px]">{isIndonesian ? 'Ke atas' : 'Back to top'}</span>
+                        <span className="grid place-items-center w-7 h-7 rounded-full border border-ink/20 group-hover:border-ink/50 group-hover:-translate-y-0.5 transition-all duration-300">
+                            <ArrowUp className="w-3.5 h-3.5" />
+                        </span>
+                    </button>
+                </div>
+            </div>
         </footer>
     );
 };
