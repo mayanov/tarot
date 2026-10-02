@@ -33,9 +33,9 @@ export default {
         'charcoal-deep': '#3A3234',
         sage: '#4F8E62',
         cream: '#FFFFFF',
-        ink: '#2B2426',
+        ink: '#211E2E',
         // --- Semantic tokens ---
-        'ink-soft': '#55494B',
+        'ink-soft': '#575167',
         taupe: '#8A7D7D',
         paper: '#FFFFFF',
         'paper-2': '#EAE0D5',
