@@ -26,7 +26,7 @@ const NotFound: React.FC<NotFoundProps> = ({ isIndonesian = false }) => {
                         {isIndonesian ? 'Halaman Tidak Ditemukan' : 'Page Not Found'}
                     </h1>
 
-                    <p className="text-ink-soft text-lg leading-relaxed font-light">
+                    <p className="text-ink/60 text-lg leading-relaxed font-light">
                         {isIndonesian
                             ? 'Maaf, halaman yang Anda cari tidak tersedia atau telah dipindahkan.'
                             : "Sorry, the page you are looking for doesn't exist or has been moved."}

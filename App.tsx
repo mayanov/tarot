@@ -307,7 +307,7 @@ function App() {
             </div>
           </div>
           <h2 className="text-2xl font-serif font-medium mb-2 text-ink">Something Went Wrong</h2>
-          <p className="text-ink-soft mb-6 font-light">
+          <p className="text-ink/60 mb-6 font-light">
             We encountered an issue loading the page. Please check your connection and try again.
           </p>
           <button
