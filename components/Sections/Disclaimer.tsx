@@ -74,14 +74,16 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                             <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                                 Disclaimer
                             </h2>
-                            {/* agreement notice — white card for strong contrast vs indigo bg, violet accent bar + label */}
-                            <div className="mt-6 relative overflow-hidden rounded-xl bg-white shadow-[0_18px_40px_-24px_rgba(0,0,0,0.55)] max-w-sm pl-5 pr-4 py-4">
-                                <span aria-hidden className="absolute left-0 top-0 bottom-0 w-1 bg-moon" />
-                                <div className="flex items-center gap-2 text-moon">
+                            {/* agreement notice — frosted glass block floating over the night sky */}
+                            <div className="mt-6 relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.07] backdrop-blur-xl shadow-[0_20px_50px_-24px_rgba(0,0,0,0.7)] max-w-sm pl-5 pr-4 py-4">
+                                {/* soft top-edge highlight so the glass catches light */}
+                                <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                                <span aria-hidden className="absolute left-0 top-0 bottom-0 w-1 bg-sky" />
+                                <div className="flex items-center gap-2 text-sky">
                                     <AlertCircle className="w-4 h-4" strokeWidth={2} />
                                     <span className="text-[10px] uppercase tracking-[0.22em] font-semibold">{isIndonesian ? 'Penting' : 'Note'}</span>
                                 </div>
-                                <p className="mt-2 text-sm text-ink/80 leading-relaxed">
+                                <p className="mt-2 text-sm text-cream/85 leading-relaxed">
                                     {isIndonesian
                                         ? 'Dengan melakukan booking, kamu telah menyetujui syarat dan ketentuan ini.'
                                         : 'By making a booking, you have agreed to these terms and conditions.'}
