@@ -45,7 +45,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
             <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
                 <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
                     {/* LEFT — bold editorial numbered notes (fills the column) */}
-                    <div className="lg:col-span-8 lg:order-1">
+                    <div className="order-2 lg:order-1 lg:col-span-8">
                         {items.map((it, index) => (
                             <FadeIn key={index} delay={Math.min(index, 4) * 80} dir="up">
                                 <div className="group grid grid-cols-[auto_1fr] items-start gap-x-5 md:gap-x-10 py-7 md:py-9 border-t border-white/10 first:border-t-0 first:pt-0 lg:first:pt-0">
@@ -68,26 +68,25 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         ))}
                     </div>
 
-                    {/* RIGHT — sticky title + alert notice */}
-                    <div className="lg:col-span-4 lg:order-2 lg:sticky lg:top-28 lg:self-start">
+                    {/* RIGHT — sticky title + alert notice (above the notes on mobile) */}
+                    <div className="order-1 lg:order-2 lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
                         <FadeIn>
-                            {/* eyebrow */}
-                            <div className="flex items-center gap-3 text-[10px] sm:text-[11px] uppercase tracking-[0.32em] text-sky">
-                                <span aria-hidden className="h-px w-8 sm:w-10 bg-sky/60" />
-                                <span>{isIndonesian ? 'Sebelum booking' : 'Before you book'}</span>
-                            </div>
-                            <h2 className="mt-5 font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+                            <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                                 Disclaimer
                             </h2>
                             <p className="mt-5 text-cream/65 font-light leading-relaxed max-w-xs">
                                 {isIndonesian
-                                    ? 'Beberapa hal kecil yang penting kamu tahu sebelum kita mulai — biar ekspektasinya sama.'
-                                    : 'A few small things worth knowing before we start — so we’re on the same page.'}
+                                    ? 'Supaya jelas sejak awal — ini yang bisa dan tidak bisa kamu harapkan dari sesi bersamaku.'
+                                    : 'So it’s clear from the start — what you can and can’t expect from a session with me.'}
                             </p>
-                            {/* alert notice — meant to be noticed */}
-                            <div className="mt-6 flex items-start gap-3 rounded-lg border border-moon/35 bg-moon/[0.09] px-4 py-3.5 max-w-sm">
-                                <AlertCircle className="w-5 h-5 text-moon shrink-0 mt-0.5" strokeWidth={1.8} />
-                                <p className="text-sm text-cream/90 leading-relaxed">
+                            {/* agreement notice — accent bar + label so it reads as important */}
+                            <div className="mt-6 relative overflow-hidden rounded-xl border border-moon/30 bg-moon/[0.1] max-w-sm pl-5 pr-4 py-4">
+                                <span aria-hidden className="absolute left-0 top-0 bottom-0 w-1 bg-moon" />
+                                <div className="flex items-center gap-2 text-moon">
+                                    <AlertCircle className="w-4 h-4" strokeWidth={2} />
+                                    <span className="text-[10px] uppercase tracking-[0.22em] font-semibold">{isIndonesian ? 'Penting' : 'Note'}</span>
+                                </div>
+                                <p className="mt-2 text-sm text-cream leading-relaxed">
                                     {isIndonesian
                                         ? 'Dengan melakukan booking, kamu telah menyetujui syarat dan ketentuan ini.'
                                         : 'By making a booking, you have agreed to these terms and conditions.'}
