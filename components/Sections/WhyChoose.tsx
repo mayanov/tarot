@@ -63,7 +63,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
                   <div className="relative z-10 flex flex-1 flex-col p-4 sm:p-6 md:p-8">
                     {/* eyebrow */}
                     <div className="flex items-center gap-2 text-[0.7rem] sm:text-sm md:text-[0.95rem] text-cream/70 transition-colors duration-300 group-hover/card:text-cream/90">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cream/70 shrink-0 transition-all duration-300 group-hover/card:bg-moon group-hover/card:scale-125" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-cream/70 shrink-0 transition-all duration-300 group-hover/card:bg-sky group-hover/card:scale-125" />
                       <span>{reason.label}</span>
                     </div>
                     {/* big statement */}
@@ -73,7 +73,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
                       </p>
                     </div>
                     {/* index */}
-                    <div className="text-sm text-cream/40 tabular-nums transition-colors duration-300 group-hover/card:text-moon">{String(index + 1).padStart(2, '0')}</div>
+                    <div className="text-sm text-cream/40 tabular-nums transition-colors duration-300 group-hover/card:text-sky">{String(index + 1).padStart(2, '0')}</div>
                   </div>
                 </div>
               </FadeIn>

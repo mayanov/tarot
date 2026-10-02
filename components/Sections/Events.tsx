@@ -112,17 +112,17 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 <span
                   aria-hidden
                   className="absolute left-[3px] md:left-[5px] top-2 bottom-2 w-px"
-                  style={{ background: 'linear-gradient(180deg, rgba(32,42,92,0.5) 0%, rgba(32,42,92,0.25) 55%, rgba(32,42,92,0) 100%)' }}
+                  style={{ background: 'linear-gradient(180deg, rgba(110,162,196,0.9) 0%, rgba(110,162,196,0.45) 55%, rgba(110,162,196,0) 100%)' }}
                 />
                 {timeline.map((grp, gi) => (
                   <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 60} dir="up">
                     <div className="relative pb-9 md:pb-11 last:pb-0">
                       {/* node */}
                       <span aria-hidden className="absolute -left-[26px] md:-left-[34px] top-1.5 grid place-items-center">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#202A5C] shadow-[0_0_12px_1px_rgba(32,42,92,0.3)] ring-4 ring-white" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-sky shadow-[0_0_12px_1px_rgba(110,162,196,0.4)] ring-4 ring-white" />
                       </span>
                       {/* year */}
-                      <div className="font-elegant font-semibold text-[#202A5C] text-2xl md:text-3xl leading-none tracking-tight mb-4">
+                      <div className="font-elegant font-semibold text-sky text-2xl md:text-3xl leading-none tracking-tight mb-4">
                         {grp.year}
                       </div>
                       {/* that year's events */}

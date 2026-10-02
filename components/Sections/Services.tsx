@@ -343,7 +343,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 <li key={i} className="group flex flex-col items-center text-center animate-fade-up last:col-span-2 lg:last:col-span-1" style={{ animationDelay: `${i * 80}ms` }}>
                                     <span
                                         aria-hidden
-                                        className="font-elegant font-semibold text-[2rem] sm:text-[3.4rem] md:text-[4rem] leading-none text-moon-deep transition-colors duration-300 group-hover:text-plum"
+                                        className="font-elegant font-semibold text-[2rem] sm:text-[3.4rem] md:text-[4rem] leading-none text-sky transition-colors duration-300 group-hover:text-plum"
                                     >
                                         {String(i + 1).padStart(2, '0')}
                                     </span>
