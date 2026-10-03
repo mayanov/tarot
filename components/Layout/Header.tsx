@@ -150,15 +150,15 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         {/* soft twilight veil (fades in on scroll) — a gradient tint only, no blur,
             so it gives the nav marks contrast without blurring the page below */}
         <div
-          className={`pointer-events-none absolute inset-x-0 top-0 h-[140%] backdrop-blur-sm transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
+          className={`pointer-events-none absolute inset-x-0 top-0 h-[150%] backdrop-blur-md transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
           style={{
-            background: 'linear-gradient(180deg, rgba(9,16,54,0.9) 0%, rgba(10,18,58,0.62) 42%, rgba(11,20,58,0.24) 74%, rgba(11,20,58,0) 100%)',
-            maskImage: 'linear-gradient(180deg, #000 0%, #000 55%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(180deg, #000 0%, #000 55%, transparent 100%)',
+            background: 'linear-gradient(180deg, rgba(13,14,22,0.72) 0%, rgba(13,14,22,0.46) 46%, rgba(13,14,22,0.16) 76%, rgba(13,14,22,0) 100%)',
+            maskImage: 'linear-gradient(180deg, #000 0%, #000 58%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(180deg, #000 0%, #000 58%, transparent 100%)',
           }}
         />
 
-        <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex justify-between items-center py-4 md:py-5">
+        <div className="relative mx-auto px-8 flex justify-between items-center py-4 md:py-5">
           {/* LEFT — brand (hidden while the overlay owns the top row) */}
           <div className={`transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             <Wordmark />
@@ -206,7 +206,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
       >
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(55% 55% at 82% 110%, rgba(107,63,160,0.11) 0%, transparent 62%)' }} />
 
-        <div className="relative h-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex flex-col">
+        <div className="relative h-full mx-auto px-8 flex flex-col">
           {/* Top row — brand + close */}
           <div className="flex items-center justify-between py-4 md:py-5 shrink-0">
             <Wordmark onDark />

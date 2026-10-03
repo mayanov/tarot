@@ -129,7 +129,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
       className="py-12 relative isolate text-ink"
       style={{ background: '#ffffff' }}
     >
-      <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
+      <div className="mx-auto px-8 relative z-10">
         <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
           {/* LEFT — sticky intro + category filter (sticky lives on the column so a
               transformed reveal wrapper can't break it) */}

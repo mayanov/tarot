@@ -238,7 +238,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     return (
         <section id="services" className="relative isolate overflow-hidden text-ink" style={{ background: '#ffffff' }}>
             {/* HEADER — transparent over the sky */}
-            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 pt-12 md:pt-16 pb-10 md:pb-14">
+            <div className="mx-auto px-8 pt-12 md:pt-16 pb-10 md:pb-14">
                 <FadeIn>
                     <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
                         <div className="lg:col-span-7">
@@ -278,7 +278,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 className="pointer-events-none absolute inset-0"
                                 style={{ background: 'linear-gradient(180deg, rgba(11,11,13,0.2) 0%, rgba(11,11,13,0.38) 42%, rgba(11,11,13,0.66) 100%)' }}
                             />
-                            <div className="relative z-10 max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
+                            <div className="relative z-10 mx-auto px-8">
                                 {/* header row — spans full width, toggles the band */}
                                 <button
                                     type="button"
@@ -330,7 +330,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* ===== How it works — editorial numbered steps, transparent over the sky ===== */}
-            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 py-12">
+            <div className="mx-auto px-8 py-12">
                 <FadeIn>
                     <div id="process" className="scroll-mt-24 text-center">
                         <h3 className="font-elegant font-medium text-ink text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em]">

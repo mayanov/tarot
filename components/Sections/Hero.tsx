@@ -115,7 +115,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     >
       {/* MIDDLE — the masthead: oversized wordmark, with the statement tucked as
           an offset caption to the right of it. */}
-      <div className="relative w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 flex-1 flex flex-col justify-center py-4 md:py-6">
+      <div className="relative w-full mx-auto px-8 flex-1 flex flex-col justify-center py-4 md:py-6">
         <Rise delay={140} hero>
           <h1 className="font-serif font-bold uppercase leading-[0.84] tracking-[-0.03em] text-[clamp(2.7rem,min(11.5vw,14vh),10rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
             <span className="block text-cream">Mayanov</span>
@@ -159,7 +159,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       {/* BOTTOM — metrics as a full-width data row: big number over a label, with
           a moonstone tick that grows and the number lifting to moon on hover. */}
       <Rise delay={680}>
-        <div className="w-full max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12">
+        <div className="w-full mx-auto px-8">
           <div
             className="grid grid-cols-2 md:grid-cols-4 gap-y-5 md:gap-y-0 rounded-2xl ring-1 ring-white/20 backdrop-blur-lg px-6 py-5 md:px-4 md:py-5 shadow-[0_24px_70px_-44px_rgba(0,0,0,0.6)]"
             style={{ background: 'rgba(255,255,255,0.09)' }}

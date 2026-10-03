@@ -42,7 +42,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                 className="pointer-events-none absolute inset-0"
                 style={{ background: 'radial-gradient(90% 70% at 88% 0%, rgba(107,63,160,0.18) 0%, transparent 55%)' }}
             />
-            <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 relative z-10">
+            <div className="mx-auto px-8 relative z-10">
                 <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
                     {/* LEFT — bold editorial numbered notes (fills the column) */}
                     <div className="order-2 lg:order-1 lg:col-span-8">

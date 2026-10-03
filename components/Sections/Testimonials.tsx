@@ -225,7 +225,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   return (
     <div id="testimonials" className="relative overflow-hidden isolate text-ink scroll-mt-28">
       <FadeIn>
-        <div className="max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12 mb-12 text-center">
+        <div className="mx-auto px-8 mb-12 text-center">
           <div className="flex items-center justify-center gap-1.5 text-sky">
             {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-5 h-5 md:w-6 md:h-6 fill-current" />))}
           </div>
@@ -240,7 +240,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
       {/* Auto-advancing — arrows flank the quote; all reviews are stacked so the
           block height always fits the LONGEST one (no jump when it changes). */}
       <div
-        className="relative max-w-[1600px] mx-auto px-6 md:px-10 lg:px-12"
+        className="relative mx-auto px-8"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
