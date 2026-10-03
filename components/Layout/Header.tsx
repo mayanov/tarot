@@ -147,15 +147,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50">
-        {/* soft twilight veil (fades in on scroll) — a gradient tint only, no blur,
-            so it gives the nav marks contrast without blurring the page below */}
+        {/* solid frosted glass bar (fades in on scroll) — a flat tint + blur with a
+            hairline bottom edge, so it reads as a defined nav bar, not a gradient */}
         <div
-          className={`pointer-events-none absolute inset-x-0 top-0 h-[150%] backdrop-blur-md transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
-          style={{
-            background: 'linear-gradient(180deg, rgba(13,14,22,0.72) 0%, rgba(13,14,22,0.46) 46%, rgba(13,14,22,0.16) 76%, rgba(13,14,22,0) 100%)',
-            maskImage: 'linear-gradient(180deg, #000 0%, #000 58%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(180deg, #000 0%, #000 58%, transparent 100%)',
-          }}
+          className={`pointer-events-none absolute inset-0 backdrop-blur-md border-b border-white/10 transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
+          style={{ background: 'rgba(13,14,22,0.78)' }}
         />
 
         <div className="relative mx-auto px-8 flex justify-between items-center py-4 md:py-5">
