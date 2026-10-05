@@ -46,7 +46,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
         <div className="max-w-5xl mx-auto text-center">
           {/* pull-quote — words illuminate one-by-one as it scrolls through view */}
           <IlluminateText
-            className="font-elegant italic text-cream text-[2rem] sm:text-[2.6rem] md:text-[3.4rem] lg:text-[3.9rem] leading-[1.08] tracking-[-0.01em]"
+            className="font-elegant italic font-bold text-cream text-[2.5rem] sm:text-[3.4rem] md:text-[4.4rem] lg:text-[5.2rem] leading-[1.03] tracking-[-0.02em]"
             text={isIndonesian
               ? 'Tarot bukan meramal masa depan — tapi memberi kejelasan untuk kamu bentuk sendiri.'
               : 'Tarot won’t predict your future — it hands you the clarity to shape it.'}
