@@ -27,17 +27,17 @@ const RegionIcon: React.FC<{ region: 'global' | 'id'; className?: string }> = ({
 
 // Region switcher: a two-segment toggle with a sliding moonstone thumb.
 // `compact` is the small variant used directly in the nav bar.
-const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; compact?: boolean }> = ({ isIndonesian, onSwitch, compact = false }) => {
+const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; compact?: boolean; light?: boolean }> = ({ isIndonesian, onSwitch, compact = false, light = false }) => {
   const options = [['global', false], ['id', true]] as const;
   return (
     <div
       role="group"
       aria-label="Site version"
-      className={`relative flex items-center p-0.5 rounded-lg border border-cream/40 ${compact ? 'w-[12.25rem] h-full' : 'w-full max-w-none sm:max-w-[17rem]'}`}
+      className={`relative flex items-center p-0.5 rounded-lg border transition-colors duration-300 ${light ? 'border-ink/20' : 'border-cream/40'} ${compact ? 'w-[12.25rem] h-full' : 'w-full max-w-none sm:max-w-[17rem]'}`}
     >
       <span
         aria-hidden
-        className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-[#202A5C]/60 backdrop-blur-sm transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className={`absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${light ? 'bg-ink/[0.08]' : 'bg-[#202A5C]/60 backdrop-blur-sm'}`}
         style={{ transform: isIndonesian ? 'translateX(100%)' : 'translateX(0)' }}
       />
       {options.map(([key, toID]) => {
@@ -49,7 +49,7 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
             onClick={() => onSwitch(toID)}
             aria-pressed={active}
             title={`Switch to the ${r.name} version`}
-            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-1.5 rounded-md font-semibold whitespace-nowrap transition-colors duration-300 ${compact ? 'px-2 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} ${active ? 'text-cream' : 'text-cream/55 hover:text-cream/80'}`}
+            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-1.5 rounded-md font-semibold whitespace-nowrap transition-colors duration-300 ${compact ? 'px-2 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} ${light ? (active ? 'text-ink' : 'text-ink/45 hover:text-ink/70') : (active ? 'text-cream' : 'text-cream/55 hover:text-cream/80')}`}
           >
             <RegionIcon
               region={key}
@@ -150,21 +150,21 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         {/* solid frosted glass bar (fades in on scroll) — a flat tint + blur with a
             hairline bottom edge, so it reads as a defined nav bar, not a gradient */}
         <div
-          className={`pointer-events-none absolute inset-0 backdrop-blur-md border-b border-white/10 transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
-          style={{ background: 'rgba(32,42,78,0.5)' }}
+          className={`pointer-events-none absolute inset-0 backdrop-blur-md border-b border-black/[0.06] transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
+          style={{ background: 'rgba(255,255,255,0.65)' }}
         />
 
         <div className="relative mx-auto px-8 flex justify-between items-center py-2.5 md:py-3">
           {/* LEFT — brand (hidden while the overlay owns the top row) */}
           <div className={`transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-            <Wordmark />
+            <Wordmark onDark={!isScrolled} />
           </div>
 
           {/* RIGHT — language toggle + the Pesan/Menu pair (joined) */}
           <div className={`flex items-stretch gap-2.5 transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {onSwitchRegion && (
               <div className="hidden md:flex mr-1">
-                <RegionSwitcher compact isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
+                <RegionSwitcher compact light={isScrolled} isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
               </div>
             )}
 
@@ -172,7 +172,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <div className="flex">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-                className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-l-lg border border-ink/10 bg-cream text-ink text-[10.5px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-300"
+                className={`hidden sm:inline-flex items-center px-4 py-2.5 rounded-l-lg border text-[10.5px] uppercase tracking-[0.2em] font-medium whitespace-nowrap transition-colors duration-300 ${isScrolled ? 'bg-ink text-cream border-ink hover:bg-plum' : 'bg-cream text-ink border-ink/10 hover:bg-plum hover:text-cream'}`}
               >
                 {isIndonesian ? 'Pesan' : 'Book'}
               </button>
@@ -181,7 +181,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 onClick={() => setMenuOpen(true)}
                 aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
                 aria-expanded={menuOpen}
-                className="group inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg sm:rounded-l-none sm:rounded-r-lg border sm:border-l-0 border-ink/10 bg-cream text-ink text-[10.5px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-300"
+                className={`group inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg sm:rounded-l-none sm:rounded-r-lg border sm:border-l-0 text-[10.5px] uppercase tracking-[0.2em] font-medium whitespace-nowrap transition-colors duration-300 ${isScrolled ? 'bg-ink text-cream border-ink hover:bg-plum' : 'bg-cream text-ink border-ink/10 hover:bg-plum hover:text-cream'}`}
               >
                 <span>Menu</span>
                 <span className="flex flex-col items-end gap-[4px] w-4">
