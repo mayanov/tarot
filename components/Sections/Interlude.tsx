@@ -21,13 +21,16 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       className="relative overflow-hidden isolate text-cream py-16 md:py-20"
       style={{ background: '#2A1330' }}
     >
-      {/* aurora sky photo — gentle slow zoom for life */}
+      {/* aurora sky photo — drifts slower than the content (parallax) */}
       <div
-        className="pointer-events-none absolute inset-0 animate-[slowZoom_26s_ease-in-out_infinite]"
+        data-parallax="0.09"
+        data-parallax-scale="1.25"
+        className="pointer-events-none absolute inset-0 will-change-transform"
         style={{
           backgroundImage: `url(${import.meta.env.BASE_URL}aurora-quote.jpg)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center 38%',
+          transform: 'scale(1.25)',
         }}
       />
       {/* cool, lighter overlay so the quote reads without feeling gloomy */}

@@ -46,6 +46,45 @@ export function smoothScrollTo(top: number) {
     else window.scrollTo({ top, behavior: 'smooth' });
 }
 
+// Global parallax: every element with [data-parallax] drifts vertically by its
+// distance from the viewport centre × the speed in that attribute, so backgrounds
+// move at a different pace than the content. Add data-parallax-scale to keep a zoom
+// (needed so an oversized layer never reveals its edges while drifting). One shared
+// rAF loop scans the live DOM each frame, so lazy-mounted sections are picked up.
+let parallaxCleanup: (() => void) | null = null;
+
+export function initParallax() {
+    if (parallaxCleanup) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let raf = 0;
+    const update = () => {
+        raf = 0;
+        const vh = window.innerHeight;
+        document.querySelectorAll<HTMLElement>('[data-parallax]').forEach((el) => {
+            const speed = parseFloat(el.dataset.parallax || '0');
+            if (!speed) return;
+            const r = el.getBoundingClientRect();
+            const offset = (vh / 2 - (r.top + r.height / 2)) * speed;
+            const scale = el.dataset.parallaxScale;
+            el.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)` + (scale ? ` scale(${scale})` : '');
+        });
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    parallaxCleanup = () => {
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
+        if (raf) cancelAnimationFrame(raf);
+    };
+}
+
+export function destroyParallax() {
+    parallaxCleanup?.();
+    parallaxCleanup = null;
+}
+
 // Scroll-linked parallax: translate an element by its distance from the viewport
 // centre × speed. Negative speed = moves against scroll (feels deeper). Runs off the
 // (Lenis-driven) scroll event via rAF, and respects reduced-motion.

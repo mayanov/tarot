@@ -62,8 +62,10 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
     >
       {/* aurora sky background — zoomed toward the top so the horizon/ground is cropped out (sky only) */}
       <div
-        className="absolute inset-0"
-        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}aurora-sky.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center top', transform: 'scale(1.35)', transformOrigin: 'center top' }}
+        data-parallax="0.07"
+        data-parallax-scale="1.35"
+        className="absolute inset-0 will-change-transform"
+        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}aurora-sky.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center 28%', transform: 'scale(1.35)', transformOrigin: 'center' }}
       />
       <div
         className="pointer-events-none absolute inset-0"

@@ -9,7 +9,7 @@ import Footer from './components/Layout/Footer';
 import Loader from './components/Layout/Loader';
 import BookingModal from './components/Booking/BookingModal';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
-import { initLenis, destroyLenis, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
+import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
 import { ArrowUp, RefreshCw } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 
@@ -196,10 +196,11 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Smooth inertia scrolling (Lenis) for the whole page.
+  // Smooth inertia scrolling (Lenis) + global background parallax for the whole page.
   useEffect(() => {
     initLenis();
-    return () => destroyLenis();
+    initParallax();
+    return () => { destroyLenis(); destroyParallax(); };
   }, []);
 
   // Handle Hash Navigation after Loading
@@ -394,14 +395,18 @@ function App() {
           sky flows unbroken from one section into the other; the footer rests on it as
           a white card. */}
       <div className="relative z-10 isolate overflow-hidden">
-        {/* the sky photo spanning the whole region (same sky as the hero — bookends the page) */}
+        {/* the sky photo spanning the whole region (same sky as the hero — bookends the
+            page); drifts slower than the content for parallax depth */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10"
+          data-parallax="0.05"
+          data-parallax-scale="1.25"
+          className="pointer-events-none absolute inset-0 -z-10 will-change-transform"
           style={{
             backgroundImage: `url(${import.meta.env.BASE_URL}sky-hero.jpg)`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
+            transform: 'scale(1.25)',
           }}
         />
         {/* legibility veil so cream text stays readable over the brighter nebula */}
