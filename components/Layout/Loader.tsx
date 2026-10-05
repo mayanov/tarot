@@ -95,9 +95,10 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       style={{
         background: '#000000',
         // The full moon dilates open — a circle of light growing from its center
-        // to unveil the page (an "aperture" reveal).
-        WebkitMaskImage: 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))',
-        maskImage: 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))',
+        // to unveil the page (an "aperture" reveal). The mask is only applied once
+        // the exit begins, so no pinhole of the page shows through beforehand.
+        WebkitMaskImage: leaving && !reduce ? 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))' : undefined,
+        maskImage: leaving && !reduce ? 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))' : undefined,
         animation: leaving && !reduce ? 'ldAperture 1200ms cubic-bezier(0.33,0,0.2,1) 110ms forwards' : undefined,
         opacity: leaving && reduce ? 0 : 1,
         transition: reduce ? 'opacity 300ms ease' : undefined,
