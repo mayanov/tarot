@@ -133,11 +133,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   // Brand mark — badge always; full wordmark eases in once scrolled.
   const Wordmark: React.FC<{ onDark?: boolean }> = ({ onDark = true }) => (
     <div className="flex items-center gap-2 cursor-pointer group whitespace-nowrap" onClick={handleLogoClick}>
-      <span className={`grid place-items-center w-7 h-7 shrink-0 rounded-full border font-serif text-base leading-none transition-colors duration-300 ${onDark ? 'border-cream/40 text-cream group-hover:bg-cream group-hover:text-ink' : 'border-ink/30 text-ink group-hover:bg-ink group-hover:text-cream'}`}>
+      <span className={`grid place-items-center w-7 h-7 shrink-0 rounded-full border font-serif text-base leading-none transition-colors duration-300 ${onDark ? 'border-cream/50 text-cream group-hover:bg-cream group-hover:text-ink [text-shadow:0_1px_8px_rgba(0,0,0,0.45)] shadow-[0_2px_10px_-4px_rgba(0,0,0,0.4)]' : 'border-ink/30 text-ink group-hover:bg-ink group-hover:text-cream'}`}>
         M
       </span>
       <span className={`overflow-hidden whitespace-nowrap transition-[max-width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled || menuOpen ? 'max-w-[220px]' : 'max-w-0'}`}>
-        <span className={`pl-0.5 text-base font-serif font-bold uppercase tracking-tight ${onDark ? 'text-cream' : 'text-ink'}`}>
+        <span className={`pl-0.5 text-base font-serif font-bold uppercase tracking-tight ${onDark ? 'text-cream [text-shadow:0_1px_10px_rgba(0,0,0,0.55),0_0_2px_rgba(0,0,0,0.4)]' : 'text-ink'}`}>
           Mayanov <span className={onDark ? 'text-cream/55' : 'text-ink/45'}>Tarot</span>
         </span>
       </span>
@@ -150,21 +150,21 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         {/* solid frosted glass bar (fades in on scroll) — a flat tint + blur with a
             hairline bottom edge, so it reads as a defined nav bar, not a gradient */}
         <div
-          className={`pointer-events-none absolute inset-0 backdrop-blur-md border-b border-black/[0.06] transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
-          style={{ background: 'rgba(255,255,255,0.65)' }}
+          className={`pointer-events-none absolute inset-0 backdrop-blur-xl border-b border-white/[0.08] transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
+          style={{ background: 'rgba(10,12,22,0.18)' }}
         />
 
         <div className="relative mx-auto px-8 flex justify-between items-center py-2.5 md:py-3">
           {/* LEFT — brand (hidden while the overlay owns the top row) */}
           <div className={`transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-            <Wordmark onDark={!isScrolled} />
+            <Wordmark />
           </div>
 
           {/* RIGHT — language toggle + the Pesan/Menu pair (joined) */}
           <div className={`flex items-stretch gap-2.5 transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {onSwitchRegion && (
               <div className="hidden md:flex mr-1">
-                <RegionSwitcher compact light={isScrolled} isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
+                <RegionSwitcher compact isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
               </div>
             )}
 
@@ -172,7 +172,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <div className="flex">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-                className={`hidden sm:inline-flex items-center px-4 py-2.5 rounded-l-lg border text-[10.5px] uppercase tracking-[0.2em] font-medium whitespace-nowrap transition-colors duration-300 ${isScrolled ? 'bg-ink text-cream border-ink hover:bg-plum' : 'bg-cream text-ink border-ink/10 hover:bg-plum hover:text-cream'}`}
+                className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-l-lg border border-ink/10 bg-cream text-ink text-[10.5px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-300 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
               >
                 {isIndonesian ? 'Pesan' : 'Book'}
               </button>
@@ -181,7 +181,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 onClick={() => setMenuOpen(true)}
                 aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
                 aria-expanded={menuOpen}
-                className={`group inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg sm:rounded-l-none sm:rounded-r-lg border sm:border-l-0 text-[10.5px] uppercase tracking-[0.2em] font-medium whitespace-nowrap transition-colors duration-300 ${isScrolled ? 'bg-ink text-cream border-ink hover:bg-plum' : 'bg-cream text-ink border-ink/10 hover:bg-plum hover:text-cream'}`}
+                className="group inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg sm:rounded-l-none sm:rounded-r-lg border sm:border-l-0 border-ink/10 bg-cream text-ink text-[10.5px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-300 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
               >
                 <span>Menu</span>
                 <span className="flex flex-col items-end gap-[4px] w-4">
