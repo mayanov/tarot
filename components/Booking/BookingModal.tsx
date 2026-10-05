@@ -378,6 +378,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               {/* calendar + time — revealed only after a duration is chosen */}
               {(!needsPackage || pkg) && (
+              <>
+              {service?.id === 'meetup' && (
+                <p className="mb-3 flex items-center gap-2 text-xs text-ink/70 rounded-lg border border-black/10 bg-black/[0.02] px-3 py-2">
+                  <CalendarDays className="w-3.5 h-3.5 shrink-0 text-ink/50" />
+                  {t('Sesi tatap muka hanya tersedia hari Jumat & Minggu.', 'In-person sessions are available on Fridays & Sundays only.')}
+                </p>
+              )}
               <div className="md:grid md:grid-cols-2 md:gap-4 md:items-stretch">
               {/* calendar */}
               <div className="booking-cal rounded-lg bg-white border border-black/10 shadow-sm text-ink p-2 sm:p-3 flex items-center justify-center md:h-full">
@@ -385,7 +392,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   mode="single"
                   selected={date}
                   onSelect={(d) => { setDate(d); setTime(null); }}
-                  disabled={{ before: new Date() }}
+                  disabled={service?.id === 'meetup'
+                    ? [{ before: new Date() }, { dayOfWeek: [1, 2, 3, 4, 6] }]
+                    : { before: new Date() }}
                   weekStartsOn={1}
                 />
               </div>
@@ -439,6 +448,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   )}
               </div>
               </div>
+              </>
               )}
 
               <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-white/92 backdrop-blur-sm border-t border-black/10 flex items-center justify-end gap-3">
