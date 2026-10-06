@@ -21,6 +21,16 @@ interface ServiceOption {
   price?: string; // fixed price when there are no packages
 }
 
+// Per-service weekday restrictions for scheduled sessions (0=Sun … 6=Sat).
+// The listed days are DISABLED in the date picker.
+//   call   → Mon–Fri only (disable Sun, Sat)
+//   meetup → Fri & Sun only (disable Mon–Thu, Sat)
+// Services not listed here allow any upcoming day.
+const DISABLED_DOWS: Record<string, number[]> = {
+  call: [0, 6],
+  meetup: [1, 2, 3, 4, 6],
+};
+
 const toISODate = (d: Date) => {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -379,10 +389,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               {/* calendar + time — revealed only after a duration is chosen */}
               {(!needsPackage || pkg) && (
               <>
-              {service?.id === 'meetup' && (
+              {(service?.id === 'meetup' || service?.id === 'call') && (
                 <p className="mb-3 flex items-center gap-2 text-xs text-ink/70 rounded-lg border border-black/10 bg-black/[0.02] px-3 py-2">
                   <CalendarDays className="w-3.5 h-3.5 shrink-0 text-ink/50" />
-                  {t('Sesi tatap muka hanya tersedia hari Jumat & Minggu.', 'In-person sessions are available on Fridays & Sundays only.')}
+                  {service.id === 'meetup'
+                    ? t('Sesi tatap muka hanya tersedia hari Jumat & Minggu.', 'In-person sessions are available on Fridays & Sundays only.')
+                    : t('Sesi call tersedia hari Senin–Jumat.', 'Call sessions are available Monday–Friday.')}
                 </p>
               )}
               <div className="md:grid md:grid-cols-2 md:gap-4 md:items-stretch">
@@ -392,8 +404,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   mode="single"
                   selected={date}
                   onSelect={(d) => { setDate(d); setTime(null); }}
-                  disabled={service?.id === 'meetup'
-                    ? [{ before: new Date() }, { dayOfWeek: [1, 2, 3, 4, 6] }]
+                  disabled={service && DISABLED_DOWS[service.id]
+                    ? [{ before: new Date() }, { dayOfWeek: DISABLED_DOWS[service.id] }]
                     : { before: new Date() }}
                   weekStartsOn={1}
                 />
