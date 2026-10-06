@@ -19,6 +19,25 @@ interface AnalyticsDashboardProps {
     onLogout?: () => void;
 }
 
+// Sidebar nav, grouped by purpose and ordered most-used first (day-to-day
+// operations → money → insights → admin). Data-driven so it stays tidy.
+const NAV_GROUPS: { label: string; items: { id: string; name: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] }[] = [
+    { label: 'Operations', items: [
+        { id: 'bookings', name: 'Bookings', icon: Calendar },
+        { id: 'customers', name: 'Customers', icon: Contact },
+    ] },
+    { label: 'Finance', items: [
+        { id: 'sales', name: 'Sales', icon: Receipt },
+        { id: 'revenue', name: 'Revenue', icon: Wallet },
+    ] },
+    { label: 'Insights', items: [
+        { id: 'analytics', name: 'Analytics', icon: BarChart2 },
+    ] },
+    { label: 'Admin', items: [
+        { id: 'users', name: 'Manage Users', icon: Users },
+    ] },
+];
+
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => {
     // State
     const [startDate, setStartDate] = useState<string>('');
@@ -287,56 +306,47 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     </h2>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-2">
-                    {/* Active Menu */}
-                    <button
-                        onClick={() => setActiveView('analytics')}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'analytics' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
-                        <BarChart2 size={18} />
-                        <span>Analytics</span>
-                    </button>
+                <nav className="flex-1 p-3 overflow-y-auto">
+                    {NAV_GROUPS.map((group) => (
+                        <div key={group.label} className="mb-1">
+                            <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-subtle/50">
+                                {group.label}
+                            </p>
+                            <div className="space-y-1">
+                                {group.items.map((item) => {
+                                    const active = activeView === item.id;
+                                    const Icon = item.icon;
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => setActiveView(item.id)}
+                                            aria-current={active ? 'page' : undefined}
+                                            className={`group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${active ? 'bg-lilac/10 text-lilac' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}
+                                        >
+                                            {active && <span aria-hidden className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-lilac" />}
+                                            <Icon size={18} className={active ? 'text-lilac' : 'text-text-subtle group-hover:text-text-light transition-colors'} />
+                                            <span>{item.name}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
 
-                    <button
-                        onClick={() => setActiveView('users')}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'users' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
-                        <Users size={18} />
-                        <span>Manage Users</span>
-                    </button>
-
-                    <button
-                        onClick={() => setActiveView('bookings')}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'bookings' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
-                        <Calendar size={18} />
-                        <span>Bookings</span>
-                    </button>
-
-                    <button
-                        onClick={() => setActiveView('sales')}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'sales' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
-                        <Receipt size={18} />
-                        <span>Sales</span>
-                    </button>
-
-                    <button
-                        onClick={() => setActiveView('revenue')}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'revenue' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
-                        <Wallet size={18} />
-                        <span>Revenue</span>
-                    </button>
-
-                    <button
-                        onClick={() => setActiveView('customers')}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${activeView === 'customers' ? 'bg-lilac/10 text-lilac border border-lilac/20' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
-                        <Contact size={18} />
-                        <span>Customers</span>
-                    </button>
-
-                    {/* Disabled Menu */}
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 text-text-subtle/50 cursor-not-allowed rounded-xl font-medium text-sm">
-                        <RefreshCcw size={18} />
-                        <span>Content Updates</span>
-                        <span className="ml-auto text-[10px] uppercase bg-adm-hover text-text-subtle px-1.5 py-0.5 rounded">Soon</span>
-                    </button>
+                    {/* Coming soon */}
+                    <div className="mb-1">
+                        <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-subtle/50">
+                            Coming soon
+                        </p>
+                        <button
+                            disabled
+                            className="w-full flex items-center gap-3 px-3 py-2.5 text-text-subtle/40 cursor-not-allowed rounded-xl font-medium text-sm"
+                        >
+                            <RefreshCcw size={18} />
+                            <span>Content Updates</span>
+                            <span className="ml-auto text-[9px] uppercase tracking-wide bg-adm-hover text-text-subtle/70 px-1.5 py-0.5 rounded-full">Soon</span>
+                        </button>
+                    </div>
                 </nav>
 
                 <div className="p-4 border-t border-adm-line space-y-1">
