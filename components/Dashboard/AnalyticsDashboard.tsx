@@ -12,6 +12,7 @@ import BookingsView from './BookingsView';
 import RevenueView from './RevenueView';
 import CustomersView from './CustomersView';
 import SalesView from './SalesView';
+import DashboardLoader from './DashboardLoader';
 
 type DateRangePreset = '7D' | '30D' | 'THIS_MONTH' | 'CUSTOM';
 
@@ -521,6 +522,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                             </div>
                         )}
                     </div>
+                ) : isLoading ? (
+                    <DashboardLoader />
                 ) : (
                     /* ANALYTICS VIEW (Default) */
                     <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">

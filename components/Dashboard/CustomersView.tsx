@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCcw, Search, Phone, Mail, X, Repeat } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
+import DashboardLoader from './DashboardLoader';
 
 // ---- price parsing (mirrors RevenueView) ----
 const SERVICE_PRICE_FALLBACK: Record<string, string> = { special: 'Rp 250K', '3card': '$12', '5card': '$20', live: '$45' };
@@ -152,6 +153,8 @@ const CustomersView: React.FC = () => {
         if (c.totalUSD) parts.push(fmtUSD(c.totalUSD));
         return parts.join(' + ') || '—';
     };
+
+    if (loading && bookings.length === 0) return <DashboardLoader />;
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">

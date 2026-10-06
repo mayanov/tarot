@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCcw, TrendingUp, Wallet, ShoppingBag, Award, Users, Repeat, UserPlus } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking } from '../../services/booking';
+import DashboardLoader from './DashboardLoader';
 
 type Currency = 'IDR' | 'USD';
 type Gran = 'day' | 'week';
@@ -305,6 +306,8 @@ const RevenueView: React.FC = () => {
     );
 
     const granLabel = gran === 'day' ? 'Daily' : 'Weekly';
+
+    if (loading && bookings.length === 0) return <DashboardLoader />;
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">

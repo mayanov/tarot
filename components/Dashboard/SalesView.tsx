@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCcw, Search, Wallet, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
+import DashboardLoader from './DashboardLoader';
 
 type Cur = 'IDR' | 'USD';
 
@@ -111,6 +112,8 @@ const SalesView: React.FC = () => {
     };
 
     const outstanding = totals.unpaidIDR > 0 || totals.unpaidUSD > 0;
+
+    if (loading && bookings.length === 0) return <DashboardLoader />;
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">

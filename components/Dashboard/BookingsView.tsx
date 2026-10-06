@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, Booking, CalEvent } from '../../services/booking';
+import DashboardLoader from './DashboardLoader';
 
 // Services offered — id drives revenue colour/stacking; name is the display label.
 const MANUAL_SERVICES: { id: string; name: string }[] = [
@@ -488,6 +489,8 @@ const BookingsView: React.FC = () => {
     ];
 
     const navBtn = 'grid place-items-center w-9 h-9 rounded-lg bg-adm-hover text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors';
+
+    if (loading && bookings.length === 0) return <DashboardLoader />;
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
