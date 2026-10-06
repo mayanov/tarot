@@ -190,9 +190,10 @@ const CustomersView: React.FC = () => {
             {/* list */}
             <div className="rounded-2xl bg-surface-1 border border-adm-line overflow-hidden">
                 <div className="hidden md:grid grid-cols-12 gap-3 px-5 py-3 text-[0.7rem] uppercase tracking-wider text-text-subtle border-b border-adm-line">
-                    <div className="col-span-4">Customer</div>
-                    <div className="col-span-3">Phone</div>
-                    <div className="col-span-2 text-center">Bookings</div>
+                    <div className="col-span-2">ID</div>
+                    <div className="col-span-3">Customer</div>
+                    <div className="col-span-2">Phone</div>
+                    <div className="col-span-2 text-center">Repeat</div>
                     <div className="col-span-2 text-right">Spent</div>
                     <div className="col-span-1 text-right">Last</div>
                 </div>
@@ -203,18 +204,19 @@ const CustomersView: React.FC = () => {
                     return (
                         <button key={c.key} onClick={() => setSelected(c)}
                             className="w-full grid grid-cols-2 md:grid-cols-12 gap-2 md:gap-3 px-5 py-3.5 text-left border-b border-adm-line last:border-0 hover:bg-adm-hover transition-colors items-center">
-                            <div className="col-span-2 md:col-span-4 min-w-0">
-                                <div className="font-medium text-text-light truncate flex items-center gap-2">
-                                    {c.name}
-                                    {active > 1 && <span className="inline-flex items-center gap-1 text-[0.65rem] text-lilac"><Repeat size={11} />{active}×</span>}
-                                </div>
-                                <div className="text-xs text-text-subtle truncate flex items-center gap-1.5">
-                                    <span className="font-mono text-[0.65rem] text-text-subtle/80">{c.clientId}</span>
-                                    {c.email && <span className="truncate">· {c.email}</span>}
-                                </div>
+                            <div className="col-span-2 md:col-span-2 min-w-0">
+                                <span className="font-mono text-[0.7rem] text-text-subtle">{c.clientId}</span>
                             </div>
-                            <div className="col-span-1 md:col-span-3 text-sm text-text-subtle tabular-nums truncate">{c.phone || '—'}</div>
-                            <div className="col-span-1 md:col-span-2 md:text-center text-sm text-text-light tabular-nums">{c.bookings.length}</div>
+                            <div className="col-span-2 md:col-span-3 min-w-0">
+                                <div className="font-medium text-text-light truncate">{c.name}</div>
+                                {c.email && <div className="text-xs text-text-subtle truncate">{c.email}</div>}
+                            </div>
+                            <div className="col-span-1 md:col-span-2 text-sm text-text-subtle tabular-nums truncate">{c.phone || '—'}</div>
+                            <div className="col-span-1 md:col-span-2 md:text-center text-sm tabular-nums">
+                                <span className={`inline-flex items-center gap-1 ${active > 1 ? 'text-lilac font-semibold' : 'text-text-light'}`}>
+                                    {active > 1 && <Repeat size={11} />}{active}
+                                </span>
+                            </div>
                             <div className="col-span-1 md:col-span-2 md:text-right text-sm text-text-light tabular-nums">{spentLabel(c)}</div>
                             <div className="col-span-1 md:col-span-1 md:text-right text-xs text-text-subtle">{fmtDate(c.lastSeen)}</div>
                         </button>
