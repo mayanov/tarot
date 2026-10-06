@@ -170,11 +170,12 @@ const SalesView: React.FC = () => {
             {/* table */}
             <div className="rounded-2xl border border-adm-line bg-surface-1 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[720px]">
+                    <table className="w-full text-sm min-w-[840px]">
                         <thead>
                             <tr className="text-left text-text-subtle text-xs uppercase tracking-wider border-b border-adm-line">
                                 <th className="font-semibold px-4 py-3">Booking date</th>
                                 <th className="font-semibold px-4 py-3">Customer</th>
+                                <th className="font-semibold px-4 py-3">WhatsApp</th>
                                 <th className="font-semibold px-4 py-3">Service</th>
                                 <th className="font-semibold px-4 py-3 text-right">Amount</th>
                                 <th className="font-semibold px-4 py-3">Status</th>
@@ -183,7 +184,7 @@ const SalesView: React.FC = () => {
                         </thead>
                         <tbody>
                             {!loading && filtered.length === 0 && (
-                                <tr><td colSpan={6} className="text-center text-text-subtle py-16">No orders found.</td></tr>
+                                <tr><td colSpan={7} className="text-center text-text-subtle py-16">No orders found.</td></tr>
                             )}
                             {filtered.map((b) => {
                                 const a = amountOf(b);
@@ -193,11 +194,15 @@ const SalesView: React.FC = () => {
                                         <td className="px-4 py-3 whitespace-nowrap text-text-subtle tabular-nums">{fmtDate(b.createdAt)}</td>
                                         <td className="px-4 py-3">
                                             <div className="font-semibold text-text-light">{b.name || '—'}</div>
-                                            <div className="text-xs text-text-subtle truncate max-w-[12rem]">{b.contact}</div>
+                                            <div className="mt-1">
+                                                <span className={`inline-block text-[0.6rem] uppercase tracking-wider px-1.5 py-0.5 rounded ${b.source === 'manual' ? 'bg-adm-hover text-text-subtle' : 'bg-lilac/10 text-lilac'}`}>
+                                                    {b.source === 'manual' ? 'Manual' : 'From booking'}
+                                                </span>
+                                            </div>
                                         </td>
+                                        <td className="px-4 py-3 text-text-subtle whitespace-nowrap">{b.contact || '—'}</td>
                                         <td className="px-4 py-3 text-text-light">
                                             {serviceLabel(b)}
-                                            {b.source === 'manual' && <span className="ml-2 text-[0.6rem] uppercase tracking-wider px-1.5 py-0.5 rounded bg-adm-hover text-text-subtle align-middle">manual</span>}
                                         </td>
                                         <td className="px-4 py-3 text-right tabular-nums text-text-light">{a ? fmtMoney(a.amount, a.currency) : '—'}</td>
                                         <td className="px-4 py-3">
