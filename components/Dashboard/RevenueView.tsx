@@ -255,7 +255,7 @@ const RevenueView: React.FC = () => {
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Revenue</h1>
+                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Report</h1>
                     <p className="text-text-subtle text-sm">Realized revenue from confirmed &amp; completed bookings, by order date.</p>
                 </div>
                 <div className="flex items-center gap-3">
