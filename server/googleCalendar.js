@@ -71,6 +71,11 @@ const eventsUrl = () =>
 
 // 15-min buffer after a session so there's rest time before the next one.
 const REST_BUFFER_MIN = 15;
+// In-person (meetup) sessions need travel time blocked around them: an hour to get
+// there before, half an hour to get back after. Created as their own calendar events.
+const TRANSPORT_BEFORE_MIN = 60;
+const TRANSPORT_AFTER_MIN = 30;
+const isMeetup = (b) => (b?.serviceId || '') === 'meetup' || /tatap muka/i.test(b?.serviceName || '');
 const offsetMinutes = () => { const m = OFFSET.match(/([+-])(\d{2}):(\d{2})/); if (!m) return 0; return (m[1] === '-' ? -1 : 1) * (+m[2] * 60 + +m[3]); };
 // Convert an RFC3339 instant to business-local { date, time }.
 const toLocal = (dateTime) => {
@@ -139,6 +144,64 @@ export async function createEvent(booking) {
     console.error('[gcal] createEvent error:', e.message);
     return null;
   }
+}
+
+// Insert a raw event body; returns the new event id or null.
+async function insertEvent(body) {
+  try {
+    const r = await fetch(eventsUrl(), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) { console.error('[gcal] insertEvent failed', r.status, await r.text()); return null; }
+    const data = await r.json();
+    return data.id || null;
+  } catch (e) {
+    console.error('[gcal] insertEvent error:', e.message);
+    return null;
+  }
+}
+
+// Transport blocks around a meetup: 1h before (travel to) and 30m after (travel back),
+// as separate busy events so those times are unavailable for other bookings too.
+function transportBodies(booking) {
+  const dur = booking.durationMin && booking.durationMin > 0 ? booking.durationMin : 60;
+  const start = toMin(booking.time);
+  const end = start + dur;
+  const label = (booking.serviceName || booking.serviceId || 'Sesi Tatap Muka').split(' · ')[0].trim();
+  return [
+    {
+      summary: `🚗 Transport ke lokasi — ${booking.name}`,
+      description: `Waktu perjalanan menuju ${label}.\nBooking ID: ${booking.id}`,
+      start: { dateTime: rfc3339(booking.date, toHHMM(Math.max(0, start - TRANSPORT_BEFORE_MIN))), timeZone: TZ },
+      end: { dateTime: rfc3339(booking.date, toHHMM(start)), timeZone: TZ },
+    },
+    {
+      summary: `🚗 Transport pulang — ${booking.name}`,
+      description: `Waktu perjalanan pulang dari ${label}.\nBooking ID: ${booking.id}`,
+      start: { dateTime: rfc3339(booking.date, toHHMM(end)), timeZone: TZ },
+      end: { dateTime: rfc3339(booking.date, toHHMM(end + TRANSPORT_AFTER_MIN)), timeZone: TZ },
+    },
+  ];
+}
+
+// For a meetup booking, create the two transport events. Returns their ids ([] otherwise).
+export async function createTransportEvents(booking) {
+  const c = getClient();
+  if (!c) return [];
+  if (!isMeetup(booking) || !booking.date || !booking.time) return [];
+  const ids = [];
+  for (const body of transportBodies(booking)) {
+    const id = await insertEvent(body);
+    if (id) ids.push(id);
+  }
+  return ids;
+}
+
+// Delete several events (e.g. a meetup's transport blocks).
+export async function deleteEvents(ids) {
+  for (const id of ids || []) await deleteEvent(id);
 }
 
 // Remove a previously created event (used when a booking is cancelled).

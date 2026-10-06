@@ -134,6 +134,19 @@ export async function rescheduleBooking(id, { date, time, durationMin }, opts = 
 
   if (!opts.skipCalendar && updated.gcalEventId) {
     try { await gcal.updateEvent(updated.gcalEventId, updated); } catch (e) { console.error('[bookings] calendar update failed:', e.message); }
+    // Meetup travel blocks move with the session: drop the old ones, recreate at the new time.
+    try {
+      if (booking.gcalTransportIds?.length) await gcal.deleteEvents(booking.gcalTransportIds);
+      const transportIds = await gcal.createTransportEvents(updated);
+      updated.gcalTransportIds = transportIds.length ? transportIds : null;
+      if (db) {
+        await db.collection(COLLECTION).doc(newId).update({ gcalTransportIds: updated.gcalTransportIds });
+      } else {
+        const list = readAll();
+        const row = list.find((r) => r.id === newId);
+        if (row) { row.gcalTransportIds = updated.gcalTransportIds; writeAll(list); }
+      }
+    } catch (e) { console.error('[bookings] transport reschedule failed:', e.message); }
   }
   return updated;
 }
@@ -172,6 +185,8 @@ export async function createBooking(input) {
     if (!skipCalendar) {
       const eventId = await gcal.createEvent(booking);
       if (eventId) { booking.gcalEventId = eventId; await ref.update({ gcalEventId: eventId }); }
+      const transportIds = await gcal.createTransportEvents(booking);
+      if (transportIds.length) { booking.gcalTransportIds = transportIds; await ref.update({ gcalTransportIds: transportIds }); }
     }
     return booking;
   }
@@ -191,7 +206,10 @@ export async function createBooking(input) {
   writeAll(cleaned);
   if (!skipCalendar) {
     const eventId = await gcal.createEvent(booking);
-    if (eventId) { booking.gcalEventId = eventId; writeAll(cleaned); }
+    if (eventId) booking.gcalEventId = eventId;
+    const transportIds = await gcal.createTransportEvents(booking);
+    if (transportIds.length) booking.gcalTransportIds = transportIds;
+    if (eventId || transportIds.length) writeAll(cleaned);
   }
   return booking;
 }
@@ -282,10 +300,11 @@ export async function updateStatus(id, status) {
     if (!snap.exists) return null;
     const prev = snap.data();
     await ref.update({ status });
-    // Cancelling frees the slot — remove the Google Calendar event too.
-    if (status === 'cancelled' && prev.gcalEventId) {
-      await gcal.deleteEvent(prev.gcalEventId);
-      await ref.update({ gcalEventId: null });
+    // Cancelling frees the slot — remove the Google Calendar event(s) too.
+    if (status === 'cancelled' && (prev.gcalEventId || prev.gcalTransportIds?.length)) {
+      if (prev.gcalEventId) await gcal.deleteEvent(prev.gcalEventId);
+      if (prev.gcalTransportIds?.length) await gcal.deleteEvents(prev.gcalTransportIds);
+      await ref.update({ gcalEventId: null, gcalTransportIds: null });
     }
     return { ...prev, status };
   }
@@ -293,9 +312,11 @@ export async function updateStatus(id, status) {
   const b = all.find((x) => x.id === id);
   if (!b) return null;
   b.status = status;
-  if (status === 'cancelled' && b.gcalEventId) {
-    await gcal.deleteEvent(b.gcalEventId);
+  if (status === 'cancelled' && (b.gcalEventId || b.gcalTransportIds?.length)) {
+    if (b.gcalEventId) await gcal.deleteEvent(b.gcalEventId);
+    if (b.gcalTransportIds?.length) await gcal.deleteEvents(b.gcalTransportIds);
     b.gcalEventId = null;
+    b.gcalTransportIds = null;
   }
   writeAll(all);
   return b;
