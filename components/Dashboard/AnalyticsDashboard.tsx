@@ -28,7 +28,7 @@ const NAV_GROUPS: { label: string; items: { id: string; name: string; icon: Reac
     ] },
     { label: 'Finance', items: [
         { id: 'sales', name: 'Sales', icon: Receipt },
-        { id: 'revenue', name: 'Report', icon: Wallet },
+        { id: 'revenue', name: 'Dashboard', icon: Wallet },
     ] },
     { label: 'Insights', items: [
         { id: 'analytics', name: 'Analytics', icon: BarChart2 },
