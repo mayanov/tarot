@@ -76,6 +76,9 @@ const REST_BUFFER_MIN = 15;
 const TRANSPORT_BEFORE_MIN = 60;
 const TRANSPORT_AFTER_MIN = 30;
 const isMeetup = (b) => (b?.serviceId || '') === 'meetup' || /tatap muka/i.test(b?.serviceName || '');
+// Meetup gets travel blocks (1h before / 30m after) instead of the generic rest tail,
+// so its main event stays exactly the session length.
+const restBufferFor = (b) => (isMeetup(b) ? 0 : REST_BUFFER_MIN);
 const offsetMinutes = () => { const m = OFFSET.match(/([+-])(\d{2}):(\d{2})/); if (!m) return 0; return (m[1] === '-' ? -1 : 1) * (+m[2] * 60 + +m[3]); };
 // Convert an RFC3339 instant to business-local { date, time }.
 const toLocal = (dateTime) => {
@@ -102,7 +105,7 @@ const scheduledBody = (booking) => {
     summary: `${serviceLabel} — ${booking.name}`,
     description: descriptionFor(booking),
     start: { dateTime: rfc3339(booking.date, booking.time), timeZone: TZ },
-    end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur + REST_BUFFER_MIN)), timeZone: TZ },
+    end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur + restBufferFor(booking))), timeZone: TZ },
   };
 };
 
@@ -273,7 +276,9 @@ export async function eventInfo(eventId) {
     if (ev.start?.dateTime && ev.end?.dateTime) {
       const s = toLocal(ev.start.dateTime);
       const durTotal = Math.round((Date.parse(ev.end.dateTime) - Date.parse(ev.start.dateTime)) / 60000);
-      const durationMin = Math.max(30, durTotal - REST_BUFFER_MIN);
+      // Meetup events carry no rest tail (travel blocks are separate), so don't subtract one.
+      const buf = /tatap muka/i.test(ev.summary || '') ? 0 : REST_BUFFER_MIN;
+      const durationMin = Math.max(30, durTotal - buf);
       return s ? { status: 'exists', scheduled: true, date: s.date, time: s.time, durationMin } : { status: 'exists', scheduled: true };
     }
     return { status: 'exists', scheduled: false };
