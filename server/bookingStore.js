@@ -32,6 +32,13 @@ const occupiedSlots = (time, durationMin) => {
   return out;
 };
 
+// Extra breathing time (minutes) reserved AFTER a session, per service. Those slots
+// become unavailable for the next booking too, so sessions aren't back-to-back.
+const SESSION_BUFFER_MIN = { call: 15 };
+const bufferFor = (b) => SESSION_BUFFER_MIN[b?.serviceId] || 0;
+// A booking's full footprint on the grid: its own duration + its service buffer.
+const footprintSlots = (b) => occupiedSlots(b.time, (b.durationMin || 30) + bufferFor(b));
+
 // ---- Firestore init (only if a service account is provided) ----
 let db = null;
 try {
@@ -83,7 +90,7 @@ export async function dbTakenSlots(date) {
   }
   const set = new Set();
   rows.filter((b) => b.status !== 'cancelled')
-    .forEach((b) => occupiedSlots(b.time, b.durationMin).forEach((s) => set.add(s)));
+    .forEach((b) => footprintSlots(b).forEach((s) => set.add(s)));
   return set;
 }
 
@@ -110,11 +117,11 @@ export async function rescheduleBooking(id, { date, time, durationMin }, opts = 
 
   const dur = durationMin && durationMin > 0 ? Math.round(durationMin) : (booking.durationMin || 30);
   const newId = slotId(date, time);
-  const wanted = occupiedSlots(time, dur);
+  const wanted = occupiedSlots(time, dur + bufferFor(booking));
 
   // Availability from our store, minus this booking's current footprint.
   const taken = await dbTakenSlots(date);
-  if (booking.date === date) occupiedSlots(booking.time, booking.durationMin || 30).forEach((s) => taken.delete(s));
+  if (booking.date === date) footprintSlots(booking).forEach((s) => taken.delete(s));
   if (wanted.some((s) => taken.has(s))) { const e = new Error('SLOT_TAKEN'); e.code = 'SLOT_TAKEN'; throw e; }
 
   const updated = { ...booking, id: newId, date, time, durationMin: dur };
@@ -171,7 +178,7 @@ export async function createBooking(input) {
   };
 
   // A scheduled booking blocks every 30-min slot it spans; reject if any overlap.
-  const wanted = hasSlot ? occupiedSlots(data.time, data.durationMin) : [];
+  const wanted = hasSlot ? occupiedSlots(data.time, (data.durationMin || 30) + bufferFor(data)) : [];
 
   if (db) {
     const ref = db.collection(COLLECTION).doc(id);
@@ -195,7 +202,7 @@ export async function createBooking(input) {
   if (hasSlot) {
     const taken = new Set(
       all.filter((b) => b.date === data.date && b.status !== 'cancelled')
-        .flatMap((b) => occupiedSlots(b.time, b.durationMin)),
+        .flatMap((b) => footprintSlots(b)),
     );
     if (wanted.some((s) => taken.has(s))) {
       const err = new Error('SLOT_TAKEN'); err.code = 'SLOT_TAKEN'; throw err;
