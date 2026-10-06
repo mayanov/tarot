@@ -418,11 +418,21 @@ app.get('/api/admin/calendar/events', verifyToken, async (req, res) => {
     }
 });
 
+// Throttle the (slow) Google Calendar reconcile so it runs at most once per window
+// instead of on every dashboard load / tab switch. The daily cron and the manual
+// cron endpoint still run it unconditionally.
+let lastReconcileAt = 0;
+const RECONCILE_THROTTLE_MS = 3 * 60 * 1000;
+
 // Admin: list all bookings (JWT-protected, same auth as the dashboard).
 app.get('/api/admin/bookings', verifyToken, async (req, res) => {
     try {
-        // Reverse-sync deletions made directly in Google Calendar, then return fresh list.
-        try { await bookingStore.reconcileWithCalendar(); } catch (e) { console.error('reconcile failed:', e.message); }
+        // Reverse-sync Google Calendar changes — but only if we haven't recently, so
+        // navigating between admin tabs stays fast.
+        if (Date.now() - lastReconcileAt > RECONCILE_THROTTLE_MS) {
+            lastReconcileAt = Date.now();
+            try { await bookingStore.reconcileWithCalendar(); } catch (e) { console.error('reconcile failed:', e.message); }
+        }
         res.json(await bookingStore.getAllBookings());
     } catch (e) {
         console.error('list bookings failed:', e);

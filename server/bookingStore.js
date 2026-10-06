@@ -230,10 +230,17 @@ export async function reconcileWithCalendar() {
   if (!gcal.calendarStatus().enabled) return 0;
   const all = await getAllBookings();
   let changed = 0;
-  for (const b of all) {
-    if (!b.gcalEventId) continue;
-    if (b.status !== 'confirmed' && b.status !== 'pending') continue;
-    const info = await gcal.eventInfo(b.gcalEventId);
+
+  // Only active bookings that carry an event id need checking — fetch their current
+  // calendar state in PARALLEL (was sequential, one slow round-trip per booking).
+  const candidates = all.filter((b) => b.gcalEventId && (b.status === 'confirmed' || b.status === 'pending'));
+  const infos = await Promise.all(
+    candidates.map((b) => gcal.eventInfo(b.gcalEventId).catch(() => ({ status: 'unknown' }))),
+  );
+
+  for (let i = 0; i < candidates.length; i++) {
+    const b = candidates[i];
+    const info = infos[i];
     if (info.status === 'deleted') {
       // Deleting a timed session cancels it; async reminders are managed in admin.
       if (b.date && b.time) { await updateStatus(b.id, 'cancelled'); changed++; }
@@ -249,9 +256,10 @@ export async function reconcileWithCalendar() {
     }
   }
   // Clean up any transport blocks whose meetup is no longer active (cancelled,
-  // done, or gone) so stale travel times don't keep slots blocked.
+  // done, or gone) so stale travel times don't keep slots blocked. Re-read only if
+  // something changed; otherwise reuse the list we already have.
   try {
-    const fresh = await getAllBookings();
+    const fresh = changed > 0 ? await getAllBookings() : all;
     const activeIds = fresh
       .filter((b) => (b.status === 'confirmed' || b.status === 'pending') && b.date && b.time)
       .map((b) => b.id);
