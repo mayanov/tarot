@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, TrendingUp, Wallet, ShoppingBag, Award } from 'lucide-react';
+import { RefreshCcw, TrendingUp, Wallet, ShoppingBag, Award, Users, Repeat, UserPlus } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking } from '../../services/booking';
 
@@ -42,6 +42,13 @@ const parseAmount = (token: string | null): { amount: number; currency: Currency
 const amountForBooking = (b: Booking) =>
     parseAmount(priceToken(b.price) || priceToken(b.serviceName) || SERVICE_PRICE_FALLBACK[b.serviceId] || null);
 
+// Normalize a contact into a stable customer key (phone digits, else lowercased text).
+const normContact = (s?: string): string => {
+    if (!s) return '';
+    const digits = s.replace(/\D/g, '');
+    return digits.length >= 6 ? digits.slice(-10) : s.trim().toLowerCase();
+};
+
 const fmtIDR = (v: number, compact = false) =>
     compact
         ? (v >= 1_000_000 ? `Rp ${(v / 1_000_000).toFixed(v % 1_000_000 ? 1 : 0)}jt` : `Rp ${Math.round(v / 1000)}rb`)
@@ -81,6 +88,7 @@ const RevenueView: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [tab, setTab] = useState<'revenue' | 'customers'>('revenue');
     const [currency, setCurrency] = useState<Currency>('IDR');
     const [preset, setPreset] = useState<Preset>('30d');
     const [gran, setGran] = useState<Gran>('day');
@@ -183,6 +191,53 @@ const RevenueView: React.FC = () => {
         .filter((r) => r.amt && r.amt.currency === otherCurrency && r.day >= startISO && r.day <= endISO)
         .reduce((s, r) => s + r.amt!.amount, 0), [bookings, otherCurrency, startISO, endISO]);
 
+    // ---- Customers tab: aggregate bookings into unique customers (by contact) ----
+    const customers = useMemo(() => {
+        const map = new Map<string, { key: string; name: string; contact: string; count: number; spend: number; first: string; last: string }>();
+        bookings.filter((b) => b.status !== 'cancelled').forEach((b) => {
+            const created = b.createdAt || '';
+            const key = normContact(b.contact) || (b.name || '').trim().toLowerCase();
+            if (!key) return;
+            const c = map.get(key) || { key, name: b.name || '(no name)', contact: b.contact || '', count: 0, spend: 0, first: created || '9999', last: '' };
+            c.count += 1;
+            const amt = amountForBooking(b);
+            if (amt && amt.currency === currency) c.spend += amt.amount;
+            if (created && created < c.first) c.first = created;
+            if (created >= c.last) { c.last = created; c.name = b.name || c.name; c.contact = b.contact || c.contact; }
+            map.set(key, c);
+        });
+        return [...map.values()];
+    }, [bookings, currency]);
+
+    const custTotal = customers.length;
+    const custRepeat = customers.filter((c) => c.count > 1).length;
+    const repeatRate = custTotal ? Math.round((custRepeat / custTotal) * 100) : 0;
+    const custAvgBookings = custTotal ? customers.reduce((s, c) => s + c.count, 0) / custTotal : 0;
+    const payers = customers.filter((c) => c.spend > 0);
+    const custAvgSpend = payers.length ? payers.reduce((s, c) => s + c.spend, 0) / payers.length : 0;
+    const topCustomers = useMemo(() => [...customers].sort((a, b) => b.count - a.count || b.spend - a.spend).slice(0, 10), [customers]);
+
+    // New customers per month (continuous, last 18 months).
+    const newCustSeries = useMemo(() => {
+        if (customers.length === 0) return [] as { label: string; count: number }[];
+        const byMonth = new Map<string, number>();
+        customers.forEach((c) => { const k = (c.first || '').slice(0, 7); if (k && k !== '9999') byMonth.set(k, (byMonth.get(k) || 0) + 1); });
+        const keys = [...byMonth.keys()].sort();
+        if (!keys.length) return [];
+        const [sy, sm] = keys[0].split('-').map(Number);
+        const now = new Date();
+        const out: { label: string; count: number }[] = [];
+        let d = new Date(sy, (sm || 1) - 1, 1);
+        const end = new Date(now.getFullYear(), now.getMonth(), 1);
+        let guard = 0;
+        while (d <= end && guard++ < 60) {
+            const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            out.push({ label: monthLabel(k), count: byMonth.get(k) || 0 });
+            d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+        }
+        return out.slice(-18);
+    }, [customers]);
+
     const StackTooltip = ({ active, payload, label }: any) => {
         if (!active || !payload || !payload.length) return null;
         const rows = payload.filter((p: any) => p.value > 0);
@@ -256,7 +311,11 @@ const RevenueView: React.FC = () => {
             <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Dashboard</h1>
-                    <p className="text-text-subtle text-sm">Realized revenue from confirmed &amp; completed bookings, by order date.</p>
+                    <p className="text-text-subtle text-sm">
+                        {tab === 'revenue'
+                            ? 'Realized revenue from confirmed & completed bookings, by order date.'
+                            : "Who's booking — totals, repeat rate, and your top customers."}
+                    </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Seg value={currency} options={[{ id: 'IDR', label: 'IDR' }, { id: 'USD', label: 'USD' }]} onChange={setCurrency} />
@@ -266,6 +325,12 @@ const RevenueView: React.FC = () => {
                 </div>
             </div>
 
+            {/* Dashboard tabs */}
+            <Seg value={tab} options={[{ id: 'revenue', label: 'Revenue' }, { id: 'customers', label: 'Customers' }]} onChange={setTab} />
+
+            {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
+
+            {tab === 'revenue' && (<>
             <div className="rounded-2xl bg-surface-1 border border-adm-line px-3 py-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-2">
                 <Seg value={preset} options={[
                     { id: '7d', label: '7D' }, { id: '30d', label: '30D' }, { id: '90d', label: '90D' },
@@ -287,8 +352,6 @@ const RevenueView: React.FC = () => {
                     <Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGran} />
                 </div>
             </div>
-
-            {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <KPI icon={<Wallet size={14} />} label="Total revenue" value={fmtMoney(total, currency)}
@@ -313,6 +376,74 @@ const RevenueView: React.FC = () => {
                     <p className="text-sm text-text-subtle py-12 text-center">No {currency} revenue yet.</p>
                 ) : (<><Legend /><Chart data={monthlySeries} /></>)}
             </div>
+            </>)}
+
+            {tab === 'customers' && (<>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <KPI icon={<Users size={14} />} label="Total customers" value={String(custTotal)} />
+                    <KPI icon={<Repeat size={14} />} label="Repeat customers" value={String(custRepeat)} sub={custTotal ? `${repeatRate}% of all` : undefined} />
+                    <KPI icon={<ShoppingBag size={14} />} label="Avg bookings / cust." value={custAvgBookings ? custAvgBookings.toFixed(1) : '0'} />
+                    <KPI icon={<Wallet size={14} />} label="Avg spend / cust." value={fmtMoney(custAvgSpend, currency)} sub={currency} />
+                </div>
+
+                {/* New customers per month */}
+                <div className="rounded-2xl bg-surface-1 border border-adm-line p-4">
+                    <h2 className="text-sm font-semibold text-text-light mb-3">New customers by month</h2>
+                    {newCustSeries.length === 0 ? (
+                        <p className="text-sm text-text-subtle py-12 text-center">No customers yet.</p>
+                    ) : (
+                        <ResponsiveContainer width="100%" height={260}>
+                            <BarChart data={newCustSeries} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.18)" vertical={false} />
+                                <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--adm-axis)' }} axisLine={false} tickLine={false} interval={newCustSeries.length > 14 ? Math.ceil(newCustSeries.length / 12) : 0} />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--adm-axis)' }} axisLine={false} tickLine={false} width={36} />
+                                <Tooltip cursor={{ fill: 'rgba(128,128,128,0.08)' }} content={({ active, payload, label }: any) => (active && payload && payload.length) ? (
+                                    <div className="rounded-xl bg-surface-1 border border-adm-line-2 shadow-lg px-3 py-2 text-xs">
+                                        <div className="font-semibold text-text-light mb-0.5">{label}</div>
+                                        <div className="tabular-nums text-text-light">{payload[0].value} new customer{payload[0].value === 1 ? '' : 's'}</div>
+                                    </div>
+                                ) : null} />
+                                <Bar dataKey="count" fill="#C79BD6" radius={[5, 5, 0, 0]} name="New customers" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
+
+                {/* Top customers */}
+                <div className="rounded-2xl bg-surface-1 border border-adm-line p-4">
+                    <h2 className="text-sm font-semibold text-text-light mb-3">Top customers</h2>
+                    {topCustomers.length === 0 ? (
+                        <p className="text-sm text-text-subtle py-10 text-center">No customers yet.</p>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="text-left text-text-subtle text-xs uppercase tracking-wider border-b border-adm-line">
+                                        <th className="py-2 pr-4 font-semibold">Customer</th>
+                                        <th className="py-2 px-2 font-semibold text-right">Bookings</th>
+                                        <th className="py-2 pl-2 font-semibold text-right">Spent · {currency}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {topCustomers.map((c) => (
+                                        <tr key={c.key} className="border-b border-adm-line/50 last:border-0">
+                                            <td className="py-2.5 pr-4">
+                                                <div className="text-text-light font-medium flex items-center gap-2">
+                                                    {c.count > 1 && <UserPlus size={13} className="text-lilac shrink-0" />}
+                                                    {c.name}
+                                                </div>
+                                                {c.contact && <div className="text-xs text-text-subtle">{c.contact}</div>}
+                                            </td>
+                                            <td className="py-2.5 px-2 text-right tabular-nums text-text-light">{c.count}</td>
+                                            <td className="py-2.5 pl-2 text-right tabular-nums text-text-light">{c.spend > 0 ? fmtMoney(c.spend, currency) : '—'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            </>)}
 
             {loading && <p className="text-center text-sm text-text-subtle">Loading…</p>}
         </div>
