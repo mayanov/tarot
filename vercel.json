@@ -5,6 +5,12 @@
             "main": false
         }
     },
+    "crons": [
+        {
+            "path": "/api/cron/reconcile",
+            "schedule": "*/5 * * * *"
+        }
+    ],
     "rewrites": [
         {
             "source": "/api/(.*)",

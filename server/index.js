@@ -386,6 +386,23 @@ app.get('/api/admin/calendar/test', verifyToken, async (req, res) => {
     res.json(await gcal.selfTest());
 });
 
+// Cron: periodically pull Google Calendar changes (cancel bookings whose event was
+// deleted, follow moves) and sweep orphaned meetup transport blocks. Triggered by
+// Vercel Cron on a schedule. Protected by CRON_SECRET when that env var is set.
+app.get('/api/cron/reconcile', async (req, res) => {
+    const secret = process.env.CRON_SECRET;
+    if (secret && req.headers.authorization !== `Bearer ${secret}`) {
+        return res.status(401).json({ error: 'unauthorized' });
+    }
+    try {
+        const changed = await bookingStore.reconcileWithCalendar();
+        res.json({ ok: true, changed });
+    } catch (e) {
+        console.error('cron reconcile failed:', e.message);
+        res.status(500).json({ error: 'reconcile failed' });
+    }
+});
+
 // Admin: the owner's Google Calendar events in a date range (for the schedule grid).
 app.get('/api/admin/calendar/events', verifyToken, async (req, res) => {
     const start = String(req.query.start || '');
