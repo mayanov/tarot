@@ -297,13 +297,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     return (
         <div className="admin-shell flex h-screen bg-bg-deep text-text-light font-sans overflow-hidden" data-theme={theme}>
             {/* MOBILE TOP BAR — hamburger to open the drawer */}
-            <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 bg-surface-1 border-b border-adm-line">
+            <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center gap-3 px-4 bg-surface-1 border-b border-adm-line">
+                <button onClick={() => setSidebarOpen(true)} aria-label="Open menu" className="p-2 -ml-2 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors">
+                    <Menu size={22} />
+                </button>
                 <h2 className="text-lg font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
                     Mayanov Admin
                 </h2>
-                <button onClick={() => setSidebarOpen(true)} aria-label="Open menu" className="p-2 -mr-2 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors">
-                    <Menu size={22} />
-                </button>
             </div>
 
             {/* MOBILE DRAWER BACKDROP */}
