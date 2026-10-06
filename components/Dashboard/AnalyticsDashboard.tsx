@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt } from 'lucide-react';
+import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt } from 'lucide-react';
 import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance } from '../../services/mockAnalytics';
 import { initGoogleAPI, loginToGoogle, fetchGA4Data } from '../../services/ga4';
 import { DayPicker } from 'react-day-picker';
@@ -25,13 +25,11 @@ const NAV_GROUPS: { label: string; items: { id: string; name: string; icon: Reac
     { label: 'Operations', items: [
         { id: 'bookings', name: 'Bookings', icon: Calendar },
         { id: 'customers', name: 'Customers', icon: Contact },
-    ] },
-    { label: 'Finance', items: [
         { id: 'sales', name: 'Sales', icon: Receipt },
-        { id: 'revenue', name: 'Dashboard', icon: Wallet },
     ] },
     { label: 'Insights', items: [
         { id: 'analytics', name: 'Analytics', icon: BarChart2 },
+        { id: 'revenue', name: 'Dashboard', icon: Wallet },
     ] },
     { label: 'Admin', items: [
         { id: 'users', name: 'Manage Users', icon: Users },
@@ -179,6 +177,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     // User Management State
     // View State
     const [activeView, setActiveView] = useState<'analytics' | 'users' | 'bookings' | 'sales' | 'revenue' | 'customers'>('analytics');
+    const [sidebarOpen, setSidebarOpen] = useState(false); // mobile drawer
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         try { return (localStorage.getItem('admin_theme') as 'light' | 'dark') || 'light'; } catch { return 'light'; }
     });
@@ -297,13 +296,30 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     // We do NOT return null here anymore, we render the skeleton structure
     return (
         <div className="admin-shell flex h-screen bg-bg-deep text-text-light font-sans overflow-hidden" data-theme={theme}>
-            {/* SIDEBAR */}
-            {/* SIDEBAR */}
-            <aside className="w-72 bg-surface-1 border-r border-adm-line flex flex-col hidden md:flex">
-                <div className="p-5 border-b border-adm-line">
+            {/* MOBILE TOP BAR — hamburger to open the drawer */}
+            <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 bg-surface-1 border-b border-adm-line">
+                <h2 className="text-lg font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
+                    Mayanov Admin
+                </h2>
+                <button onClick={() => setSidebarOpen(true)} aria-label="Open menu" className="p-2 -mr-2 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors">
+                    <Menu size={22} />
+                </button>
+            </div>
+
+            {/* MOBILE DRAWER BACKDROP */}
+            {sidebarOpen && (
+                <div className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} aria-hidden />
+            )}
+
+            {/* SIDEBAR — static on desktop, slide-in drawer on mobile */}
+            <aside className={`fixed md:static inset-y-0 left-0 z-50 w-72 max-w-[82vw] bg-surface-1 border-r border-adm-line flex flex-col transition-transform duration-300 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+                <div className="p-5 border-b border-adm-line flex items-center justify-between">
                     <h2 className="text-xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
                         Mayanov Admin
                     </h2>
+                    <button onClick={() => setSidebarOpen(false)} aria-label="Close menu" className="md:hidden p-1.5 -mr-1.5 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors">
+                        <X size={20} />
+                    </button>
                 </div>
 
                 <nav className="flex-1 p-3 overflow-y-auto">
@@ -319,7 +335,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                     return (
                                         <button
                                             key={item.id}
-                                            onClick={() => setActiveView(item.id)}
+                                            onClick={() => { setActiveView(item.id); setSidebarOpen(false); }}
                                             aria-current={active ? 'page' : undefined}
                                             className={`group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${active ? 'bg-lilac/10 text-lilac' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}
                                         >
