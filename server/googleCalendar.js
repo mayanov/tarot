@@ -173,18 +173,23 @@ function transportBodies(booking) {
   const start = toMin(booking.time);
   const end = start + dur;
   const label = (booking.serviceName || booking.serviceId || 'Sesi Tatap Muka').split(' · ')[0].trim();
+  // Tagged so they can always be found and cleaned up by booking id, even if the
+  // stored ids are lost or the session was cancelled from Google's side.
+  const tag = { private: { mtTransport: '1', mtBookingId: String(booking.id) } };
   return [
     {
       summary: `🚗 Transport ke lokasi — ${booking.name}`,
       description: `Waktu perjalanan menuju ${label}.\nBooking ID: ${booking.id}`,
       start: { dateTime: rfc3339(booking.date, toHHMM(Math.max(0, start - TRANSPORT_BEFORE_MIN))), timeZone: TZ },
       end: { dateTime: rfc3339(booking.date, toHHMM(start)), timeZone: TZ },
+      extendedProperties: tag,
     },
     {
       summary: `🚗 Transport pulang — ${booking.name}`,
       description: `Waktu perjalanan pulang dari ${label}.\nBooking ID: ${booking.id}`,
       start: { dateTime: rfc3339(booking.date, toHHMM(end)), timeZone: TZ },
       end: { dateTime: rfc3339(booking.date, toHHMM(end + TRANSPORT_AFTER_MIN)), timeZone: TZ },
+      extendedProperties: tag,
     },
   ];
 }
@@ -205,6 +210,55 @@ export async function createTransportEvents(booking) {
 // Delete several events (e.g. a meetup's transport blocks).
 export async function deleteEvents(ids) {
   for (const id of ids || []) await deleteEvent(id);
+}
+
+// Delete every transport event tagged with this booking id (robust cleanup that
+// doesn't depend on stored ids).
+export async function deleteTransportForBooking(bookingId) {
+  const c = getClient();
+  if (!c || !bookingId) return;
+  try {
+    const params = new URLSearchParams({ privateExtendedProperty: `mtBookingId=${bookingId}`, maxResults: '20' });
+    const r = await fetch(`${eventsUrl()}?${params}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
+    if (!r.ok) return;
+    const data = await r.json();
+    for (const ev of data.items || []) await deleteEvent(ev.id);
+  } catch (e) {
+    console.error('[gcal] deleteTransportForBooking error:', e.message);
+  }
+}
+
+// Sweep the upcoming calendar for transport blocks whose booking is no longer
+// active, and delete them. Matches both tagged events and older ones (by the 🚗
+// summary + "Booking ID:" in the description). Returns how many were removed.
+export async function sweepOrphanTransport(activeBookingIds) {
+  const c = getClient();
+  if (!c) return 0;
+  const active = new Set((activeBookingIds || []).map(String));
+  let removed = 0;
+  try {
+    const now = new Date();
+    const params = new URLSearchParams({
+      singleEvents: 'true', orderBy: 'startTime', maxResults: '250',
+      timeMin: now.toISOString(),
+      timeMax: new Date(now.getTime() + 120 * 24 * 3600 * 1000).toISOString(),
+    });
+    const r = await fetch(`${eventsUrl()}?${params}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
+    if (!r.ok) return 0;
+    const data = await r.json();
+    for (const ev of data.items || []) {
+      if (ev.status === 'cancelled') continue;
+      const isTransport = ev.extendedProperties?.private?.mtTransport === '1' || /^🚗\s*Transport/.test(ev.summary || '');
+      if (!isTransport) continue;
+      const bid = ev.extendedProperties?.private?.mtBookingId
+        || (ev.description && (ev.description.match(/Booking ID:\s*(\S+)/) || [])[1]);
+      if (!bid) continue;
+      if (!active.has(String(bid))) { await deleteEvent(ev.id); removed++; }
+    }
+  } catch (e) {
+    console.error('[gcal] sweepOrphanTransport error:', e.message);
+  }
+  return removed;
 }
 
 // Remove a previously created event (used when a booking is cancelled).

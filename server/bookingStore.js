@@ -248,6 +248,15 @@ export async function reconcileWithCalendar() {
       }
     }
   }
+  // Clean up any transport blocks whose meetup is no longer active (cancelled,
+  // done, or gone) so stale travel times don't keep slots blocked.
+  try {
+    const fresh = await getAllBookings();
+    const activeIds = fresh
+      .filter((b) => (b.status === 'confirmed' || b.status === 'pending') && b.date && b.time)
+      .map((b) => b.id);
+    await gcal.sweepOrphanTransport(activeIds);
+  } catch (e) { console.error('[bookings] transport sweep failed:', e.message); }
   return changed;
 }
 
@@ -308,9 +317,10 @@ export async function updateStatus(id, status) {
     const prev = snap.data();
     await ref.update({ status });
     // Cancelling frees the slot — remove the Google Calendar event(s) too.
-    if (status === 'cancelled' && (prev.gcalEventId || prev.gcalTransportIds?.length)) {
+    if (status === 'cancelled') {
       if (prev.gcalEventId) await gcal.deleteEvent(prev.gcalEventId);
       if (prev.gcalTransportIds?.length) await gcal.deleteEvents(prev.gcalTransportIds);
+      await gcal.deleteTransportForBooking(id); // catch any not in the stored ids
       await ref.update({ gcalEventId: null, gcalTransportIds: null });
     }
     return { ...prev, status };
@@ -319,9 +329,10 @@ export async function updateStatus(id, status) {
   const b = all.find((x) => x.id === id);
   if (!b) return null;
   b.status = status;
-  if (status === 'cancelled' && (b.gcalEventId || b.gcalTransportIds?.length)) {
+  if (status === 'cancelled') {
     if (b.gcalEventId) await gcal.deleteEvent(b.gcalEventId);
     if (b.gcalTransportIds?.length) await gcal.deleteEvents(b.gcalTransportIds);
+    await gcal.deleteTransportForBooking(b.id); // catch any not in the stored ids
     b.gcalEventId = null;
     b.gcalTransportIds = null;
   }
