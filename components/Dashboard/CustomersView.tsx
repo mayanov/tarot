@@ -193,8 +193,9 @@ const CustomersView: React.FC = () => {
                     <div className="col-span-2">ID</div>
                     <div className="col-span-3">Customer</div>
                     <div className="col-span-2">Phone</div>
-                    <div className="col-span-2 text-center">Repeat</div>
+                    <div className="col-span-1 text-center">Repeat</div>
                     <div className="col-span-2 text-right">Spent</div>
+                    <div className="col-span-1 text-right">Since</div>
                     <div className="col-span-1 text-right">Last</div>
                 </div>
                 {filtered.length === 0 ? (
@@ -212,12 +213,13 @@ const CustomersView: React.FC = () => {
                                 {c.email && <div className="text-xs text-text-subtle truncate">{c.email}</div>}
                             </div>
                             <div className="col-span-1 md:col-span-2 text-sm text-text-subtle tabular-nums truncate">{c.phone || '—'}</div>
-                            <div className="col-span-1 md:col-span-2 md:text-center text-sm tabular-nums">
+                            <div className="col-span-1 md:col-span-1 md:text-center text-sm tabular-nums">
                                 <span className={`inline-flex items-center gap-1 ${active > 1 ? 'text-lilac font-semibold' : 'text-text-light'}`}>
                                     {active > 1 && <Repeat size={11} />}{active}
                                 </span>
                             </div>
                             <div className="col-span-1 md:col-span-2 md:text-right text-sm text-text-light tabular-nums">{spentLabel(c)}</div>
+                            <div className="col-span-1 md:col-span-1 md:text-right text-xs text-text-subtle">{fmtDate(c.firstSeen)}</div>
                             <div className="col-span-1 md:col-span-1 md:text-right text-xs text-text-subtle">{fmtDate(c.lastSeen)}</div>
                         </button>
                     );
