@@ -268,13 +268,13 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             {/* per-category twilight sky + dark overlay (lighter at the header, darker over the pricelist for legibility) */}
                             <div
                                 data-parallax="0.06"
-                                data-parallax-scale="1.2"
+                                data-parallax-scale="1.14"
                                 className="pointer-events-none absolute inset-0 will-change-transform"
                                 style={{
                                     backgroundImage: `url(${import.meta.env.BASE_URL}${CAT_SKIES[i % CAT_SKIES.length]})`,
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
-                                    transform: 'scale(1.2)',
+                                    transform: 'scale(1.14)',
                                 }}
                             />
                             <div

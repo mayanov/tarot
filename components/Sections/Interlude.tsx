@@ -23,14 +23,14 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
     >
       {/* aurora sky photo — drifts slower than the content (parallax) */}
       <div
-        data-parallax="0.09"
-        data-parallax-scale="1.25"
+        data-parallax="0.05"
+        data-parallax-scale="1.18"
         className="pointer-events-none absolute inset-0 will-change-transform"
         style={{
           backgroundImage: `url(${import.meta.env.BASE_URL}aurora-quote.jpg)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center 38%',
-          transform: 'scale(1.25)',
+          transform: 'scale(1.18)',
         }}
       />
       {/* cool, lighter overlay so the quote reads without feeling gloomy */}

@@ -400,13 +400,13 @@ function App() {
         <div
           aria-hidden
           data-parallax="0.05"
-          data-parallax-scale="1.25"
+          data-parallax-scale="1.12"
           className="pointer-events-none absolute inset-0 -z-10 will-change-transform"
           style={{
             backgroundImage: `url(${import.meta.env.BASE_URL}sky-hero.jpg)`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            transform: 'scale(1.25)',
+            transform: 'scale(1.12)',
           }}
         />
         {/* legibility veil so cream text stays readable over the brighter nebula */}
