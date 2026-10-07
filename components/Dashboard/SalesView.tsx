@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, Search, Wallet, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { RefreshCcw, Search, Wallet, AlertCircle, CheckCircle2, ChevronDown } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
 import DashboardLoader from './DashboardLoader';
 
@@ -39,6 +39,9 @@ const serviceLabel = (b: Booking) => {
     return parts.length > 1 ? `${parts[0]} — ${parts.slice(1).join(' · ')}` : (b.serviceName || b.serviceId);
 };
 
+// Base service name (first segment) — used to group orders for the Service filter.
+const serviceBase = (b: Booking) => ((b.serviceName || '').split(' · ')[0] || b.serviceId || '').trim();
+
 const STATUS_STYLE: Record<Booking['status'], string> = {
     pending: 'bg-coral/15 text-coral-deep',
     confirmed: 'bg-sage/15 text-sage',
@@ -52,6 +55,7 @@ const SalesView: React.FC = () => {
     const [error, setError] = useState('');
     const [q, setQ] = useState('');
     const [payFilter, setPayFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
+    const [serviceFilter, setServiceFilter] = useState<string>('all');
     const [savingId, setSavingId] = useState<string | null>(null);
 
     const load = async () => {
@@ -84,17 +88,27 @@ const SalesView: React.FC = () => {
         return t;
     }, [orders]);
 
+    // Distinct services present in the data, for the Service dropdown.
+    const serviceOptions = useMemo(() => {
+        const set = new Set<string>();
+        orders.forEach((b) => { const s = serviceBase(b); if (s) set.add(s); });
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }, [orders]);
+
     const filtered = useMemo(() => {
         const needle = q.trim().toLowerCase();
         return orders.filter((b) => {
             if (payFilter !== 'all' && (b.paymentStatus || 'unpaid') !== payFilter) return false;
+            if (serviceFilter !== 'all' && serviceBase(b) !== serviceFilter) return false;
             if (!needle) return true;
             return (b.name || '').toLowerCase().includes(needle)
                 || (b.serviceName || '').toLowerCase().includes(needle)
                 || (b.contact || '').toLowerCase().includes(needle)
                 || (b.ref || '').toLowerCase().includes(needle);
         });
-    }, [orders, q, payFilter]);
+    }, [orders, q, payFilter, serviceFilter]);
+
+    const activeFilters = (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0);
 
     const togglePaid = async (b: Booking) => {
         const next = b.paymentStatus === 'paid' ? 'unpaid' : 'paid';
@@ -157,13 +171,32 @@ const SalesView: React.FC = () => {
                     <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, service, contact, or ref"
                         className="w-full pl-9 pr-3 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none" />
                 </div>
-                <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1 self-start">
-                    {(['all', 'unpaid', 'paid'] as const).map((f) => (
-                        <button key={f} onClick={() => setPayFilter(f)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-semibold capitalize transition-colors ${payFilter === f ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>
-                            {f}
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* payment-status select */}
+                    <div className="relative">
+                        <select value={payFilter} onChange={(e) => setPayFilter(e.target.value as 'all' | 'paid' | 'unpaid')}
+                            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer">
+                            <option value="all">All payments</option>
+                            <option value="paid">Paid</option>
+                            <option value="unpaid">Unpaid</option>
+                        </select>
+                        <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
+                    </div>
+                    {/* service select */}
+                    <div className="relative">
+                        <select value={serviceFilter} onChange={(e) => setServiceFilter(e.target.value)}
+                            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer max-w-[14rem]">
+                            <option value="all">All services</option>
+                            {serviceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
+                    </div>
+                    {activeFilters > 0 && (
+                        <button onClick={() => { setPayFilter('all'); setServiceFilter('all'); }}
+                            className="px-3 py-2 rounded-lg text-sm text-text-subtle hover:text-text-light transition-colors">
+                            Clear
                         </button>
-                    ))}
+                    )}
                 </div>
             </div>
 
