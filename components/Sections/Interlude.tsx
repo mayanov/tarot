@@ -5,10 +5,6 @@ interface InterludeProps {
   isIndonesian?: boolean;
 }
 
-// Film-grain noise (same fractal-noise texture used across the site).
-const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.95'/%3E%3C/svg%3E\")";
-
 /**
  * A full-bleed, saturated coral "interlude" band — a centered editorial
  * pull-quote in the Fraunces italic face. Deliberately breaks the run of
@@ -39,11 +35,6 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
         style={{ background: 'linear-gradient(180deg, rgba(6,12,24,0.36) 0%, rgba(6,12,24,0.22) 50%, rgba(6,12,24,0.44) 100%)' }}
       />
 
-      {/* film grain */}
-      <div
-        className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-30"
-        style={{ backgroundImage: GRAIN, backgroundSize: '150px 150px' }}
-      />
 
       <div className="mx-auto px-8 relative z-10">
         <div className="max-w-5xl mx-auto text-center">

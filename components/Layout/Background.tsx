@@ -1,8 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 
-const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E\")";
-
 // Soft twinkling star points, biased toward the right/top where the hero sky is
 // visible (the left is under the legibility overlay). [x%, y%, radius, opacity]
 const STAR_LAYERS: { dur: number; delay: number; dots: [number, number, number, number][] }[] = [
@@ -71,8 +68,6 @@ const Background: React.FC = () => {
         style={{ background: 'linear-gradient(180deg, rgba(8,6,20,0.08) 0%, transparent 26%, transparent 64%, rgba(8,6,20,0.3) 100%)' }}
       />
 
-      {/* film grain — ties the photo to the rest of the site's texture */}
-      <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '160px 160px' }} />
     </div>
   );
 };

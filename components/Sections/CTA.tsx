@@ -38,18 +38,10 @@ const CTA: React.FC<CTAProps> = ({ isIndonesian = false }) => {
               <div className="absolute -bottom-[25%] right-[6%] w-[55%] h-[85%] rounded-full bg-coral/35 blur-[90px] animate-[blobC_32s_ease-in-out_infinite]" />
             </div>
 
-            {/* Fold-light band + strong grain */}
+            {/* Fold-light band */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{ background: 'linear-gradient(100deg, rgba(230,240,255,0.12) 0%, rgba(230,240,255,0) 44%)' }}
-            ></div>
-            <div
-              className="absolute inset-0 pointer-events-none opacity-[0.45] mix-blend-overlay"
-              style={{
-                backgroundImage:
-                  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.95'/%3E%3C/svg%3E\")",
-                backgroundSize: '160px 160px',
-              }}
             ></div>
 
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10 text-center md:text-left">

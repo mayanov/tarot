@@ -8,8 +8,6 @@ interface AboutProps {
   isIndonesian?: boolean;
 }
 
-const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")";
 
 const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
   useEffect(() => {
@@ -34,8 +32,6 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         />
         {/* flat plum tint (no directional gradient) to cohere with the palette */}
         <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
-        {/* fine film grain — ties the portrait to the site's texture */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-50 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '140px 140px' }} />
         {/* crisp editorial seam between the text and the portrait */}
         <div aria-hidden className="hidden lg:block absolute inset-y-0 left-0 w-px bg-ink/10" />
       </div>
