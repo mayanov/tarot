@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, Search, Wallet, AlertCircle, CheckCircle2, ChevronDown } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { RefreshCcw, Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
 import DashboardLoader from './DashboardLoader';
 
@@ -60,7 +60,19 @@ const SalesView: React.FC = () => {
     const [customerFilter, setCustomerFilter] = useState<string>('all');
     const [dateFrom, setDateFrom] = useState<string>('');
     const [dateTo, setDateTo] = useState<string>('');
+    const [dateOpen, setDateOpen] = useState(false);
+    const dateRef = useRef<HTMLDivElement>(null);
     const [savingId, setSavingId] = useState<string | null>(null);
+
+    // close the date popover on outside click / Escape
+    useEffect(() => {
+        if (!dateOpen) return;
+        const onDown = (e: MouseEvent) => { if (dateRef.current && !dateRef.current.contains(e.target as Node)) setDateOpen(false); };
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDateOpen(false); };
+        document.addEventListener('mousedown', onDown);
+        document.addEventListener('keydown', onKey);
+        return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
+    }, [dateOpen]);
 
     const load = async () => {
         setLoading(true);
@@ -132,6 +144,14 @@ const SalesView: React.FC = () => {
     const activeFilters = (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0)
         + (sourceFilter !== 'all' ? 1 : 0) + (customerFilter !== 'all' ? 1 : 0)
         + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
+
+    // Short label for the collapsed booking-date button.
+    const shortDate = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+    const dateLabel = dateFrom && dateTo ? `${shortDate(dateFrom)} – ${shortDate(dateTo)}`
+        : dateFrom ? `From ${shortDate(dateFrom)}`
+            : dateTo ? `Until ${shortDate(dateTo)}`
+                : 'Booking date';
+    const dateActive = Boolean(dateFrom || dateTo);
 
     const togglePaid = async (b: Booking) => {
         const next = b.paymentStatus === 'paid' ? 'unpaid' : 'paid';
@@ -233,13 +253,34 @@ const SalesView: React.FC = () => {
                         </select>
                         <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
                     </div>
-                    {/* booking-date range */}
-                    <div className="flex items-center gap-1.5 text-sm text-text-subtle">
-                        <input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)} aria-label="Booking date from"
-                            className="px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer [color-scheme:dark]" />
-                        <span>–</span>
-                        <input type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)} aria-label="Booking date to"
-                            className="px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer [color-scheme:dark]" />
+                    {/* booking-date range — collapsed to a single button, opens a range panel */}
+                    <div className="relative" ref={dateRef}>
+                        <button type="button" onClick={() => setDateOpen((o) => !o)}
+                            className={`inline-flex items-center gap-2 pl-3 pr-8 py-2 rounded-lg border bg-bg-dark text-sm focus:border-lilac focus:outline-none cursor-pointer relative ${dateActive ? 'border-lilac text-text-light' : 'border-adm-line-2 text-text-subtle hover:text-text-light'}`}>
+                            <CalendarDays size={15} />
+                            {dateLabel}
+                            <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
+                        </button>
+                        {dateOpen && (
+                            <div className="absolute z-20 mt-2 right-0 sm:left-0 sm:right-auto w-64 rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-3 space-y-3">
+                                <div>
+                                    <label className="block text-xs text-text-subtle mb-1">From</label>
+                                    <input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)}
+                                        className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer [color-scheme:dark]" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-text-subtle mb-1">To</label>
+                                    <input type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)}
+                                        className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer [color-scheme:dark]" />
+                                </div>
+                                {dateActive && (
+                                    <button onClick={() => { setDateFrom(''); setDateTo(''); }}
+                                        className="w-full text-center text-xs text-text-subtle hover:text-text-light transition-colors py-1">
+                                        Clear dates
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
                     {activeFilters > 0 && (
                         <button onClick={() => { setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setCustomerFilter('all'); setDateFrom(''); setDateTo(''); }}
