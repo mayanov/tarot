@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt } from 'lucide-react';
+import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound } from 'lucide-react';
 import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance } from '../../services/mockAnalytics';
 import { initGoogleAPI, loginToGoogle, fetchGA4Data } from '../../services/ga4';
 import { DayPicker } from 'react-day-picker';
@@ -201,6 +201,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     const [currentUserEmail, setCurrentUserEmail] = useState('');
     const [newUserEmail, setNewUserEmail] = useState('');
     const [newUserPassword, setNewUserPassword] = useState('');
+    const [resetUser, setResetUser] = useState<string | null>(null); // email whose password is being reset
+    const [resetPassword, setResetPassword] = useState('');
+    const [resetSaving, setResetSaving] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     // Helper to show toast
@@ -295,6 +298,36 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
             }
         } catch (err) {
             showToast('Network error occurred', 'error');
+        }
+    };
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!resetUser) return;
+        if (resetPassword.length < 6) {
+            showToast('Password must be at least 6 characters', 'error');
+            return;
+        }
+        setResetSaving(true);
+        try {
+            const token = localStorage.getItem('authToken');
+            const res = await fetch(`${API_BASE}/api/users/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ email: resetUser, password: resetPassword })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                showToast(`Password updated for ${resetUser}`, 'success');
+                setResetUser(null);
+                setResetPassword('');
+            } else {
+                showToast(data.error || 'Failed to reset password', 'error');
+            }
+        } catch (err) {
+            showToast('Network error occurred', 'error');
+        } finally {
+            setResetSaving(false);
         }
     };
 
@@ -448,15 +481,24 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                         </div>
                                                     </div>
 
-                                                    {u !== currentUserEmail && (
+                                                    <div className="flex items-center gap-1">
                                                         <button
-                                                            onClick={() => handleDeleteUser(u)}
-                                                            className="p-2 text-text-subtle hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                                            title="Revoke Access"
+                                                            onClick={() => { setResetUser(u); setResetPassword(''); }}
+                                                            className="p-2 text-text-subtle hover:text-lilac hover:bg-lilac/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                            title={u === currentUserEmail ? 'Change your password' : 'Reset password'}
                                                         >
-                                                            <Trash2 size={18} />
+                                                            <KeyRound size={18} />
                                                         </button>
-                                                    )}
+                                                        {u !== currentUserEmail && (
+                                                            <button
+                                                                onClick={() => handleDeleteUser(u)}
+                                                                className="p-2 text-text-subtle hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                                title="Revoke Access"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             ))
                                         ) : (
@@ -519,6 +561,57 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                 className="flex-1 py-3 bg-lilac text-white font-bold rounded-xl hover:bg-lilac-dark hover:scale-[1.02] active:scale-[0.98] transition-all text-sm shadow-lg shadow-lilac/20"
                                             >
                                                 Add Admin
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* RESET PASSWORD MODAL */}
+                        {resetUser && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                                <div className="bg-surface-1 border border-adm-line-2 rounded-2xl w-full max-w-md p-5 shadow-2xl animate-in zoom-in-95 relative">
+                                    <button
+                                        onClick={() => { setResetUser(null); setResetPassword(''); }}
+                                        className="absolute top-4 right-4 text-text-subtle hover:text-text-light transition-colors"
+                                    >
+                                        <X size={20} />
+                                    </button>
+
+                                    <h3 className="text-xl font-bold text-text-light mb-1 flex items-center gap-2">
+                                        <KeyRound size={20} className="text-lilac" /> {resetUser === currentUserEmail ? 'Change Your Password' : 'Reset Password'}
+                                    </h3>
+                                    <p className="text-text-subtle text-sm mb-6 break-all">{resetUser}</p>
+
+                                    <form onSubmit={handleResetPassword} className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs uppercase tracking-wider text-text-subtle mb-1.5 font-bold">New Password</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                autoFocus
+                                                value={resetPassword}
+                                                onChange={(e) => setResetPassword(e.target.value)}
+                                                className="w-full bg-bg-dark border border-adm-line-2 rounded-xl px-4 py-2.5 text-text-light text-sm focus:border-lilac focus:ring-1 focus:ring-lilac outline-none transition-all"
+                                                placeholder="At least 6 characters"
+                                            />
+                                        </div>
+
+                                        <div className="flex gap-3 pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => { setResetUser(null); setResetPassword(''); }}
+                                                className="flex-1 py-3 text-text-subtle hover:text-text-light transition-colors text-sm font-bold"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={resetSaving}
+                                                className="flex-1 py-3 bg-lilac text-white font-bold rounded-xl hover:bg-lilac-dark hover:scale-[1.02] active:scale-[0.98] transition-all text-sm shadow-lg shadow-lilac/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                            >
+                                                {resetSaving ? 'Saving…' : 'Update Password'}
                                             </button>
                                         </div>
                                     </form>

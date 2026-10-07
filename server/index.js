@@ -6,8 +6,8 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { verifyPassword } from './auth.js';
 import * as bookingStore from './bookingStore.js';
+import * as userStore from './userStore.js';
 import * as gcal from './googleCalendar.js';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
@@ -80,7 +80,7 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -88,30 +88,7 @@ app.post('/api/login', (req, res) => {
     }
 
     try {
-        const csvPath = path.join(__dirname, 'admin_users.csv');
-
-        if (!fs.existsSync(csvPath)) {
-            console.error('[Server] admin_users.csv not found');
-            return res.status(500).json({ error: 'Internal Server Error' });
-        }
-
-        const data = fs.readFileSync(csvPath, 'utf8');
-        const lines = data.split('\n');
-
-
-        // Skip header and check credentials
-        const isValid = lines.slice(1).some(line => {
-            if (!line.trim()) return false;
-            const parts = line.split(',');
-            if (parts.length < 2) return false;
-
-            const storedEmail = parts[0].trim();
-            const storedHash = parts[1].trim();
-
-            if (storedEmail !== email) return false;
-
-            return verifyPassword(password, storedHash);
-        });
+        const isValid = await userStore.verifyLogin(email, password);
 
         if (isValid) {
             // Generate JWT
@@ -143,68 +120,61 @@ app.post('/api/logout', (req, res) => {
     res.json({ success: true });
 });
 
-// Admin User Management
-import { hashPassword } from './auth.js';
+// Admin User Management (backed by userStore — Firestore in prod, CSV in dev)
 
-app.post('/api/users/add', verifyToken, (req, res) => {
+app.post('/api/users/add', verifyToken, async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' });
     }
+    if (password.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
 
     try {
-        const csvPath = path.join(__dirname, 'admin_users.csv');
-        let lines = [];
-
-        if (fs.existsSync(csvPath)) {
-            const data = fs.readFileSync(csvPath, 'utf8');
-            lines = data.split('\n').filter(line => line.trim() !== '');
-        } else {
-            lines.push('email,password_hash');
-        }
-
-        // Check if user exists
-        const exists = lines.some(line => line.startsWith(`${email},`));
-        if (exists) {
-            return res.status(400).json({ error: 'User already exists' });
-        }
-
-        const storedValue = hashPassword(password);
-        lines.push(`${email},${storedValue}`);
-
-        fs.writeFileSync(csvPath, lines.join('\n'));
-
+        await userStore.addUser(email.trim(), password);
         console.log(`[Server] New admin user added: ${email}`);
         res.json({ success: true });
-
     } catch (e) {
+        if (e.code === 'EXISTS') return res.status(400).json({ error: 'User already exists' });
         console.error('[Server] Add User Error:', e);
         res.status(500).json({ error: 'Failed to add user' });
     }
 });
 
-app.get('/api/users', verifyToken, (req, res) => {
+app.get('/api/users', verifyToken, async (req, res) => {
     try {
-        const csvPath = path.join(__dirname, 'admin_users.csv');
-        if (!fs.existsSync(csvPath)) {
-            return res.json([]);
-        }
-
-        const data = fs.readFileSync(csvPath, 'utf8');
-        const lines = data.split('\n').slice(1); // Skip header
-        const users = lines
-            .filter(line => line.trim())
-            .map(line => line.split(',')[0].trim());
-
-        res.json(users);
+        res.json(await userStore.listUsers());
     } catch (e) {
         console.error('[Server] List Users Error:', e);
         res.status(500).json({ error: 'Failed to list users' });
     }
 });
 
-app.delete('/api/users', verifyToken, (req, res) => {
+// Reset / change a user's password.
+app.post('/api/users/reset-password', verifyToken, async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and new password are required' });
+    }
+    if (password.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    try {
+        await userStore.setPassword(email.trim(), password);
+        console.log(`[Server] Password reset for ${email} by ${req.user.email}`);
+        res.json({ success: true });
+    } catch (e) {
+        if (e.code === 'NOT_FOUND') return res.status(404).json({ error: 'User not found' });
+        console.error('[Server] Reset Password Error:', e);
+        res.status(500).json({ error: 'Failed to reset password' });
+    }
+});
+
+app.delete('/api/users', verifyToken, async (req, res) => {
     const { email } = req.body;
     const currentUser = req.user.email; // Extracted safely from JWT by verifyToken middleware
 
@@ -217,28 +187,17 @@ app.delete('/api/users', verifyToken, (req, res) => {
     }
 
     try {
-        const csvPath = path.join(__dirname, 'admin_users.csv');
-        const data = fs.readFileSync(csvPath, 'utf8');
-        let lines = data.split('\n').filter(line => line.trim() !== '');
-
-        // Ensure at least one admin remains (excluding the one being deleted)
-        // lines[0] is header. Length - 1 is number of users.
-        if (lines.length - 1 <= 1) {
+        // Ensure at least one admin remains.
+        if (await userStore.userCount() <= 1) {
             return res.status(400).json({ error: 'Cannot delete the only admin user' });
         }
 
-        const initialLength = lines.length;
-        lines = lines.filter(line => !line.startsWith(`${email},`));
-
-        if (lines.length === initialLength) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        fs.writeFileSync(csvPath, lines.join('\n'));
+        await userStore.deleteUser(email);
         console.log(`[Server] Admin user deleted: ${email} by ${currentUser}`);
         res.json({ success: true });
 
     } catch (e) {
+        if (e.code === 'NOT_FOUND') return res.status(404).json({ error: 'User not found' });
         console.error('[Server] Delete User Error:', e);
         res.status(500).json({ error: 'Failed to delete user' });
     }
