@@ -1,9 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshCcw, Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } from 'lucide-react';
+import { Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
 import DashboardLoader from './DashboardLoader';
 import { amountForBooking as amountOf, fmtMoney, fmtDate } from './lib/format';
 import { StatusPill } from './lib/status';
+import Card from './ui/Card';
+import PageHeader from './ui/PageHeader';
+import Button from './ui/Button';
+import { SearchInput, Select } from './ui/Field';
 
 // Turn a stored serviceName ("Konsultasi via Chat · 3 Pertanyaan") into a clean label.
 const serviceLabel = (b: Booking) => {
@@ -158,76 +162,47 @@ const SalesView: React.FC = () => {
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
-            {/* header */}
-            <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Sales</h1>
-                    <p className="text-text-subtle text-sm">{orders.length} orders · mark payments as they come in</p>
-                </div>
-                <button onClick={load} title="Refresh"
-                    className="p-2.5 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light hover:border-adm-line-3 transition-colors">
-                    <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
-                </button>
-            </div>
+            <PageHeader title="Sales" subtitle={`${orders.length} orders · mark payments as they come in`} onRefresh={load} refreshing={loading} />
 
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
 
             {/* summary cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="rounded-2xl border border-adm-line bg-surface-1 p-4">
+                <Card className="p-4">
                     <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><CheckCircle2 size={14} className="text-sage" /> Paid</div>
                     <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.paidIDR, 'IDR')}</div>
                     {totals.paidUSD > 0 && <div className="text-sm text-text-subtle tabular-nums">{fmtMoney(totals.paidUSD, 'USD')}</div>}
-                </div>
-                <div className="rounded-2xl border border-adm-line bg-surface-1 p-4">
+                </Card>
+                <Card className="p-4">
                     <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><AlertCircle size={14} className="text-coral-deep" /> Outstanding</div>
                     <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.unpaidIDR, 'IDR')}</div>
                     {totals.unpaidUSD > 0 && <div className="text-sm text-text-subtle tabular-nums">{fmtMoney(totals.unpaidUSD, 'USD')}</div>}
-                </div>
-                <div className="rounded-2xl border border-adm-line bg-surface-1 p-4">
+                </Card>
+                <Card className="p-4">
                     <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><Wallet size={14} className="text-blue" /> Collected total</div>
                     <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.paidIDR, 'IDR')}</div>
                     {totals.paidUSD > 0 && <div className="text-sm text-text-subtle tabular-nums">{fmtMoney(totals.paidUSD, 'USD')}</div>}
-                </div>
+                </Card>
             </div>
 
             {/* toolbar */}
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-                <div className="relative flex-1">
-                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-subtle" />
-                    <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, service, contact, or ref"
-                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none" />
-                </div>
+                <SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, service, contact, or ref" />
                 <div className="flex flex-wrap items-center gap-2">
-                    {/* payment-status select */}
-                    <div className="relative">
-                        <select value={payFilter} onChange={(e) => setPayFilter(e.target.value as 'all' | 'paid' | 'unpaid')}
-                            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer">
-                            <option value="all">All payments</option>
-                            <option value="paid">Paid</option>
-                            <option value="unpaid">Unpaid</option>
-                        </select>
-                        <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
-                    </div>
-                    {/* service select */}
-                    <div className="relative">
-                        <select value={serviceFilter} onChange={(e) => setServiceFilter(e.target.value)}
-                            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer max-w-[14rem]">
-                            <option value="all">All services</option>
-                            {serviceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                        <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
-                    </div>
-                    {/* source select */}
-                    <div className="relative">
-                        <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value as 'all' | 'manual' | 'booking')}
-                            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer">
-                            <option value="all">All sources</option>
-                            <option value="booking">From booking</option>
-                            <option value="manual">Manual</option>
-                        </select>
-                        <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
-                    </div>
+                    <Select value={payFilter} active={payFilter !== 'all'} onChange={(e) => setPayFilter(e.target.value as 'all' | 'paid' | 'unpaid')}>
+                        <option value="all">All payments</option>
+                        <option value="paid">Paid</option>
+                        <option value="unpaid">Unpaid</option>
+                    </Select>
+                    <Select value={serviceFilter} active={serviceFilter !== 'all'} onChange={(e) => setServiceFilter(e.target.value)} className="max-w-[14rem]">
+                        <option value="all">All services</option>
+                        {serviceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </Select>
+                    <Select value={sourceFilter} active={sourceFilter !== 'all'} onChange={(e) => setSourceFilter(e.target.value as 'all' | 'manual' | 'booking')}>
+                        <option value="all">All sources</option>
+                        <option value="booking">From booking</option>
+                        <option value="manual">Manual</option>
+                    </Select>
                     {/* customer searchable dropdown */}
                     <div className="relative" ref={custRef}>
                         <button type="button" onClick={() => { setCustOpen((o) => !o); setCustQuery(''); }}
@@ -290,16 +265,15 @@ const SalesView: React.FC = () => {
                         )}
                     </div>
                     {activeFilters > 0 && (
-                        <button onClick={() => { setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setCustomerFilter('all'); setDateFrom(''); setDateTo(''); }}
-                            className="px-3 py-2 rounded-lg text-sm text-text-subtle hover:text-text-light transition-colors">
+                        <Button variant="ghost" onClick={() => { setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setCustomerFilter('all'); setDateFrom(''); setDateTo(''); }}>
                             Clear
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>
 
             {/* table */}
-            <div className="rounded-2xl border border-adm-line bg-surface-1 overflow-hidden">
+            <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm min-w-[940px]">
                         <thead>
@@ -358,7 +332,7 @@ const SalesView: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </Card>
 
             {outstanding && (
                 <p className="text-xs text-text-subtle">Tip: click a Payment pill to mark an order paid — Revenue counts only paid orders.</p>
