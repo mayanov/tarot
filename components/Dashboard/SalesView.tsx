@@ -56,6 +56,10 @@ const SalesView: React.FC = () => {
     const [q, setQ] = useState('');
     const [payFilter, setPayFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
     const [serviceFilter, setServiceFilter] = useState<string>('all');
+    const [sourceFilter, setSourceFilter] = useState<'all' | 'manual' | 'booking'>('all');
+    const [customerFilter, setCustomerFilter] = useState<string>('all');
+    const [dateFrom, setDateFrom] = useState<string>('');
+    const [dateTo, setDateTo] = useState<string>('');
     const [savingId, setSavingId] = useState<string | null>(null);
 
     const load = async () => {
@@ -95,20 +99,39 @@ const SalesView: React.FC = () => {
         return Array.from(set).sort((a, b) => a.localeCompare(b));
     }, [orders]);
 
+    // Distinct customers present in the data, for the Customer dropdown.
+    const customerOptions = useMemo(() => {
+        const set = new Set<string>();
+        orders.forEach((b) => { const n = (b.name || '').trim(); if (n) set.add(n); });
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }, [orders]);
+
     const filtered = useMemo(() => {
         const needle = q.trim().toLowerCase();
+        const fromTs = dateFrom ? new Date(dateFrom + 'T00:00:00').getTime() : null;
+        const toTs = dateTo ? new Date(dateTo + 'T23:59:59').getTime() : null;
         return orders.filter((b) => {
             if (payFilter !== 'all' && (b.paymentStatus || 'unpaid') !== payFilter) return false;
             if (serviceFilter !== 'all' && serviceBase(b) !== serviceFilter) return false;
+            if (sourceFilter !== 'all' && (b.source === 'manual' ? 'manual' : 'booking') !== sourceFilter) return false;
+            if (customerFilter !== 'all' && (b.name || '').trim() !== customerFilter) return false;
+            if (fromTs || toTs) {
+                const ts = b.createdAt ? new Date(b.createdAt).getTime() : NaN;
+                if (!Number.isFinite(ts)) return false;
+                if (fromTs && ts < fromTs) return false;
+                if (toTs && ts > toTs) return false;
+            }
             if (!needle) return true;
             return (b.name || '').toLowerCase().includes(needle)
                 || (b.serviceName || '').toLowerCase().includes(needle)
                 || (b.contact || '').toLowerCase().includes(needle)
                 || (b.ref || '').toLowerCase().includes(needle);
         });
-    }, [orders, q, payFilter, serviceFilter]);
+    }, [orders, q, payFilter, serviceFilter, sourceFilter, customerFilter, dateFrom, dateTo]);
 
-    const activeFilters = (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0);
+    const activeFilters = (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0)
+        + (sourceFilter !== 'all' ? 1 : 0) + (customerFilter !== 'all' ? 1 : 0)
+        + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
 
     const togglePaid = async (b: Booking) => {
         const next = b.paymentStatus === 'paid' ? 'unpaid' : 'paid';
@@ -191,8 +214,35 @@ const SalesView: React.FC = () => {
                         </select>
                         <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
                     </div>
+                    {/* source select */}
+                    <div className="relative">
+                        <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value as 'all' | 'manual' | 'booking')}
+                            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer">
+                            <option value="all">All sources</option>
+                            <option value="booking">From booking</option>
+                            <option value="manual">Manual</option>
+                        </select>
+                        <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
+                    </div>
+                    {/* customer select */}
+                    <div className="relative">
+                        <select value={customerFilter} onChange={(e) => setCustomerFilter(e.target.value)}
+                            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer max-w-[14rem]">
+                            <option value="all">All customers</option>
+                            {customerOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
+                    </div>
+                    {/* booking-date range */}
+                    <div className="flex items-center gap-1.5 text-sm text-text-subtle">
+                        <input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)} aria-label="Booking date from"
+                            className="px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer [color-scheme:dark]" />
+                        <span>–</span>
+                        <input type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)} aria-label="Booking date to"
+                            className="px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer [color-scheme:dark]" />
+                    </div>
                     {activeFilters > 0 && (
-                        <button onClick={() => { setPayFilter('all'); setServiceFilter('all'); }}
+                        <button onClick={() => { setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setCustomerFilter('all'); setDateFrom(''); setDateTo(''); }}
                             className="px-3 py-2 rounded-lg text-sm text-text-subtle hover:text-text-light transition-colors">
                             Clear
                         </button>
