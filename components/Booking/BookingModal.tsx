@@ -334,7 +334,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               {services.map((s) => (
                 <button
                   key={s.id}
-                  onClick={() => { setService(s); setStep(s.scheduled ? 1 : 2); }}
+                  onClick={() => { setService(s); setPkg(null); setTime(null); setDate(undefined); setStep(s.scheduled ? 1 : 2); }}
                   className="group w-full flex items-center justify-between gap-4 text-left rounded-lg border border-black/10 bg-white hover:border-ink/50 hover:shadow-[0_14px_34px_-18px_rgba(107,63,160,0.4)] hover:-translate-y-0.5 transition-all px-4 py-3.5"
                 >
                   <span className="min-w-0">
