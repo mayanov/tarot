@@ -484,7 +484,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                     <div className="flex items-center gap-1">
                                                         <button
                                                             onClick={() => { setResetUser(u); setResetPassword(''); }}
-                                                            className="p-2 text-text-subtle hover:text-lilac hover:bg-lilac/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                            className="p-2 text-text-subtle hover:text-lilac hover:bg-lilac/10 rounded-lg transition-all"
                                                             title={u === currentUserEmail ? 'Change your password' : 'Reset password'}
                                                         >
                                                             <KeyRound size={18} />
@@ -492,7 +492,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                         {u !== currentUserEmail && (
                                                             <button
                                                                 onClick={() => handleDeleteUser(u)}
-                                                                className="p-2 text-text-subtle hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                                className="p-2 text-text-subtle hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
                                                                 title="Revoke Access"
                                                             >
                                                                 <Trash2 size={18} />
