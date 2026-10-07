@@ -62,6 +62,9 @@ const SalesView: React.FC = () => {
     const [dateTo, setDateTo] = useState<string>('');
     const [dateOpen, setDateOpen] = useState(false);
     const dateRef = useRef<HTMLDivElement>(null);
+    const [custOpen, setCustOpen] = useState(false);
+    const [custQuery, setCustQuery] = useState('');
+    const custRef = useRef<HTMLDivElement>(null);
     const [savingId, setSavingId] = useState<string | null>(null);
 
     // close the date popover on outside click / Escape
@@ -73,6 +76,16 @@ const SalesView: React.FC = () => {
         document.addEventListener('keydown', onKey);
         return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
     }, [dateOpen]);
+
+    // close the customer popover on outside click / Escape
+    useEffect(() => {
+        if (!custOpen) return;
+        const onDown = (e: MouseEvent) => { if (custRef.current && !custRef.current.contains(e.target as Node)) setCustOpen(false); };
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setCustOpen(false); };
+        document.addEventListener('mousedown', onDown);
+        document.addEventListener('keydown', onKey);
+        return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
+    }, [custOpen]);
 
     const load = async () => {
         setLoading(true);
@@ -117,6 +130,12 @@ const SalesView: React.FC = () => {
         orders.forEach((b) => { const n = (b.name || '').trim(); if (n) set.add(n); });
         return Array.from(set).sort((a, b) => a.localeCompare(b));
     }, [orders]);
+
+    // Customer options narrowed by the dropdown's own search box.
+    const custMatches = useMemo(() => {
+        const n = custQuery.trim().toLowerCase();
+        return n ? customerOptions.filter((c) => c.toLowerCase().includes(n)) : customerOptions;
+    }, [customerOptions, custQuery]);
 
     const filtered = useMemo(() => {
         const needle = q.trim().toLowerCase();
@@ -244,14 +263,37 @@ const SalesView: React.FC = () => {
                         </select>
                         <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
                     </div>
-                    {/* customer select */}
-                    <div className="relative">
-                        <select value={customerFilter} onChange={(e) => setCustomerFilter(e.target.value)}
-                            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer max-w-[14rem]">
-                            <option value="all">All customers</option>
-                            {customerOptions.map((c) => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                        <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
+                    {/* customer searchable dropdown */}
+                    <div className="relative" ref={custRef}>
+                        <button type="button" onClick={() => { setCustOpen((o) => !o); setCustQuery(''); }}
+                            className={`inline-flex items-center gap-2 pl-3 pr-8 py-2 rounded-lg border bg-bg-dark text-sm focus:border-lilac focus:outline-none cursor-pointer relative max-w-[14rem] ${customerFilter !== 'all' ? 'border-lilac text-text-light' : 'border-adm-line-2 text-text-subtle hover:text-text-light'}`}>
+                            <span className="truncate">{customerFilter === 'all' ? 'All customers' : customerFilter}</span>
+                            <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
+                        </button>
+                        {custOpen && (
+                            <div className="absolute z-20 mt-2 right-0 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg overflow-hidden">
+                                <div className="relative p-2 border-b border-adm-line">
+                                    <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-subtle" />
+                                    <input autoFocus value={custQuery} onChange={(e) => setCustQuery(e.target.value)} placeholder="Search customer…"
+                                        className="w-full pl-8 pr-2 py-1.5 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none" />
+                                </div>
+                                <div className="max-h-56 overflow-y-auto py-1">
+                                    <button onClick={() => { setCustomerFilter('all'); setCustOpen(false); }}
+                                        className={`w-full text-left px-3 py-1.5 text-sm transition-colors hover:bg-adm-hover ${customerFilter === 'all' ? 'text-lilac font-semibold' : 'text-text-subtle'}`}>
+                                        All customers
+                                    </button>
+                                    {custMatches.map((c) => (
+                                        <button key={c} onClick={() => { setCustomerFilter(c); setCustOpen(false); }}
+                                            className={`w-full text-left px-3 py-1.5 text-sm truncate transition-colors hover:bg-adm-hover ${customerFilter === c ? 'text-lilac font-semibold' : 'text-text-light'}`}>
+                                            {c}
+                                        </button>
+                                    ))}
+                                    {custMatches.length === 0 && (
+                                        <p className="px-3 py-3 text-sm text-text-subtle text-center">No match</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     {/* booking-date range — collapsed to a single button, opens a range panel */}
                     <div className="relative" ref={dateRef}>
