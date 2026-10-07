@@ -262,7 +262,7 @@ const SalesView: React.FC = () => {
                             <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
                         </button>
                         {dateOpen && (
-                            <div className="absolute z-20 mt-2 right-0 sm:left-0 sm:right-auto w-64 rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-3 space-y-3">
+                            <div className="absolute z-20 mt-2 right-0 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-3 space-y-3">
                                 <div>
                                     <label className="block text-xs text-text-subtle mb-1">From</label>
                                     <input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)}
