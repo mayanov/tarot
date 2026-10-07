@@ -3,14 +3,11 @@ import { RefreshCcw, TrendingUp, Wallet, ShoppingBag, Award, Users, Repeat, User
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking } from '../../services/booking';
 import DashboardLoader from './DashboardLoader';
+import { Cur as Currency, amountForBooking, fmtIDR, fmtUSD, fmtMoney } from './lib/format';
 
-type Currency = 'IDR' | 'USD';
 type Gran = 'day' | 'week';
 type Preset = '7d' | '30d' | '90d' | 'thisMonth' | 'year' | 'all' | 'custom';
 
-const SERVICE_PRICE_FALLBACK: Record<string, string> = {
-    special: 'Rp 250K', '3card': '$12', '5card': '$20', live: '$45',
-};
 const SERVICE_LABEL: Record<string, string> = {
     chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'New Year Reading (PDF)',
     '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
@@ -21,41 +18,12 @@ const SERVICE_COLOR: Record<string, string> = {
 };
 const colorFor = (id: string) => SERVICE_COLOR[id] || '#B5AEC4';
 
-const priceToken = (s?: string | null): string | null => {
-    if (!s) return null;
-    const m = s.match(/Rp\s?[\d.,]+\s?(?:K|JT|jt|rb|RB)?|\$\s?[\d.,]+/);
-    return m ? m[0] : null;
-};
-const parseAmount = (token: string | null): { amount: number; currency: Currency } | null => {
-    if (!token) return null;
-    if (token.includes('$')) {
-        const n = parseFloat(token.replace(/[^\d.]/g, ''));
-        return Number.isFinite(n) ? { amount: n, currency: 'USD' } : null;
-    }
-    const m = token.match(/Rp\s?([\d.,]+)\s?(K|JT|jt|rb|RB)?/);
-    if (!m) return null;
-    const num = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
-    if (!Number.isFinite(num)) return null;
-    const suffix = (m[2] || '').toLowerCase();
-    const mult = suffix === 'jt' ? 1_000_000 : (suffix === 'k' || suffix === 'rb') ? 1_000 : 1;
-    return { amount: num * mult, currency: 'IDR' };
-};
-const amountForBooking = (b: Booking) =>
-    parseAmount(priceToken(b.price) || priceToken(b.serviceName) || SERVICE_PRICE_FALLBACK[b.serviceId] || null);
-
 // Normalize a contact into a stable customer key (phone digits, else lowercased text).
 const normContact = (s?: string): string => {
     if (!s) return '';
     const digits = s.replace(/\D/g, '');
     return digits.length >= 6 ? digits.slice(-10) : s.trim().toLowerCase();
 };
-
-const fmtIDR = (v: number, compact = false) =>
-    compact
-        ? (v >= 1_000_000 ? `Rp ${(v / 1_000_000).toFixed(v % 1_000_000 ? 1 : 0)}jt` : `Rp ${Math.round(v / 1000)}rb`)
-        : `Rp ${new Intl.NumberFormat('id-ID').format(Math.round(v))}`;
-const fmtUSD = (v: number, compact = false) => compact ? `$${v}` : `$${new Intl.NumberFormat('en-US').format(Math.round(v))}`;
-const fmtMoney = (v: number, c: Currency, compact = false) => (c === 'IDR' ? fmtIDR(v, compact) : fmtUSD(v, compact));
 
 const toISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const parseISO = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, (m || 1) - 1, d || 1); };

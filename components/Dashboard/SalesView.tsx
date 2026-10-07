@@ -2,36 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw, Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
 import DashboardLoader from './DashboardLoader';
-
-type Cur = 'IDR' | 'USD';
-
-// --- price parsing (mirrors RevenueView so numbers line up) ---
-const SERVICE_PRICE_FALLBACK: Record<string, string> = { special: 'Rp 250K', '3card': '$12', '5card': '$20', live: '$45' };
-const priceToken = (s?: string | null): string | null => {
-    if (!s) return null;
-    const m = s.match(/Rp\s?[\d.,]+\s?(?:K|JT|jt|rb|RB)?|\$\s?[\d.,]+/);
-    return m ? m[0] : null;
-};
-const parseAmount = (token: string | null): { amount: number; currency: Cur } | null => {
-    if (!token) return null;
-    if (token.includes('$')) {
-        const n = parseFloat(token.replace(/[^\d.]/g, ''));
-        return Number.isFinite(n) ? { amount: n, currency: 'USD' } : null;
-    }
-    const m = token.match(/Rp\s?([\d.,]+)\s?(K|JT|jt|rb|RB)?/);
-    if (!m) return null;
-    const num = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
-    if (!Number.isFinite(num)) return null;
-    const suffix = (m[2] || '').toLowerCase();
-    const mult = suffix === 'jt' ? 1_000_000 : (suffix === 'k' || suffix === 'rb') ? 1_000 : 1;
-    return { amount: num * mult, currency: 'IDR' };
-};
-const amountOf = (b: Booking) => parseAmount(priceToken(b.price) || priceToken(b.serviceName) || SERVICE_PRICE_FALLBACK[b.serviceId] || null);
-
-const fmtMoney = (v: number, c: Cur) => c === 'IDR'
-    ? `Rp ${new Intl.NumberFormat('id-ID').format(Math.round(v))}`
-    : `$${new Intl.NumberFormat('en-US').format(Math.round(v))}`;
-const fmtDate = (iso?: string) => iso ? new Date(iso).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+import { amountForBooking as amountOf, fmtMoney, fmtDate } from './lib/format';
+import { StatusPill } from './lib/status';
 
 // Turn a stored serviceName ("Konsultasi via Chat · 3 Pertanyaan") into a clean label.
 const serviceLabel = (b: Booking) => {
@@ -41,13 +13,6 @@ const serviceLabel = (b: Booking) => {
 
 // Base service name (first segment) — used to group orders for the Service filter.
 const serviceBase = (b: Booking) => ((b.serviceName || '').split(' · ')[0] || b.serviceId || '').trim();
-
-const STATUS_STYLE: Record<Booking['status'], string> = {
-    pending: 'bg-coral/15 text-coral-deep',
-    confirmed: 'bg-sage/15 text-sage',
-    done: 'bg-blue/15 text-blue',
-    cancelled: 'bg-mauve/15 text-mauve line-through',
-};
 
 const SalesView: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -373,7 +338,7 @@ const SalesView: React.FC = () => {
                                         </td>
                                         <td className="px-4 py-3 text-right tabular-nums text-text-light">{a ? fmtMoney(a.amount, a.currency) : '—'}</td>
                                         <td className="px-4 py-3">
-                                            <span className={`text-[0.7rem] font-semibold px-2 py-0.5 rounded-full capitalize ${STATUS_STYLE[b.status]}`}>{b.status}</span>
+                                            <StatusPill status={b.status} />
                                         </td>
                                         <td className="px-4 py-3 text-right">
                                             <button

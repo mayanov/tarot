@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, Booking, CalEvent } from '../../services/booking';
 import DashboardLoader from './DashboardLoader';
+import { fmtDate } from './lib/format';
+import { STATUS_STYLE } from './lib/status';
 
 // Services offered — id drives revenue colour/stacking; name is the display label.
 const MANUAL_SERVICES: { id: string; name: string }[] = [
@@ -61,14 +63,6 @@ const ORDER_OVERRIDE: Record<string, { title?: string; price?: string }> = {
     '5-Card Deep': { price: '$20' },
 };
 
-// Status pills — brand jewel palette, dark text on a light tint (light theme).
-const STATUS_STYLE: Record<Booking['status'], string> = {
-    pending: 'bg-coral/15 text-coral-deep border-coral/40',
-    confirmed: 'bg-sage/15 text-sage border-sage/45',
-    done: 'bg-blue/15 text-blue border-blue/45',
-    cancelled: 'bg-mauve/15 text-mauve border-mauve/45',
-};
-
 // Calendar block colours per status.
 const BLOCK_STYLE: Record<Booking['status'], string> = {
     pending: 'bg-coral/20 border-coral/45 text-coral-deep hover:bg-coral/30',
@@ -94,10 +88,6 @@ const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(x.get
 const toMin = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
 const fmtHour = (h: number) => `${String(h).padStart(2, '0')}:00`;
 // 'YYYY-MM-DD' → 'dd Mon YYYY' (e.g. 08 Sep 2026)
-const fmtDate = (iso: string) => {
-    const d = parseISO(iso);
-    return `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('en-US', { month: 'short' })} ${d.getFullYear()}`;
-};
 
 // Grid window: 11:00–20:00 covers all bookable slots (11:00–19:00) and their durations.
 const DAY_START = 10 * 60; // 10:00 AM

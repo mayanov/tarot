@@ -2,26 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCcw, Search, Phone, Mail, X, Repeat } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
 import DashboardLoader from './DashboardLoader';
+import { amountForBooking, fmtIDR, fmtUSD, fmtDate } from './lib/format';
+import { StatusPill } from './lib/status';
 
-// ---- price parsing (mirrors RevenueView) ----
-const SERVICE_PRICE_FALLBACK: Record<string, string> = { special: 'Rp 250K', '3card': '$12', '5card': '$20', live: '$45' };
 const SERVICE_LABEL: Record<string, string> = {
     chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'New Year Reading',
     '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
 };
-const priceToken = (s?: string | null) => (s?.match(/Rp\s?[\d.,]+\s?(?:K|JT|jt|rb|RB)?|\$\s?[\d.,]+/)?.[0]) || null;
-const parseAmount = (token: string | null): { amount: number; currency: 'IDR' | 'USD' } | null => {
-    if (!token) return null;
-    if (token.includes('$')) { const n = parseFloat(token.replace(/[^\d.]/g, '')); return Number.isFinite(n) ? { amount: n, currency: 'USD' } : null; }
-    const m = token.match(/Rp\s?([\d.,]+)\s?(K|JT|jt|rb|RB)?/); if (!m) return null;
-    const num = parseFloat(m[1].replace(/\./g, '').replace(',', '.')); if (!Number.isFinite(num)) return null;
-    const suf = (m[2] || '').toLowerCase(); const mult = suf === 'jt' ? 1e6 : (suf === 'k' || suf === 'rb') ? 1e3 : 1;
-    return { amount: num * mult, currency: 'IDR' };
-};
-const amountForBooking = (b: Booking) => parseAmount(priceToken(b.serviceName) || SERVICE_PRICE_FALLBACK[b.serviceId] || null);
-const fmtIDR = (v: number) => `Rp ${new Intl.NumberFormat('id-ID').format(Math.round(v))}`;
-const fmtUSD = (v: number) => `$${new Intl.NumberFormat('en-US').format(Math.round(v))}`;
-const fmtDate = (iso: string) => { if (!iso) return '—'; const [y, m, d] = iso.slice(0, 10).split('-').map(Number); return `${String(d).padStart(2, '0')} ${new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short' })} ${y}`; };
 
 // ---- contact parsing ----
 const extractPhone = (contact?: string) => {
@@ -54,13 +41,6 @@ const clientIdFor = (key: string) => {
     h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
     const n = (h2 >>> 0) * 4294967296 + (h1 >>> 0);
     return 'CL-' + n.toString(36).toUpperCase().padStart(9, '0').slice(0, 9);
-};
-
-const STATUS_STYLE: Record<Booking['status'], string> = {
-    pending: 'bg-coral/15 text-coral-deep border-coral/40',
-    confirmed: 'bg-sage/15 text-sage border-sage/45',
-    done: 'bg-blue/15 text-blue border-blue/45',
-    cancelled: 'bg-mauve/15 text-mauve border-mauve/45',
 };
 
 interface Customer {
@@ -258,7 +238,7 @@ const CustomersView: React.FC = () => {
                                         </div>
                                         <div className="flex items-center gap-3 shrink-0">
                                             <span className="text-sm text-text-light tabular-nums">{amt ? (amt.currency === 'IDR' ? fmtIDR(amt.amount) : fmtUSD(amt.amount)) : '—'}</span>
-                                            <span className={`px-2 py-0.5 rounded-full text-[0.6rem] uppercase tracking-wider font-semibold border ${STATUS_STYLE[b.status]}`}>{b.status}</span>
+                                            <StatusPill status={b.status} />
                                         </div>
                                     </div>
                                 );
