@@ -11,8 +11,8 @@ interface ServicesProps {
 
 // Standardised button styles (used across the pricelist bands, which sit on dark sky):
 // primary = solid cream fill (hover → brand plum); secondary = cream outline.
-const btnPrimary = "inline-flex items-center justify-center px-6 py-3 rounded-lg bg-cream text-ink text-sm font-semibold hover:bg-plum hover:text-cream transition-colors duration-300";
-const btnSecondary = "inline-flex items-center justify-center px-6 py-3 rounded-lg border border-cream/40 text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300";
+const btnPrimary = "inline-flex items-center justify-center px-7 py-3 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-300";
+const btnSecondary = "inline-flex items-center justify-center px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-300";
 
 // Each pricing category gets its own twilight sky, so the categories feel distinct.
 const CAT_SKIES = ['sky-hero.jpg', 'catsky-aurora.jpg', 'sky-footer.jpg', 'aurora-meetup.jpg'];
@@ -128,7 +128,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     const groups = isIndonesian
         ? [
             {
-                id: 'service-special', type: 'Edisi Spesial', tags: ['PDF', 'MUSIMAN'], seasonal: true,
+                id: 'service-special', type: 'Edisi Spesial', tags: ['PDF', 'Musiman'], seasonal: true,
                 blurb: 'Bacaan tematik & musiman, dikirim rapi sebagai PDF via WhatsApp.',
                 priceLabel: 'Rp 250K',
                 offers: [
@@ -141,7 +141,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 ],
             },
             {
-                id: 'service-chat', type: 'Konsultasi via Chat', tags: ['CHAT', 'WHATSAPP'],
+                id: 'service-chat', type: 'Konsultasi via Chat', tags: ['Chat', 'WhatsApp'],
                 blurb: 'Konsultasi via WhatsApp Chat. Harga per pertanyaan — pertanyaan dapat ditabung untuk lain waktu.',
                 priceLabel: 'Rp 140rb–315rb',
                 offers: [
@@ -162,7 +162,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 ],
             },
             {
-                id: 'service-call', type: 'Panggilan Suara & Video', tags: ['VIDEO', 'REAL-TIME'],
+                id: 'service-call', type: 'Panggilan Suara & Video', tags: ['Video', 'Real-time'],
                 blurb: 'Ngobrol langsung via call / video — tak terbatas jumlah pertanyaan.',
                 priceLabel: 'Rp 220rb–360rb',
                 offers: [
@@ -177,7 +177,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 ],
             },
             {
-                id: 'service-meetup', type: 'Sesi Tatap Muka', tags: ['JAKSEL', '1 JAM'],
+                id: 'service-meetup', type: 'Sesi Tatap Muka', tags: ['Jaksel', '1 Jam'],
                 blurb: 'Temu langsung di Jakarta Selatan — energi lebih terasa, analisa lebih personal.',
                 mapUrl: 'https://maps.app.goo.gl/LE2YwZiM2exhqunh8',
                 priceLabel: 'Rp 450K',
@@ -195,7 +195,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
         ]
         : [
             {
-                id: '', type: '3-Card Spread', tags: ['QUICK', '24H'],
+                id: '', type: '3-Card Spread', tags: ['Quick', '24h'],
                 blurb: 'A quick, direct check-in on one specific question.',
                 priceLabel: '$12',
                 offers: [
@@ -208,7 +208,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 ],
             },
             {
-                id: '', type: '5-Card Deep', tags: ['IN-DEPTH', 'POPULAR'],
+                id: '', type: '5-Card Deep', tags: ['In-depth', 'Popular'],
                 blurb: "The bigger picture — hidden influences and what's coming next.",
                 priceLabel: '$20',
                 offers: [
@@ -221,7 +221,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 ],
             },
             {
-                id: '', type: 'Live Session', tags: ['LIVE', '30 MIN'],
+                id: '', type: 'Live Session', tags: ['Live', '30 min'],
                 blurb: 'Talk it out live on Google Meet and go as deep as you want.',
                 priceLabel: '$45',
                 offers: [
@@ -296,7 +296,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                         {/* category labels, next to the title */}
                                         <span className="flex flex-wrap items-center gap-1.5">
                                             {g.tags.map((t: string) => (
-                                                <span key={t} className="inline-flex items-center rounded-full bg-white/[0.12] px-2.5 py-[3px] text-[10px] font-medium uppercase tracking-[0.16em] text-cream ring-1 ring-inset ring-white/25 backdrop-blur-sm">{t}</span>
+                                                <span key={t} className="inline-flex items-center rounded-full bg-white/[0.1] px-3 py-[4px] text-[11.5px] font-light text-cream/85 ring-1 ring-inset ring-white/15 backdrop-blur-sm">{t}</span>
                                             ))}
                                         </span>
                                     </div>

@@ -154,7 +154,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                       key={cat}
                       onClick={() => setActiveCat(cat)}
                       aria-pressed={active}
-                      className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs uppercase tracking-[0.14em] font-medium transition-colors duration-300 ${active
+                      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300 ${active
                         ? 'bg-ink text-cream'
                         : 'border border-ink/15 text-ink/55 hover:border-ink/40 hover:text-ink'}`}
                     >
@@ -182,7 +182,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ada%20pertanyaan%20tentang%20tarot%20reading"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink text-cream px-4 py-2.5 text-[11px] uppercase tracking-[0.18em] font-semibold hover:bg-plum transition-colors duration-300"
+                  className="group mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink text-cream px-5 py-2.5 text-sm font-medium hover:bg-plum transition-colors duration-300"
                 >
                   {isIndonesian ? 'Tanya via WhatsApp' : 'Ask on WhatsApp'}
                   <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

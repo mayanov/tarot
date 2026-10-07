@@ -163,7 +163,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         setVisibleCount(eventList.length);
                       }
                     }}
-                    className="inline-flex items-center justify-center gap-2 min-w-[11rem] px-7 py-3 rounded-lg border border-cream/40 text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-300 group"
+                    className="inline-flex items-center justify-center gap-2 min-w-[11rem] px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-300 group"
                   >
                     {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
                     <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
@@ -174,7 +174,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 href="https://wa.link/5peyhb"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-cream text-ink text-sm font-semibold hover:bg-plum hover:text-cream transition-colors duration-300"
+                className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-300"
               >
                 {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
               </a>
