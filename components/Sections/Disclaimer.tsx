@@ -11,26 +11,32 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
         {
             label: isIndonesian ? 'Bukan pengganti ahlinya' : 'Not a substitute for the pros',
             text: isIndonesian
-                ? 'Untuk hal medis, hukum, keuangan, atau psikologis, tetap konsultasi ke profesional ya — tarot bukan penggantinya.'
-                : "For anything medical, legal, financial, or mental-health related, please talk to a qualified professional — tarot isn't a replacement for that.",
+                ? 'Tarot reading bukan pengganti profesional di bidang hukum, keuangan, kesehatan, maupun psikologi.'
+                : "A tarot reading isn't a substitute for a qualified professional in law, finance, health, or psychology.",
         },
         {
             label: isIndonesian ? 'Keputusan tetap punyamu' : 'The choices stay yours',
             text: isIndonesian
-                ? 'Aku bantu kasih sudut pandang dan pilihan, tapi apa yang kamu putuskan setelahnya sepenuhnya ada di tanganmu.'
-                : "I'll offer perspective and options, but whatever you decide to do afterward is completely up to you.",
+                ? 'Kamu memegang kendali atas setiap pilihanmu. Keputusan yang kamu ambil setelah sesi adalah di luar tanggung jawab reader.'
+                : "You hold control over every choice you make. Any decision you take after a session is outside the reader's responsibility.",
         },
         {
-            label: isIndonesian ? 'Nggak ada yang mutlak' : 'Nothing is set in stone',
+            label: isIndonesian ? 'Masa depan bisa berubah' : 'The future can change',
             text: isIndonesian
-                ? 'Kartu menunjukkan gambaran saat ini, bukan takdir yang pasti. Usaha dan pilihanmu selalu bisa mengubah arah.'
-                : 'The cards show a snapshot of right now, not a fixed fate. Your effort and choices can always change where things go.',
+                ? 'Dengan usaha, kamu selalu bisa mengubah arah — setiap langkahmu memengaruhi hasil akhir. Sesi tarot hanya menampilkan gambaran sementara di masa depan.'
+                : 'With effort, you can always change your direction — every action shapes the outcome. A tarot session only shows a temporary glimpse of what may come.',
         },
         {
             label: isIndonesian ? 'Privasimu terjaga' : 'Your privacy is safe',
             text: isIndonesian
-                ? 'Cerita, pertanyaan, dan hasil reading kamu sepenuhnya rahasia — tidak akan dibagikan tanpa izinmu.'
-                : 'Your story, questions, and reading stay fully confidential — never shared without your consent.',
+                ? 'Kerahasiaan sesi terjamin. Pertanyaan, cerita, dan hasil reading tidak akan disebarluaskan tanpa persetujuanmu.'
+                : 'Your session stays confidential. Questions, stories, and readings are never shared without your consent.',
+        },
+        {
+            label: isIndonesian ? 'Pembayaran non-refundable' : 'Payment is non-refundable',
+            text: isIndonesian
+                ? 'Seluruh pembayaran tidak dapat dikembalikan dan wajib diselesaikan sebelum sesi reading dimulai.'
+                : 'All payments are non-refundable and must be completed before the reading session begins.',
         },
     ];
 
