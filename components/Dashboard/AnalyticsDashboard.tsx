@@ -14,6 +14,10 @@ import CustomersView from './CustomersView';
 import SalesView from './SalesView';
 import DashboardLoader from './DashboardLoader';
 
+// Same base as services/booking.ts — empty in prod (relative /api) so calls hit the
+// deployed serverless API instead of a hardcoded localhost that only works in dev.
+const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) || '';
+
 type DateRangePreset = '7D' | '30D' | 'THIS_MONTH' | 'CUSTOM';
 
 interface AnalyticsDashboardProps {
@@ -226,7 +230,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         setIsLoadingUsers(true);
         try {
             const token = localStorage.getItem('authToken');
-            const res = await fetch('http://localhost:3001/api/users', {
+            const res = await fetch(`${API_BASE}/api/users`, {
                 cache: 'no-store',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -246,7 +250,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
         try {
             const token = localStorage.getItem('authToken');
-            const res = await fetch('http://localhost:3001/api/users', {
+            const res = await fetch(`${API_BASE}/api/users`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -271,7 +275,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         e.preventDefault();
         try {
             const token = localStorage.getItem('authToken');
-            const res = await fetch('http://localhost:3001/api/users/add', {
+            const res = await fetch(`${API_BASE}/api/users/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
