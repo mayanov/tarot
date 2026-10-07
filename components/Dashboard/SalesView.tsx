@@ -160,7 +160,7 @@ const SalesView: React.FC = () => {
                 <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1 self-start">
                     {(['all', 'unpaid', 'paid'] as const).map((f) => (
                         <button key={f} onClick={() => setPayFilter(f)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-semibold capitalize transition-colors ${payFilter === f ? 'bg-lilac text-[#26242B]' : 'text-text-subtle hover:text-text-light'}`}>
+                            className={`px-4 py-1.5 rounded-full text-sm font-semibold capitalize transition-colors ${payFilter === f ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>
                             {f}
                         </button>
                     ))}

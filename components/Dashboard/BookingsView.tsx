@@ -71,10 +71,10 @@ const STATUS_STYLE: Record<Booking['status'], string> = {
 
 // Calendar block colours per status.
 const BLOCK_STYLE: Record<Booking['status'], string> = {
-    pending: 'bg-coral/20 border-coral/45 text-[#9a531b] hover:bg-coral/30',
-    confirmed: 'bg-sage/20 border-sage/45 text-[#356b45] hover:bg-sage/30',
-    done: 'bg-blue/20 border-blue/45 text-[#20527b] hover:bg-blue/30',
-    cancelled: 'bg-mauve/15 border-mauve/40 text-[#6e4569] line-through opacity-70 hover:opacity-90',
+    pending: 'bg-coral/20 border-coral/45 text-coral-deep hover:bg-coral/30',
+    confirmed: 'bg-sage/20 border-sage/45 text-sage hover:bg-sage/30',
+    done: 'bg-blue/20 border-blue/45 text-blue hover:bg-blue/30',
+    cancelled: 'bg-mauve/15 border-mauve/40 text-mauve line-through opacity-70 hover:opacity-90',
 };
 
 const toISO = (d: Date) =>
@@ -305,7 +305,7 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
 
                     <div className="flex justify-end gap-2 pt-1">
                         <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-sm text-text-subtle hover:text-text-light transition-colors">Cancel</button>
-                        <button type="submit" disabled={busy} className="px-5 py-2 rounded-full bg-lilac text-[#26242B] text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors disabled:opacity-60">
+                        <button type="submit" disabled={busy} className="px-5 py-2 rounded-full bg-lilac text-white text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors disabled:opacity-60">
                             {busy ? 'Adding…' : 'Add booking'}
                         </button>
                     </div>
@@ -505,15 +505,15 @@ const BookingsView: React.FC = () => {
                             <button
                                 key={t.id}
                                 onClick={() => setTab(t.id)}
-                                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ${tab === t.id ? 'bg-lilac text-[#26242B]' : 'text-text-subtle hover:text-text-light'}`}
+                                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ${tab === t.id ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}
                             >
                                 {t.label}
-                                <span className={`text-[0.7rem] tabular-nums ${tab === t.id ? 'text-[#26242B]/70' : 'text-text-subtle'}`}>{t.count}</span>
+                                <span className={`text-[0.7rem] tabular-nums ${tab === t.id ? 'text-white/70' : 'text-text-subtle'}`}>{t.count}</span>
                             </button>
                         ))}
                     </div>
                     <button onClick={() => setShowAdd(true)} title="Add booking"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-lilac text-[#26242B] text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors">
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-lilac text-white text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors">
                         <Plus size={16} /> <span className="hidden sm:inline">Add booking</span>
                     </button>
                     <button onClick={load} title="Refresh"
@@ -720,7 +720,7 @@ const BookingsView: React.FC = () => {
                             <button
                                 key={id}
                                 onClick={() => setOrderView(id)}
-                                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${orderView === id ? 'bg-lilac text-[#26242B]' : 'text-text-subtle hover:text-text-light'}`}
+                                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${orderView === id ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}
                             >
                                 {label}
                                 <span className={`text-[0.7rem] px-1.5 py-0.5 rounded-full ${orderView === id ? 'bg-adm-hover-3' : 'bg-adm-hover-2'}`}>{count}</span>

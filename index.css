@@ -201,8 +201,7 @@ html.lenis body {
 }
 
 .rdp-custom-wrapper .rdp-weekday {
-  color: #94A3B8;
-  /* Slate 400 */
+  color: var(--adm-text-subtle);
   font-weight: 600;
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -211,14 +210,14 @@ html.lenis body {
 
 /* Day Cells - Default State */
 .rdp-custom-wrapper .rdp-day {
-  color: #E2E8F0;
+  color: var(--adm-text-light);
   border-radius: 8px;
   font-weight: 500;
 }
 
 .rdp-custom-wrapper .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: white;
+  background-color: var(--adm-hover-2);
+  color: var(--adm-text-light);
 }
 
 /* SELECTED STATE (Start & End Dates) */
@@ -226,21 +225,17 @@ html.lenis body {
 .rdp-custom-wrapper .rdp-day_selected:focus:not([disabled]),
 .rdp-custom-wrapper .rdp-day_selected:active:not([disabled]),
 .rdp-custom-wrapper .rdp-day_selected:hover:not([disabled]) {
-  background-color: #C0A0FF !important;
-  /* LILAC */
-  color: #0F0F1A !important;
-  /* DARK TEXT */
+  background-color: rgb(var(--adm-accent)) !important;
+  color: #FFFFFF !important;
   font-weight: 800;
   border: none;
-  box-shadow: 0 0 12px rgba(192, 160, 255, 0.5);
+  box-shadow: none;
 }
 
 /* RANGE MIDDLE (Dates between start and end) */
 .rdp-custom-wrapper .rdp-day_range_middle {
-  background-color: rgba(192, 160, 255, 0.15) !important;
-  /* Subtle Lilac Wash */
-  color: #E2E8F0 !important;
-  /* LIGHT TEXT - Fixes the blue issue */
+  background-color: rgb(var(--adm-accent) / 0.15) !important;
+  color: var(--adm-text-light) !important;
   border-radius: 0;
 }
 
@@ -257,8 +252,7 @@ html.lenis body {
 
 /* TODAY'S DATE */
 .rdp-custom-wrapper .rdp-today:not(.rdp-day_selected) {
-  color: #2DD4BF !important;
-  /* TEAL */
+  color: rgb(var(--adm-accent)) !important;
   font-weight: 900;
 }
 
@@ -280,43 +274,62 @@ html.lenis body {
   width: 5px;
   height: 5px;
   border-radius: 9999px;
-  background: #DA8636;
+  background: rgb(var(--adm-accent));
 }
 
 /* =========================================
    Admin dashboard theme tokens (light default; .admin-shell[data-theme=dark] flips)
    ========================================= */
 :root {
-  --adm-bg-deep: #F4F4F6;
-  --adm-bg-dark: #F5F5F7;
+  /* Mayanov palette: violet #6B3FA0 · plum #39234E · ink #211E2E / #575167 · indigo #202A5C */
+  --adm-bg-deep: #F3F1F7;
+  --adm-bg-dark: #F6F4FA;
   --adm-surface-1: #FFFFFF;
-  --adm-surface-2: #F1F1F4;
-  --adm-surface-highlight: #E9E9EE;
-  --adm-text-light: #26242B;
-  --adm-text-subtle: #6E6B77;
-  --adm-line: rgba(0, 0, 0, 0.05);
-  --adm-line-2: rgba(0, 0, 0, 0.10);
-  --adm-line-3: rgba(0, 0, 0, 0.25);
-  --adm-hover: rgba(0, 0, 0, 0.05);
-  --adm-hover-2: rgba(0, 0, 0, 0.10);
-  --adm-hover-3: rgba(0, 0, 0, 0.15);
-  --adm-axis: #6E6B77;
+  --adm-surface-2: #F0EDF6;
+  --adm-surface-highlight: #E7E2F0;
+  --adm-text-light: #211E2E;
+  --adm-text-subtle: #575167;
+  --adm-line: rgba(57, 35, 78, 0.07);
+  --adm-line-2: rgba(57, 35, 78, 0.13);
+  --adm-line-3: rgba(57, 35, 78, 0.28);
+  --adm-hover: rgba(107, 63, 160, 0.06);
+  --adm-hover-2: rgba(107, 63, 160, 0.11);
+  --adm-hover-3: rgba(107, 63, 160, 0.16);
+  --adm-axis: #575167;
+  /* RGB triples so Tailwind opacity modifiers (bg-lilac/10) work */
+  --adm-accent: 107 63 160;       /* violet  #6B3FA0 */
+  --adm-accent-deep: 57 35 78;    /* plum    #39234E */
+  --adm-accent-2: 122 127 209;    /* periwinkle #7A7FD1 */
+  --adm-pending: 107 63 160;
+  --adm-pending-text: 107 63 160;
+  --adm-confirmed: 26 138 76;     /* WhatsApp-family green, darkened for text */
+  --adm-done: 32 42 92;           /* indigo  #202A5C */
+  --adm-cancelled: 87 81 103;     /* ink-soft #575167 */
 }
 .admin-shell[data-theme="dark"] {
-  --adm-bg-deep: #141118;
-  --adm-bg-dark: #262330;
-  --adm-surface-1: #211E29;
-  --adm-surface-2: #2A2733;
-  --adm-surface-highlight: #332F3D;
-  --adm-text-light: #ECEAF0;
-  --adm-text-subtle: #A29CB0;
+  --adm-bg-deep: #141220;
+  --adm-bg-dark: #1A1729;
+  --adm-surface-1: #211E2E;
+  --adm-surface-2: #2A2640;
+  --adm-surface-highlight: #342F4D;
+  --adm-text-light: #EEEBF5;
+  --adm-text-subtle: #A9A3BD;
   --adm-line: rgba(255, 255, 255, 0.08);
   --adm-line-2: rgba(255, 255, 255, 0.14);
   --adm-line-3: rgba(255, 255, 255, 0.28);
   --adm-hover: rgba(255, 255, 255, 0.06);
   --adm-hover-2: rgba(255, 255, 255, 0.10);
   --adm-hover-3: rgba(255, 255, 255, 0.16);
-  --adm-axis: #A29CB0;
+  --adm-axis: #A9A3BD;
+  /* Lifted tints of the same hues so they read on the dark surfaces */
+  --adm-accent: 140 100 200;      /* #8C64C8 */
+  --adm-accent-deep: 107 63 160;  /* #6B3FA0 */
+  --adm-accent-2: 158 162 230;    /* #9EA2E6 */
+  --adm-pending: 157 123 214;
+  --adm-pending-text: 183 156 230;
+  --adm-confirmed: 74 214 132;
+  --adm-done: 142 155 224;
+  --adm-cancelled: 169 163 189;
 }
 /* Native date inputs inside dark admin — keep the picker icon visible. */
 .admin-shell[data-theme="dark"] input[type="date"] { color-scheme: dark; }

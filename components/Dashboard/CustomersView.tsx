@@ -180,7 +180,7 @@ const CustomersView: React.FC = () => {
                 <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
                     {([['spent', 'Top spenders'], ['bookings', 'Most bookings'], ['recent', 'Recent']] as const).map(([id, label]) => (
                         <button key={id} onClick={() => setSort(id)}
-                            className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors ${sort === id ? 'bg-lilac text-[#26242B]' : 'text-text-subtle hover:text-text-light'}`}>
+                            className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors ${sort === id ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>
                             {label}
                         </button>
                     ))}

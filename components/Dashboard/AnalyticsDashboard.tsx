@@ -408,7 +408,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                             </div>
                             <button
                                 onClick={() => setShowAddUserModal(true)}
-                                className="px-4 py-2 bg-lilac text-[#26242B] font-bold rounded-xl hover:bg-surface-1 hover:scale-105 transition-all text-sm flex items-center gap-2 shadow-lg shadow-lilac/20"
+                                className="px-4 py-2 bg-lilac text-white font-bold rounded-xl hover:bg-lilac-dark hover:scale-105 transition-all text-sm flex items-center gap-2 shadow-lg shadow-lilac/20"
                             >
                                 <Plus size={18} />
                                 <span>Add Access</span>
@@ -512,7 +512,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             </button>
                                             <button
                                                 type="submit"
-                                                className="flex-1 py-3 bg-lilac text-[#26242B] font-bold rounded-xl hover:bg-surface-1 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm shadow-lg shadow-lilac/20"
+                                                className="flex-1 py-3 bg-lilac text-white font-bold rounded-xl hover:bg-lilac-dark hover:scale-[1.02] active:scale-[0.98] transition-all text-sm shadow-lg shadow-lilac/20"
                                             >
                                                 Add Admin
                                             </button>
@@ -545,7 +545,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                 </div>
                                 <button
                                     onClick={handleConnect}
-                                    className="px-4 py-2 bg-lilac text-[#26242B] text-xs font-bold rounded-lg hover:bg-surface-1 transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 bg-lilac text-white text-xs font-bold rounded-lg hover:bg-lilac-dark transition-colors flex items-center gap-2"
                                 >
                                     <LogIn size={14} />
                                     Authorize Access
@@ -580,7 +580,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             key={preset}
                                             onClick={() => applyPreset(preset)}
                                             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${activePreset === preset
-                                                ? 'bg-lilac text-[#26242B] shadow-md'
+                                                ? 'bg-lilac text-white shadow-md'
                                                 : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'
                                                 }`}
                                         >
@@ -640,7 +640,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                         if (startDate && endDate) setShowCustomPicker(false);
                                                     }}
                                                     disabled={!startDate || !endDate}
-                                                    className="px-3 py-1.5 bg-lilac text-[#26242B] text-xs font-bold rounded hover:bg-surface-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className="px-3 py-1.5 bg-lilac text-white text-xs font-bold rounded hover:bg-lilac-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     Apply Range
                                                 </button>
@@ -651,7 +651,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                                 <button
                                     onClick={() => loadData()}
-                                    className="p-2 bg-lilac/10 text-lilac hover:bg-lilac hover:text-text-light rounded-lg transition-colors flex items-center justify-center"
+                                    className="p-2 bg-lilac/10 text-lilac hover:bg-lilac hover:text-white rounded-lg transition-colors flex items-center justify-center"
                                     title="Refresh Data"
                                 >
                                     <RefreshCcw size={16} className={`${isLoading ? 'animate-spin' : ''}`} />
@@ -693,7 +693,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         loading={isLoading}
                                     />
                                     <SummaryCard
-                                        icon={<Smartphone className="text-pink-400" />}
+                                        icon={<Smartphone className="text-teal-accent" />}
                                         label="Top Device"
                                         value={data?.devices[0]?.device || 'N/A'}
                                         loading={isLoading}
@@ -721,12 +721,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                     <AreaChart data={data?.dailyVisits} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                                         <defs>
                                                             <linearGradient id="colorID" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#DA8636" stopOpacity={0.28} />
-                                                                <stop offset="95%" stopColor="#DA8636" stopOpacity={0} />
+                                                                <stop offset="5%" stopColor="#7C52B8" stopOpacity={0.28} />
+                                                                <stop offset="95%" stopColor="#7C52B8" stopOpacity={0} />
                                                             </linearGradient>
                                                             <linearGradient id="colorGlobal" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#29527B" stopOpacity={0.28} />
-                                                                <stop offset="95%" stopColor="#29527B" stopOpacity={0} />
+                                                                <stop offset="5%" stopColor="#7A7FD1" stopOpacity={0.28} />
+                                                                <stop offset="95%" stopColor="#7A7FD1" stopOpacity={0} />
                                                             </linearGradient>
                                                         </defs>
                                                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.18)" vertical={false} />
@@ -750,7 +750,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                             type="monotone"
                                                             dataKey="visitsID"
                                                             name="Indonesia"
-                                                            stroke="#DA8636"
+                                                            stroke="#7C52B8"
                                                             strokeWidth={3}
                                                             fillOpacity={1}
                                                             fill="url(#colorID)"
@@ -760,7 +760,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                             type="monotone"
                                                             dataKey="visitsGlobal"
                                                             name="Global (Others)"
-                                                            stroke="#29527B"
+                                                            stroke="#7A7FD1"
                                                             strokeWidth={3}
                                                             fillOpacity={1}
                                                             fill="url(#colorGlobal)"
@@ -783,7 +783,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                 <button
                                                     onClick={() => setServiceTab('ID')}
                                                     className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${serviceTab === 'ID'
-                                                        ? 'bg-lilac text-[#26242B] shadow'
+                                                        ? 'bg-lilac text-white shadow'
                                                         : 'text-text-subtle hover:text-text-light'
                                                         }`}
                                                 >
@@ -792,7 +792,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                 <button
                                                     onClick={() => setServiceTab('Global')}
                                                     className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${serviceTab === 'Global'
-                                                        ? 'bg-lilac text-[#26242B] shadow'
+                                                        ? 'bg-lilac text-white shadow'
                                                         : 'text-text-subtle hover:text-text-light'
                                                         }`}
                                                 >

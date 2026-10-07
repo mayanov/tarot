@@ -16,10 +16,10 @@ const SERVICE_LABEL: Record<string, string> = {
     '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
 };
 const SERVICE_COLOR: Record<string, string> = {
-    chat: '#DA8636', call: '#29527B', meetup: '#4F8E62', special: '#8E5C86',
-    '3card': '#C79BD6', '5card': '#6C4E86', live: '#F0A15C',
+    chat: '#6B3FA0', call: '#3D4A94', meetup: '#2EA866', special: '#A98BDB',
+    '3card': '#7A7FD1', '5card': '#8C8499', live: '#C9B4EC',
 };
-const colorFor = (id: string) => SERVICE_COLOR[id] || '#B0A8B9';
+const colorFor = (id: string) => SERVICE_COLOR[id] || '#B5AEC4';
 
 const priceToken = (s?: string | null): string | null => {
     if (!s) return null;
@@ -298,7 +298,7 @@ const RevenueView: React.FC = () => {
         <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
             {options.map((o) => (
                 <button key={o.id} onClick={() => onChange(o.id)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors whitespace-nowrap ${value === o.id ? 'bg-lilac text-[#26242B]' : 'text-text-subtle hover:text-text-light'}`}>
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors whitespace-nowrap ${value === o.id ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>
                     {o.label}
                 </button>
             ))}
@@ -406,7 +406,7 @@ const RevenueView: React.FC = () => {
                                         <div className="tabular-nums text-text-light">{payload[0].value} new customer{payload[0].value === 1 ? '' : 's'}</div>
                                     </div>
                                 ) : null} />
-                                <Bar dataKey="count" fill="#C79BD6" radius={[5, 5, 0, 0]} name="New customers" />
+                                <Bar dataKey="count" fill="#8C64C8" radius={[5, 5, 0, 0]} name="New customers" />
                             </BarChart>
                         </ResponsiveContainer>
                     )}

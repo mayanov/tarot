@@ -89,7 +89,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full py-3 bg-lilac text-ink font-bold rounded-lg hover:bg-white transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:scale-100 shadow-lg shadow-lilac/20"
+                        className="w-full py-3 bg-lilac text-white font-bold rounded-lg hover:bg-lilac-dark transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:scale-100 shadow-lg shadow-lilac/20"
                     >
                         {isLoading ? 'Signing In...' : 'Access Dashboard'}
                     </button>
