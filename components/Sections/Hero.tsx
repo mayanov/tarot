@@ -156,23 +156,17 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </div>
       </div>
 
-      {/* BOTTOM — metrics as a full-width data row: big number over a label, with
-          a moonstone tick that grows and the number lifting to moon on hover. */}
+      {/* BOTTOM — metrics as a quiet, airy row under a single hairline (no card/panel),
+          serif numbers over soft sentence-case labels. */}
       <Rise delay={680}>
         <div className="w-full mx-auto px-8">
-          <div
-            className="grid grid-cols-2 md:grid-cols-4 gap-y-5 md:gap-y-0 rounded-2xl ring-1 ring-white/20 backdrop-blur-lg px-6 py-5 md:px-4 md:py-5 shadow-[0_24px_70px_-44px_rgba(0,0,0,0.6)]"
-            style={{ background: 'rgba(255,255,255,0.09)' }}
-          >
+          <div className="pt-7 md:pt-8 border-t border-white/15 grid grid-cols-2 md:grid-cols-4 gap-y-7 md:gap-y-0">
             {metrics.map((m, i) => (
-              <div
-                key={i}
-                className="group md:px-6 md:border-l md:border-white/20 md:first:border-l-0"
-              >
-                <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[1.9rem] md:text-[2.4rem] transition-all duration-300 group-hover:text-sky group-hover:-translate-y-0.5">
+              <div key={i} className="md:px-7 md:first:pl-0">
+                <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[2.1rem] md:text-[2.7rem] [text-shadow:0_2px_24px_rgba(6,4,14,0.55)]">
                   <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
                 </div>
-                <div className="mt-2 text-[9px] md:text-[10px] uppercase tracking-[0.2em] leading-tight text-cream/60 transition-colors duration-300 group-hover:text-cream/90">
+                <div className="mt-2.5 text-[12px] md:text-[13px] font-light tracking-[0.01em] leading-snug text-cream/65 [text-shadow:0_1px_12px_rgba(6,4,14,0.7)]">
                   {m.label}
                 </div>
               </div>

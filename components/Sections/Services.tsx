@@ -346,12 +346,12 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 <li key={i} className="group flex flex-col items-center text-center animate-fade-up last:col-span-2 lg:last:col-span-1" style={{ animationDelay: `${i * 80}ms` }}>
                                     <span
                                         aria-hidden
-                                        className="font-elegant font-semibold text-[2rem] sm:text-[3.4rem] md:text-[4rem] leading-none text-sky transition-colors duration-300 group-hover:text-plum"
+                                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-lg md:text-xl leading-none transition-colors duration-300 group-hover:bg-moon/[0.16]"
                                     >
                                         {String(i + 1).padStart(2, '0')}
                                     </span>
-                                    <h4 className="mt-2.5 sm:mt-5 text-[0.9rem] sm:text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
-                                    <p className="mt-1.5 sm:mt-2 text-[0.8rem] sm:text-sm leading-relaxed font-light text-ink/60 max-w-[24ch]">{step.desc}</p>
+                                    <h4 className="mt-4 sm:mt-5 text-[0.95rem] sm:text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
+                                    <p className="mt-1.5 sm:mt-2 text-[0.82rem] sm:text-sm leading-relaxed font-light text-ink/60 max-w-[24ch]">{step.desc}</p>
                                 </li>
                             ))}
                         </ol>
