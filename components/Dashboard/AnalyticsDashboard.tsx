@@ -12,7 +12,7 @@ import BookingsView from './BookingsView';
 import RevenueView from './RevenueView';
 import CustomersView from './CustomersView';
 import SalesView from './SalesView';
-import DashboardLoader from './DashboardLoader';
+import { LoaderCard } from './ui/InlineLoader';
 
 // Same base as services/booking.ts — empty in prod (relative /api) so calls hit the
 // deployed serverless API instead of a hardcoded localhost that only works in dev.
@@ -620,7 +620,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         )}
                     </div>
                 ) : isLoading ? (
-                    <DashboardLoader />
+                    <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
+                        <LoaderCard />
+                    </div>
                 ) : (
                     /* ANALYTICS VIEW (Default) */
                     <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">

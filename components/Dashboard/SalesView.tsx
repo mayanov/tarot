@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
-import DashboardLoader from './DashboardLoader';
+import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking as amountOf, fmtMoney, fmtDate } from './lib/format';
 import { StatusPill } from './lib/status';
 import Card from './ui/Card';
@@ -158,8 +158,6 @@ const SalesView: React.FC = () => {
 
     const outstanding = totals.unpaidIDR > 0 || totals.unpaidUSD > 0;
 
-    if (loading && bookings.length === 0) return <DashboardLoader />;
-
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <PageHeader title="Sales" subtitle={`${orders.length} orders · mark payments as they come in`} onRefresh={load} refreshing={loading} />
@@ -289,6 +287,9 @@ const SalesView: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
+                            {loading && filtered.length === 0 && (
+                                <tr><td colSpan={8}><InlineLoader /></td></tr>
+                            )}
                             {!loading && filtered.length === 0 && (
                                 <tr><td colSpan={8} className="text-center text-text-subtle py-16">No orders found.</td></tr>
                             )}

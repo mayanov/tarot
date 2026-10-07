@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCcw, Search, Phone, Mail, X, Repeat } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
-import DashboardLoader from './DashboardLoader';
+import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking, fmtIDR, fmtUSD, fmtDate } from './lib/format';
 import { StatusPill } from './lib/status';
 
@@ -134,8 +134,6 @@ const CustomersView: React.FC = () => {
         return parts.join(' + ') || '—';
     };
 
-    if (loading && bookings.length === 0) return <DashboardLoader />;
-
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -179,7 +177,7 @@ const CustomersView: React.FC = () => {
                     <div className="col-span-1 text-right">Last</div>
                 </div>
                 {filtered.length === 0 ? (
-                    <p className="text-sm text-text-subtle py-12 text-center">{loading ? 'Loading…' : 'No customers found.'}</p>
+                    loading ? <InlineLoader /> : <p className="text-sm text-text-subtle py-12 text-center">No customers found.</p>
                 ) : filtered.map((c) => {
                     const active = c.bookings.filter((b) => b.status !== 'cancelled').length;
                     return (

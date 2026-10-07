@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, Booking, CalEvent } from '../../services/booking';
-import DashboardLoader from './DashboardLoader';
+import { LoaderCard } from './ui/InlineLoader';
 import { fmtDate } from './lib/format';
 import { STATUS_STYLE } from './lib/status';
 
@@ -480,7 +480,7 @@ const BookingsView: React.FC = () => {
 
     const navBtn = 'grid place-items-center w-9 h-9 rounded-lg bg-adm-hover text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors';
 
-    if (loading && bookings.length === 0) return <DashboardLoader />;
+    const initialLoading = loading && bookings.length === 0;
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
@@ -529,8 +529,10 @@ const BookingsView: React.FC = () => {
                 </div>
             )}
 
+            {initialLoading && <LoaderCard />}
+
             {/* ---------------- CALENDAR — weekly time grid ---------------- */}
-            {tab === 'calendar' && (
+            {!initialLoading && tab === 'calendar' && (
                 <div className="space-y-5">
                     <div className="rounded-2xl bg-surface-1 border border-adm-line overflow-hidden">
                         {/* week nav */}
@@ -702,7 +704,7 @@ const BookingsView: React.FC = () => {
             })()}
 
             {/* ---------------- ORDERS (async services) ---------------- */}
-            {tab === 'orders' && (
+            {!initialLoading && tab === 'orders' && (
                 <>
                     {/* active / done sub-tabs */}
                     <div className="inline-flex rounded-xl bg-adm-hover p-1">

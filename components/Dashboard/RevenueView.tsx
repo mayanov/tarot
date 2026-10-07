@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCcw, TrendingUp, Wallet, ShoppingBag, Award, Users, Repeat, UserPlus } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking } from '../../services/booking';
-import DashboardLoader from './DashboardLoader';
+import { LoaderCard } from './ui/InlineLoader';
 import { Cur as Currency, amountForBooking, fmtIDR, fmtUSD, fmtMoney } from './lib/format';
 
 type Gran = 'day' | 'week';
@@ -275,7 +275,7 @@ const RevenueView: React.FC = () => {
 
     const granLabel = gran === 'day' ? 'Daily' : 'Weekly';
 
-    if (loading && bookings.length === 0) return <DashboardLoader />;
+    const initialLoading = loading && bookings.length === 0;
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
@@ -301,7 +301,9 @@ const RevenueView: React.FC = () => {
 
             {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
 
-            {tab === 'revenue' && (<>
+            {initialLoading && <LoaderCard />}
+
+            {!initialLoading && tab === 'revenue' && (<>
             <div className="rounded-2xl bg-surface-1 border border-adm-line px-3 py-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-2">
                 <Seg value={preset} options={[
                     { id: '7d', label: '7D' }, { id: '30d', label: '30D' }, { id: '90d', label: '90D' },
@@ -349,7 +351,7 @@ const RevenueView: React.FC = () => {
             </div>
             </>)}
 
-            {tab === 'customers' && (<>
+            {!initialLoading && tab === 'customers' && (<>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <KPI icon={<Users size={14} />} label="Total customers" value={String(custTotal)} />
                     <KPI icon={<Repeat size={14} />} label="Repeat customers" value={String(custRepeat)} sub={custTotal ? `${repeatRate}% of all` : undefined} />
