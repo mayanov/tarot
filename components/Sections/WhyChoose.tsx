@@ -1,4 +1,5 @@
 import React from 'react';
+import { Compass, Heart, MessageCircle, Lock, Award, Feather } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
 import Testimonials from './Testimonials';
@@ -8,9 +9,12 @@ interface WhyChooseProps {
 }
 
 interface ReasonItem {
-  label: string; // small eyebrow category
-  stat: string;  // the big punchy statement
+  label: string; // small supporting category
+  stat: string;  // the calm headline statement
 }
+
+// Soft line icons, one per reason (same order in both languages).
+const ICONS = [Compass, Heart, MessageCircle, Lock, Award, Feather];
 
 const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   const reasonsGlobal: ReasonItem[] = [
@@ -50,34 +54,27 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             </p>
           </FadeIn>
 
-          {/* Big-stat panels — eyebrow label, a bold centered statement, an index number */}
-          <div className="mt-12 md:mt-16 grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
-            {reasons.map((reason, index) => (
-              <FadeIn key={index} delay={Math.min(index, 6) * 90} dir="scale">
-                <div className="group/card relative overflow-hidden flex h-full min-h-[12rem] sm:min-h-[13.5rem] md:min-h-[15rem] flex-col rounded-lg bg-[#202A5C] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-30px_rgba(74,46,119,0.6)]">
-                  {/* purple reveal — a diagonal gradient that wipes up from the corner on hover */}
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 origin-bottom translate-y-full scale-y-100 bg-gradient-to-tr from-[#39234E] to-[#6B3FA0] transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:translate-y-0"
-                  />
-                  <div className="relative z-10 flex flex-1 flex-col p-4 sm:p-6 md:p-8">
-                    {/* eyebrow */}
-                    <div className="flex items-center gap-2 text-[0.7rem] sm:text-sm md:text-[0.95rem] text-cream/70 transition-colors duration-300 group-hover/card:text-cream/90">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cream/70 shrink-0 transition-all duration-300 group-hover/card:bg-sky group-hover/card:scale-125" />
-                      <span>{reason.label}</span>
+          {/* Calm, airy panels — a soft icon chip, a serif statement, a gentle supporting label */}
+          <div className="mt-12 md:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            {reasons.map((reason, index) => {
+              const Icon = ICONS[index];
+              return (
+                <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
+                  <div className="group/card h-full rounded-[1.75rem] border border-ink/[0.06] bg-[#F6F3FA] p-6 md:p-8 shadow-[0_18px_44px_-30px_rgba(57,35,78,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-moon/15 hover:shadow-[0_26px_54px_-30px_rgba(107,63,160,0.3)]">
+                    {/* soft pastel icon chip */}
+                    <div className="w-12 h-12 rounded-2xl bg-moon/10 text-moon grid place-items-center transition-colors duration-300 group-hover/card:bg-moon/[0.16]">
+                      <Icon size={22} strokeWidth={1.75} />
                     </div>
-                    {/* big statement */}
-                    <div className="flex-1 grid place-items-center py-4 sm:py-5">
-                      <p className="text-center font-semibold text-cream text-[1.15rem] sm:text-[1.45rem] md:text-[1.6rem] leading-[1.14] tracking-[-0.02em] max-w-[15ch] transition-transform duration-300 group-hover/card:-translate-y-0.5">
-                        {reason.stat}
-                      </p>
-                    </div>
-                    {/* index */}
-                    <div className="text-sm text-cream/40 tabular-nums transition-colors duration-300 group-hover/card:text-sky">{String(index + 1).padStart(2, '0')}</div>
+                    {/* calm statement */}
+                    <p className="mt-5 font-elegant text-ink text-[1.3rem] md:text-[1.5rem] leading-[1.2] tracking-[-0.01em]">
+                      {reason.stat}
+                    </p>
+                    {/* supporting label */}
+                    <p className="mt-2.5 text-sm text-moon/70 font-medium">{reason.label}</p>
                   </div>
-                </div>
-              </FadeIn>
-            ))}
+                </FadeIn>
+              );
+            })}
           </div>
         </div>
 
