@@ -73,7 +73,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 ? 'Tujuan saya simpel: memberikan kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                 : 'My goal is simple: to give you the clarity to make decisions with confidence.'}
             </blockquote>
-            <figcaption className="mt-5 flex items-center gap-2.5 text-[11px] uppercase tracking-[0.28em] text-moon-deep">
+            <figcaption className="mt-5 flex items-center gap-2.5 font-elegant italic text-[1.05rem] tracking-[0.01em] text-moon-deep">
               <span aria-hidden className="h-px w-6 bg-moon-deep/60" /> Mayanov
             </figcaption>
           </figure>

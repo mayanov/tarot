@@ -25,7 +25,7 @@ const OfferRow: React.FC<{ o: any }> = ({ o }) => (
                 <h4 className="text-[1.05rem] font-serif font-semibold text-cream leading-tight tracking-tight">
                     {o.name}{o.sub && <span className="text-sm text-cream/80 font-sans font-normal ml-2">{o.sub}</span>}
                 </h4>
-                {o.badge && <span className={`text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-lg ${o.badgeTone || 'bg-white/[0.06] text-cream'}`}>{o.badge}</span>}
+                {o.badge && <span className={`text-[11px] tracking-[0.01em] font-medium px-2.5 py-1 rounded-full ${o.badgeTone || 'bg-white/[0.06] text-cream'}`}>{o.badge}</span>}
             </div>
             <div className="text-right shrink-0">
                 {o.oldPrice && <span className="text-xs text-cream/45 line-through leading-none block">{o.oldPrice}</span>}

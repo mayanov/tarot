@@ -172,7 +172,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <div className="flex">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-                className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-l-lg border border-ink/10 bg-cream text-ink text-[10.5px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-300 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
+                className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-l-full border border-ink/10 bg-cream text-ink text-[13px] tracking-[0.01em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-300 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
               >
                 {isIndonesian ? 'Pesan' : 'Book'}
               </button>
@@ -181,7 +181,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 onClick={() => setMenuOpen(true)}
                 aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
                 aria-expanded={menuOpen}
-                className="group inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg sm:rounded-l-none sm:rounded-r-lg border sm:border-l-0 border-ink/10 bg-cream text-ink text-[10.5px] uppercase tracking-[0.2em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-300 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
+                className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full sm:rounded-l-none sm:rounded-r-full border sm:border-l-0 border-ink/10 bg-cream text-ink text-[13px] tracking-[0.01em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-300 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
               >
                 <span>Menu</span>
                 <span className="flex flex-col items-end gap-[4px] w-4">

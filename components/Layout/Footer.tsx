@@ -86,7 +86,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     });
 
     const socialClass = "inline-flex items-center justify-center p-1 text-ink hover:text-moon transition-all duration-300 hover:-translate-y-0.5";
-    const labelClass = "text-[11px] uppercase tracking-[0.24em] text-ink/50 mb-5";
+    const labelClass = "text-[12px] tracking-[0.02em] text-ink/50 mb-5";
     const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-ink/70 font-light leading-relaxed";
 
     const goTo = (id: string) => smoothScrollToId(id, 80);
@@ -109,7 +109,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         <a
                             href="#services"
                             onClick={(e) => { e.preventDefault(); goTo('services'); }}
-                            className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-lg bg-ink text-cream text-sm font-semibold hover:bg-plum transition-colors duration-200"
+                            className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-ink text-cream text-sm font-medium hover:bg-plum transition-colors duration-200"
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -123,7 +123,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     <div className="col-span-2 md:col-span-6" style={rise(140, top.inView)}>
                         <div className="flex items-center gap-2.5 mb-5">
                             <span className="grid place-items-center w-9 h-9 rounded-lg bg-ink text-cream font-serif text-lg leading-none shadow-[0_8px_20px_-10px_rgba(33,30,46,0.6)]">M</span>
-                            <span className="text-[10px] uppercase tracking-[0.34em] text-ink/40">
+                            <span className="text-[11px] tracking-[0.03em] text-ink/40">
                                 {isIndonesian ? 'Jakarta · Sejak 2016' : 'Jakarta · Est. 2016'}
                             </span>
                         </div>
@@ -198,7 +198,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         onClick={() => goTo('hero')}
                         className="group inline-flex items-center gap-2 text-ink/55 hover:text-ink transition-colors duration-300"
                     >
-                        <span className="uppercase tracking-[0.2em] text-[11px]">{isIndonesian ? 'Ke atas' : 'Back to top'}</span>
+                        <span className="tracking-[0.01em] text-[12px]">{isIndonesian ? 'Ke atas' : 'Back to top'}</span>
                         <span className="grid place-items-center w-7 h-7 rounded-full border border-ink/20 group-hover:border-ink/50 group-hover:-translate-y-0.5 transition-all duration-300">
                             <ArrowUp className="w-3.5 h-3.5" />
                         </span>

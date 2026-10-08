@@ -87,7 +87,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                                 <span aria-hidden className="absolute left-0 top-0 bottom-0 w-1 bg-sky" />
                                 <div className="flex items-center gap-2 text-sky">
                                     <AlertCircle className="w-4 h-4" strokeWidth={2} />
-                                    <span className="text-[10px] uppercase tracking-[0.22em] font-semibold">{isIndonesian ? 'Penting' : 'Note'}</span>
+                                    <span className="text-[12px] tracking-[0.02em] font-semibold">{isIndonesian ? 'Penting' : 'Note'}</span>
                                 </div>
                                 <p className="mt-2 text-sm text-cream/85 leading-relaxed">
                                     {isIndonesian
@@ -95,7 +95,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                                         : 'By making a booking, you have agreed to these terms and conditions.'}
                                 </p>
                             </div>
-                            <p className="mt-5 text-[11px] uppercase tracking-[0.2em] text-cream/35">
+                            <p className="mt-5 text-[12px] tracking-[0.01em] text-cream/45">
                                 {isIndonesian ? 'Berlaku untuk semua layanan · 18+' : 'Applies to all services · 18+'}
                             </p>
                         </FadeIn>
