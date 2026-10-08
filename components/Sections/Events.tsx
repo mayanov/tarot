@@ -108,7 +108,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
             {/* TIMELINE — on its own white panel (a different background from the
                 aurora section) so the list reads clearly */}
-            <div className="rounded-2xl bg-white text-ink p-6 md:p-9 shadow-[0_30px_70px_-40px_rgba(0,0,0,0.6)]">
+            <div className="rounded-2xl bg-[#FAF6EF] text-ink p-6 md:p-9 shadow-[0_30px_70px_-40px_rgba(0,0,0,0.6)]">
               <div className="relative pl-7 md:pl-10">
                 {/* the spine */}
                 <span

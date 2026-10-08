@@ -94,7 +94,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     return (
         <footer
             className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-12 md:pt-16 pb-8 md:pb-10 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]"
-            style={{ background: '#ffffff' }}
+            style={{ background: '#FAF6EF' }}
         >
             <div ref={top.ref} className="mx-auto px-8 relative z-10">
                 {/* Top — CTA line */}

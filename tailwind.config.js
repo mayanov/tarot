@@ -35,11 +35,11 @@ export default {
         charcoal: '#564D4D',
         'charcoal-deep': '#3A3234',
         sage: 'rgb(var(--adm-confirmed) / <alpha-value>)',
-        cream: '#FFFFFF',
+        cream: '#FBF8F2',
         ink: '#211E2E',
         // --- Semantic tokens ---
         taupe: '#8A7D7D',
-        paper: '#FFFFFF',
+        paper: '#FAF6EF',
         'paper-2': '#EAE0D5',
         'paper-3': '#E0D4C6',
         line: '#E7E5E1',

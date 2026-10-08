@@ -127,7 +127,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
     <section
       id="faq"
       className="py-12 relative isolate text-ink"
-      style={{ background: '#ffffff' }}
+      style={{ background: '#FAF6EF' }}
     >
       <div className="mx-auto px-8 relative z-10">
         <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
