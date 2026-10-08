@@ -170,7 +170,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               </div>
 
               {/* still have questions? — a soft warm note (not a boxed card) */}
-              <div className="mt-10 rounded-[1.5rem] bg-[#F3EDE2] p-6 max-w-xs">
+              <div className="mt-10 rounded-[1.5rem] bg-[#F1EDF7] p-6 max-w-xs">
                 <div className="flex items-center gap-2.5">
                   <span className="grid place-items-center w-9 h-9 rounded-full bg-[#25D366]/12 text-[#25D366] shrink-0">
                     <FaWhatsapp size={16} />
