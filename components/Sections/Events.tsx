@@ -80,19 +80,15 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               </h2>
             </div>
 
-            {/* PHOTO GALLERY — a loose collage of moments (varied size + offset, scrapbook feel) */}
-            <div className="mb-10 md:mb-20">
-              <div className="grid grid-cols-2 md:grid-cols-12 gap-4 md:gap-5 items-start">
-                {EVENT_PHOTOS.map((src, i) => {
-                  const span = ['md:col-span-4', 'md:col-span-3', 'md:col-span-3', 'md:col-span-2'][i % 4];
-                  const offset = ['md:mt-0', 'md:mt-14', 'md:mt-5', 'md:mt-20'][i % 4];
-                  const aspect = ['aspect-[4/5]', 'aspect-[3/4]', 'aspect-[4/5]', 'aspect-[3/4]'][i % 4];
-                  return (
-                  <FadeIn key={src} delay={i * 90} dir={i % 2 === 0 ? 'up' : 'down'} distance={0.8} className={`${span} ${offset}`}>
+            {/* PHOTO GALLERY — an even, calm grid of moments */}
+            <div className="mb-10 md:mb-14">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                {EVENT_PHOTOS.map((src, i) => (
+                  <FadeIn key={src} delay={i * 90} dir={i % 2 === 0 ? 'up' : 'down'} distance={0.8}>
                     <button
                       type="button"
                       onClick={() => setLightbox(src)}
-                      className={`group relative block w-full overflow-hidden rounded-[1.5rem] ${aspect} bg-white/5`}
+                      className="group relative block w-full overflow-hidden rounded-[1.5rem] aspect-[3/4] bg-white/5"
                       aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
                     >
                       <ImageReveal
@@ -106,8 +102,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                       <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
                   </FadeIn>
-                  );
-                })}
+                ))}
               </div>
             </div>
 
