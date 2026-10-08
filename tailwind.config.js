@@ -9,12 +9,12 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Switzer — one clean modern grotesque across the whole site.
+        // Switzer (grotesque) for body/UI; Fraunces (warm old-style serif) for headings & quotes.
         sans: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        serif: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        heading: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        elegant: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        serif: ['Fraunces', 'Georgia', 'ui-serif', 'serif'],
+        heading: ['Fraunces', 'Georgia', 'ui-serif', 'serif'],
+        display: ['Fraunces', 'Georgia', 'ui-serif', 'serif'],
+        elegant: ['Fraunces', 'Georgia', 'ui-serif', 'serif'],
       },
       colors: {
         // --- Brand palette v2.0 (jewel tones) ---
