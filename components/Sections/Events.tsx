@@ -73,8 +73,8 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       />
       <div className="mx-auto px-8 relative z-10 text-cream">
           <FadeIn>
-            {/* HEADER — centered title */}
-            <div className="mb-10 md:mb-14 text-center">
+            {/* HEADER — left-aligned editorial title */}
+            <div className="mb-10 md:mb-14 max-w-3xl">
               <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                 <MaskReveal>{isIndonesian ? "Event & collaboration" : "Community & events"}</MaskReveal>
               </h2>

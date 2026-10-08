@@ -332,26 +332,36 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 })}
             </div>
 
-            {/* ===== How it works — editorial numbered steps, transparent over the sky ===== */}
-            <div className="mx-auto px-8 py-12">
+            {/* ===== How it works — left-aligned editorial list (intro column + stepped rows) ===== */}
+            <div className="mx-auto px-8 py-12 md:py-16">
                 <FadeIn>
-                    <div id="process" className="scroll-mt-24 text-center">
-                        <h3 className="font-elegant font-medium text-ink text-[2rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.02em]">
-                            {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
-                        </h3>
+                    <div id="process" className="scroll-mt-24 grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 lg:items-start">
+                        {/* intro column — held left, like FAQ */}
+                        <div className="lg:col-span-4 lg:sticky lg:top-28">
+                            <h3 className="font-elegant font-medium text-ink text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
+                                {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
+                            </h3>
+                            <p className="mt-5 text-ink/55 font-light leading-relaxed max-w-xs">
+                                {isIndonesian
+                                    ? 'Langkah sederhana — dari pilih layanan sampai pulang dengan arah yang jelas.'
+                                    : 'A few simple steps — from choosing a reading to walking away with clear direction.'}
+                            </p>
+                        </div>
 
-                        {/* editorial steps — big moonstone numerals, centered */}
-                        <ol className="mt-8 md:mt-16 grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-12 lg:grid-cols-5">
+                        {/* steps — a vertical numbered list with hairline rules (editorial motif) */}
+                        <ol className="lg:col-span-8">
                             {steps.map((step, i) => (
-                                <li key={i} className="group flex flex-col items-center text-center animate-fade-up last:col-span-2 lg:last:col-span-1" style={{ animationDelay: `${i * 80}ms` }}>
+                                <li key={i} className="group flex items-start gap-5 md:gap-7 py-6 md:py-7 border-t border-ink/10 first:border-t-0 first:pt-0 animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
                                     <span
                                         aria-hidden
-                                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-lg md:text-xl leading-none transition-colors duration-300 group-hover:bg-moon/[0.16]"
+                                        className="shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-lg md:text-xl leading-none transition-colors duration-300 group-hover:bg-moon/[0.16]"
                                     >
                                         {String(i + 1).padStart(2, '0')}
                                     </span>
-                                    <h4 className="mt-4 sm:mt-5 text-[0.95rem] sm:text-[1.05rem] md:text-lg font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
-                                    <p className="mt-1.5 sm:mt-2 text-[0.82rem] sm:text-sm leading-relaxed font-light text-ink/60 max-w-[24ch]">{step.desc}</p>
+                                    <div className="pt-1 md:pt-1.5">
+                                        <h4 className="text-lg md:text-2xl font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
+                                        <p className="mt-1.5 text-sm md:text-base leading-relaxed font-light text-ink/60 max-w-md">{step.desc}</p>
+                                    </div>
                                 </li>
                             ))}
                         </ol>
