@@ -96,6 +96,32 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
             className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-12 md:pt-16 pb-8 md:pb-10 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]"
             style={{ background: '#FAF6EF' }}
         >
+            {/* faint constellation — echoes the 'honest notes' card above */}
+            <svg aria-hidden viewBox="0 0 240 170" fill="none"
+                className="pointer-events-none absolute top-10 right-10 w-60 text-moon/20 z-0 hidden md:block">
+                <g stroke="currentColor" strokeWidth="1" opacity="0.55">
+                    <line x1="40" y1="140" x2="95" y2="105" />
+                    <line x1="95" y1="105" x2="150" y2="125" />
+                    <line x1="150" y1="125" x2="195" y2="80" />
+                    <line x1="195" y1="80" x2="225" y2="110" />
+                    <line x1="195" y1="80" x2="165" y2="45" />
+                </g>
+                <g fill="currentColor">
+                    <circle cx="40" cy="140" r="2.4" />
+                    <circle cx="95" cy="105" r="2.4" />
+                    <circle cx="150" cy="125" r="2.4" />
+                    <circle cx="195" cy="80" r="2.8" />
+                    <circle cx="225" cy="110" r="2.4" />
+                    <circle cx="165" cy="45" r="2.4" />
+                </g>
+                <g fill="currentColor" opacity="0.5">
+                    <circle cx="70" cy="55" r="1" />
+                    <circle cx="210" cy="150" r="1" />
+                    <circle cx="120" cy="160" r="1" />
+                    <circle cx="140" cy="90" r="1.2" />
+                </g>
+            </svg>
+
             <div ref={top.ref} className="mx-auto px-8 relative z-10">
                 {/* Top — CTA line */}
                 <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 md:pb-12 border-b border-ink/10">
@@ -122,7 +148,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     {/* Brand voice */}
                     <div className="col-span-2 md:col-span-6" style={rise(140, top.inView)}>
                         <div className="flex items-center gap-2.5 mb-5">
-                            <span className="grid place-items-center w-9 h-9 rounded-lg bg-ink text-cream font-serif text-lg leading-none shadow-[0_8px_20px_-10px_rgba(33,30,46,0.6)]">M</span>
+                            <span className="grid place-items-center w-10 h-10 rounded-full bg-ink text-cream font-serif text-lg leading-none shadow-[0_8px_20px_-10px_rgba(33,30,46,0.6)]">M</span>
                             <span className="text-[11px] tracking-[0.03em] text-ink/40">
                                 {isIndonesian ? 'Jakarta · Sejak 2016' : 'Jakarta · Est. 2016'}
                             </span>
@@ -194,6 +220,10 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     style={rise(0, mark.inView)}
                 >
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
+                    <span className="flex items-center gap-1.5 text-ink/45">
+                        {isIndonesian ? 'Dibuat dengan hati di Jakarta' : 'Made with care in Jakarta'}
+                        <span aria-hidden className="text-moon/70">✦</span>
+                    </span>
                 </div>
             </div>
         </footer>
