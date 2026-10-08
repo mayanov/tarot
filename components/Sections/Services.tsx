@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
+import SoftAura from '../UI/SoftAura';
 import { trackEvent } from '../../services/analytics';
 
 const REVEAL_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -237,6 +238,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
 
     return (
         <section id="services" className="relative isolate overflow-hidden text-ink" style={{ background: '#FAF6EF' }}>
+            <SoftAura />
             {/* HEADER — transparent over the sky */}
             <div className="mx-auto px-8 pt-20 md:pt-28 pb-16 md:pb-20">
                 <FadeIn>

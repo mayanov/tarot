@@ -2,6 +2,7 @@ import React from 'react';
 import { Compass, Heart, MessageCircle, Lock, Award, Feather } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
+import SoftAura from '../UI/SoftAura';
 import Testimonials from './Testimonials';
 
 interface WhyChooseProps {
@@ -40,8 +41,9 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   return (
     <section id="why-choose" className="relative isolate overflow-hidden">
       {/* LIGHT band — white with dark text (no seam lines) */}
-      <div className="text-ink" style={{ background: '#FAF6EF' }}>
-        <div className="mx-auto px-8 pt-20 md:pt-28">
+      <div className="relative isolate overflow-hidden text-ink" style={{ background: '#FAF6EF' }}>
+        <SoftAura />
+        <div className="relative z-10 mx-auto px-8 pt-20 md:pt-28">
           {/* Lead — left-aligned heading + paragraph across the top */}
           <FadeIn>
             <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl">

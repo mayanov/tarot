@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ArrowUpRight } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import FadeIn from '../UI/FadeIn';
+import SoftAura from '../UI/SoftAura';
 
 interface FAQProps {
   isIndonesian?: boolean;
@@ -129,6 +130,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
       className="py-20 md:py-28 relative isolate text-ink"
       style={{ background: '#FAF6EF' }}
     >
+      <SoftAura />
       <div className="mx-auto px-8 relative z-10">
         <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
           {/* LEFT — sticky intro + category filter (sticky lives on the column so a
