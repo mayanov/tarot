@@ -1,5 +1,4 @@
 import React from 'react';
-import { AlertCircle } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 
 interface DisclaimerProps {
@@ -41,66 +40,52 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     ];
 
     return (
-        <section id="disclaimer" className="py-12 relative isolate text-cream">
-            {/* soft violet bloom for depth over the shared sky backdrop */}
-            <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{ background: 'radial-gradient(90% 70% at 88% 0%, rgba(107,63,160,0.18) 0%, transparent 55%)' }}
-            />
-            <div className="mx-auto px-8 relative z-10">
-                <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
-                    {/* LEFT — bold editorial numbered notes (fills the column) */}
-                    <div className="order-2 lg:order-1 lg:col-span-8">
-                        {items.map((it, index) => (
-                            <FadeIn key={index} delay={Math.min(index, 4) * 90} dir="left">
-                                <div className="group grid grid-cols-[auto_1fr] items-start gap-x-5 md:gap-x-10 py-7 md:py-9 border-t border-white/10 first:border-t-0 first:pt-0 lg:first:pt-0">
-                                    <span
-                                        aria-hidden
-                                        className="font-elegant font-semibold leading-none text-sky text-[3rem] md:text-[5.5rem] transition-colors duration-300 group-hover:text-cream"
-                                    >
-                                        {String(index + 1).padStart(2, '0')}
-                                    </span>
-                                    <div className="pt-1 md:pt-3">
-                                        <h3 className="font-elegant font-semibold text-cream text-xl md:text-3xl leading-snug tracking-tight">
-                                            {it.label}
-                                        </h3>
-                                        <p className="mt-2 md:mt-3 text-cream text-sm md:text-base leading-relaxed font-light">
-                                            {it.text}
-                                        </p>
-                                    </div>
-                                </div>
-                            </FadeIn>
-                        ))}
+        // warm paper card framed by the night sky behind it (the sky bookends into the footer)
+        <section id="disclaimer" className="relative isolate px-3 sm:px-5 md:px-8 pt-8">
+            <div className="mx-auto max-w-[1600px] rounded-[2rem] md:rounded-[2.75rem] bg-[#FAF6EF] text-ink px-6 py-12 md:px-12 lg:px-16 md:py-16 shadow-[0_34px_90px_-54px_rgba(0,0,0,0.65)]">
+                {/* gentle, human framing — no "disclaimer", no legalese */}
+                <FadeIn>
+                    <div className="max-w-2xl">
+                        <p className="flex items-center gap-2 text-moon text-sm font-medium tracking-wide">
+                            <span aria-hidden>✦</span>
+                            {isIndonesian ? 'Sebelum kita mulai' : 'Before we begin'}
+                        </p>
+                        <h2 className="mt-4 font-elegant font-semibold text-ink text-[2.1rem] sm:text-[2.7rem] lg:text-[3.3rem] leading-[1.04] tracking-[-0.02em]">
+                            {isIndonesian ? 'Beberapa catatan jujur' : 'A few honest notes'}
+                        </h2>
+                        <p className="mt-5 text-ink/60 font-light leading-relaxed text-base md:text-lg">
+                            {isIndonesian
+                                ? 'Biar sesinya nyaman dan kita sepaham, ini beberapa hal yang baik kamu tahu dulu.'
+                                : "So the session feels easy and we're on the same page, here are a few things worth knowing first."}
+                        </p>
                     </div>
+                </FadeIn>
 
-                    {/* RIGHT — sticky title + alert notice (above the notes on mobile) */}
-                    <div className="order-1 lg:order-2 lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
-                        <FadeIn dir="right">
-                            <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
-                                Disclaimer
-                            </h2>
-                            {/* agreement notice — frosted glass block floating over the night sky */}
-                            <div className="mt-6 relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.07] backdrop-blur-xl shadow-[0_20px_50px_-24px_rgba(0,0,0,0.7)] max-w-sm pl-5 pr-4 py-4">
-                                {/* soft top-edge highlight so the glass catches light */}
-                                <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                                <span aria-hidden className="absolute left-0 top-0 bottom-0 w-1 bg-sky" />
-                                <div className="flex items-center gap-2 text-sky">
-                                    <AlertCircle className="w-4 h-4" strokeWidth={2} />
-                                    <span className="text-[12px] tracking-[0.02em] font-semibold">{isIndonesian ? 'Penting' : 'Note'}</span>
-                                </div>
-                                <p className="mt-2 text-sm text-cream/85 leading-relaxed">
-                                    {isIndonesian
-                                        ? 'Dengan melakukan booking, kamu telah menyetujui syarat dan ketentuan ini.'
-                                        : 'By making a booking, you have agreed to these terms and conditions.'}
+                {/* the notes — a calm 2-column list, celestial ✦ markers, no numerals/boxes */}
+                <div className="mt-10 md:mt-14 grid sm:grid-cols-2 gap-x-10 md:gap-x-16 gap-y-9 md:gap-y-11 max-w-5xl">
+                    {items.map((it, index) => (
+                        <FadeIn key={index} delay={Math.min(index, 4) * 80} dir="up">
+                            <div>
+                                <h3 className="flex items-baseline gap-2.5 font-elegant font-semibold text-ink text-xl md:text-2xl leading-snug">
+                                    <span aria-hidden className="text-moon/70 text-base shrink-0">✦</span>
+                                    {it.label}
+                                </h3>
+                                <p className="mt-2.5 pl-6 text-ink/60 font-light text-sm md:text-base leading-relaxed">
+                                    {it.text}
                                 </p>
                             </div>
-                            <p className="mt-5 text-[12px] tracking-[0.01em] text-cream/45">
-                                {isIndonesian ? 'Berlaku untuk semua layanan · 18+' : 'Applies to all services · 18+'}
-                            </p>
                         </FadeIn>
-                    </div>
+                    ))}
                 </div>
+
+                {/* soft closing — the agreement, said gently */}
+                <FadeIn>
+                    <p className="mt-11 md:mt-14 pt-6 border-t border-ink/10 text-ink/55 font-light text-sm leading-relaxed max-w-2xl">
+                        {isIndonesian
+                            ? 'Dengan melakukan booking, kamu menyetujui catatan di atas. Berlaku untuk semua layanan · 18+.'
+                            : 'By booking a session, you agree to the notes above. Applies to all services · 18+.'}
+                    </p>
+                </FadeIn>
             </div>
         </section>
     );
