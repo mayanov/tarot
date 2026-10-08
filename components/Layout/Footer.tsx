@@ -93,7 +93,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
 
     return (
         <footer
-            className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-12 md:pt-16 pb-8 md:pb-10 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]"
+            className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-14 md:pt-20 pb-10 md:pb-12 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]"
             style={{ background: '#FAF6EF' }}
         >
             {/* faint constellation — echoes the 'honest notes' card above */}
@@ -144,7 +144,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 </div>
 
                 {/* Meta row — brand voice + visit + follow (even columns, top-aligned) */}
-                <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-10 pt-10 md:pt-12">
+                <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-12 pt-12 md:pt-16">
                     {/* Brand voice */}
                     <div className="col-span-2 md:col-span-6" style={rise(140, top.inView)}>
                         <div className="flex items-center gap-2.5 mb-5">
@@ -198,12 +198,12 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </div>
                 </div>
 
-                {/* Oversized logotype — full-width anchor, revealed word-by-word from a clip mask */}
-                <div ref={mark.ref} className="mt-12 md:mt-16" aria-label="Mayanov Tarot">
+                {/* Logotype — a quiet, centered brand sign-off (not a billboard), revealed word-by-word */}
+                <div ref={mark.ref} className="mt-16 md:mt-24 text-center" aria-label="Mayanov Tarot">
                     <div
                         ref={parRef}
                         aria-hidden
-                        className="flex flex-wrap items-baseline gap-x-[0.26em] font-elegant font-semibold leading-[0.9] tracking-[-0.045em] text-[clamp(3rem,13.5vw,13rem)] select-none will-change-transform"
+                        className="flex flex-wrap justify-center items-baseline gap-x-[0.28em] font-elegant font-medium leading-[0.95] tracking-[-0.02em] text-[clamp(2.3rem,8vw,5.5rem)] select-none will-change-transform"
                     >
                         <span className="inline-block overflow-hidden">
                             <span className="text-ink pb-[0.18em]" style={maskInner(0)}>Mayanov</span>
@@ -216,7 +216,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
 
                 {/* Bottom bar */}
                 <div
-                    className="mt-10 md:mt-12 pt-6 border-t border-ink/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ink/55 tracking-wide"
+                    className="mt-14 md:mt-16 pt-6 border-t border-ink/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ink/55 tracking-wide"
                     style={rise(0, mark.inView)}
                 >
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
