@@ -13,7 +13,7 @@ const CTA: React.FC<CTAProps> = ({ isIndonesian = false }) => {
   };
 
   return (
-    <section className="py-12 relative overflow-hidden">
+    <section className="py-20 md:py-28 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         <FadeIn dir="scale" duration={1.2}>
           {/* Main Card Container */}

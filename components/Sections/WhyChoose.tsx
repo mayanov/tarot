@@ -41,7 +41,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
     <section id="why-choose" className="relative isolate overflow-hidden">
       {/* LIGHT band — white with dark text (no seam lines) */}
       <div className="text-ink" style={{ background: '#FAF6EF' }}>
-        <div className="mx-auto px-8 pt-12 md:pt-16">
+        <div className="mx-auto px-8 pt-20 md:pt-28">
           {/* Lead — left-aligned heading + paragraph across the top */}
           <FadeIn>
             <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl">
@@ -55,7 +55,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
           </FadeIn>
 
           {/* Calm, airy panels — a soft icon chip, a serif statement, a gentle supporting label */}
-          <div className="mt-12 md:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          <div className="mt-16 md:mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
             {reasons.map((reason, index) => {
               const Icon = ICONS[index];
               return (
@@ -79,7 +79,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
         </div>
 
         {/* ===== Social proof — testimonials merged into this section ===== */}
-        <div className="pt-16 md:pt-24 pb-12 md:pb-16">
+        <div className="pt-20 md:pt-32 pb-20 md:pb-28">
           <Testimonials isIndonesian={isIndonesian} />
         </div>
       </div>

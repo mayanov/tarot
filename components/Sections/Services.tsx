@@ -238,7 +238,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     return (
         <section id="services" className="relative isolate overflow-hidden text-ink" style={{ background: '#FAF6EF' }}>
             {/* HEADER — transparent over the sky */}
-            <div className="mx-auto px-8 pt-12 md:pt-16 pb-10 md:pb-14">
+            <div className="mx-auto px-8 pt-20 md:pt-28 pb-16 md:pb-20">
                 <FadeIn>
                     <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
                         <div className="lg:col-span-7">
@@ -333,7 +333,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* ===== How it works — left-aligned editorial list (intro column + stepped rows) ===== */}
-            <div className="mx-auto px-8 py-12 md:py-16">
+            <div className="mx-auto px-8 py-20 md:py-28">
                 <FadeIn>
                     <div id="process" className="scroll-mt-24 grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 lg:items-start">
                         {/* intro column — held left, like FAQ */}

@@ -42,7 +42,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     return (
         // warm paper card framed by the night sky behind it (the sky bookends into the footer)
         <section id="disclaimer" className="relative isolate px-3 sm:px-5 md:px-8 pt-8">
-            <div className="relative overflow-hidden mx-auto max-w-[1600px] rounded-[2rem] md:rounded-[2.75rem] bg-[#FAF6EF] text-ink px-6 py-12 md:px-12 lg:px-16 md:py-16 shadow-[0_34px_90px_-54px_rgba(0,0,0,0.65)]">
+            <div className="relative overflow-hidden mx-auto max-w-[1600px] rounded-[2rem] md:rounded-[2.75rem] bg-[#FAF6EF] text-ink px-6 py-16 md:px-12 lg:px-16 md:py-24 shadow-[0_34px_90px_-54px_rgba(0,0,0,0.65)]">
                 {/* faint constellation — a quiet celestial motif in the corner */}
                 <svg aria-hidden viewBox="0 0 240 170" fill="none"
                     className="pointer-events-none absolute -top-4 right-2 md:right-6 w-44 md:w-64 text-moon/25">

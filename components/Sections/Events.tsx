@@ -58,7 +58,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="events"
-      className="py-12 relative overflow-hidden isolate"
+      className="py-20 md:py-28 relative overflow-hidden isolate"
     >
       {/* aurora sky background — zoomed toward the top so the horizon/ground is cropped out (sky only) */}
       <div

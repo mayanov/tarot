@@ -14,7 +14,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="interlude"
-      className="relative overflow-hidden isolate text-cream py-16 md:py-20"
+      className="relative overflow-hidden isolate text-cream py-24 md:py-32"
       style={{ background: '#2A1330' }}
     >
       {/* aurora sky photo — drifts slower than the content (parallax) */}

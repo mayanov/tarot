@@ -37,7 +37,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
 
       {/* text — inside the page container, held to the left so the portrait can bleed right */}
       <div className="relative mx-auto px-8 lg:min-h-[72vh] flex items-center">
-        <FadeIn dir="left" className="w-full lg:w-[53%] lg:pr-14 py-12 md:py-14">
+        <FadeIn dir="left" className="w-full lg:w-[53%] lg:pr-14 py-20 md:py-28">
           {/* hook title */}
           <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>
