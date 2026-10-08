@@ -21,8 +21,9 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
 
   return (
     <section id="about" className="relative z-10 isolate overflow-hidden text-ink lg:min-h-[72vh] rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]" style={{ background: '#FAF6EF' }}>
-      {/* full-bleed portrait — top on mobile, bleeds to the right viewport edge on desktop (breaks the page margin on purpose) */}
-      <div className="relative lg:absolute lg:top-0 lg:right-0 lg:bottom-0 lg:w-[47%] min-h-[62vh] lg:min-h-0 overflow-hidden">
+      {/* portrait — top on mobile, bleeds to the right viewport edge on desktop; soft
+          organic radius on the edges that face the content (arch-like, wellness feel) */}
+      <div className="relative lg:absolute lg:top-0 lg:right-0 lg:bottom-0 lg:w-[47%] min-h-[62vh] lg:min-h-0 overflow-hidden rounded-b-[2.75rem] lg:rounded-b-none lg:rounded-l-[4.5rem]">
         <ImageReveal
           src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
           alt="Mayanov"
@@ -32,8 +33,6 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         />
         {/* flat plum tint (no directional gradient) to cohere with the palette */}
         <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
-        {/* crisp editorial seam between the text and the portrait */}
-        <div aria-hidden className="hidden lg:block absolute inset-y-0 left-0 w-px bg-ink/10" />
       </div>
 
       {/* text — inside the page container, held to the left so the portrait can bleed right */}
