@@ -42,43 +42,39 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
       {/* LIGHT band — white with dark text (no seam lines) */}
       <div className="text-ink" style={{ background: '#FAF6EF' }}>
         <div className="mx-auto px-8 pt-12 md:pt-16">
-          {/* Editorial 2-column layout — lead held left (like How it works / FAQ),
-              reason cards in a 2-up grid beside it. Breaks the even 3-col grid. */}
-          <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
-            <div className="lg:col-span-4 lg:sticky lg:top-28">
-              <FadeIn>
-                <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[3.9rem] leading-[1.02] tracking-[-0.025em]">
-                  <MaskReveal>{isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}</MaskReveal>
-                </h2>
-                <p className="mt-6 text-lg text-ink/60 font-light leading-relaxed max-w-sm">
-                  {isIndonesian
-                    ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan ruang aman untuk bercerita, dengan kesimpulan yang jelas dan langkah yang bisa kamu ambil.'
-                    : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
-                </p>
-              </FadeIn>
-            </div>
+          {/* Lead — left-aligned heading + paragraph across the top */}
+          <FadeIn>
+            <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl">
+              <MaskReveal>{isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}</MaskReveal>
+            </h2>
+            <p className="mt-6 text-lg md:text-xl text-ink/60 font-light leading-relaxed max-w-2xl">
+              {isIndonesian
+                ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan ruang aman untuk bercerita, dengan kesimpulan yang jelas dan langkah yang bisa kamu ambil.'
+                : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
+            </p>
+          </FadeIn>
 
-            <div className="lg:col-span-8 grid sm:grid-cols-2 gap-4 md:gap-5">
-              {reasons.map((reason, index) => {
-                const Icon = ICONS[index];
-                return (
-                  <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
-                    <div className="group/card h-full rounded-[1.75rem] border border-ink/[0.06] bg-[#F3EDE2] p-6 md:p-8 shadow-[0_18px_44px_-30px_rgba(57,35,78,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-moon/15 hover:shadow-[0_26px_54px_-30px_rgba(107,63,160,0.3)]">
-                      {/* soft pastel icon chip */}
-                      <div className="w-12 h-12 rounded-2xl bg-moon/10 text-moon grid place-items-center transition-colors duration-300 group-hover/card:bg-moon/[0.16]">
-                        <Icon size={22} strokeWidth={1.75} />
-                      </div>
-                      {/* calm statement */}
-                      <p className="mt-5 font-elegant text-ink text-[1.3rem] md:text-[1.5rem] leading-[1.2] tracking-[-0.01em]">
-                        {reason.stat}
-                      </p>
-                      {/* supporting label */}
-                      <p className="mt-2.5 text-sm text-moon/70 font-medium">{reason.label}</p>
+          {/* Calm, airy panels — a soft icon chip, a serif statement, a gentle supporting label */}
+          <div className="mt-12 md:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            {reasons.map((reason, index) => {
+              const Icon = ICONS[index];
+              return (
+                <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
+                  <div className="group/card h-full rounded-[1.75rem] border border-ink/[0.06] bg-[#F3EDE2] p-6 md:p-8 shadow-[0_18px_44px_-30px_rgba(57,35,78,0.3)] transition-all duration-300 hover:-translate-y-1 hover:border-moon/15 hover:shadow-[0_26px_54px_-30px_rgba(107,63,160,0.3)]">
+                    {/* soft pastel icon chip */}
+                    <div className="w-12 h-12 rounded-2xl bg-moon/10 text-moon grid place-items-center transition-colors duration-300 group-hover/card:bg-moon/[0.16]">
+                      <Icon size={22} strokeWidth={1.75} />
                     </div>
-                  </FadeIn>
-                );
-              })}
-            </div>
+                    {/* calm statement */}
+                    <p className="mt-5 font-elegant text-ink text-[1.3rem] md:text-[1.5rem] leading-[1.2] tracking-[-0.01em]">
+                      {reason.stat}
+                    </p>
+                    {/* supporting label */}
+                    <p className="mt-2.5 text-sm text-moon/70 font-medium">{reason.label}</p>
+                  </div>
+                </FadeIn>
+              );
+            })}
           </div>
         </div>
 
