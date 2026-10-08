@@ -117,7 +117,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           an offset caption to the right of it. */}
       <div className="relative w-full mx-auto px-8 flex-1 flex flex-col justify-center py-4 md:py-6">
         <Rise delay={140} hero>
-          <h1 className="font-serif font-bold uppercase leading-[0.84] tracking-[-0.03em] text-[clamp(2.7rem,min(11.5vw,14vh),10rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
+          <h1 className="font-serif font-medium uppercase leading-[0.9] tracking-[-0.005em] text-[clamp(2.7rem,min(11.5vw,14vh),10rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
             <span className="block text-cream">Mayanov</span>
             <span className="block text-cream">Tarot</span>
           </h1>

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Instagram, Clock, ArrowRight, MapPin, ArrowUp } from 'lucide-react';
+import { Instagram, Clock, ArrowRight, MapPin } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
@@ -194,15 +194,6 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     style={rise(0, mark.inView)}
                 >
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
-                    <button
-                        onClick={() => goTo('hero')}
-                        className="group inline-flex items-center gap-2 text-ink/55 hover:text-ink transition-colors duration-300"
-                    >
-                        <span className="tracking-[0.01em] text-[12px]">{isIndonesian ? 'Ke atas' : 'Back to top'}</span>
-                        <span className="grid place-items-center w-7 h-7 rounded-full border border-ink/20 group-hover:border-ink/50 group-hover:-translate-y-0.5 transition-all duration-300">
-                            <ArrowUp className="w-3.5 h-3.5" />
-                        </span>
-                    </button>
                 </div>
             </div>
         </footer>
