@@ -88,7 +88,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                     <button
                       type="button"
                       onClick={() => setLightbox(src)}
-                      className="group relative block w-full overflow-hidden rounded-lg aspect-[3/4] bg-white/5"
+                      className="group relative block w-full overflow-hidden rounded-[1.5rem] aspect-[3/4] bg-white/5"
                       aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
                     >
                       <ImageReveal
