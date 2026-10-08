@@ -9,12 +9,12 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Switzer (grotesque) for body/UI; Fraunces (warm old-style serif) for headings & quotes.
+        // Switzer (grotesque) for body/UI; Alegreya (warm literary serif) for headings & quotes.
         sans: ['Switzer', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        serif: ['Fraunces', 'Georgia', 'ui-serif', 'serif'],
-        heading: ['Fraunces', 'Georgia', 'ui-serif', 'serif'],
-        display: ['Fraunces', 'Georgia', 'ui-serif', 'serif'],
-        elegant: ['Fraunces', 'Georgia', 'ui-serif', 'serif'],
+        serif: ['Alegreya', 'Georgia', 'ui-serif', 'serif'],
+        heading: ['Alegreya', 'Georgia', 'ui-serif', 'serif'],
+        display: ['Alegreya', 'Georgia', 'ui-serif', 'serif'],
+        elegant: ['Alegreya', 'Georgia', 'ui-serif', 'serif'],
       },
       colors: {
         // --- Brand palette v2.0 (jewel tones) ---
