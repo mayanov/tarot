@@ -137,7 +137,11 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               transformed reveal wrapper can't break it) */}
           <div className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
             <FadeIn dir="blur" duration={1.15}>
-              <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+              <p className="flex items-center gap-2 text-moon text-sm font-medium tracking-wide">
+                <span aria-hidden>✦</span>
+                {isIndonesian ? 'Baik untuk diketahui' : 'Good to know'}
+              </p>
+              <h2 className="mt-4 font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                 {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
               </h2>
               <p className="mt-5 text-ink/60 font-light leading-relaxed max-w-xs">
@@ -146,38 +150,36 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   : 'Everything about the reading process, ethics, and delivery.'}
               </p>
 
-              {/* category filter — pills with a count per category */}
+              {/* category filter — quiet pills (no count badges) */}
               <div className="mt-8 flex flex-wrap gap-2">
                 {categories.map((cat) => {
                   const active = showAll ? cat === allLabel : cat === activeCat;
-                  const count = cat === allLabel ? faqs.length : faqs.filter((f) => f.cat === cat).length;
                   return (
                     <button
                       key={cat}
                       onClick={() => setActiveCat(cat)}
                       aria-pressed={active}
-                      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300 ${active
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300 ${active
                         ? 'bg-ink text-cream'
                         : 'border border-ink/15 text-ink/55 hover:border-ink/40 hover:text-ink'}`}
                     >
-                      <span>{cat}</span>
-                      <span className={`tabular-nums text-[10px] ${active ? 'text-sky' : 'text-ink/35'}`}>{count}</span>
+                      {cat}
                     </button>
                   );
                 })}
               </div>
 
-              {/* still have questions? — contact card */}
-              <div className="mt-8 rounded-xl border border-ink/12 bg-black/[0.02] p-5 max-w-xs">
+              {/* still have questions? — a soft warm note (not a boxed card) */}
+              <div className="mt-10 rounded-[1.5rem] bg-[#F3EDE2] p-6 max-w-xs">
                 <div className="flex items-center gap-2.5">
-                  <span className="grid place-items-center w-8 h-8 rounded-lg bg-[#25D366]/12 text-[#25D366] shrink-0">
+                  <span className="grid place-items-center w-9 h-9 rounded-full bg-[#25D366]/12 text-[#25D366] shrink-0">
                     <FaWhatsapp size={16} />
                   </span>
-                  <p className="text-sm font-serif font-semibold text-ink">
+                  <p className="font-elegant font-semibold text-ink text-[1.05rem] leading-snug">
                     {isIndonesian ? 'Masih ada pertanyaan?' : 'Still have a question?'}
                   </p>
                 </div>
-                <p className="mt-3 text-xs text-ink/55 font-light leading-relaxed">
+                <p className="mt-3 text-sm text-ink/55 font-light leading-relaxed">
                   {isIndonesian ? 'Chat langsung — dijawab dengan senang hati.' : 'Chat directly — happy to help.'}
                 </p>
                 <a
@@ -195,22 +197,22 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
 
           {/* RIGHT — accordion (min-height reserves the full-list height so the
               section doesn't shrink when a category is filtered) */}
-          <div className="lg:col-span-8 lg:min-h-[var(--faqH)]" style={{ ['--faqH' as string]: `${faqs.length * 68}px` } as React.CSSProperties}>
-            <div className="border-t border-black/10">
+          <div className="lg:col-span-8 lg:min-h-[var(--faqH)]" style={{ ['--faqH' as string]: `${faqs.length * 76}px` } as React.CSSProperties}>
+            <div className="border-t border-ink/[0.08]">
               {filtered.map((faq, index) => {
                 const open = openKey === faq.question;
                 return (
                   <FadeIn key={faq.question} delay={Math.min(index, 6) * 55} dir="up" distance={0.7}>
-                    <div className="border-b border-black/10">
+                    <div className="border-b border-ink/[0.08]">
                       <button
                         onClick={() => toggleFAQ(faq.question)}
-                        className="w-full flex items-center justify-between gap-5 py-4 md:py-5 text-left focus:outline-none"
+                        className="group w-full flex items-center justify-between gap-5 py-5 md:py-6 text-left focus:outline-none"
                         aria-expanded={open}
                       >
-                        <span className="font-serif font-medium text-base md:text-lg leading-snug tracking-tight text-ink">
+                        <span className={`font-elegant font-medium text-lg md:text-xl leading-snug tracking-tight transition-colors duration-300 ${open ? 'text-moon' : 'text-ink group-hover:text-moon'}`}>
                           {faq.question}
                         </span>
-                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-300 ${open ? 'text-moon-deep rotate-180' : 'text-ink/40'}`} />
+                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-300 ${open ? 'text-moon rotate-180' : 'text-ink/40'}`} />
                       </button>
 
                       <div className={`grid transition-all duration-300 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
