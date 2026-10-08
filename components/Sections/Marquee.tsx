@@ -29,7 +29,7 @@ const Marquee: React.FC<MarqueeProps> = ({ isIndonesian = false }) => {
   );
 
   return (
-    <section aria-hidden className="relative overflow-hidden isolate py-5 md:py-6 border-y border-white/[0.05]" style={{ background: '#202A5C' }}>
+    <section aria-hidden className="relative overflow-hidden isolate py-5 md:py-6 border-y border-white/[0.05]" style={{ background: '#39234E' }}>
       {/* two identical rows; the keyframe shifts by exactly -50% (one row) for a seamless loop */}
       <div className="flex w-max animate-[marquee_180s_linear_infinite] will-change-transform">
         <Row />

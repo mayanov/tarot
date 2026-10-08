@@ -8,9 +8,6 @@ interface HeroProps {
 
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 
-// Plays the hero count-up only the first time it mounts, never again on re-render.
-let heroStatsPlayed = false;
-
 const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const [shown, setShown] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
@@ -67,27 +64,12 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     </div>
   );
 
-  // Count-up: animates from 0 on first load, then holds the final value.
-  const CountUp: React.FC<{ end: number; decimals?: number; suffix?: string; sep: string; delay?: number }> = ({ end, decimals = 0, suffix = '', sep, delay = 0 }) => {
-    const [val, setVal] = useState(heroStatsPlayed ? end : 0);
-    useEffect(() => {
-      if (!shown || heroStatsPlayed) return;
-      let raf = 0;
-      const dur = 1600;
-      const t0 = performance.now() + delay;
-      const tick = (now: number) => {
-        const t = Math.min(Math.max((now - t0) / dur, 0), 1);
-        const eased = 1 - Math.pow(1 - t, 3);
-        setVal(end * eased);
-        if (t < 1) raf = requestAnimationFrame(tick);
-        else heroStatsPlayed = true;
-      };
-      raf = requestAnimationFrame(tick);
-      return () => cancelAnimationFrame(raf);
-    }, [shown]);
+  // Static stat value — just the final number (no growth-style count-up); the whole
+  // row still fades in gently via the surrounding <Rise>.
+  const Stat: React.FC<{ end: number; decimals?: number; suffix?: string; sep: string }> = ({ end, decimals = 0, suffix = '', sep }) => {
     const text = decimals > 0
-      ? val.toFixed(decimals)
-      : Math.round(val).toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+      ? end.toFixed(decimals)
+      : Math.round(end).toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep);
     return <>{text}{suffix}</>;
   };
 
@@ -164,7 +146,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
             {metrics.map((m, i) => (
               <div key={i} className="md:px-7 md:first:pl-0">
                 <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[2.1rem] md:text-[2.7rem] [text-shadow:0_2px_24px_rgba(6,4,14,0.55)]">
-                  <CountUp end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} delay={i * 150} />
+                  <Stat end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} />
                 </div>
                 <div className="mt-2.5 text-[12px] md:text-[13px] font-light tracking-[0.01em] leading-snug text-cream/65 [text-shadow:0_1px_12px_rgba(6,4,14,0.7)]">
                   {m.label}

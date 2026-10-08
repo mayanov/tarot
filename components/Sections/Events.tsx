@@ -134,7 +134,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                             key={ii}
                             className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-black/10 first:border-t-0"
                           >
-                            <h3 className="font-serif font-semibold text-ink text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-[#202A5C]">
+                            <h3 className="font-serif font-semibold text-ink text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-[#39234E]">
                               {event.title}
                             </h3>
                             <span className="shrink-0 text-[0.78rem] tracking-[0.01em] text-ink/60 font-light leading-snug sm:text-right">
