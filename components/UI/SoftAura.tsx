@@ -8,7 +8,7 @@ interface SoftAuraProps {
 /**
  * A faint, slowly-drifting wash of soft palette blooms placed behind a warm
  * section's cream fill. Adds quiet depth — no grain, no noise — so the flat
- * `#FAF6EF` panels feel atmospheric rather than like plain boxes.
+ * white panels feel atmospheric rather than like plain boxes.
  *
  * Sits at `-z-10` inside the section's own stacking context (the section must
  * be `relative isolate` with the cream background on it), so it floats above

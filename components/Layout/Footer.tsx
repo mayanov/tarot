@@ -94,7 +94,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     return (
         <footer
             className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-14 md:pt-20 pb-10 md:pb-12 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]"
-            style={{ background: '#FAF6EF' }}
+            style={{ background: '#FFFFFF' }}
         >
             {/* faint constellation — echoes the 'honest notes' card above */}
             <svg aria-hidden viewBox="0 0 240 170" fill="none"

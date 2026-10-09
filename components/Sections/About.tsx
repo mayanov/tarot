@@ -21,7 +21,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
   }, [isIndonesian]);
 
   return (
-    <section id="about" className="relative z-10 isolate overflow-hidden text-ink lg:min-h-[72vh] rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]" style={{ background: '#FAF6EF' }}>
+    <section id="about" className="relative z-10 isolate overflow-hidden text-ink lg:min-h-[72vh] rounded-t-[1.75rem] md:rounded-t-[2.75rem] shadow-[0_-26px_60px_-34px_rgba(0,0,0,0.3)]" style={{ background: '#FFFFFF' }}>
       <SoftAura />
       {/* portrait — top on mobile, bleeds to the right viewport edge on desktop; soft
           organic radius on the edges that face the content (arch-like, wellness feel) */}

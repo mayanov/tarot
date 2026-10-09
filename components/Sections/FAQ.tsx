@@ -128,7 +128,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
     <section
       id="faq"
       className="py-20 md:py-28 relative isolate text-ink"
-      style={{ background: '#FAF6EF' }}
+      style={{ background: '#FFFFFF' }}
     >
       <SoftAura />
       <div className="mx-auto px-8 relative z-10">
@@ -170,7 +170,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               </div>
 
               {/* still have questions? — a soft warm note (not a boxed card) */}
-              <div className="mt-10 rounded-[1.5rem] bg-[#F1EDF7] p-6 max-w-xs">
+              <div className="mt-10 rounded-[1.5rem] bg-white border border-ink/[0.08] p-6 max-w-xs shadow-[0_16px_44px_-30px_rgba(33,30,46,0.3)]">
                 <div className="flex items-center gap-2.5">
                   <span className="grid place-items-center w-9 h-9 rounded-full bg-[#25D366]/12 text-[#25D366] shrink-0">
                     <FaWhatsapp size={16} />
