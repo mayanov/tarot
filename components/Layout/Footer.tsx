@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Instagram } from 'lucide-react';
+import { Instagram, ArrowRight } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
+import { smoothScrollToId } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
 
 interface FooterProps {
@@ -55,7 +56,8 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         willChange: 'transform',
     });
 
-    const social = 'inline-flex items-center justify-center text-cream/55 hover:text-cream transition-all duration-500 hover:-translate-y-0.5';
+    // frosted circular chips so the icons stay readable over the busy starfield
+    const social = 'inline-flex items-center justify-center w-12 h-12 rounded-full bg-cream/10 border border-cream/15 text-cream/90 hover:text-ink hover:bg-cream hover:border-cream transition-all duration-500 hover:-translate-y-0.5';
 
     return (
         <footer ref={v.ref} className="relative z-10 text-cream text-center overflow-hidden">
@@ -74,30 +76,37 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     <span className="inline-block overflow-hidden"><span className="block pb-[0.14em] text-[#C9B8E8]" style={maskInner(240)}>Tarot</span></span>
                 </h2>
 
-                {/* a warm farewell */}
-                <p style={rise(360)} className="mt-6 md:mt-7 font-elegant italic text-cream/60 text-lg md:text-xl">
-                    {isIndonesian ? 'Sampai pertanyaan berikutnya.' : 'Until your next question.'}
-                </p>
+                {/* primary action — book a reading */}
+                <div style={rise(360)} className="mt-9 md:mt-11">
+                    <a
+                        href="#services"
+                        onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
+                        className="group inline-flex items-center gap-3 rounded-full bg-cream text-ink px-8 py-3.5 text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500"
+                    >
+                        {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </a>
+                </div>
 
-                {/* the only actions that matter — where to find her */}
-                <div style={rise(460)} className="mt-9 md:mt-11 flex items-center gap-8">
+                {/* where to find her */}
+                <div style={rise(480)} className="mt-9 md:mt-10 flex items-center gap-4 md:gap-5">
                     <a
                         href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
                         onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
                         className={social} aria-label="Instagram">
-                        <Instagram className="w-[26px] h-[26px]" strokeWidth={1.6} />
+                        <Instagram className="w-[22px] h-[22px]" strokeWidth={1.8} />
                     </a>
                     <a
                         href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
                         onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
                         className={social} aria-label="TikTok">
-                        <FaTiktok size={23} />
+                        <FaTiktok size={20} />
                     </a>
                     <a
                         href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
                         onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
                         className={social} aria-label="WhatsApp">
-                        <FaWhatsapp size={26} />
+                        <FaWhatsapp size={22} />
                     </a>
                 </div>
 
