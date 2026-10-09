@@ -64,30 +64,6 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     </div>
   );
 
-  // Static stat value — just the final number (no growth-style count-up); the whole
-  // row still fades in gently via the surrounding <Rise>.
-  const Stat: React.FC<{ end: number; decimals?: number; suffix?: string; sep: string }> = ({ end, decimals = 0, suffix = '', sep }) => {
-    const text = decimals > 0
-      ? end.toFixed(decimals)
-      : Math.round(end).toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep);
-    return <>{text}{suffix}</>;
-  };
-
-  const sep = isIndonesian ? '.' : ',';
-  const metrics = isIndonesian
-    ? [
-        { end: 1500, suffix: '+', label: 'Orang Terbantu' },
-        { end: 3200, suffix: '+', label: 'Jam Sesi' },
-        { end: 7700, suffix: '+', label: 'Total Sesi' },
-        { end: 5, decimals: 1, label: 'Rating Google' },
-      ]
-    : [
-        { end: 1500, suffix: '+', label: 'People Helped' },
-        { end: 3200, suffix: '+', label: 'Hours Guided' },
-        { end: 7700, suffix: '+', label: 'Sessions Done' },
-        { end: 5, decimals: 1, label: 'Google Rating' },
-      ];
-
   return (
     <section
       ref={heroRef}
@@ -137,25 +113,6 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           </Rise>
         </div>
       </div>
-
-      {/* BOTTOM — metrics as a quiet, airy row under a single hairline (no card/panel),
-          serif numbers over soft sentence-case labels. */}
-      <Rise delay={680}>
-        <div className="w-full mx-auto px-8">
-          <div className="pt-7 md:pt-8 border-t border-white/15 grid grid-cols-2 md:grid-cols-4 gap-y-7 md:gap-y-0">
-            {metrics.map((m, i) => (
-              <div key={i} className="md:px-7 md:first:pl-0">
-                <div className="font-elegant font-medium tabular-nums leading-none text-cream text-[2.1rem] md:text-[2.7rem] [text-shadow:0_2px_24px_rgba(6,4,14,0.55)]">
-                  <Stat end={m.end} decimals={'decimals' in m ? (m as any).decimals : 0} suffix={'suffix' in m ? (m as any).suffix : ''} sep={sep} />
-                </div>
-                <div className="mt-2.5 text-[12px] md:text-[13px] font-light tracking-[0.01em] leading-snug text-cream/65 [text-shadow:0_1px_12px_rgba(6,4,14,0.7)]">
-                  {m.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Rise>
     </section>
   );
 };
