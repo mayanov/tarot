@@ -255,8 +255,16 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
               <blockquote
                 key={i}
                 aria-hidden={!active}
-                style={{ gridArea: '1 / 1' }}
-                className={`flex flex-col items-center text-center transition-opacity duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${active ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                style={{
+                  gridArea: '1 / 1',
+                  opacity: active ? 1 : 0,
+                  // sequential dissolve: the outgoing quote fades out first, then
+                  // the incoming one fades in after a short beat — no overlap.
+                  transition: active
+                    ? 'opacity 650ms cubic-bezier(0.16,1,0.3,1) 340ms'
+                    : 'opacity 360ms cubic-bezier(0.16,1,0.3,1)',
+                }}
+                className={`flex flex-col items-center text-center ${active ? '' : 'pointer-events-none'}`}
               >
                 <p className="font-elegant text-ink text-[1.3rem] md:text-[1.9rem] leading-[1.42] tracking-[-0.005em]">
                   {r.text}
