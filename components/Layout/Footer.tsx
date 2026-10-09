@@ -80,42 +80,39 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </a>
                 </div>
 
-                {/* ===== brand sign-off — under the moon ===== */}
-                <div style={rise(440)} className="mt-20 md:mt-28">
-                    <CelestialMark name="crescent" className="w-9 md:w-11 text-cream/80 [filter:drop-shadow(0_6px_30px_rgba(6,4,14,0.6))]" />
-                </div>
-                <div
-                    aria-label="Mayanov Tarot"
-                    style={rise(520)}
-                    className="mt-6 font-elegant font-medium leading-[0.95] tracking-[-0.02em] text-[clamp(2rem,7vw,4.4rem)] select-none [text-shadow:0_8px_60px_rgba(6,4,14,0.55)]"
-                >
-                    Mayanov <span className="text-[#C9B8E8]">Tarot</span>
-                </div>
+                {/* ===== quiet sign-off — a signature, not a second hero ===== */}
+                <div style={rise(440)} className="mt-16 md:mt-20 w-full flex flex-col items-center">
+                    <span aria-hidden className="block h-px w-16 bg-cream/20" />
 
-                {/* socials — plain text links, ✦-separated (no buttons) */}
-                <nav style={rise(600)} className="mt-7 flex items-center gap-3.5 text-[0.95rem]" aria-label="Social">
-                    <a
-                        href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
-                        onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
-                        className={socialLink}>Instagram</a>
-                    <CelestialMark name="sparkle" className="w-2.5 h-2.5 text-cream/30 shrink-0" />
-                    <a
-                        href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
-                        onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
-                        className={socialLink}>TikTok</a>
-                    <CelestialMark name="sparkle" className="w-2.5 h-2.5 text-cream/30 shrink-0" />
-                    <a
-                        href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
-                        onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
-                        className={socialLink}>WhatsApp</a>
-                </nav>
+                    <div
+                        aria-label="Mayanov Tarot"
+                        className="mt-9 md:mt-10 font-elegant font-medium text-[1.3rem] md:text-[1.5rem] tracking-[-0.01em] select-none"
+                    >
+                        Mayanov <span className="text-[#C9B8E8]">Tarot</span>
+                    </div>
 
-                {/* one quiet line — place + copyright */}
-                <p style={rise(680)} className="mt-10 md:mt-12 inline-flex items-center gap-2 text-[11px] tracking-[0.06em] text-cream/40">
-                    <span>Jakarta</span>
-                    <CelestialMark name="sparkle" className="w-2 h-2 text-cream/45" />
-                    <span>© {year} Mayanov Tarot</span>
-                </p>
+                    {/* socials — plain text links, ✦-separated (no buttons) */}
+                    <nav className="mt-4 flex items-center gap-3.5 text-[0.9rem]" aria-label="Social">
+                        <a
+                            href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
+                            onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
+                            className={socialLink}>Instagram</a>
+                        <CelestialMark name="sparkle" className="w-2 h-2 text-cream/30 shrink-0" />
+                        <a
+                            href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
+                            onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
+                            className={socialLink}>TikTok</a>
+                        <CelestialMark name="sparkle" className="w-2 h-2 text-cream/30 shrink-0" />
+                        <a
+                            href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
+                            onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
+                            className={socialLink}>WhatsApp</a>
+                    </nav>
+
+                    <p className="mt-6 text-[11px] tracking-[0.06em] text-cream/40">
+                        Jakarta · © {year} Mayanov Tarot
+                    </p>
+                </div>
             </div>
         </footer>
     );
