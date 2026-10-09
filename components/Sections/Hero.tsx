@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
+import CelestialMark from '../UI/CelestialMark';
 
 interface HeroProps {
   isIndonesian?: boolean;
@@ -68,51 +69,61 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     <section
       ref={heroRef}
       id="hero"
-      className="relative min-h-screen flex flex-col justify-between overflow-hidden isolate text-cream pt-24 md:pt-28 pb-8 md:pb-10"
+      className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden isolate text-cream pt-28 md:pt-32 pb-24 md:pb-28"
       style={{ willChange: 'filter' }}
     >
-      {/* MIDDLE — the masthead: oversized wordmark, with the statement tucked as
-          an offset caption to the right of it. */}
-      <div className="relative w-full mx-auto px-8 flex-1 flex flex-col justify-center py-4 md:py-6">
-        <Rise delay={140} hero>
-          <h1 className="font-serif font-medium uppercase leading-[0.9] tracking-[-0.005em] text-[clamp(2.7rem,min(11.5vw,14vh),10rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
+      {/* MASTHEAD — a calm, centered stack under a quiet crescent moon. */}
+      <div className="relative w-full mx-auto px-8 flex flex-col items-center">
+        <Rise delay={100}>
+          <CelestialMark name="crescent" className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
+        </Rise>
+
+        <Rise delay={160} hero>
+          <h1 className="font-serif font-medium uppercase leading-[0.9] tracking-[-0.005em] text-[clamp(2.7rem,min(10.5vw,13vh),8.5rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
             <span className="block text-cream">Mayanov</span>
             <span className="block text-cream">Tarot</span>
           </h1>
         </Rise>
 
-        {/* caption — offset to the right on desktop for an asymmetric, editorial feel */}
-        <div className="mt-6 md:mt-8 lg:self-end w-full lg:max-w-[30rem]">
-          <Rise delay={340}>
-            <p className="font-elegant font-medium leading-[1.14] tracking-[-0.01em] text-[1.45rem] sm:text-[1.8rem] text-cream [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
-              {isIndonesian ? (
-                <>Pandangan <span className="italic text-cream">jernih</span> untuk langkah berikutnya.</>
-              ) : (
-                <>A <span className="italic text-cream">clearer</span> view of what comes next.</>
-              )}
-            </p>
-          </Rise>
-          <Rise delay={460}>
-            <p className="mt-4 text-[14px] md:text-[14.5px] font-light leading-relaxed text-cream/70 [text-shadow:0_1px_12px_rgba(6,4,14,0.7)]">
-              {isIndonesian
-                ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi. Percakapan jujur untuk melihat langkahmu lebih jelas.'
-                : 'Tarot as a space for reflection — analytical, warm, and grounded. An honest conversation that helps you see your next step clearly.'}
-            </p>
-          </Rise>
-          <Rise delay={580}>
-            <div className="mt-7">
-              <a
-                href="#services"
-                onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                className="group inline-flex items-center gap-3 rounded-full bg-cream text-ink px-8 py-3.5 text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-300"
-              >
-                {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </a>
-            </div>
-          </Rise>
-        </div>
+        <Rise delay={340}>
+          <p className="mt-7 md:mt-9 font-elegant font-medium leading-[1.16] tracking-[-0.01em] text-[1.4rem] sm:text-[1.75rem] text-cream max-w-[20ch] [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
+            {isIndonesian ? (
+              <>Pandangan <span className="italic">jernih</span> untuk langkah berikutnya.</>
+            ) : (
+              <>A <span className="italic">clearer</span> view of what comes next.</>
+            )}
+          </p>
+        </Rise>
+
+        <Rise delay={520}>
+          <div className="mt-8 md:mt-9">
+            <a
+              href="#services"
+              onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
+              className="group inline-flex items-center gap-3 rounded-full bg-cream text-ink px-8 py-3.5 text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-300"
+            >
+              {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </a>
+          </div>
+        </Rise>
       </div>
+
+      {/* scroll cue — a quiet invitation down into the night */}
+      <Rise delay={760} className="absolute left-1/2 -translate-x-1/2 bottom-8 md:bottom-10">
+        <button
+          type="button"
+          onClick={() => smoothScrollToId('about', 80)}
+          className="group flex flex-col items-center gap-2 text-cream/55 hover:text-cream transition-colors duration-300"
+          aria-label={isIndonesian ? 'Gulir ke bawah' : 'Scroll down'}
+        >
+          <span className="flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase font-light">
+            <CelestialMark name="sparkle" className="w-2.5 h-2.5" />
+            {isIndonesian ? 'Gulir' : 'Scroll'}
+          </span>
+          <ChevronDown className="w-4 h-4 motion-safe:animate-bounce motion-safe:[animation-duration:2.4s]" />
+        </button>
+      </Rise>
     </section>
   );
 };
