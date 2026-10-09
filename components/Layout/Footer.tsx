@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Instagram } from 'lucide-react';
+import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
-import CelestialMark from '../UI/CelestialMark';
 
 interface FooterProps {
     isIndonesian?: boolean;
@@ -47,7 +47,8 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         willChange: 'transform, opacity, filter',
     });
 
-    const socialLink = 'text-cream/75 hover:text-cream transition-colors duration-500 hover:underline underline-offset-[6px] decoration-cream/40';
+    // plain icons (no circular containers), with a soft shadow so they read on the starfield
+    const socialLink = 'inline-flex text-cream/80 hover:text-cream transition-all duration-500 hover:-translate-y-0.5 [filter:drop-shadow(0_2px_8px_rgba(6,4,14,0.55))]';
 
     return (
         <footer ref={v.ref} className="relative z-10 text-cream text-center overflow-hidden">
@@ -82,22 +83,20 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         Mayanov <span className="text-[#C9B8E8]">Tarot</span>
                     </div>
 
-                    {/* socials — plain text links, ✦-separated (no buttons) */}
-                    <nav className="mt-4 flex items-center gap-3.5 text-[0.9rem]" aria-label="Social">
+                    {/* socials — plain icons, no containers */}
+                    <nav className="mt-5 flex items-center gap-7" aria-label="Social">
                         <a
                             href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
                             onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
-                            className={socialLink}>Instagram</a>
-                        <CelestialMark name="sparkle" className="w-2 h-2 text-cream/30 shrink-0" />
+                            className={socialLink} aria-label="Instagram"><Instagram className="w-[22px] h-[22px]" strokeWidth={1.7} /></a>
                         <a
                             href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
                             onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
-                            className={socialLink}>TikTok</a>
-                        <CelestialMark name="sparkle" className="w-2 h-2 text-cream/30 shrink-0" />
+                            className={socialLink} aria-label="TikTok"><FaTiktok size={20} /></a>
                         <a
                             href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
                             onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
-                            className={socialLink}>WhatsApp</a>
+                            className={socialLink} aria-label="WhatsApp"><FaWhatsapp size={22} /></a>
                     </nav>
 
                     <p className="mt-6 text-[11px] tracking-[0.06em] text-cream/40">
