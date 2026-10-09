@@ -95,7 +95,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         src={src}
                         alt={isIndonesian ? `Sesi tarot Mayanov di event ${i + 1}` : `Mayanov tarot session at event ${i + 1}`}
                         className="absolute inset-0"
-                        imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                        imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                         delay={i * 90}
                       />
                       <span className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/15 group-hover:ring-cream/50 transition-all" />
@@ -134,7 +134,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                             key={ii}
                             className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-ink/10 first:border-t-0"
                           >
-                            <h3 className="font-serif font-semibold text-ink text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-[#39234E]">
+                            <h3 className="font-serif font-semibold text-ink text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-500 group-hover:translate-x-1.5 group-hover:text-[#39234E]">
                               {event.title}
                             </h3>
                             <span className="shrink-0 text-[0.78rem] tracking-[0.01em] text-ink/60 font-light leading-snug sm:text-right">
@@ -163,7 +163,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         setVisibleCount(eventList.length);
                       }
                     }}
-                    className="inline-flex items-center justify-center gap-2 min-w-[11rem] px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-300 group"
+                    className="inline-flex items-center justify-center gap-2 min-w-[11rem] px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-500 group"
                   >
                     {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
                     <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
@@ -174,7 +174,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 href="https://wa.link/5peyhb"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-300"
+                className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500"
               >
                 {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
               </a>

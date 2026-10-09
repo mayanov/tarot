@@ -61,7 +61,7 @@ const CTA: React.FC<CTAProps> = ({ isIndonesian = false }) => {
               <div className="flex-shrink-0">
                 <button
                   onClick={scrollToServices}
-                  className="bg-[#FBF6EF] text-ink px-8 py-4 md:px-10 md:py-5 rounded-full font-medium text-lg hover:-translate-y-0.5 hover:bg-white transition-all duration-300 flex items-center gap-3 group"
+                  className="bg-[#FBF6EF] text-ink px-8 py-4 md:px-10 md:py-5 rounded-full font-medium text-lg hover:-translate-y-0.5 hover:bg-white transition-all duration-500 flex items-center gap-3 group"
                 >
                   {isIndonesian ? "Pesan Bacaan" : "Book a Reading"}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

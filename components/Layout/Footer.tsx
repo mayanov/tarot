@@ -86,7 +86,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         willChange: 'transform',
     });
 
-    const socialClass = "inline-flex items-center justify-center p-1 text-ink hover:text-moon transition-all duration-300 hover:-translate-y-0.5";
+    const socialClass = "inline-flex items-center justify-center p-1 text-ink hover:text-moon transition-all duration-500 hover:-translate-y-0.5";
     const labelClass = "text-[12px] tracking-[0.02em] text-ink/50 mb-5";
     const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-ink/70 font-light leading-relaxed";
 
@@ -113,7 +113,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         <a
                             href="#services"
                             onClick={(e) => { e.preventDefault(); goTo('services'); }}
-                            className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-ink text-cream text-sm font-medium hover:bg-plum transition-colors duration-200"
+                            className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-ink text-cream text-sm font-medium hover:bg-plum transition-colors duration-300"
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -12,8 +12,8 @@ interface ServicesProps {
 
 // Standardised button styles (used across the pricelist bands, which sit on dark sky):
 // primary = solid cream fill (hover → brand plum); secondary = cream outline.
-const btnPrimary = "inline-flex items-center justify-center px-7 py-3 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-300";
-const btnSecondary = "inline-flex items-center justify-center px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-300";
+const btnPrimary = "inline-flex items-center justify-center px-7 py-3 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500";
+const btnSecondary = "inline-flex items-center justify-center px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-500";
 
 // Each pricing category gets its own twilight sky, so the categories feel distinct.
 const CAT_SKIES = ['sky-hero.jpg', 'catsky-aurora.jpg', 'sky-footer.jpg', 'aurora-meetup.jpg'];
@@ -303,10 +303,10 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-4 md:gap-6 shrink-0">
-                                        <span className={`hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap transition-all duration-300 ${open ? 'opacity-0 -translate-x-1 pointer-events-none' : 'opacity-100'}`}>
+                                        <span className={`hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap transition-all duration-500 ${open ? 'opacity-0 -translate-x-1 pointer-events-none' : 'opacity-100'}`}>
                                             <span className="font-serif font-semibold text-cream">{g.priceLabel}</span>
                                         </span>
-                                        <ChevronDown className={`w-5 h-5 text-cream/70 transition-transform duration-300 ${open ? 'rotate-180 text-cream' : ''}`} />
+                                        <ChevronDown className={`w-5 h-5 text-cream/70 transition-transform duration-500 ${open ? 'rotate-180 text-cream' : ''}`} />
                                     </div>
                                 </button>
 
@@ -316,7 +316,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 )}
 
                                 {/* body — collapses smoothly via grid-rows trick */}
-                                <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
+                                <div className="grid transition-all duration-500 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
                                     <div className="overflow-hidden min-h-0">
                                         <div className="pb-9 md:pb-12">
                                             <div className="border-t border-white/10">
@@ -356,7 +356,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 <li key={i} className="group flex items-start gap-5 md:gap-7 py-6 md:py-7 border-t border-ink/10 first:border-t-0 first:pt-0 animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
                                     <span
                                         aria-hidden
-                                        className="shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-lg md:text-xl leading-none transition-colors duration-300 group-hover:bg-moon/[0.16]"
+                                        className="shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-lg md:text-xl leading-none transition-colors duration-500 group-hover:bg-moon/[0.16]"
                                     >
                                         {String(i + 1).padStart(2, '0')}
                                     </span>

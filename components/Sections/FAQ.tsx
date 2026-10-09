@@ -160,7 +160,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                       key={cat}
                       onClick={() => setActiveCat(cat)}
                       aria-pressed={active}
-                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300 ${active
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-500 ${active
                         ? 'bg-ink text-cream'
                         : 'border border-ink/15 text-ink/55 hover:border-ink/40 hover:text-ink'}`}
                     >
@@ -187,10 +187,10 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ada%20pertanyaan%20tentang%20tarot%20reading"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink text-cream px-5 py-2.5 text-sm font-medium hover:bg-plum transition-colors duration-300"
+                  className="group mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink text-cream px-5 py-2.5 text-sm font-medium hover:bg-plum transition-colors duration-500"
                 >
                   {isIndonesian ? 'Tanya via WhatsApp' : 'Ask on WhatsApp'}
-                  <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <ArrowUpRight className="w-4 h-4 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
               </div>
             </FadeIn>
@@ -210,13 +210,13 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                         className="group w-full flex items-center justify-between gap-5 py-5 md:py-6 text-left focus:outline-none"
                         aria-expanded={open}
                       >
-                        <span className={`font-elegant font-medium text-lg md:text-xl leading-snug tracking-tight transition-colors duration-300 ${open ? 'text-moon' : 'text-ink group-hover:text-moon'}`}>
+                        <span className={`font-elegant font-medium text-lg md:text-xl leading-snug tracking-tight transition-colors duration-500 ${open ? 'text-moon' : 'text-ink group-hover:text-moon'}`}>
                           {faq.question}
                         </span>
-                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-300 ${open ? 'text-moon rotate-180' : 'text-ink/40'}`} />
+                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-500 ${open ? 'text-moon rotate-180' : 'text-ink/40'}`} />
                       </button>
 
-                      <div className={`grid transition-all duration-300 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                      <div className={`grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                         <div className="overflow-hidden">
                           <p className="pb-5 pr-10 text-ink/70 text-[0.95rem] md:text-base leading-relaxed whitespace-pre-line font-light">
                             {faq.answer}

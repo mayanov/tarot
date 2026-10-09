@@ -74,8 +74,8 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                             return (
                                 <FadeIn key={index} delay={Math.min(index, 4) * 80} dir="up" className={full ? 'sm:col-span-2' : undefined}>
                                     <div className={`group ${full ? 'sm:pt-9 sm:border-t sm:border-ink/10' : ''}`}>
-                                        <h3 className="flex items-baseline gap-2.5 font-elegant font-semibold text-ink text-xl md:text-2xl leading-snug transition-colors duration-300 group-hover:text-moon">
-                                            <span aria-hidden className="text-moon/70 text-base shrink-0 transition-transform duration-300 group-hover:scale-125">✦</span>
+                                        <h3 className="flex items-baseline gap-2.5 font-elegant font-semibold text-ink text-xl md:text-2xl leading-snug transition-colors duration-500 group-hover:text-moon">
+                                            <span aria-hidden className="text-moon/70 text-base shrink-0 transition-transform duration-500 group-hover:scale-110">✦</span>
                                             {it.label}
                                         </h3>
                                         <p className="mt-2.5 pl-6 text-ink/60 font-light text-sm md:text-base leading-relaxed max-w-2xl">

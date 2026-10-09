@@ -62,9 +62,9 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
               const Icon = ICONS[index];
               return (
                 <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
-                  <div className="group/card h-full rounded-[1.75rem] border border-ink/[0.07] bg-white p-6 md:p-8 shadow-[0_18px_44px_-30px_rgba(33,30,46,0.28)] transition-all duration-300 hover:-translate-y-1 hover:border-moon/15 hover:shadow-[0_26px_54px_-30px_rgba(107,63,160,0.3)]">
+                  <div className="group/card h-full rounded-[1.75rem] border border-ink/[0.07] bg-white p-6 md:p-8 shadow-[0_18px_44px_-30px_rgba(33,30,46,0.28)] transition-all duration-500 hover:-translate-y-0.5 hover:border-moon/15 hover:shadow-[0_26px_54px_-30px_rgba(107,63,160,0.3)]">
                     {/* soft pastel icon chip */}
-                    <div className="w-12 h-12 rounded-2xl bg-moon/10 text-moon grid place-items-center transition-colors duration-300 group-hover/card:bg-moon/[0.16]">
+                    <div className="w-12 h-12 rounded-2xl bg-moon/10 text-moon grid place-items-center transition-colors duration-500 group-hover/card:bg-moon/[0.16]">
                       <Icon size={22} strokeWidth={1.75} />
                     </div>
                     {/* calm statement */}
