@@ -3,6 +3,7 @@ import { Instagram, Clock, ArrowRight, MapPin } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
+import CelestialMark from '../UI/CelestialMark';
 
 interface FooterProps {
     isIndonesian?: boolean;
@@ -97,30 +98,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
             style={{ background: '#FFFFFF' }}
         >
             {/* faint constellation — echoes the 'honest notes' card above */}
-            <svg aria-hidden viewBox="0 0 240 170" fill="none"
-                className="pointer-events-none absolute top-10 right-10 w-60 text-moon/20 z-0 hidden md:block">
-                <g stroke="currentColor" strokeWidth="1" opacity="0.55">
-                    <line x1="40" y1="140" x2="95" y2="105" />
-                    <line x1="95" y1="105" x2="150" y2="125" />
-                    <line x1="150" y1="125" x2="195" y2="80" />
-                    <line x1="195" y1="80" x2="225" y2="110" />
-                    <line x1="195" y1="80" x2="165" y2="45" />
-                </g>
-                <g fill="currentColor">
-                    <circle cx="40" cy="140" r="2.4" />
-                    <circle cx="95" cy="105" r="2.4" />
-                    <circle cx="150" cy="125" r="2.4" />
-                    <circle cx="195" cy="80" r="2.8" />
-                    <circle cx="225" cy="110" r="2.4" />
-                    <circle cx="165" cy="45" r="2.4" />
-                </g>
-                <g fill="currentColor" opacity="0.5">
-                    <circle cx="70" cy="55" r="1" />
-                    <circle cx="210" cy="150" r="1" />
-                    <circle cx="120" cy="160" r="1" />
-                    <circle cx="140" cy="90" r="1.2" />
-                </g>
-            </svg>
+            <CelestialMark name="constellation" className="pointer-events-none absolute top-10 right-10 w-44 text-moon/25 z-0 hidden md:block" />
 
             <div ref={top.ref} className="mx-auto px-8 relative z-10">
                 {/* Top — CTA line */}
@@ -222,7 +200,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
                     <span className="flex items-center gap-1.5 text-ink/45">
                         {isIndonesian ? 'Dibuat dengan hati di Jakarta' : 'Made with care in Jakarta'}
-                        <span aria-hidden className="text-moon/70">✦</span>
+                        <CelestialMark name="sparkle" className="w-3 h-3 text-moon/70" />
                     </span>
                 </div>
             </div>

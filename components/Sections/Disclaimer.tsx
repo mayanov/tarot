@@ -1,5 +1,6 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
+import CelestialMark from '../UI/CelestialMark';
 
 interface DisclaimerProps {
     isIndonesian?: boolean;
@@ -44,38 +45,14 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
         <section id="disclaimer" className="relative isolate px-3 sm:px-5 md:px-8 pt-8">
             <div className="relative overflow-hidden mx-auto max-w-[1600px] rounded-[2rem] md:rounded-[2.75rem] bg-white text-ink px-6 py-16 md:px-12 lg:px-16 md:py-24 shadow-[0_34px_90px_-54px_rgba(0,0,0,0.65)]">
                 {/* faint constellation — a quiet celestial motif in the corner */}
-                <svg aria-hidden viewBox="0 0 240 170" fill="none"
-                    className="pointer-events-none absolute -top-4 right-2 md:right-6 w-44 md:w-64 text-moon/25">
-                    <g stroke="currentColor" strokeWidth="1" opacity="0.55">
-                        <line x1="40" y1="140" x2="95" y2="105" />
-                        <line x1="95" y1="105" x2="150" y2="125" />
-                        <line x1="150" y1="125" x2="195" y2="80" />
-                        <line x1="195" y1="80" x2="225" y2="110" />
-                        <line x1="195" y1="80" x2="165" y2="45" />
-                    </g>
-                    <g fill="currentColor">
-                        <circle cx="40" cy="140" r="2.4" />
-                        <circle cx="95" cy="105" r="2.4" />
-                        <circle cx="150" cy="125" r="2.4" />
-                        <circle cx="195" cy="80" r="2.8" />
-                        <circle cx="225" cy="110" r="2.4" />
-                        <circle cx="165" cy="45" r="2.4" />
-                    </g>
-                    <g fill="currentColor" opacity="0.5">
-                        <circle cx="70" cy="55" r="1" />
-                        <circle cx="210" cy="150" r="1" />
-                        <circle cx="120" cy="160" r="1" />
-                        <circle cx="30" cy="85" r="1" />
-                        <circle cx="140" cy="90" r="1.2" />
-                    </g>
-                </svg>
+                <CelestialMark name="constellation" className="pointer-events-none absolute -top-2 right-3 md:right-8 w-28 md:w-40 text-moon/30" />
 
                 <div className="relative z-10">
                     {/* gentle, human framing — no "disclaimer", no legalese */}
                     <FadeIn>
                         <div className="max-w-2xl">
                             <p className="flex items-center gap-2 text-moon text-sm font-medium tracking-wide">
-                                <span aria-hidden>✦</span>
+                                <CelestialMark name="sparkle" className="w-3.5 h-3.5 shrink-0" />
                                 {isIndonesian ? 'Sebelum kita mulai' : 'Before we begin'}
                             </p>
                             <h2 className="mt-4 font-elegant font-semibold text-ink text-[2.1rem] sm:text-[2.7rem] lg:text-[3.3rem] leading-[1.04] tracking-[-0.02em]">

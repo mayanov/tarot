@@ -3,6 +3,7 @@ import { ChevronDown, ArrowUpRight } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import FadeIn from '../UI/FadeIn';
 import SoftAura from '../UI/SoftAura';
+import CelestialMark from '../UI/CelestialMark';
 
 interface FAQProps {
   isIndonesian?: boolean;
@@ -138,7 +139,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           <div className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
             <FadeIn dir="blur" duration={1.15}>
               <p className="flex items-center gap-2 text-moon text-sm font-medium tracking-wide">
-                <span aria-hidden>✦</span>
+                <CelestialMark name="sparkle" className="w-3.5 h-3.5 shrink-0" />
                 {isIndonesian ? 'Baik untuk diketahui' : 'Good to know'}
               </p>
               <h2 className="mt-4 font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
