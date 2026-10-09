@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
 
@@ -69,7 +69,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     <section
       ref={heroRef}
       id="hero"
-      className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden isolate text-cream pt-28 md:pt-32 pb-24 md:pb-28"
+      className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden isolate text-cream pt-28 md:pt-32 pb-16 md:pb-20"
       style={{ willChange: 'filter' }}
     >
       {/* MASTHEAD — a calm, centered stack under a quiet crescent moon. */}
@@ -108,22 +108,6 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           </div>
         </Rise>
       </div>
-
-      {/* scroll cue — a quiet invitation down into the night */}
-      <Rise delay={760} className="absolute left-1/2 -translate-x-1/2 bottom-8 md:bottom-10">
-        <button
-          type="button"
-          onClick={() => smoothScrollToId('about', 80)}
-          className="group flex flex-col items-center gap-2 text-cream/55 hover:text-cream transition-colors duration-300"
-          aria-label={isIndonesian ? 'Gulir ke bawah' : 'Scroll down'}
-        >
-          <span className="flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase font-light">
-            <CelestialMark name="sparkle" className="w-2.5 h-2.5" />
-            {isIndonesian ? 'Gulir' : 'Scroll'}
-          </span>
-          <ChevronDown className="w-4 h-4 motion-safe:animate-bounce motion-safe:[animation-duration:2.4s]" />
-        </button>
-      </Rise>
     </section>
   );
 };
