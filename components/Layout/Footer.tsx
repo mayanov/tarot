@@ -54,22 +54,13 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
             <div className="mx-auto px-8 max-w-3xl flex flex-col items-center py-20 md:py-28">
 
                 {/* ===== closing invitation — the moment to book ===== */}
-                <p style={rise(0)} className="inline-flex items-center gap-2 text-[#C9B8E8] text-sm font-medium tracking-wide">
-                    <CelestialMark name="sparkle" className="w-3.5 h-3.5 shrink-0" />
-                    {isIndonesian ? 'Sebelum kamu pergi' : 'Before you go'}
-                </p>
                 <h2
-                    style={rise(90)}
-                    className="mt-5 font-elegant font-medium leading-[1.1] tracking-[-0.015em] text-[clamp(1.5rem,4vw,2.3rem)] max-w-[18ch] [text-shadow:0_6px_40px_rgba(6,4,14,0.5)]"
+                    style={rise(0)}
+                    className="font-elegant font-medium leading-[1.1] tracking-[-0.015em] text-[clamp(1.6rem,4.2vw,2.5rem)] max-w-[18ch] [text-shadow:0_6px_40px_rgba(6,4,14,0.5)]"
                 >
                     {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                 </h2>
-                <p style={rise(190)} className="mt-5 text-cream/60 font-light text-base md:text-lg max-w-md leading-relaxed">
-                    {isIndonesian
-                        ? 'Mulai dari satu pertanyaan — sisanya kita bahas bareng.'
-                        : 'Start with a single question — we’ll take it from there.'}
-                </p>
-                <div style={rise(290)} className="mt-9">
+                <div style={rise(120)} className="mt-8">
                     <a
                         href="#services"
                         onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
@@ -110,7 +101,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </nav>
 
                     <p className="mt-6 text-[11px] tracking-[0.06em] text-cream/40">
-                        Jakarta · © {year} Mayanov Tarot
+                        Jakarta · © {year}
                     </p>
                 </div>
             </div>
