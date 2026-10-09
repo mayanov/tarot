@@ -258,11 +258,10 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                 style={{
                   gridArea: '1 / 1',
                   opacity: active ? 1 : 0,
-                  // sequential dissolve: the outgoing quote fades out first, then
-                  // the incoming one fades in after a short beat — no overlap.
-                  transition: active
-                    ? 'opacity 650ms cubic-bezier(0.16,1,0.3,1) 340ms'
-                    : 'opacity 360ms cubic-bezier(0.16,1,0.3,1)',
+                  filter: active ? 'blur(0px)' : 'blur(5px)',
+                  // gentle simultaneous crossfade with a soft defocus, so the brief
+                  // overlap reads as a dreamy blur rather than sharp double text.
+                  transition: 'opacity 700ms cubic-bezier(0.16,1,0.3,1), filter 700ms cubic-bezier(0.16,1,0.3,1)',
                 }}
                 className={`flex flex-col items-center text-center ${active ? '' : 'pointer-events-none'}`}
               >
