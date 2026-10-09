@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Instagram, Clock, ArrowRight, MapPin } from 'lucide-react';
+import { Instagram } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
-import { smoothScrollToId } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
 
 interface FooterProps {
@@ -11,24 +10,16 @@ interface FooterProps {
 
 const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
-// Small in-view hook: flips true once the element is sufficiently visible.
-const useInView = (threshold = 0.2, rootMargin = '0px 0px -12% 0px') => {
+// Flips true once the footer scrolls into view, so the close animates in.
+const useInView = (threshold = 0.15, rootMargin = '0px 0px -8% 0px') => {
     const ref = useRef<HTMLDivElement>(null);
     const [inView, setInView] = useState(false);
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            setInView(true);
-            return;
-        }
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setInView(true); return; }
         const io = new IntersectionObserver(
-            (entries) => {
-                if (entries.some((e) => e.isIntersecting)) {
-                    setInView(true);
-                    io.disconnect();
-                }
-            },
+            (entries) => { if (entries.some((e) => e.isIntersecting)) { setInView(true); io.disconnect(); } },
             { threshold, rootMargin }
         );
         io.observe(el);
@@ -37,179 +28,85 @@ const useInView = (threshold = 0.2, rootMargin = '0px 0px -12% 0px') => {
     return { ref, inView };
 };
 
+/**
+ * The footer is the close of the evening — the page dissolves back into the
+ * night sky it opened on. No columns, no labels, no sitemap: just the moon,
+ * the name, where to find her, and a quiet sign-off. It renders transparent
+ * over the shared night-sky backdrop set behind the Disclaimer + Footer.
+ */
 const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
-    const currentYear = new Date().getFullYear();
-    // The supporting content reveals when the top of the footer arrives…
-    const top = useInView(0.15, '0px 0px -10% 0px');
-    // …and the giant logotype reveals on its own, the moment it starts entering.
-    const mark = useInView(0.08, '0px 0px -6% 0px');
+    const year = new Date().getFullYear();
+    const v = useInView();
 
-    // Scroll-linked parallax drift on the logotype — it keeps moving as you scroll,
-    // so the reveal reads as a living scroll animation rather than a one-shot fade.
-    const parRef = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        let raf = 0;
-        const update = () => {
-            const el = parRef.current;
-            if (!el) return;
-            const r = el.getBoundingClientRect();
-            const vh = window.innerHeight;
-            const rel = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
-            el.style.transform = `translate3d(0, ${(rel * 44).toFixed(1)}px, 0)`;
-        };
-        const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
-        update();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-        return () => {
-            window.removeEventListener('scroll', onScroll);
-            window.removeEventListener('resize', onScroll);
-            cancelAnimationFrame(raf);
-        };
-    }, []);
-
-    // supporting content: a soft blur-rise (defocus clears as it settles)
-    const rise = (delay: number, on: boolean): React.CSSProperties => ({
-        opacity: on ? 1 : 0,
-        transform: on ? 'translateY(0)' : 'translateY(18px)',
-        filter: on ? 'blur(0px)' : 'blur(6px)',
-        transition: `opacity 0.8s ease ${delay}ms, transform 0.9s ${EASE} ${delay}ms, filter 0.8s ease ${delay}ms`,
+    // supporting content: a soft blur-rise that settles into focus
+    const rise = (delay: number): React.CSSProperties => ({
+        opacity: v.inView ? 1 : 0,
+        transform: v.inView ? 'translateY(0)' : 'translateY(16px)',
+        filter: v.inView ? 'blur(0px)' : 'blur(5px)',
+        transition: `opacity 0.9s ease ${delay}ms, transform 1s ${EASE} ${delay}ms, filter 0.9s ease ${delay}ms`,
         willChange: 'transform, opacity, filter',
     });
 
-    // logotype words: rise up from behind a clip mask (the wrapper is overflow-hidden)
+    // the wordmark words rise up from behind a clip mask
     const maskInner = (delay: number): React.CSSProperties => ({
         display: 'block',
-        transform: mark.inView ? 'translateY(0)' : 'translateY(110%)',
-        transition: `transform 1.15s ${EASE} ${delay}ms`,
+        transform: v.inView ? 'translateY(0)' : 'translateY(110%)',
+        transition: `transform 1.2s ${EASE} ${delay}ms`,
         willChange: 'transform',
     });
 
-    const socialClass = "inline-flex items-center justify-center p-1 text-ink hover:text-moon transition-all duration-500 hover:-translate-y-0.5";
-    const labelClass = "text-[12px] tracking-[0.02em] text-ink/50 mb-5";
-    const infoClass = "flex items-start gap-2.5 text-[0.82rem] text-ink/70 font-light leading-relaxed";
-
-    const goTo = (id: string) => smoothScrollToId(id, 80);
+    const social = 'inline-flex items-center justify-center text-cream/55 hover:text-cream transition-all duration-500 hover:-translate-y-0.5';
 
     return (
-        <footer
-            className="relative z-20 rounded-[1.75rem] md:rounded-[2.5rem] pt-14 md:pt-20 pb-10 md:pb-12 overflow-hidden isolate shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]"
-            style={{ background: '#FFFFFF' }}
-        >
-            {/* faint constellation — echoes the 'honest notes' card above */}
-            <CelestialMark name="constellation" className="pointer-events-none absolute top-10 right-10 w-44 text-moon/25 z-0 hidden md:block" />
-
-            <div ref={top.ref} className="mx-auto px-8 relative z-10">
-                {/* Top — CTA line */}
-                <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 md:pb-12 border-b border-ink/10">
-                    <div className="lg:col-span-8" style={rise(0, top.inView)}>
-                        <p className="inline-flex items-center gap-2 text-moon text-sm font-medium tracking-wide mb-4">
-                            <CelestialMark name="sparkle" className="w-3.5 h-3.5 shrink-0" />
-                            {isIndonesian ? 'Sebelum kamu pergi' : 'Before you go'}
-                        </p>
-                        <h2 className="font-elegant font-medium text-ink text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]">
-                            {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
-                        </h2>
-                    </div>
-                    <div className="lg:col-span-4 lg:justify-self-end" style={rise(90, top.inView)}>
-                        <a
-                            href="#services"
-                            onClick={(e) => { e.preventDefault(); goTo('services'); }}
-                            className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-ink text-cream text-sm font-medium hover:bg-plum transition-colors duration-300"
-                        >
-                            {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </a>
-                    </div>
+        <footer ref={v.ref} className="relative z-10 text-cream text-center overflow-hidden">
+            <div className="mx-auto px-8 max-w-3xl flex flex-col items-center py-20 md:py-28">
+                {/* the night closes under the moon — bookends the hero */}
+                <div style={rise(0)}>
+                    <CelestialMark name="crescent" className="w-10 md:w-12 text-cream/85 [filter:drop-shadow(0_6px_30px_rgba(6,4,14,0.6))]" />
                 </div>
 
-                {/* Meta row — brand voice + visit + follow (even columns, top-aligned) */}
-                <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-12 pt-12 md:pt-16">
-                    {/* Brand voice */}
-                    <div className="col-span-2 md:col-span-6" style={rise(140, top.inView)}>
-                        <div className="flex items-center gap-2.5 mb-5">
-                            <span className="grid place-items-center w-10 h-10 rounded-full bg-ink text-cream font-serif text-lg leading-none shadow-[0_8px_20px_-10px_rgba(33,30,46,0.6)]">M</span>
-                            <span className="text-[11px] tracking-[0.03em] text-ink/40">
-                                {isIndonesian ? 'Jakarta · Sejak 2016' : 'Jakarta · Est. 2016'}
-                            </span>
-                        </div>
-                        <p className="text-[0.9rem] md:text-[0.95rem] text-ink/60 font-light leading-relaxed max-w-sm">
-                            {isIndonesian
-                                ? 'Tarot sebagai ruang refleksi — analitis, hangat, dan membumi.'
-                                : 'Tarot as a space for reflection — analytical, warm, and grounded.'}
-                        </p>
-                    </div>
-
-                    {/* Visit — hours + location (bilingual) */}
-                    <div className="md:col-span-3" style={rise(200, top.inView)}>
-                        <h4 className={labelClass}>{isIndonesian ? 'Kunjungi' : 'Visit'}</h4>
-                        <ul className="space-y-3.5">
-                            <li className={infoClass}>
-                                <Clock className="w-4 h-4 mt-0.5 text-ink/50 shrink-0" />
-                                <span>{isIndonesian ? 'Waktu Layanan: 11:00 – 20:00' : 'Service Hours: 11:00 – 20:00'}</span>
-                            </li>
-                            <li className={infoClass}>
-                                <MapPin className="w-4 h-4 mt-0.5 text-ink/50 shrink-0" />
-                                <span>{isIndonesian ? 'Jakarta Selatan' : 'South Jakarta'}</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {/* Follow */}
-                    <div className="md:col-span-3" style={rise(260, top.inView)}>
-                        <h4 className={labelClass}>{isIndonesian ? 'Ikuti' : 'Follow'}</h4>
-                        <div className="flex flex-wrap items-center gap-5">
-                            <a href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
-                                onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
-                                className={socialClass} aria-label="Instagram">
-                                <Instagram className="w-[22px] h-[22px]" />
-                            </a>
-                            <a href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
-                                onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
-                                className={socialClass} aria-label="TikTok">
-                                <FaTiktok size={20} />
-                            </a>
-                            <a href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
-                                onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
-                                className={socialClass} aria-label="WhatsApp">
-                                <FaWhatsapp size={23} />
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Logotype — a quiet, centered brand sign-off (not a billboard), revealed word-by-word */}
-                <div ref={mark.ref} className="mt-16 md:mt-24 text-center" aria-label="Mayanov Tarot">
-                    {/* a quiet crescent to bookend the hero — the night opens and closes under the moon */}
-                    <div style={rise(0, mark.inView)} className="flex justify-center mb-5 md:mb-7">
-                        <CelestialMark name="crescent" className="w-8 md:w-10 text-moon/40" />
-                    </div>
-                    <div
-                        ref={parRef}
-                        aria-hidden
-                        className="flex flex-wrap justify-center items-baseline gap-x-[0.28em] font-elegant font-medium leading-[0.95] tracking-[-0.02em] text-[clamp(2.3rem,8vw,5.5rem)] select-none will-change-transform"
-                    >
-                        <span className="inline-block overflow-hidden">
-                            <span className="text-ink pb-[0.18em]" style={maskInner(0)}>Mayanov</span>
-                        </span>
-                        <span className="inline-block overflow-hidden">
-                            <span className="text-moon pb-[0.18em]" style={maskInner(130)}>Tarot</span>
-                        </span>
-                    </div>
-                </div>
-
-                {/* Bottom bar */}
-                <div
-                    className="mt-14 md:mt-16 pt-6 border-t border-ink/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ink/55 tracking-wide"
-                    style={rise(0, mark.inView)}
+                {/* sign-off wordmark — rises word by word from behind a mask */}
+                <h2
+                    aria-label="Mayanov Tarot"
+                    className="mt-8 md:mt-10 flex flex-wrap justify-center items-baseline gap-x-[0.28em] font-elegant font-medium leading-[0.95] tracking-[-0.02em] text-[clamp(2.6rem,10vw,6.5rem)] select-none [text-shadow:0_8px_60px_rgba(6,4,14,0.55)]"
                 >
-                    <span>&copy; {currentYear} Mayanov Tarot. {isIndonesian ? "Hak Cipta Dilindungi." : "All Rights Reserved."}</span>
-                    <span className="flex items-center gap-1.5 text-ink/45">
-                        {isIndonesian ? 'Dibuat dengan hati di Jakarta' : 'Made with care in Jakarta'}
-                        <CelestialMark name="sparkle" className="w-3 h-3 text-moon/70" />
-                    </span>
+                    <span className="inline-block overflow-hidden"><span className="block pb-[0.14em]" style={maskInner(120)}>Mayanov</span></span>
+                    <span className="inline-block overflow-hidden"><span className="block pb-[0.14em] text-[#C9B8E8]" style={maskInner(240)}>Tarot</span></span>
+                </h2>
+
+                {/* a warm farewell */}
+                <p style={rise(360)} className="mt-6 md:mt-7 font-elegant italic text-cream/60 text-lg md:text-xl">
+                    {isIndonesian ? 'Sampai pertanyaan berikutnya.' : 'Until your next question.'}
+                </p>
+
+                {/* the only actions that matter — where to find her */}
+                <div style={rise(460)} className="mt-9 md:mt-11 flex items-center gap-8">
+                    <a
+                        href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
+                        onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
+                        className={social} aria-label="Instagram">
+                        <Instagram className="w-[26px] h-[26px]" strokeWidth={1.6} />
+                    </a>
+                    <a
+                        href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
+                        onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
+                        className={social} aria-label="TikTok">
+                        <FaTiktok size={23} />
+                    </a>
+                    <a
+                        href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
+                        onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
+                        className={social} aria-label="WhatsApp">
+                        <FaWhatsapp size={26} />
+                    </a>
                 </div>
+
+                {/* one quiet line — place + copyright, said gently */}
+                <p style={rise(560)} className="mt-12 md:mt-16 inline-flex items-center gap-2 text-[11px] tracking-[0.06em] text-cream/40">
+                    <span>Jakarta</span>
+                    <CelestialMark name="sparkle" className="w-2 h-2 text-cream/45" />
+                    <span>© {year} Mayanov Tarot</span>
+                </p>
             </div>
         </footer>
     );
