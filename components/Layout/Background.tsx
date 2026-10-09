@@ -8,9 +8,10 @@ const STAR_LAYERS: { dur: number; delay: number; dots: [number, number, number, 
   { dur: 7.5, delay: 2.3, dots: [[58, 38, 0.9, 0.6], [90, 64, 1, 0.65], [66, 20, 1, 0.7], [79, 28, 0.9, 0.6], [86, 46, 1.1, 0.7], [70, 72, 1, 0.6]] },
 ];
 
-// Fixed night-sky photo behind the whole page (only visible at the hero, since the
-// content sections are opaque). A deep violet starry sky, with legibility overlays
-// so the hero copy stays readable, and a soft parallax drift on scroll.
+// Fixed dusk-sky photo behind the whole page (only visible at the hero, since the
+// content sections are opaque). A deep-blue twilight fading to a warm amber horizon,
+// with legibility overlays so the centered hero copy stays readable, and a soft
+// parallax drift on scroll.
 const Background: React.FC = () => {
   const fieldRef = useRef<HTMLDivElement>(null);
 
@@ -35,9 +36,9 @@ const Background: React.FC = () => {
         ref={fieldRef}
         className="absolute -inset-y-[8%] inset-x-0 will-change-transform"
         style={{
-          backgroundImage: `url(${import.meta.env.BASE_URL}sky-hero.jpg)`,
+          backgroundImage: `url(${import.meta.env.BASE_URL}sky-footer.jpg)`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundPosition: 'center 62%',
           transform: 'scale(1.08)',
         }}
       />
@@ -58,14 +59,16 @@ const Background: React.FC = () => {
         />
       ))}
 
-      {/* legibility overlays — darker at the left (statement) and along the bottom (stats) */}
+      {/* legibility overlays — tuned for the centered hero over the dusk gradient:
+          a soft vertical scrim (darker top & bottom) plus a gentle central pool so
+          the cream wordmark/CTA stay readable even where the amber horizon is bright */}
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(90deg, rgba(8,6,20,0.4) 0%, rgba(8,6,20,0.12) 42%, rgba(8,6,20,0) 72%)' }}
+        style={{ background: 'linear-gradient(180deg, rgba(10,8,24,0.52) 0%, rgba(10,8,24,0.26) 32%, rgba(10,8,24,0.3) 60%, rgba(10,8,24,0.6) 100%)' }}
       />
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(8,6,20,0.08) 0%, transparent 26%, transparent 64%, rgba(8,6,20,0.3) 100%)' }}
+        style={{ background: 'radial-gradient(72% 56% at 50% 46%, rgba(10,8,24,0.36) 0%, transparent 72%)' }}
       />
 
     </div>
