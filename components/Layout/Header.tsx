@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, Globe } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { smoothScrollTo, smoothScrollToId } from '../UI/scroll';
 
 interface HeaderProps {
@@ -12,60 +12,31 @@ const REGIONS = {
   id: { name: 'Indonesia', cur: 'ID' },
 } as const;
 
-// Custom region icons (crisp + consistent across devices, unlike emoji flags).
-const RegionIcon: React.FC<{ region: 'global' | 'id'; className?: string }> = ({ region, className = '' }) =>
-  region === 'id' ? (
-    <span className={`inline-block overflow-hidden rounded-[3px] ring-1 ring-ink/10 ${className}`}>
-      <svg viewBox="0 0 3 2" className="block w-full h-full" preserveAspectRatio="none">
-        <rect width="3" height="1" fill="#E4002B" />
-        <rect y="1" width="3" height="1" fill="#FFFFFF" />
-      </svg>
-    </span>
-  ) : (
-    <Globe strokeWidth={1.6} className={className} />
-  );
-
-// Region switcher: a two-segment toggle with a sliding moonstone thumb.
-// `compact` is the small variant used directly in the nav bar.
-const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; compact?: boolean; light?: boolean }> = ({ isIndonesian, onSwitch, compact = false, light = false }) => {
-  const options = [['global', false], ['id', true]] as const;
+// Region switcher: a quiet EN / ID text toggle (no box, flags or sliding thumb).
+// Active language is full-strength; the other is dimmed. `light` is for light bgs.
+const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; light?: boolean }> = ({ isIndonesian, onSwitch, light = false }) => {
+  const activeCls = light ? 'text-ink' : 'text-cream';
+  const dimCls = light ? 'text-ink/40 hover:text-ink/70' : 'text-cream/55 hover:text-cream/85';
+  const items = [['global', false, 'EN'], ['id', true, 'ID']] as const;
   return (
     <div
       role="group"
       aria-label="Site version"
-      className={`relative flex items-center p-0.5 rounded-lg border transition-colors duration-500 ${light ? 'border-ink/20' : 'border-cream/40'} ${compact ? 'w-[12.25rem] h-full' : 'w-full max-w-none sm:max-w-[17rem]'}`}
+      className={`inline-flex items-center gap-2 text-[13px] font-medium tracking-[0.04em] ${!light ? '[text-shadow:0_1px_8px_rgba(0,0,0,0.5)]' : ''}`}
     >
-      <span
-        aria-hidden
-        className={`absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${light ? 'bg-ink/[0.08]' : 'bg-[#202A5C]/60 backdrop-blur-sm'}`}
-        style={{ transform: isIndonesian ? 'translateX(100%)' : 'translateX(0)' }}
-      />
-      {options.map(([key, toID]) => {
-        const r = REGIONS[key];
-        const active = toID === isIndonesian;
-        return (
+      {items.map(([key, toID, label], i) => (
+        <React.Fragment key={key}>
+          {i === 1 && <span aria-hidden className={light ? 'text-ink/25' : 'text-cream/30'}>/</span>}
           <button
-            key={key}
             onClick={() => onSwitch(toID)}
-            aria-pressed={active}
-            title={`Switch to the ${r.name} version`}
-            className={`relative z-10 flex-1 basis-0 flex items-center justify-center gap-1.5 rounded-md font-semibold whitespace-nowrap transition-colors duration-500 ${compact ? 'px-2 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} ${light ? (active ? 'text-ink' : 'text-ink/45 hover:text-ink/70') : (active ? 'text-cream' : 'text-cream/55 hover:text-cream/80')}`}
+            aria-pressed={toID === isIndonesian}
+            title={`Switch to the ${REGIONS[key].name} version`}
+            className={`transition-colors duration-500 ${toID === isIndonesian ? activeCls : dimCls}`}
           >
-            <RegionIcon
-              region={key}
-              className={`shrink-0 transition-opacity duration-500 ${key === 'id' ? (compact ? 'w-[15px] h-[10px]' : 'w-[18px] h-3') : (compact ? 'w-[15px] h-[15px]' : 'w-[17px] h-[17px]')} ${active ? '' : 'opacity-75'}`}
-            />
-            {compact ? (
-              <span>{r.cur}</span>
-            ) : (
-              <span className="flex items-baseline gap-1.5">
-                <span>{r.name}</span>
-                <span className="text-[0.8em] opacity-55">({r.cur})</span>
-              </span>
-            )}
+            {label}
           </button>
-        );
-      })}
+        </React.Fragment>
+      ))}
     </div>
   );
 };
@@ -164,7 +135,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           <div className={`flex items-stretch gap-2.5 transition-opacity duration-300 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {onSwitchRegion && (
               <div className="hidden md:flex mr-1">
-                <RegionSwitcher compact isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
+                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
               </div>
             )}
 
@@ -245,7 +216,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-5 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '480ms' }}>
             {onSwitchRegion ? (
               <div className="self-start sm:self-auto">
-                <RegionSwitcher compact isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
+                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
               </div>
             ) : <span />}
             <button
