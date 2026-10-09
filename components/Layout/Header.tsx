@@ -139,11 +139,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               </div>
             )}
 
-            {/* Pesan + Menu — a joined, rounded pair */}
-            <div className="flex">
+            {/* one 'Pesan' pill + a bare menu icon (no second pill) */}
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-                className="hidden sm:inline-flex items-center px-5 py-2.5 rounded-l-full border border-ink/10 bg-cream text-ink text-[13px] tracking-[0.01em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-500 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
+                className="hidden sm:inline-flex items-center px-6 py-2.5 rounded-full bg-cream text-ink text-[13px] tracking-[0.01em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-500 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
               >
                 {isIndonesian ? 'Pesan' : 'Book'}
               </button>
@@ -152,12 +152,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 onClick={() => setMenuOpen(true)}
                 aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
                 aria-expanded={menuOpen}
-                className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full sm:rounded-l-none sm:rounded-r-full border sm:border-l-0 border-ink/10 bg-cream text-ink text-[13px] tracking-[0.01em] font-medium whitespace-nowrap hover:bg-plum hover:text-cream transition-colors duration-500 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
+                className="group inline-flex items-center justify-center p-1.5 text-cream [filter:drop-shadow(0_1px_8px_rgba(0,0,0,0.55))]"
               >
-                <span>Menu</span>
-                <span className="flex flex-col items-end gap-[4px] w-4">
-                  <span className="block h-px w-4 bg-current transition-all duration-500" />
-                  <span className="block h-px w-2.5 bg-current group-hover:w-4 transition-all duration-500" />
+                <span className="flex flex-col items-end gap-[5px] w-6">
+                  <span className="block h-[1.5px] w-6 bg-current transition-all duration-500" />
+                  <span className="block h-[1.5px] w-4 bg-current group-hover:w-6 transition-all duration-500" />
                 </span>
               </button>
             </div>
