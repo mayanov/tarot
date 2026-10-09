@@ -103,12 +103,15 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
             <div ref={top.ref} className="mx-auto px-8 relative z-10">
                 {/* Top — CTA line */}
                 <div className="grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 items-end pb-10 md:pb-12 border-b border-ink/10">
-                    <h2
-                        className="lg:col-span-8 font-elegant font-medium text-ink text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]"
-                        style={rise(0, top.inView)}
-                    >
-                        {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
-                    </h2>
+                    <div className="lg:col-span-8" style={rise(0, top.inView)}>
+                        <p className="inline-flex items-center gap-2 text-moon text-sm font-medium tracking-wide mb-4">
+                            <CelestialMark name="sparkle" className="w-3.5 h-3.5 shrink-0" />
+                            {isIndonesian ? 'Sebelum kamu pergi' : 'Before you go'}
+                        </p>
+                        <h2 className="font-elegant font-medium text-ink text-[1.9rem] md:text-[2.6rem] leading-[1.05] tracking-[-0.03em]">
+                            {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
+                        </h2>
+                    </div>
                     <div className="lg:col-span-4 lg:justify-self-end" style={rise(90, top.inView)}>
                         <a
                             href="#services"
@@ -178,6 +181,10 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
 
                 {/* Logotype — a quiet, centered brand sign-off (not a billboard), revealed word-by-word */}
                 <div ref={mark.ref} className="mt-16 md:mt-24 text-center" aria-label="Mayanov Tarot">
+                    {/* a quiet crescent to bookend the hero — the night opens and closes under the moon */}
+                    <div style={rise(0, mark.inView)} className="flex justify-center mb-5 md:mb-7">
+                        <CelestialMark name="crescent" className="w-8 md:w-10 text-moon/40" />
+                    </div>
                     <div
                         ref={parRef}
                         aria-hidden
