@@ -258,7 +258,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* ===== Pricelist — full-width twilight-sky bands, one open at a time ===== */}
-            <div className="border-t border-black/[0.08]">
+            <div className="border-t border-ink/[0.08]">
                 {groups.map((g: any, i: number) => {
                     const open = openIdx === i;
                     return (

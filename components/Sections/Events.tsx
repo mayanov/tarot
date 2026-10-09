@@ -99,7 +99,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         delay={i * 90}
                       />
                       <span className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/15 group-hover:ring-cream/50 transition-all" />
-                      <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
                   </FadeIn>
                 ))}
@@ -132,7 +132,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         {grp.items.map((event, ii) => (
                           <li
                             key={ii}
-                            className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-black/10 first:border-t-0"
+                            className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-ink/10 first:border-t-0"
                           >
                             <h3 className="font-serif font-semibold text-ink text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-[#39234E]">
                               {event.title}
@@ -185,7 +185,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       {/* Lightbox */}
       {lightbox && (
         <div
-          className="fixed inset-0 z-[90] flex items-center justify-center p-4 sm:p-8 bg-black/80 backdrop-blur-sm animate-[fade-up_0.2s_ease-out]"
+          className="fixed inset-0 z-[90] flex items-center justify-center p-4 sm:p-8 bg-ink/80 backdrop-blur-sm animate-[fade-up_0.2s_ease-out]"
           onClick={() => setLightbox(null)}
         >
           <img

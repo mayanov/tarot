@@ -17,7 +17,7 @@ const SectionPanel: React.FC<SectionPanelProps> = ({ children, className = '' })
     <div
       className={
         'relative overflow-hidden rounded-xl md:rounded-2xl text-ink ' +
-        'border border-black/5 bg-[#F5F1EA] ' +
+        'border border-ink/5 bg-[#F5F1EA] ' +
         'shadow-[0_40px_120px_-55px_rgba(0,0,0,0.7)] ' +
         'px-6 sm:px-10 md:px-14 lg:px-16 py-14 md:py-20 ' +
         className

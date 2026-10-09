@@ -93,7 +93,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       onTransitionEnd={(e) => { if (leaving && reduce && e.propertyName === 'opacity') setGone(true); }}
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
       style={{
-        background: '#000000',
+        background: '#14112B',
         // The full moon dilates open — a circle of light growing from its center
         // to unveil the page (an "aperture" reveal). The mask is only applied once
         // the exit begins, so no pinhole of the page shows through beforehand.
@@ -133,7 +133,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           <div
             className="absolute inset-0 rounded-full"
             style={{
-              background: '#000000',
+              background: '#0A0916',
               transform: `translateX(${wax * 1.02}%)`,
               filter: 'blur(3px)',
             }}
