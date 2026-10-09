@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
+import CelestialMark from '../UI/CelestialMark';
 
 interface TestimonialsProps {
   isIndonesian?: boolean;
@@ -216,7 +217,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
   // Auto-advance one review every few seconds; pause on hover.
   useEffect(() => {
     if (paused) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % reviews.length), 5000);
+    const id = setInterval(() => setIndex((i) => (i + 1) % reviews.length), 6800);
     return () => clearInterval(id);
   }, [paused, reviews.length]);
 
@@ -224,87 +225,82 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
 
   return (
     <div id="testimonials" className="relative overflow-hidden isolate text-ink scroll-mt-28">
+      {/* intro — a warm, human framing (no star-rating stat) */}
       <FadeIn>
-        <div className="mx-auto px-8 mb-12 text-center">
-          <div className="flex items-center justify-center gap-1.5 text-sky">
-            {[1, 2, 3, 4, 5].map((st) => (<Star key={st} className="w-5 h-5 md:w-6 md:h-6 fill-current" />))}
-          </div>
-          <p className="mt-5 mx-auto max-w-2xl font-elegant font-medium text-ink text-[1.7rem] sm:text-[2.2rem] lg:text-[2.6rem] leading-[1.15] tracking-[-0.02em]">
-            {isIndonesian
-              ? <>Rating sempurna <span className="text-sky">5.0</span> dari ratusan sesi di Google.</>
-              : <>A perfect <span className="text-sky">5.0</span> across hundreds of readings on Google.</>}
+        <div className="mx-auto px-8 max-w-2xl text-center">
+          <p className="inline-flex items-center gap-2 text-moon text-sm font-medium tracking-wide">
+            <CelestialMark name="sparkle" className="w-3.5 h-3.5 shrink-0" />
+            {isIndonesian ? 'Dari sesi sebelumnya' : 'From past sessions'}
           </p>
+          <h2 className="mt-4 font-elegant font-semibold text-ink text-[2rem] sm:text-[2.6rem] lg:text-[3rem] leading-[1.06] tracking-[-0.02em]">
+            {isIndonesian ? 'Dalam kata mereka' : 'In their own words'}
+          </h2>
         </div>
       </FadeIn>
 
-      {/* Auto-advancing — arrows flank the quote; all reviews are stacked so the
-          block height always fits the LONGEST one (no jump when it changes). */}
+      {/* one quote at a time — a slow, breathing rotation (pause on hover); all
+          reviews are stacked so the block height fits the longest (no jump) */}
       <div
-        className="relative mx-auto px-8"
+        className="relative mx-auto px-8 mt-10 md:mt-14"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        {/* prev — plain chevron, at the section's left margin */}
+        {/* a large, faint opening quote mark */}
+        <div aria-hidden className="pointer-events-none text-center font-elegant text-moon/20 text-[5rem] md:text-[7rem] leading-[0.28] select-none">&ldquo;</div>
+
+        <div className="relative grid max-w-3xl mx-auto mt-5 md:mt-7">
+          {reviews.map((r, i) => {
+            const active = i === index;
+            return (
+              <blockquote
+                key={i}
+                aria-hidden={!active}
+                style={{ gridArea: '1 / 1' }}
+                className={`flex flex-col items-center text-center transition-opacity duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${active ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              >
+                <p className="font-elegant text-ink text-[1.3rem] md:text-[1.9rem] leading-[1.42] tracking-[-0.005em]">
+                  {r.text}
+                </p>
+                <footer className="mt-8 md:mt-10 font-elegant italic text-ink/75 text-base md:text-lg">
+                  <span className="not-italic text-moon mr-2">&mdash;</span>{r.author}
+                  <span className="not-italic text-ink/40 text-[0.78rem] ml-2 tracking-wide align-middle">· {r.location}</span>
+                </footer>
+              </blockquote>
+            );
+          })}
+        </div>
+
+        {/* quiet nav — faint chevrons at the margins */}
         <button
           type="button"
           onClick={() => go(-1)}
           aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
-          className="absolute left-3 md:left-8 lg:left-10 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/40 hover:text-moon-deep transition-colors duration-300"
+          className="absolute left-2 md:left-6 lg:left-10 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/20 hover:text-moon transition-colors duration-300"
         >
-          <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
+          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
         </button>
-        {/* next — plain chevron, at the section's right margin */}
         <button
           type="button"
           onClick={() => go(1)}
           aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
-          className="absolute right-3 md:right-8 lg:right-10 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/40 hover:text-moon-deep transition-colors duration-300"
+          className="absolute right-2 md:right-6 lg:right-10 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/20 hover:text-moon transition-colors duration-300"
         >
-          <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
+          <ChevronRight className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
         </button>
-
-        <div className="relative z-10 grid max-w-5xl mx-auto px-4 sm:px-6">
-          {reviews.map((r, i) => {
-            const active = i === index;
-            return (
-              <div
-                key={i}
-                aria-hidden={!active}
-                style={{ gridArea: '1 / 1' }}
-                className={`flex flex-col items-center justify-center text-center transition-opacity duration-500 ${active ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-              >
-                <p className="text-ink text-xl md:text-3xl leading-relaxed font-normal">
-                  <span className="font-elegant text-moon-deep/70 align-baseline">&ldquo;</span>{r.text}<span className="font-elegant text-moon-deep/70 align-baseline">&rdquo;</span>
-                </p>
-                {/* attribution — italic serif with a dash */}
-                <div className="mt-8 font-elegant italic text-ink/90 text-lg md:text-xl">
-                  <span className="not-italic text-moon-deep mr-2">&mdash;</span>{r.author}
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
 
-      <div className="text-center mt-12 md:mt-14 px-4">
+      <div className="text-center mt-12 md:mt-16 px-4">
         <a
           href="https://share.google/4LrmhpcgHNXX9bTzr"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-ink/25 hover:border-ink hover:bg-ink hover:text-cream transition-all duration-300 text-ink font-medium group"
+          className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-ink/20 hover:border-ink hover:bg-ink hover:text-cream transition-all duration-300 text-ink font-medium"
         >
-          <span>{isIndonesian ? 'Lihat Semua Review di Google' : 'Read All Reviews on Google'}</span>
+          <span>{isIndonesian ? 'Lihat semua review di Google' : 'Read all reviews on Google'}</span>
         </a>
       </div>
     </div>
   );
 };
-
-// Simple Star Icon component for local use if needed, though Lucide handles it.
-const Star: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-  </svg>
-);
 
 export default Testimonials;
