@@ -60,7 +60,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 </p>
                 <h2
                     style={rise(90)}
-                    className="mt-5 font-elegant font-medium leading-[1.06] tracking-[-0.02em] text-[clamp(2rem,6vw,3.6rem)] max-w-[15ch] [text-shadow:0_6px_40px_rgba(6,4,14,0.5)]"
+                    className="mt-5 font-elegant font-medium leading-[1.1] tracking-[-0.015em] text-[clamp(1.5rem,4vw,2.3rem)] max-w-[18ch] [text-shadow:0_6px_40px_rgba(6,4,14,0.5)]"
                 >
                     {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                 </h2>
@@ -86,7 +86,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
 
                     <div
                         aria-label="Mayanov Tarot"
-                        className="mt-9 md:mt-10 font-elegant font-medium text-[1.3rem] md:text-[1.5rem] tracking-[-0.01em] select-none"
+                        className="mt-9 md:mt-10 font-elegant font-medium leading-[0.95] tracking-[-0.02em] text-[clamp(2.6rem,9vw,5.5rem)] select-none [text-shadow:0_8px_60px_rgba(6,4,14,0.55)]"
                     >
                         Mayanov <span className="text-[#C9B8E8]">Tarot</span>
                     </div>
