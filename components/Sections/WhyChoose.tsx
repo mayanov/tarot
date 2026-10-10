@@ -58,19 +58,19 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
 
           {/* Editorial index — no cards: a thin rule, a plain line mark with a
               small label opposite, then the serif statement. Whitespace carries it. */}
-          <div className="mt-14 md:mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 lg:gap-x-16 gap-y-10 md:gap-y-14">
+          <div className="mt-16 md:mt-24 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 lg:gap-x-20 gap-y-14 md:gap-y-24">
             {reasons.map((reason, index) => {
               const Icon = ICONS[index];
               return (
                 <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
-                  <div className="group/row border-t border-ink/10 pt-6 md:pt-7 transition-colors duration-500 hover:border-moon/40">
+                  <div className="group/row border-t border-ink/10 pt-7 md:pt-9 pb-1 transition-colors duration-500 hover:border-moon/40">
                     {/* mark + label on one quiet line */}
                     <div className="flex items-center justify-between">
                       <Icon size={22} strokeWidth={1.5} className="text-moon/80 transition-colors duration-500 group-hover/row:text-moon" />
                       <span className="text-[0.7rem] uppercase tracking-[0.18em] text-ink/40 font-medium">{reason.label}</span>
                     </div>
                     {/* the statement does the talking */}
-                    <p className="mt-6 font-elegant text-ink text-[1.45rem] md:text-[1.7rem] leading-[1.18] tracking-[-0.01em]">
+                    <p className="mt-8 md:mt-9 font-elegant text-ink text-[1.4rem] md:text-[1.6rem] leading-[1.28] tracking-[-0.01em]">
                       {reason.stat}
                     </p>
                   </div>
