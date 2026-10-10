@@ -52,19 +52,19 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             </p>
           </FadeIn>
 
-          {/* Editorial list — no cards, no feature icons, no grid: a calm column of
-              big serif statements, each with a lowercase label hanging quietly in
-              the margin like a book's sidenote. Whitespace and type carry it. */}
-          <div className="mt-16 md:mt-24 max-w-4xl flex flex-col">
+          {/* Editorial list — no cards, no feature icons: two calm columns of big
+              serif statements, each with a small lowercase italic label as a quiet
+              kicker above it. Compact but still magazine, not a feature grid. */}
+          <div className="mt-14 md:mt-16 grid grid-cols-1 md:grid-cols-2 gap-x-14 lg:gap-x-24 gap-y-9 md:gap-y-12">
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
-                <div className="group/row grid grid-cols-1 md:grid-cols-[8.5rem_1fr] gap-1.5 md:gap-10 items-baseline py-7 md:py-9">
-                  {/* quiet marginal label */}
-                  <span className="font-elegant italic lowercase text-moon/65 text-[1.05rem] md:text-right md:pt-2 transition-colors duration-500 group-hover/row:text-moon">
+                <div className="group/row">
+                  {/* quiet kicker label */}
+                  <span className="block font-elegant italic lowercase text-moon/70 text-[1rem] md:text-[1.05rem] transition-colors duration-500 group-hover/row:text-moon">
                     {reason.label}
                   </span>
                   {/* the statement does the talking */}
-                  <p className="font-elegant text-ink text-[1.65rem] md:text-[2.15rem] leading-[1.18] tracking-[-0.015em]">
+                  <p className="mt-2 font-elegant text-ink text-[1.5rem] md:text-[1.95rem] leading-[1.2] tracking-[-0.015em]">
                     {reason.stat}
                   </p>
                 </div>
