@@ -56,23 +56,23 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             </p>
           </FadeIn>
 
-          {/* Calm, airy panels — a soft icon chip, a serif statement, a gentle supporting label */}
-          <div className="mt-16 md:mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+          {/* Editorial index — no cards: a thin rule, a plain line mark with a
+              small label opposite, then the serif statement. Whitespace carries it. */}
+          <div className="mt-14 md:mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 lg:gap-x-16 gap-y-10 md:gap-y-14">
             {reasons.map((reason, index) => {
               const Icon = ICONS[index];
               return (
                 <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
-                  <div className="group/card h-full rounded-[1.75rem] border border-ink/[0.07] bg-white p-6 md:p-8 shadow-[0_18px_44px_-30px_rgba(33,30,46,0.28)] transition-all duration-500 hover:-translate-y-0.5 hover:border-moon/15 hover:shadow-[0_26px_54px_-30px_rgba(107,63,160,0.3)]">
-                    {/* soft pastel icon chip */}
-                    <div className="w-12 h-12 rounded-2xl bg-moon/10 text-moon grid place-items-center transition-colors duration-500 group-hover/card:bg-moon/[0.16]">
-                      <Icon size={22} strokeWidth={1.75} />
+                  <div className="group/row border-t border-ink/10 pt-6 md:pt-7 transition-colors duration-500 hover:border-moon/40">
+                    {/* mark + label on one quiet line */}
+                    <div className="flex items-center justify-between">
+                      <Icon size={22} strokeWidth={1.5} className="text-moon/80 transition-colors duration-500 group-hover/row:text-moon" />
+                      <span className="text-[0.7rem] uppercase tracking-[0.18em] text-ink/40 font-medium">{reason.label}</span>
                     </div>
-                    {/* calm statement */}
-                    <p className="mt-5 font-elegant text-ink text-[1.3rem] md:text-[1.5rem] leading-[1.2] tracking-[-0.01em]">
+                    {/* the statement does the talking */}
+                    <p className="mt-6 font-elegant text-ink text-[1.45rem] md:text-[1.7rem] leading-[1.18] tracking-[-0.01em]">
                       {reason.stat}
                     </p>
-                    {/* supporting label */}
-                    <p className="mt-2.5 text-sm text-moon/70 font-medium">{reason.label}</p>
                   </div>
                 </FadeIn>
               );
