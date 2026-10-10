@@ -85,7 +85,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </Rise>
 
         <Rise delay={340}>
-          <p className="mt-7 md:mt-9 font-elegant font-medium leading-[1.14] tracking-[-0.01em] text-[1.5rem] sm:text-[1.9rem] md:text-[2.7rem] lg:text-[3.3rem] xl:text-[3.8rem] text-cream max-w-[20ch] [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
+          <p className="mt-7 md:mt-9 font-elegant font-medium leading-[1.14] tracking-[-0.01em] text-[1.45rem] sm:text-[1.85rem] md:text-[2.4rem] lg:text-[2.85rem] xl:text-[3.1rem] text-cream max-w-[20ch] [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
             {isIndonesian ? (
               <>Pandangan <span className="italic">jernih</span> untuk langkah berikutnya.</>
             ) : (
