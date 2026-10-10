@@ -47,15 +47,15 @@ const band = (rng: () => number, count: number): Dot[] =>
 
 const rng = mulberry32(20090217);
 // base density: a faint full-sky dusting plus a denser diagonal band
-const STATIC_DOTS: Dot[] = [...field(rng, 80, 0.5, 1.1, 0.3, 0.6), ...band(rng, 60)];
+const STATIC_DOTS: Dot[] = [...field(rng, 150, 0.4, 1.1, 0.28, 0.6), ...band(rng, 110)];
 // twinkling layers at different speeds for depth
 const TWINKLE_LAYERS: { dur: number; delay: number; drift: boolean; dots: Dot[] }[] = [
-  { dur: 4.5, delay: 0,   drift: true,  dots: field(rng, 24, 0.9, 1.6, 0.6, 0.95) },
-  { dur: 6,   delay: 1.1, drift: false, dots: [...field(rng, 18, 0.8, 1.3, 0.5, 0.85), ...band(rng, 14)] },
-  { dur: 7.5, delay: 2.3, drift: true,  dots: field(rng, 20, 0.7, 1.1, 0.45, 0.75) },
+  { dur: 4.5, delay: 0,   drift: true,  dots: field(rng, 44, 0.9, 1.6, 0.6, 0.95) },
+  { dur: 6,   delay: 1.1, drift: false, dots: [...field(rng, 34, 0.8, 1.3, 0.5, 0.85), ...band(rng, 28)] },
+  { dur: 7.5, delay: 2.3, drift: true,  dots: field(rng, 36, 0.7, 1.1, 0.45, 0.75) },
 ];
 // a few bright accent stars that pulse harder and carry a soft glow
-const ACCENTS: Dot[] = field(rng, 9, 1.4, 2.2, 0.9, 1);
+const ACCENTS: Dot[] = field(rng, 14, 1.4, 2.2, 0.9, 1);
 
 // Solid-core dot with a soft falloff.
 const toGradients = (dots: Dot[]): string =>
