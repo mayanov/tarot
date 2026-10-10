@@ -40,31 +40,31 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
       <div className="relative isolate overflow-hidden text-ink" style={{ background: '#FFFFFF' }}>
         <SoftAura />
         <div className="relative z-10 mx-auto px-8 pt-20 md:pt-28">
-          {/* Lead — left-aligned heading + paragraph across the top */}
+          {/* Lead — centered heading + paragraph */}
           <FadeIn>
-            <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl">
+            <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl mx-auto text-center">
               <MaskReveal>{isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}</MaskReveal>
             </h2>
-            <p className="mt-6 text-lg md:text-xl text-ink/60 font-light leading-relaxed max-w-2xl">
+            <p className="mt-6 text-lg md:text-xl text-ink/60 font-light leading-relaxed max-w-2xl mx-auto text-center">
               {isIndonesian
                 ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan ruang aman untuk bercerita, dengan kesimpulan yang jelas dan langkah yang bisa kamu ambil.'
                 : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
             </p>
           </FadeIn>
 
-          {/* Editorial list — no cards, no feature icons: two calm columns of big
-              serif statements, each with a small lowercase italic label as a quiet
-              kicker above it. Compact but still magazine, not a feature grid. */}
-          <div className="mt-14 md:mt-16 grid grid-cols-1 md:grid-cols-2 gap-x-14 lg:gap-x-24 gap-y-9 md:gap-y-12">
+          {/* Editorial list — no cards, no feature icons: two calm centered columns
+              of big serif statements, each with a small lowercase italic label as a
+              quiet kicker above it. Compact but still magazine, not a feature grid. */}
+          <div className="mt-14 md:mt-20 mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-x-16 lg:gap-x-24 gap-y-10 md:gap-y-14">
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
-                <div className="group/row">
+                <div className="group/row text-center">
                   {/* quiet kicker label */}
                   <span className="block font-elegant italic lowercase text-moon/70 text-[1rem] md:text-[1.05rem] transition-colors duration-500 group-hover/row:text-moon">
                     {reason.label}
                   </span>
                   {/* the statement does the talking */}
-                  <p className="mt-2 font-elegant text-ink text-[1.5rem] md:text-[1.95rem] leading-[1.2] tracking-[-0.015em]">
+                  <p className="mt-2.5 font-elegant text-ink text-[1.5rem] md:text-[1.95rem] leading-[1.2] tracking-[-0.015em]">
                     {reason.stat}
                   </p>
                 </div>
