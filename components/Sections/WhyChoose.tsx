@@ -1,5 +1,4 @@
 import React from 'react';
-import { Compass, Heart, MessageCircle, Lock, Award, Feather } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
 import SoftAura from '../UI/SoftAura';
@@ -13,9 +12,6 @@ interface ReasonItem {
   label: string; // small supporting category
   stat: string;  // the calm headline statement
 }
-
-// Soft line icons, one per reason (same order in both languages).
-const ICONS = [Compass, Heart, MessageCircle, Lock, Award, Feather];
 
 const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   const reasonsGlobal: ReasonItem[] = [
@@ -56,27 +52,24 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             </p>
           </FadeIn>
 
-          {/* Editorial index — no cards: a thin rule, a plain line mark with a
-              small label opposite, then the serif statement. Whitespace carries it. */}
-          <div className="mt-16 md:mt-24 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 lg:gap-x-20 gap-y-14 md:gap-y-24">
-            {reasons.map((reason, index) => {
-              const Icon = ICONS[index];
-              return (
-                <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
-                  <div className="group/row border-t border-ink/10 pt-7 md:pt-9 pb-1 transition-colors duration-500 hover:border-moon/40">
-                    {/* mark + label on one quiet line */}
-                    <div className="flex items-center justify-between">
-                      <Icon size={22} strokeWidth={1.5} className="text-moon/80 transition-colors duration-500 group-hover/row:text-moon" />
-                      <span className="text-[0.7rem] uppercase tracking-[0.18em] text-ink/40 font-medium">{reason.label}</span>
-                    </div>
-                    {/* the statement does the talking */}
-                    <p className="mt-8 md:mt-9 font-elegant text-ink text-[1.4rem] md:text-[1.6rem] leading-[1.28] tracking-[-0.01em]">
-                      {reason.stat}
-                    </p>
-                  </div>
-                </FadeIn>
-              );
-            })}
+          {/* Editorial list — no cards, no feature icons, no grid: a calm column of
+              big serif statements, each with a lowercase label hanging quietly in
+              the margin like a book's sidenote. Whitespace and type carry it. */}
+          <div className="mt-16 md:mt-24 max-w-4xl flex flex-col">
+            {reasons.map((reason, index) => (
+              <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
+                <div className="group/row grid grid-cols-1 md:grid-cols-[8.5rem_1fr] gap-1.5 md:gap-10 items-baseline py-7 md:py-9">
+                  {/* quiet marginal label */}
+                  <span className="font-elegant italic lowercase text-moon/65 text-[1.05rem] md:text-right md:pt-2 transition-colors duration-500 group-hover/row:text-moon">
+                    {reason.label}
+                  </span>
+                  {/* the statement does the talking */}
+                  <p className="font-elegant text-ink text-[1.65rem] md:text-[2.15rem] leading-[1.18] tracking-[-0.015em]">
+                    {reason.stat}
+                  </p>
+                </div>
+              </FadeIn>
+            ))}
           </div>
         </div>
 
