@@ -113,16 +113,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   ];
 
   const faqs = isIndonesian ? faqsID : faqsEN;
-  const allLabel = isIndonesian ? 'Semua' : 'All';
-  const categories = [allLabel, ...Array.from(new Set(faqs.map((f) => f.cat)))];
-
-  const [activeCat, setActiveCat] = useState<string>(allLabel);
   const [openKey, setOpenKey] = useState<string | null>(faqs[0]?.question ?? null);
-
-  // Treat a stale category (e.g. after a language switch) as "all".
-  const showAll = activeCat === allLabel || !faqs.some((f) => f.cat === activeCat);
-  const filtered = showAll ? faqs : faqs.filter((f) => f.cat === activeCat);
-
   const toggleFAQ = (key: string) => setOpenKey((cur) => (cur === key ? null : key));
 
   return (
@@ -151,46 +142,20 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   : 'Everything about the reading process, ethics, and delivery.'}
               </p>
 
-              {/* category filter — quiet pills (no count badges) */}
-              <div className="mt-8 flex flex-wrap gap-2">
-                {categories.map((cat) => {
-                  const active = showAll ? cat === allLabel : cat === activeCat;
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => setActiveCat(cat)}
-                      aria-pressed={active}
-                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-500 ${active
-                        ? 'bg-ink text-cream'
-                        : 'border border-ink/15 text-ink/55 hover:border-ink/40 hover:text-ink'}`}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* still have questions? — a soft warm note (not a boxed card) */}
-              <div className="mt-10 rounded-[1.5rem] bg-white border border-ink/[0.08] p-6 max-w-xs shadow-[0_16px_44px_-30px_rgba(33,30,46,0.3)]">
-                <div className="flex items-center gap-2.5">
-                  <span className="grid place-items-center w-9 h-9 rounded-full bg-[#25D366]/12 text-[#25D366] shrink-0">
-                    <FaWhatsapp size={16} />
-                  </span>
-                  <p className="font-elegant font-semibold text-ink text-[1.05rem] leading-snug">
-                    {isIndonesian ? 'Masih ada pertanyaan?' : 'Still have a question?'}
-                  </p>
-                </div>
-                <p className="mt-3 text-sm text-ink/55 font-light leading-relaxed">
-                  {isIndonesian ? 'Chat langsung — dijawab dengan senang hati.' : 'Chat directly — happy to help.'}
+              {/* still have questions? — a quiet inline line, not a boxed card */}
+              <div className="mt-9 max-w-xs">
+                <p className="text-ink/55 font-light text-sm leading-relaxed">
+                  {isIndonesian ? 'Masih ada pertanyaan?' : 'Still have a question?'}
                 </p>
                 <a
                   href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ada%20pertanyaan%20tentang%20tarot%20reading"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink text-cream px-5 py-2.5 text-sm font-medium hover:bg-plum transition-colors duration-500"
+                  className="group mt-2.5 inline-flex items-center gap-2 text-moon font-medium text-sm hover:text-plum transition-colors duration-500"
                 >
-                  {isIndonesian ? 'Tanya via WhatsApp' : 'Ask on WhatsApp'}
-                  <ArrowUpRight className="w-4 h-4 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <FaWhatsapp size={15} />
+                  {isIndonesian ? 'Chat langsung' : 'Chat with me'}
+                  <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
               </div>
             </FadeIn>
@@ -198,9 +163,9 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
 
           {/* RIGHT — accordion (min-height reserves the full-list height so the
               section doesn't shrink when a category is filtered) */}
-          <div className="lg:col-span-8 lg:min-h-[var(--faqH)]" style={{ ['--faqH' as string]: `${faqs.length * 76}px` } as React.CSSProperties}>
+          <div className="lg:col-span-8">
             <div className="border-t border-ink/[0.08]">
-              {filtered.map((faq, index) => {
+              {faqs.map((faq, index) => {
                 const open = openKey === faq.question;
                 return (
                   <FadeIn key={faq.question} delay={Math.min(index, 6) * 55} dir="up" distance={0.7}>
