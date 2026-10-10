@@ -98,6 +98,8 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                         delay={i * 90}
                       />
+                      {/* gentle violet duotone so the photos tone with the palette; clears on hover */}
+                      <span className="pointer-events-none absolute inset-0 bg-plum mix-blend-color opacity-40 group-hover:opacity-0 transition-opacity duration-500" />
                       <span className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/15 group-hover:ring-cream/50 transition-all" />
                       <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
