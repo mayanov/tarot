@@ -4,7 +4,7 @@ import Header from './components/Layout/Header';
 import Hero from './components/Sections/Hero';
 import About from './components/Sections/About';
 import WhyChoose from './components/Sections/WhyChoose';
-import Marquee from './components/Sections/Marquee';
+import TarotIntro from './components/Sections/TarotIntro';
 import Footer from './components/Layout/Footer';
 import Loader from './components/Layout/Loader';
 import BookingModal from './components/Booking/BookingModal';
@@ -357,7 +357,7 @@ function App() {
       <main className="relative z-10">
         <Hero isIndonesian={isIndonesian} />
         <About isIndonesian={isIndonesian} />
-        <Marquee isIndonesian={isIndonesian} />
+        <TarotIntro isIndonesian={isIndonesian} />
 
         <React.Suspense fallback={<div className="h-96 flex items-center justify-center text-white/20">Loading...</div>}>
           <Services isIndonesian={isIndonesian} />
