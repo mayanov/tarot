@@ -43,12 +43,20 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     return (
         // No card — flows straight on from the FAQ on the same white background, set
         // apart only by a hairline rule.
-        <section id="disclaimer" className="relative isolate text-ink pb-20 md:pb-28" style={{ background: '#FFFFFF' }}>
+        <section id="disclaimer" className="relative isolate text-ink pb-24 md:pb-36" style={{ background: '#FFFFFF' }}>
             <div className="mx-auto px-8 relative z-10">
-                <div className="relative border-t border-ink/10 pt-16 md:pt-24">
-                    {/* faint constellation — a quiet celestial motif in the corner */}
-                    <CelestialMark name="constellation" className="pointer-events-none absolute top-6 right-0 md:right-4 w-28 md:w-40 text-moon/25" />
+                {/* celestial section break — no rule: a quiet constellation over a soft
+                    glow marks the shift into a new section on the same white ground */}
+                <div className="relative flex justify-center pt-16 md:pt-24 pb-12 md:pb-16">
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[34rem] h-[18rem] max-w-[90vw] rounded-full blur-[90px]"
+                        style={{ background: 'radial-gradient(closest-side, rgba(107,63,160,0.12), transparent)' }}
+                    />
+                    <CelestialMark name="constellation" className="relative w-28 md:w-36 text-moon/40" />
+                </div>
 
+                <div className="relative">
                     {/* gentle, human framing — no "disclaimer", no legalese */}
                     <FadeIn>
                         <div className="max-w-2xl">

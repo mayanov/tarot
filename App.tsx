@@ -374,8 +374,9 @@ function App() {
       </main>
 
       {/* Night-sky backdrop behind the Footer — the page returns to the night and the
-          footer rests on it (bookends the dusk hero). */}
-      <div className="relative z-10 isolate overflow-hidden">
+          footer rests on it (bookends the dusk hero). Pulled up with a rounded top so
+          the sky rises over the white section above it, like an overlapping panel. */}
+      <div className="relative z-10 isolate overflow-hidden -mt-10 md:-mt-20 rounded-t-[2.25rem] md:rounded-t-[3.5rem] shadow-[0_-30px_70px_-40px_rgba(16,16,40,0.45)]">
         {/* the sky photo spanning the whole region (same sky as the hero — bookends the
             page); drifts slower than the content for parallax depth */}
         <div
