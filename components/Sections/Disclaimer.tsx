@@ -41,13 +41,14 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     ];
 
     return (
-        // warm paper card framed by the night sky behind it (the sky bookends into the footer)
-        <section id="disclaimer" className="relative isolate px-3 sm:px-5 md:px-8 pt-8">
-            <div className="relative overflow-hidden mx-auto max-w-[1600px] rounded-[2rem] md:rounded-[2.75rem] bg-white text-ink px-6 py-16 md:px-12 lg:px-16 md:py-24 shadow-[0_34px_90px_-54px_rgba(0,0,0,0.65)]">
-                {/* faint constellation — a quiet celestial motif in the corner */}
-                <CelestialMark name="constellation" className="pointer-events-none absolute -top-2 right-3 md:right-8 w-28 md:w-40 text-moon/30" />
+        // No card — flows straight on from the FAQ on the same white background, set
+        // apart only by a hairline rule.
+        <section id="disclaimer" className="relative isolate text-ink pb-20 md:pb-28" style={{ background: '#FFFFFF' }}>
+            <div className="mx-auto px-8 relative z-10">
+                <div className="relative border-t border-ink/10 pt-16 md:pt-24">
+                    {/* faint constellation — a quiet celestial motif in the corner */}
+                    <CelestialMark name="constellation" className="pointer-events-none absolute top-6 right-0 md:right-4 w-28 md:w-40 text-moon/25" />
 
-                <div className="relative z-10">
                     {/* gentle, human framing — no "disclaimer", no legalese */}
                     <FadeIn>
                         <div className="max-w-2xl">

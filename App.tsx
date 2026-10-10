@@ -368,12 +368,13 @@ function App() {
           <WhyChoose isIndonesian={isIndonesian} />
           <Events isIndonesian={isIndonesian} />
           <FAQ isIndonesian={isIndonesian} />
+          {/* Disclaimer flows on the same white background as the FAQ (no card) */}
+          <Disclaimer isIndonesian={isIndonesian} />
         </React.Suspense>
       </main>
 
-      {/* Continuous night-sky backdrop shared by the Disclaimer and the Footer — the
-          sky flows unbroken from one section into the other; the footer rests on it as
-          a white card. */}
+      {/* Night-sky backdrop behind the Footer — the page returns to the night and the
+          footer rests on it (bookends the dusk hero). */}
       <div className="relative z-10 isolate overflow-hidden">
         {/* the sky photo spanning the whole region (same sky as the hero — bookends the
             page); drifts slower than the content for parallax depth */}
@@ -395,10 +396,6 @@ function App() {
           className="pointer-events-none absolute inset-0 -z-10"
           style={{ background: 'linear-gradient(180deg, rgba(16,16,40,0.56) 0%, rgba(16,16,40,0.42) 48%, rgba(16,16,40,0.54) 100%)' }}
         />
-
-        <React.Suspense fallback={<div className="h-96" />}>
-          <Disclaimer isIndonesian={isIndonesian} />
-        </React.Suspense>
 
         <div className="p-3 sm:p-5 md:p-8">
           <Footer isIndonesian={isIndonesian} />
