@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { smoothScrollTo, smoothScrollToId } from '../UI/scroll';
+import CelestialMark from '../UI/CelestialMark';
 
 interface HeaderProps {
   isIndonesian?: boolean;
@@ -171,6 +172,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         aria-hidden={!menuOpen}
       >
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(55% 55% at 82% 110%, rgba(107,63,160,0.11) 0%, transparent 62%)' }} />
+        {/* celestial atmosphere — the menu is a night-sky moment (matches hero/footer) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-70"
+          style={{ backgroundImage: 'radial-gradient(1.5px 1.5px at 15% 22%, rgba(255,255,255,0.5), transparent), radial-gradient(1px 1px at 72% 14%, rgba(255,255,255,0.4), transparent), radial-gradient(1.5px 1.5px at 86% 58%, rgba(255,255,255,0.45), transparent), radial-gradient(1px 1px at 28% 72%, rgba(255,255,255,0.35), transparent), radial-gradient(1px 1px at 54% 88%, rgba(255,255,255,0.4), transparent), radial-gradient(1.5px 1.5px at 93% 32%, rgba(255,255,255,0.4), transparent), radial-gradient(1px 1px at 9% 56%, rgba(255,255,255,0.3), transparent), radial-gradient(1px 1px at 40% 40%, rgba(255,255,255,0.3), transparent)' }}
+        />
+        <CelestialMark name="constellation" className="pointer-events-none absolute top-24 right-10 w-48 text-moon/25 hidden md:block" />
+        <CelestialMark name="crescent" className="pointer-events-none absolute bottom-28 left-12 w-16 text-cream/15 hidden md:block" />
 
         <div className="relative h-full mx-auto px-8 flex flex-col">
           {/* Top row — brand + close */}
@@ -199,12 +208,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 >
                   <button
                     onClick={() => scrollToSection(link.id)}
-                    className="group/link w-full flex items-center gap-4 py-3 sm:py-2.5 text-left"
+                    className="group/link w-full flex items-center py-3 sm:py-2.5 text-left"
                   >
-                    <span className="flex-1 font-elegant font-medium text-cream text-[2rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-transform duration-500 group-hover/link:translate-x-2">
+                    <span className="font-elegant font-medium text-cream text-[2rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-colors duration-500 group-hover/link:text-[#C9B8E8]">
                       {link.name}
                     </span>
-                    <ArrowUpRight className="w-6 h-6 md:w-9 md:h-9 text-cream shrink-0 opacity-60 -translate-x-0 sm:opacity-0 sm:-translate-x-3 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all duration-500" />
                   </button>
                 </li>
               ))}
