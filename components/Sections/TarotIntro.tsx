@@ -35,10 +35,7 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           {/* left — label + statement */}
           <div className="lg:col-span-5">
             <FadeIn>
-              <p className="text-cream/50 text-sm font-medium tracking-wide">
-                {isIndonesian ? 'Rasanya seperti apa' : 'What a reading feels like'}
-              </p>
-              <h2 className="mt-5 font-elegant font-medium text-[clamp(2rem,4.6vw,3.4rem)] leading-[1.08] tracking-[-0.02em]">
+              <h2 className="font-elegant font-medium text-[clamp(2rem,4.6vw,3.4rem)] leading-[1.08] tracking-[-0.02em]">
                 <MaskReveal>
                   {isIndonesian ? 'Ruang tenang untuk berpikir dengan jujur.' : 'A calm space to think out loud.'}
                 </MaskReveal>
@@ -49,13 +46,17 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           {/* right — the explanation + quiet affirmations */}
           <div className="lg:col-span-6 lg:col-start-7">
             <FadeIn delay={120}>
-              <p className="text-cream/70 font-light text-lg md:text-xl leading-relaxed">
+              <p className="text-cream/90 font-light text-lg md:text-xl leading-relaxed">
                 {isIndonesian
-                  ? 'Kita buka kartunya dan baca energi yang sedang kamu bawa — pola yang sedang kamu jalani, perasaan yang belum sempat kamu ucapkan — lalu kita ubah jadi langkah yang jelas dan bisa kamu ambil. Bukan meramal, tapi memahami, bareng-bareng.'
-                  : 'We lay the cards and read the energy you’re carrying — the patterns you’re in, the feelings you haven’t quite put into words — then turn them into clear, doable next steps. Less fortune-telling, more figuring it out, together.'}
+                  ? 'Kita buka kartunya dan baca energi yang sedang kamu bawa — pola yang sedang kamu jalani, perasaan yang belum sempat kamu ucapkan — lalu kita ubah jadi langkah yang jelas dan bisa kamu ambil.'
+                  : 'We lay the cards and read the energy you’re carrying — the patterns you’re in, the feelings you haven’t quite put into words — then turn them into clear, doable next steps.'}
               </p>
 
-              <div className="mt-9 flex flex-wrap items-center gap-x-4 gap-y-3 font-elegant italic text-cream/55 text-[1.05rem]">
+              <p className="mt-6 font-elegant italic text-[#C9B8E8] text-xl md:text-[1.6rem] leading-snug">
+                {isIndonesian ? 'Bukan meramal, tapi memahami — bareng-bareng.' : 'Less fortune-telling, more figuring it out — together.'}
+              </p>
+
+              <div className="mt-9 pt-7 border-t border-cream/10 flex flex-wrap items-center gap-x-4 gap-y-3 font-elegant italic text-cream/70 text-[1.05rem]">
                 {affirmations.map((w, i) => (
                   <span key={w} className="inline-flex items-center gap-4">
                     {i > 0 && <span aria-hidden className="not-italic text-cream/25">&middot;</span>}
