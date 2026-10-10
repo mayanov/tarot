@@ -47,7 +47,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
             <div className="mx-auto px-8 relative z-10">
                 {/* celestial section break — no rule: a quiet constellation over a soft
                     glow marks the shift into a new section on the same white ground */}
-                <div className="relative flex justify-center pt-8 md:pt-10 pb-7 md:pb-9">
+                <div className="relative flex justify-center pt-3 md:pt-4 pb-6 md:pb-8">
                     <div
                         aria-hidden
                         className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[26rem] h-[13rem] max-w-[88vw] rounded-full blur-[80px]"

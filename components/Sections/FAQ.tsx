@@ -126,7 +126,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="faq"
-      className="pt-20 md:pt-28 pb-10 md:pb-12 relative isolate text-ink"
+      className="pt-20 md:pt-28 pb-4 md:pb-6 relative isolate text-ink"
       style={{ background: '#FFFFFF' }}
     >
       <SoftAura />
