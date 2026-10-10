@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { smoothScrollTo, smoothScrollToId } from '../UI/scroll';
-import CelestialMark from '../UI/CelestialMark';
 
 interface HeaderProps {
   isIndonesian?: boolean;
@@ -178,8 +177,6 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           className="pointer-events-none absolute inset-0 opacity-70"
           style={{ backgroundImage: 'radial-gradient(1.5px 1.5px at 15% 22%, rgba(255,255,255,0.5), transparent), radial-gradient(1px 1px at 72% 14%, rgba(255,255,255,0.4), transparent), radial-gradient(1.5px 1.5px at 86% 58%, rgba(255,255,255,0.45), transparent), radial-gradient(1px 1px at 28% 72%, rgba(255,255,255,0.35), transparent), radial-gradient(1px 1px at 54% 88%, rgba(255,255,255,0.4), transparent), radial-gradient(1.5px 1.5px at 93% 32%, rgba(255,255,255,0.4), transparent), radial-gradient(1px 1px at 9% 56%, rgba(255,255,255,0.3), transparent), radial-gradient(1px 1px at 40% 40%, rgba(255,255,255,0.3), transparent)' }}
         />
-        <CelestialMark name="constellation" className="pointer-events-none absolute top-24 right-10 w-48 text-moon/25 hidden md:block" />
-        <CelestialMark name="crescent" className="pointer-events-none absolute bottom-28 left-12 w-16 text-cream/15 hidden md:block" />
 
         <div className="relative h-full mx-auto px-8 flex flex-col">
           {/* Top row — brand + close */}
@@ -228,10 +225,10 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             ) : <span />}
             <button
               onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
-              className="group self-start sm:self-auto inline-flex items-center gap-3 px-6 py-3 rounded-lg border border-cream/40 text-cream text-sm font-semibold hover:bg-cream hover:text-ink transition-colors duration-500"
+              className="group self-start sm:self-auto inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500"
             >
               {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-              <ArrowUpRight className="w-4 h-4 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
