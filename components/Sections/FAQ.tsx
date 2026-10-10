@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import SoftAura from '../UI/SoftAura';
-import CelestialMark from '../UI/CelestialMark';
 
 interface FAQProps {
   isIndonesian?: boolean;
@@ -137,18 +136,9 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               transformed reveal wrapper can't break it) */}
           <div className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
             <FadeIn dir="blur" duration={1.15}>
-              <p className="flex items-center gap-2 text-moon text-sm font-medium tracking-wide">
-                <CelestialMark name="sparkle" className="w-3.5 h-3.5 shrink-0" />
-                {isIndonesian ? 'Baik untuk diketahui' : 'Good to know'}
-              </p>
-              <h2 className="mt-4 font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+              <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                 {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
               </h2>
-              <p className="mt-5 text-ink/60 font-light leading-relaxed max-w-xs">
-                {isIndonesian
-                  ? 'Segala hal tentang proses bacaan, etika, dan cara penyampaian.'
-                  : 'Everything about the reading process, ethics, and delivery.'}
-              </p>
 
               {/* category filter — editorial text tabs with an animated underline */}
               <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm">
