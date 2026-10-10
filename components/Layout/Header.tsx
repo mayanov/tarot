@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Instagram } from 'lucide-react';
+import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
+import { trackEvent } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId } from '../UI/scroll';
 
 interface HeaderProps {
@@ -216,20 +218,45 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             </ul>
           </nav>
 
-          {/* Bottom — language toggle + book */}
-          <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-5 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '480ms' }}>
+          {/* Bottom — language toggle + socials + book */}
+          <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '480ms' }}>
             {onSwitchRegion ? (
               <div className="self-start sm:self-auto">
                 <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
               </div>
             ) : <span />}
-            <button
-              onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
-              className="group self-start sm:self-auto inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500"
-            >
-              {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+
+            <div className="flex flex-wrap items-center gap-6 sm:gap-7 self-start sm:self-auto">
+              {/* socials — plain cream icons, no containers */}
+              <nav className="flex items-center gap-6" aria-label="Social">
+                <a
+                  href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
+                  onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
+                  aria-label="Instagram" className="text-cream/65 hover:text-cream transition-all duration-500 hover:-translate-y-0.5">
+                  <Instagram className="w-5 h-5" strokeWidth={1.7} />
+                </a>
+                <a
+                  href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
+                  onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
+                  aria-label="TikTok" className="text-cream/65 hover:text-cream transition-all duration-500 hover:-translate-y-0.5">
+                  <FaTiktok size={18} />
+                </a>
+                <a
+                  href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
+                  onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
+                  aria-label="WhatsApp" className="text-cream/65 hover:text-cream transition-all duration-500 hover:-translate-y-0.5">
+                  <FaWhatsapp size={20} />
+                </a>
+              </nav>
+
+              <button
+                onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
+                className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500"
+              >
+                {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
