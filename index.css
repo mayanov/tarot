@@ -83,6 +83,17 @@ html.lenis body {
   0%, 100% { opacity: 0.5; }
   50%      { opacity: 0.85; }
 }
+/* brighter accent stars — a deeper dip-and-flare so a few points really sparkle */
+@keyframes starPulse {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
+}
+/* very slow drift so a star layer breathes/parallaxes even at rest */
+@keyframes skyDrift {
+  0%   { transform: translate3d(0, 0, 0); }
+  50%  { transform: translate3d(1.2%, -0.9%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
 
 /* ---- Nav menu items slide in from the left ---- */
 @keyframes navSlide {
