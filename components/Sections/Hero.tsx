@@ -79,9 +79,8 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </Rise>
 
         <Rise delay={160} hero>
-          <h1 className="font-serif font-medium uppercase leading-[0.9] tracking-[-0.005em] text-[clamp(2.7rem,min(10.5vw,13vh),8.5rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
-            <span className="block text-cream">Mayanov</span>
-            <span className="block text-cream">Tarot</span>
+          <h1 className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.85rem,9.6vw,8.5rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
+            <span className="text-cream">Mayanov Tarot</span>
           </h1>
         </Rise>
 
