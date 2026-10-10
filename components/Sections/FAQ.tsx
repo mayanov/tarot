@@ -172,7 +172,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
 
           {/* RIGHT — accordion (min-height reserves the full-list height so the
               section doesn't shrink when a category is filtered) */}
-          <div className="lg:col-span-8 lg:min-h-[var(--faqH)]" style={{ ['--faqH' as string]: `${faqs.length * 76}px` } as React.CSSProperties}>
+          <div className="lg:col-span-8">
             <div className="border-t border-ink/[0.08]">
               {filtered.map((faq, index) => {
                 const open = openKey === faq.question;
