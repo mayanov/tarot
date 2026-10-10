@@ -43,17 +43,17 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     return (
         // No card — flows straight on from the FAQ on the same white background, set
         // apart only by a hairline rule.
-        <section id="disclaimer" className="relative isolate text-ink pb-24 md:pb-36" style={{ background: '#FFFFFF' }}>
+        <section id="disclaimer" className="relative isolate text-ink pb-20 md:pb-28" style={{ background: '#FFFFFF' }}>
             <div className="mx-auto px-8 relative z-10">
                 {/* celestial section break — no rule: a quiet constellation over a soft
                     glow marks the shift into a new section on the same white ground */}
-                <div className="relative flex justify-center pt-16 md:pt-24 pb-12 md:pb-16">
+                <div className="relative flex justify-center pt-8 md:pt-10 pb-7 md:pb-9">
                     <div
                         aria-hidden
-                        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[34rem] h-[18rem] max-w-[90vw] rounded-full blur-[90px]"
+                        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[26rem] h-[13rem] max-w-[88vw] rounded-full blur-[80px]"
                         style={{ background: 'radial-gradient(closest-side, rgba(107,63,160,0.12), transparent)' }}
                     />
-                    <CelestialMark name="constellation" className="relative w-28 md:w-36 text-moon/40" />
+                    <CelestialMark name="constellation" className="relative w-20 md:w-24 text-moon/40" />
                 </div>
 
                 <div className="relative">

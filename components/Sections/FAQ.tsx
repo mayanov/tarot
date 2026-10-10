@@ -126,15 +126,14 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="faq"
-      className="py-20 md:py-28 relative isolate text-ink"
+      className="pt-20 md:pt-28 pb-10 md:pb-12 relative isolate text-ink"
       style={{ background: '#FFFFFF' }}
     >
       <SoftAura />
       <div className="mx-auto px-8 relative z-10">
         <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
-          {/* LEFT — sticky intro + category filter (sticky lives on the column so a
-              transformed reveal wrapper can't break it) */}
-          <div className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
+          {/* LEFT — intro + category filter */}
+          <div className="lg:col-span-4">
             <FadeIn dir="blur" duration={1.15}>
               <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                 {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
