@@ -1,5 +1,6 @@
 import React from 'react';
 import IlluminateText from '../UI/IlluminateText';
+import CelestialMark from '../UI/CelestialMark';
 
 interface InterludeProps {
   isIndonesian?: boolean;
@@ -38,6 +39,10 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
 
       <div className="mx-auto px-8 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
+          {/* a quiet radiant sun — 'clarity, arriving' (completes the celestial set) */}
+          <div className="mb-8 md:mb-11 flex justify-center">
+            <CelestialMark name="sun" className="w-10 md:w-[3.25rem] text-cream/80 [filter:drop-shadow(0_4px_28px_rgba(6,4,14,0.5))]" />
+          </div>
           {/* pull-quote — words illuminate one-by-one as it scrolls through view */}
           <IlluminateText
             className="font-elegant italic font-bold text-cream text-[2.5rem] sm:text-[3.4rem] md:text-[4.4rem] lg:text-[5.2rem] leading-[1.03] tracking-[-0.02em]"
