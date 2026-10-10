@@ -98,26 +98,39 @@ const Background: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-      {/* 1 — deep atmospheric base: a smooth vertical twilight, zenith darkest */}
+      {/* 1 — deep atmospheric base: a smooth vertical twilight, zenith darkest,
+          shaded a touch bluer through the middle so it reads as sky */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'linear-gradient(177deg, #0c0a1f 0%, #141130 24%, #1b1740 50%, #211a44 72%, #15102e 100%)',
+            'linear-gradient(177deg, #0b0924 0%, #10122f 22%, #181a44 46%, #221c48 70%, #140f2c 100%)',
         }}
       />
-      {/* 2 — overlapping soft color fields that melt into one another for depth.
-          A warm-violet glow behind the wordmark, a cool indigo pool low-left, a
-          plum bloom upper-right, and a faint teal breath so the hue range widens. */}
+      {/* 2a — the COOL side of the sky: blues up the left, teal/cyan pooling toward
+          the lower-right, and a faint cool breath across the zenith */}
       <div
         aria-hidden
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(85% 62% at 50% 40%, rgba(84,58,140,0.38), transparent 68%),' +
-            'radial-gradient(60% 55% at 80% 16%, rgba(126,92,196,0.26), transparent 72%),' +
-            'radial-gradient(70% 60% at 14% 82%, rgba(38,54,118,0.32), transparent 74%),' +
-            'radial-gradient(42% 34% at 68% 88%, rgba(40,96,112,0.14), transparent 70%)',
+            'radial-gradient(70% 56% at 16% 20%, rgba(52,80,178,0.28), transparent 70%),' +
+            'radial-gradient(58% 50% at 86% 78%, rgba(42,124,142,0.24), transparent 72%),' +
+            'radial-gradient(52% 42% at 50% 5%, rgba(72,112,168,0.18), transparent 70%)',
+        }}
+      />
+      {/* 2b — the WARM side: a violet glow behind the wordmark, a rose/magenta bloom
+          upper-right, an indigo-violet pool lower-left, and a faint ember low so the
+          twilight carries real chromatic range instead of one flat wash */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(82% 60% at 50% 42%, rgba(112,66,150,0.34), transparent 68%),' +
+            'radial-gradient(56% 50% at 82% 16%, rgba(178,98,158,0.24), transparent 72%),' +
+            'radial-gradient(60% 52% at 12% 84%, rgba(60,52,132,0.30), transparent 74%),' +
+            'radial-gradient(36% 28% at 56% 93%, rgba(166,100,88,0.13), transparent 68%)',
         }}
       />
       {/* 3 — diffuse Milky-Way band: a blurred diagonal light, very low opacity */}
