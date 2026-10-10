@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ArrowUpRight } from 'lucide-react';
-import { FaWhatsapp } from 'react-icons/fa';
+import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
@@ -113,7 +112,16 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   ];
 
   const faqs = isIndonesian ? faqsID : faqsEN;
+  const allLabel = isIndonesian ? 'Semua' : 'All';
+  const categories = [allLabel, ...Array.from(new Set(faqs.map((f) => f.cat)))];
+
+  const [activeCat, setActiveCat] = useState<string>(allLabel);
   const [openKey, setOpenKey] = useState<string | null>(faqs[0]?.question ?? null);
+
+  // A stale category (e.g. after a language switch) falls back to "all".
+  const showAll = activeCat === allLabel || !faqs.some((f) => f.cat === activeCat);
+  const filtered = showAll ? faqs : faqs.filter((f) => f.cat === activeCat);
+
   const toggleFAQ = (key: string) => setOpenKey((cur) => (cur === key ? null : key));
 
   return (
@@ -142,30 +150,31 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   : 'Everything about the reading process, ethics, and delivery.'}
               </p>
 
-              {/* still have questions? — a quiet inline line, not a boxed card */}
-              <div className="mt-9 max-w-xs">
-                <p className="text-ink/55 font-light text-sm leading-relaxed">
-                  {isIndonesian ? 'Masih ada pertanyaan?' : 'Still have a question?'}
-                </p>
-                <a
-                  href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ada%20pertanyaan%20tentang%20tarot%20reading"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group mt-2.5 inline-flex items-center gap-2 text-moon font-medium text-sm hover:text-plum transition-colors duration-500"
-                >
-                  <FaWhatsapp size={15} />
-                  {isIndonesian ? 'Chat langsung' : 'Chat with me'}
-                  <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
+              {/* category filter — editorial text tabs with an animated underline */}
+              <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+                {categories.map((cat) => {
+                  const active = showAll ? cat === allLabel : cat === activeCat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCat(cat)}
+                      aria-pressed={active}
+                      className={`group/cat relative pb-1.5 font-medium tracking-wide transition-colors duration-500 ${active ? 'text-moon' : 'text-ink/40 hover:text-ink/70'}`}
+                    >
+                      {cat}
+                      <span className={`absolute left-0 -bottom-px h-px bg-moon transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${active ? 'w-full' : 'w-0 group-hover/cat:w-full group-hover/cat:bg-ink/20'}`} />
+                    </button>
+                  );
+                })}
               </div>
             </FadeIn>
           </div>
 
           {/* RIGHT — accordion (min-height reserves the full-list height so the
               section doesn't shrink when a category is filtered) */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-8 lg:min-h-[var(--faqH)]" style={{ ['--faqH' as string]: `${faqs.length * 76}px` } as React.CSSProperties}>
             <div className="border-t border-ink/[0.08]">
-              {faqs.map((faq, index) => {
+              {filtered.map((faq, index) => {
                 const open = openKey === faq.question;
                 return (
                   <FadeIn key={faq.question} delay={Math.min(index, 6) * 55} dir="up" distance={0.7}>
