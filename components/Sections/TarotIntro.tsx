@@ -4,12 +4,31 @@ interface TarotIntroProps {
   isIndonesian?: boolean;
 }
 
+// Deterministic starfield for this section's night sky (own seed, so it's a
+// different star pattern from the hero background and the footer's photo sky).
+const mulberry32 = (seed: number) => () => {
+  seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+const starField = (rng: () => number, count: number, rMin: number, rMax: number, oMin: number, oMax: number) =>
+  Array.from({ length: count }, () => [
+    +(rng() * 100).toFixed(2), +(rng() * 100).toFixed(2),
+    +(rMin + rng() * (rMax - rMin)).toFixed(2), +(oMin + rng() * (oMax - oMin)).toFixed(2),
+  ] as const);
+const toStars = (dots: readonly (readonly [number, number, number, number])[]) =>
+  dots.map(([x, y, r, o]) => `radial-gradient(${r}px ${r}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, rgba(255,255,255,0) 60%)`).join(',');
+const srng = mulberry32(20161005);
+const STARS_STATIC = starField(srng, 110, 0.4, 1.1, 0.3, 0.7);
+const STARS_TWINKLE_A = starField(srng, 34, 0.8, 1.5, 0.55, 0.95);
+const STARS_TWINKLE_B = starField(srng, 28, 0.6, 1.1, 0.4, 0.8);
+
 /**
  * A dark "presentation" band between About and Services. The section is a tall
- * scroll track with a pinned (sticky) panel; as you scroll through it the lines
- * build in one by one — heading, explanation, the lilac emphasis, then the
- * affirmations — before it releases into Services. Replaces the old marquee.
- * Reduced-motion renders it as a calm static section.
+ * scroll track with a pinned (sticky) panel over a starry night sky; as you
+ * scroll through it the lines build in one by one. Reduced-motion renders it as a
+ * calm static section.
  */
 const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
   const [reduce] = useState(
@@ -63,10 +82,17 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
       className={`relative text-cream ${reduce ? 'py-24 md:py-32' : ''}`}
       style={{
         height: reduce ? undefined : '240vh',
-        background: 'linear-gradient(160deg, #39234E 0%, #241539 58%, #14112B 100%)',
+        background: 'linear-gradient(165deg, #2a1746 0%, #1c1138 55%, #0e0a22 100%)',
       }}
     >
-      <div className={`${reduce ? '' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
+      <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
+        {/* night-sky starfield — a different pattern from the hero/footer skies */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_STATIC) }} />
+          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_A), animation: reduce ? undefined : 'skyTwinkle 4.5s ease-in-out infinite' }} />
+          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_B), animation: reduce ? undefined : 'skyTwinkle 6.5s ease-in-out 1.2s infinite' }} />
+        </div>
+
         {/* soft violet bloom — depth, drifts a touch with progress */}
         <div
           aria-hidden
@@ -86,27 +112,20 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
 
           <p
             style={line(0.06, 0.34)}
-            className="mt-9 md:mt-10 mx-auto max-w-2xl text-cream/90 font-light text-lg md:text-xl leading-relaxed"
+            className="mt-9 md:mt-10 mx-auto max-w-2xl text-white font-light text-lg md:text-xl leading-relaxed"
           >
             {isIndonesian
               ? 'Kita buka kartunya dan baca energi yang sedang kamu bawa — pola yang sedang kamu jalani, perasaan yang belum sempat kamu ucapkan — lalu kita ubah jadi langkah yang jelas dan bisa kamu ambil.'
               : 'We lay the cards and read the energy you’re carrying — the patterns you’re in, the feelings you haven’t quite put into words — then turn them into clear, doable next steps.'}
           </p>
 
-          <p
-            style={line(0.38, 0.62)}
-            className="mt-7 font-elegant italic text-[#C9B8E8] text-xl md:text-[1.7rem] leading-snug"
-          >
-            {isIndonesian ? 'Bukan meramal, tapi memahami — bareng-bareng.' : 'Less fortune-telling, more figuring it out — together.'}
-          </p>
-
           <div
-            style={line(0.66, 0.9)}
-            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-cream/70 text-[1.05rem]"
+            style={line(0.4, 0.72)}
+            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-white text-[1.05rem]"
           >
             {affirmations.map((w, i) => (
               <span key={w} className="inline-flex items-center gap-4">
-                {i > 0 && <span aria-hidden className="not-italic text-cream/25">&middot;</span>}
+                {i > 0 && <span aria-hidden className="not-italic text-white/40">&middot;</span>}
                 {w}
               </span>
             ))}
