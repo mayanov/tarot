@@ -1,6 +1,7 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
 import CelestialMark from '../UI/CelestialMark';
+import SoftAura from '../UI/SoftAura';
 
 interface DisclaimerProps {
     isIndonesian?: boolean;
@@ -43,7 +44,10 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     return (
         // No card — flows straight on from the FAQ on the same white background, set
         // apart only by a hairline rule.
-        <section id="disclaimer" className="relative isolate text-ink pb-20 md:pb-28" style={{ background: '#FFFFFF' }}>
+        <section id="disclaimer" className="relative isolate overflow-hidden text-ink pb-20 md:pb-28" style={{ background: '#FFFFFF' }}>
+            {/* same soft wash as the FAQ above, so the shared white zone matches in tone
+                (otherwise the FAQ's aura makes it read slightly darker than this) */}
+            <SoftAura />
             <div className="mx-auto px-8 relative z-10">
                 {/* celestial section break — no rule: a quiet constellation over a soft
                     glow marks the shift into a new section on the same white ground */}
