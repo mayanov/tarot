@@ -47,22 +47,23 @@ const band = (rng: () => number, count: number): Dot[] =>
 
 const rng = mulberry32(20090217);
 // base density: a faint full-sky dusting plus a denser diagonal band
-const STATIC_DOTS: Dot[] = [...field(rng, 240, 0.4, 1.1, 0.28, 0.62), ...band(rng, 160)];
+const STATIC_DOTS: Dot[] = [...field(rng, 330, 0.4, 1.1, 0.26, 0.62), ...band(rng, 210)];
 // twinkling layers at different speeds for depth (more, faster, livelier)
 const TWINKLE_LAYERS: { dur: number; delay: number; drift: boolean; dots: Dot[] }[] = [
-  { dur: 3.6, delay: 0,   drift: true,  dots: field(rng, 64, 0.9, 1.6, 0.6, 0.95) },
-  { dur: 5,   delay: 0.7, drift: false, dots: [...field(rng, 48, 0.8, 1.3, 0.5, 0.88), ...band(rng, 42)] },
-  { dur: 6.5, delay: 1.6, drift: true,  dots: field(rng, 52, 0.7, 1.1, 0.45, 0.78) },
-  { dur: 8.5, delay: 2.6, drift: false, dots: field(rng, 44, 0.5, 0.95, 0.35, 0.62) },
+  { dur: 3.6, delay: 0,   drift: true,  dots: field(rng, 86, 0.9, 1.6, 0.6, 0.95) },
+  { dur: 5,   delay: 0.7, drift: false, dots: [...field(rng, 62, 0.8, 1.3, 0.5, 0.88), ...band(rng, 56)] },
+  { dur: 6.5, delay: 1.6, drift: true,  dots: field(rng, 68, 0.7, 1.1, 0.45, 0.78) },
+  { dur: 8.5, delay: 2.6, drift: false, dots: field(rng, 58, 0.5, 0.95, 0.35, 0.62) },
 ];
 // bright accent stars that pulse harder and carry a soft glow
-const ACCENTS: Dot[] = field(rng, 22, 1.4, 2.3, 0.9, 1);
+const ACCENTS: Dot[] = field(rng, 28, 1.4, 2.3, 0.9, 1);
 
-// Occasional shooting stars — [top%, left%, widthRem, duration s, delay s]
+// Occasional shooting stars — [top%, left%, widthRem, duration s, delay s]; they
+// start upper-left and dart down-right (matching the keyframe's 28deg travel).
 const SHOOTERS: [number, number, number, number, number][] = [
-  [13, 80, 8, 12, 4],
-  [26, 94, 6.5, 15, 9.5],
-  [8, 58, 7, 18, 14],
+  [8, 12, 7, 7.5, 3],
+  [18, 40, 6, 9.5, 8],
+  [5, 64, 8, 12, 14],
 ];
 
 // Solid-core dot with a soft falloff.
@@ -172,7 +173,8 @@ const Background: React.FC = () => {
         />
       </div>
 
-      {/* occasional shooting stars — a bright head with a trailing tail, long quiet gaps */}
+      {/* occasional shooting stars — a bright head (right) with a tapering tail that
+          trails behind it as it darts down-right; long quiet gaps between */}
       {!reduce && SHOOTERS.map(([top, left, w, dur, delay], i) => (
         <span
           key={i}
@@ -182,8 +184,9 @@ const Background: React.FC = () => {
             top: `${top}%`,
             left: `${left}%`,
             width: `${w}rem`,
-            background: 'linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0))',
-            filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.55))',
+            transformOrigin: 'right center',
+            background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 55%, rgba(255,255,255,0.95) 92%, #fff 100%)',
+            filter: 'drop-shadow(0 0 7px rgba(255,255,255,0.7))',
             animation: `shootingStar ${dur}s ease-in ${delay}s infinite`,
             opacity: 0,
           }}

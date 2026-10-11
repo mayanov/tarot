@@ -79,13 +79,13 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </Rise>
 
         <Rise delay={160} hero>
-          <h1 className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.85rem,9.6vw,8.5rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
+          <h1 className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
             <span className="text-cream">Mayanov Tarot</span>
           </h1>
         </Rise>
 
         <Rise delay={340}>
-          <p className="mt-7 md:mt-9 font-elegant font-medium leading-[1.14] tracking-[-0.01em] text-[1.4rem] sm:text-[1.8rem] md:text-[2.25rem] lg:text-[2.6rem] xl:text-[2.85rem] text-cream max-w-[20ch] [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
+          <p className="mt-7 md:mt-9 font-elegant font-medium leading-[1.2] md:leading-[1.14] tracking-[-0.01em] text-[1.3rem] sm:text-[1.6rem] md:text-[1.95rem] lg:text-[2.2rem] xl:text-[2.45rem] text-cream max-w-[20ch] md:max-w-none md:whitespace-nowrap [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
             {isIndonesian ? (
               <>Pandangan <span className="italic">jernih</span> untuk langkah berikutnya.</>
             ) : (
