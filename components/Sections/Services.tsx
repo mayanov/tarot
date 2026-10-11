@@ -334,36 +334,34 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 })}
             </div>
 
-            {/* ===== How it works — left-aligned editorial list (intro column + stepped rows) ===== */}
-            <div className="mx-auto px-8 py-20 md:py-28">
+            {/* ===== How it works — heading on top, steps flow horizontally so it stays
+                 compact instead of a tall vertical list ===== */}
+            <div className="mx-auto px-8 py-16 md:py-24">
                 <FadeIn>
-                    <div id="process" className="scroll-mt-24 grid lg:grid-cols-12 gap-y-8 lg:gap-x-16 lg:items-start">
-                        {/* intro column — held left, like FAQ */}
-                        <div className="lg:col-span-4 lg:sticky lg:top-28">
+                    <div id="process" className="scroll-mt-24">
+                        <div className="max-w-2xl">
                             <h3 className="font-elegant font-medium text-ink text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
                                 {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
                             </h3>
-                            <p className="mt-5 text-ink/55 font-light leading-relaxed max-w-xs">
+                            <p className="mt-4 text-ink/55 font-light leading-relaxed">
                                 {isIndonesian
                                     ? 'Langkah sederhana — dari pilih layanan sampai pulang dengan arah yang jelas.'
                                     : 'A few simple steps — from choosing a reading to walking away with clear direction.'}
                             </p>
                         </div>
 
-                        {/* steps — a vertical numbered list with hairline rules (editorial motif) */}
-                        <ol className="lg:col-span-8">
+                        {/* steps — a horizontal row on desktop (wraps on small screens) */}
+                        <ol className="mt-12 md:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-8 lg:gap-x-6 gap-y-10">
                             {steps.map((step, i) => (
-                                <li key={i} className="group flex items-start gap-5 md:gap-7 py-6 md:py-7 border-t border-ink/10 first:border-t-0 first:pt-0 animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                                <li key={i} className="group animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
                                     <span
                                         aria-hidden
-                                        className="shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-lg md:text-xl leading-none transition-colors duration-500 group-hover:bg-moon/[0.16]"
+                                        className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-base md:text-lg leading-none transition-colors duration-500 group-hover:bg-moon/[0.16]"
                                     >
                                         {String(i + 1).padStart(2, '0')}
                                     </span>
-                                    <div className="pt-1 md:pt-1.5">
-                                        <h4 className="text-lg md:text-2xl font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
-                                        <p className="mt-1.5 text-sm md:text-base leading-relaxed font-light text-ink/60 max-w-md">{step.desc}</p>
-                                    </div>
+                                    <h4 className="mt-4 text-lg md:text-xl font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
+                                    <p className="mt-2 text-sm md:text-[0.95rem] leading-relaxed font-light text-ink/60">{step.desc}</p>
                                 </li>
                             ))}
                         </ol>
