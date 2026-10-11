@@ -94,6 +94,20 @@ html.lenis body {
   50%  { transform: translate3d(1.2%, -0.9%, 0); }
   100% { transform: translate3d(0, 0, 0); }
 }
+/* nebula color fields breathe slowly — keeps the blending alive */
+@keyframes nebulaDrift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-1.5%, 1%, 0) scale(1.06); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+/* occasional shooting star — streaks across, then a long quiet gap */
+@keyframes shootingStar {
+  0%     { transform: translate3d(0, 0, 0) rotate(20deg); opacity: 0; }
+  1%     { opacity: 1; }
+  7%     { opacity: 1; }
+  11%    { transform: translate3d(-360px, 132px, 0) rotate(20deg); opacity: 0; }
+  100%   { transform: translate3d(-360px, 132px, 0) rotate(20deg); opacity: 0; }
+}
 
 /* ---- Nav menu items slide in from the left ---- */
 @keyframes navSlide {

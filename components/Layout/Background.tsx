@@ -47,15 +47,23 @@ const band = (rng: () => number, count: number): Dot[] =>
 
 const rng = mulberry32(20090217);
 // base density: a faint full-sky dusting plus a denser diagonal band
-const STATIC_DOTS: Dot[] = [...field(rng, 150, 0.4, 1.1, 0.28, 0.6), ...band(rng, 110)];
-// twinkling layers at different speeds for depth
+const STATIC_DOTS: Dot[] = [...field(rng, 240, 0.4, 1.1, 0.28, 0.62), ...band(rng, 160)];
+// twinkling layers at different speeds for depth (more, faster, livelier)
 const TWINKLE_LAYERS: { dur: number; delay: number; drift: boolean; dots: Dot[] }[] = [
-  { dur: 4.5, delay: 0,   drift: true,  dots: field(rng, 44, 0.9, 1.6, 0.6, 0.95) },
-  { dur: 6,   delay: 1.1, drift: false, dots: [...field(rng, 34, 0.8, 1.3, 0.5, 0.85), ...band(rng, 28)] },
-  { dur: 7.5, delay: 2.3, drift: true,  dots: field(rng, 36, 0.7, 1.1, 0.45, 0.75) },
+  { dur: 3.6, delay: 0,   drift: true,  dots: field(rng, 64, 0.9, 1.6, 0.6, 0.95) },
+  { dur: 5,   delay: 0.7, drift: false, dots: [...field(rng, 48, 0.8, 1.3, 0.5, 0.88), ...band(rng, 42)] },
+  { dur: 6.5, delay: 1.6, drift: true,  dots: field(rng, 52, 0.7, 1.1, 0.45, 0.78) },
+  { dur: 8.5, delay: 2.6, drift: false, dots: field(rng, 44, 0.5, 0.95, 0.35, 0.62) },
 ];
-// a few bright accent stars that pulse harder and carry a soft glow
-const ACCENTS: Dot[] = field(rng, 14, 1.4, 2.2, 0.9, 1);
+// bright accent stars that pulse harder and carry a soft glow
+const ACCENTS: Dot[] = field(rng, 22, 1.4, 2.3, 0.9, 1);
+
+// Occasional shooting stars — [top%, left%, widthRem, duration s, delay s]
+const SHOOTERS: [number, number, number, number, number][] = [
+  [13, 80, 8, 12, 4],
+  [26, 94, 6.5, 15, 9.5],
+  [8, 58, 7, 18, 14],
+];
 
 // Solid-core dot with a soft falloff.
 const toGradients = (dots: Dot[]): string =>
@@ -108,29 +116,31 @@ const Background: React.FC = () => {
         }}
       />
       {/* 2a — the COOL side of the sky: blues up the left, teal/cyan pooling toward
-          the lower-right, and a faint cool breath across the zenith */}
+          the lower-right, and a faint cool breath across the zenith (drifts slowly) */}
       <div
         aria-hidden
-        className="absolute inset-0"
+        className="absolute inset-0 will-change-transform"
         style={{
           background:
             'radial-gradient(70% 56% at 16% 20%, rgba(52,80,178,0.28), transparent 70%),' +
             'radial-gradient(58% 50% at 86% 78%, rgba(42,124,142,0.24), transparent 72%),' +
             'radial-gradient(52% 42% at 50% 5%, rgba(72,112,168,0.18), transparent 70%)',
+          animation: reduce ? undefined : 'nebulaDrift 52s ease-in-out infinite',
         }}
       />
       {/* 2b — the WARM side: a violet glow behind the wordmark, a rose/magenta bloom
           upper-right, an indigo-violet pool lower-left, and a faint ember low so the
-          twilight carries real chromatic range instead of one flat wash */}
+          twilight carries real chromatic range instead of one flat wash (drifts, offset) */}
       <div
         aria-hidden
-        className="absolute inset-0"
+        className="absolute inset-0 will-change-transform"
         style={{
           background:
             'radial-gradient(82% 60% at 50% 42%, rgba(112,66,150,0.34), transparent 68%),' +
             'radial-gradient(56% 50% at 82% 16%, rgba(178,98,158,0.24), transparent 72%),' +
             'radial-gradient(60% 52% at 12% 84%, rgba(60,52,132,0.30), transparent 74%),' +
             'radial-gradient(36% 28% at 56% 93%, rgba(166,100,88,0.13), transparent 68%)',
+          animation: reduce ? undefined : 'nebulaDrift 70s ease-in-out -24s infinite',
         }}
       />
       {/* 3 — diffuse Milky-Way band: a blurred diagonal light, very low opacity */}
@@ -161,6 +171,24 @@ const Background: React.FC = () => {
           style={{ backgroundImage: toGlows(ACCENTS), animation: reduce ? undefined : 'starPulse 3.6s ease-in-out infinite' }}
         />
       </div>
+
+      {/* occasional shooting stars — a bright head with a trailing tail, long quiet gaps */}
+      {!reduce && SHOOTERS.map(([top, left, w, dur, delay], i) => (
+        <span
+          key={i}
+          aria-hidden
+          className="absolute h-[2px] rounded-full will-change-transform"
+          style={{
+            top: `${top}%`,
+            left: `${left}%`,
+            width: `${w}rem`,
+            background: 'linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0))',
+            filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.55))',
+            animation: `shootingStar ${dur}s ease-in ${delay}s infinite`,
+            opacity: 0,
+          }}
+        />
+      ))}
 
       {/* 5 — legibility: a soft central pool + bottom scrim so the cream wordmark/CTA
           stay readable over the glow */}
