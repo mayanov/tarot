@@ -20,9 +20,18 @@ const starField = (rng: () => number, count: number, rMin: number, rMax: number,
 const toStars = (dots: readonly (readonly [number, number, number, number])[]) =>
   dots.map(([x, y, r, o]) => `radial-gradient(${r}px ${r}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, rgba(255,255,255,0) 60%)`).join(',');
 const srng = mulberry32(20161005);
-const STARS_STATIC = starField(srng, 110, 0.4, 1.1, 0.3, 0.7);
-const STARS_TWINKLE_A = starField(srng, 34, 0.8, 1.5, 0.55, 0.95);
-const STARS_TWINKLE_B = starField(srng, 28, 0.6, 1.1, 0.4, 0.8);
+const STARS_STATIC = starField(srng, 300, 0.4, 1.1, 0.3, 0.72);
+const STARS_TWINKLE_A = starField(srng, 90, 0.8, 1.5, 0.55, 0.95);
+const STARS_TWINKLE_B = starField(srng, 70, 0.6, 1.1, 0.4, 0.82);
+
+// Scroll-driven sky: interpolate from a lighter dusk (progress 0) to deep night
+// (progress 1), so the panel darkens as you scroll through it.
+const SKY_LIGHT = [[74, 54, 120], [52, 36, 92], [34, 24, 66]];  // top, mid, bottom
+const SKY_DARK = [[26, 15, 51], [17, 11, 40], [7, 5, 18]];
+const mix = (a: number[], b: number[], t: number) =>
+  `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
+const skyGradient = (p: number) =>
+  `linear-gradient(180deg, ${mix(SKY_LIGHT[0], SKY_DARK[0], p)} 0%, ${mix(SKY_LIGHT[1], SKY_DARK[1], p)} 55%, ${mix(SKY_LIGHT[2], SKY_DARK[2], p)} 100%)`;
 
 /**
  * A dark "presentation" band between About and Services. The section is a tall
@@ -82,10 +91,13 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
       className={`relative text-cream ${reduce ? 'py-24 md:py-32' : ''}`}
       style={{
         height: reduce ? undefined : '240vh',
-        background: 'linear-gradient(165deg, #2a1746 0%, #1c1138 55%, #0e0a22 100%)',
+        background: 'rgb(7,5,18)',
       }}
     >
-      <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
+      <div
+        className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}
+        style={{ background: reduce ? skyGradient(0.5) : skyGradient(p) }}
+      >
         {/* night-sky starfield — a different pattern from the hero/footer skies */}
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_STATIC) }} />
@@ -121,11 +133,11 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
 
           <div
             style={line(0.4, 0.72)}
-            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-white text-[1.05rem]"
+            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-[#C9B8E8] text-[1.05rem]"
           >
             {affirmations.map((w, i) => (
               <span key={w} className="inline-flex items-center gap-4">
-                {i > 0 && <span aria-hidden className="not-italic text-white/40">&middot;</span>}
+                {i > 0 && <span aria-hidden className="not-italic text-[#C9B8E8]/40">&middot;</span>}
                 {w}
               </span>
             ))}
