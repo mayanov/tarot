@@ -24,14 +24,14 @@ const STARS_STATIC = starField(srng, 300, 0.4, 1.1, 0.3, 0.72);
 const STARS_TWINKLE_A = starField(srng, 90, 0.8, 1.5, 0.55, 0.95);
 const STARS_TWINKLE_B = starField(srng, 70, 0.6, 1.1, 0.4, 0.82);
 
-// Scroll-driven sky: interpolate from a lighter dusk (progress 0) to deep night
-// (progress 1), so the panel darkens as you scroll through it.
+// Scroll-driven sky: interpolate from deep night (progress 0) to a lighter dusk
+// (progress 1), so the panel brightens as you scroll through it.
 const SKY_LIGHT = [[74, 54, 120], [52, 36, 92], [34, 24, 66]];  // top, mid, bottom
 const SKY_DARK = [[26, 15, 51], [17, 11, 40], [7, 5, 18]];
 const mix = (a: number[], b: number[], t: number) =>
   `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
 const skyGradient = (p: number) =>
-  `linear-gradient(180deg, ${mix(SKY_LIGHT[0], SKY_DARK[0], p)} 0%, ${mix(SKY_LIGHT[1], SKY_DARK[1], p)} 55%, ${mix(SKY_LIGHT[2], SKY_DARK[2], p)} 100%)`;
+  `linear-gradient(180deg, ${mix(SKY_DARK[0], SKY_LIGHT[0], p)} 0%, ${mix(SKY_DARK[1], SKY_LIGHT[1], p)} 55%, ${mix(SKY_DARK[2], SKY_LIGHT[2], p)} 100%)`;
 
 /**
  * A dark "presentation" band between About and Services. The section is a tall
