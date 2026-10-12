@@ -45,7 +45,6 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
   );
   const sectionRef = useRef<HTMLElement>(null);
   const skyLightRef = useRef<HTMLDivElement>(null);
-  const bloomRef = useRef<HTMLDivElement>(null);
   const stackRef = useRef<HTMLDivElement>(null);
   const paraRef = useRef<HTMLParagraphElement>(null);
   const affirmRef = useRef<HTMLDivElement>(null);
@@ -66,9 +65,9 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
       const p = total > 0 ? clamp01(-el.getBoundingClientRect().top / total) : 0;
       // sky brightens the whole way (continuous motion so it never feels frozen)
       if (skyLightRef.current) skyLightRef.current.style.opacity = p.toFixed(3);
-      // the whole stack drifts up gently across the pin, plus the bloom
+      // the whole stack drifts up gently across the pin (bloom stays put — moving a
+      // 150px-blur layer each frame re-rasterizes the blur and causes scroll jank)
       if (stackRef.current) stackRef.current.style.transform = `translateY(${(18 - p * 44).toFixed(1)}px)`;
-      if (bloomRef.current) bloomRef.current.style.transform = `translateY(${(p * 70).toFixed(1)}px)`;
       // lines build in across the middle of the track
       reveal(paraRef.current, p, 0.1, 0.42, 26);
       reveal(affirmRef.current, p, 0.46, 0.78, 22);
@@ -107,24 +106,20 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           style={{ background: GRAD_LIGHT, opacity: reduce ? 0.5 : 0 }}
         />
 
-        {/* starfield — promoted to its own layer so the crossfade beneath it never
-            forces the stars to re-rasterize */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden"
-          style={{ transform: 'translateZ(0)' }}
-        >
-          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_STATIC) }} />
-          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_A), animation: reduce ? undefined : 'skyTwinkle 4.5s ease-in-out infinite' }} />
-          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_B), animation: reduce ? undefined : 'skyTwinkle 6.5s ease-in-out 1.2s infinite' }} />
+        {/* starfield — each layer promoted to its own compositor layer so the sky
+            crossfade never re-rasterizes them and twinkle stays composite-only */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_STATIC), transform: 'translateZ(0)' }} />
+          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_A), transform: 'translateZ(0)', animation: reduce ? undefined : 'skyTwinkle 4.5s ease-in-out infinite' }} />
+          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_B), transform: 'translateZ(0)', animation: reduce ? undefined : 'skyTwinkle 6.5s ease-in-out 1.2s infinite' }} />
         </div>
 
-        {/* soft violet bloom — depth, drifts across the pin */}
+        {/* soft violet bloom — static depth (not transformed on scroll, so its big
+            blur never re-rasterizes mid-scroll) */}
         <div
-          ref={bloomRef}
           aria-hidden
-          className="pointer-events-none absolute -top-1/3 -right-1/4 w-[46rem] h-[46rem] rounded-full blur-[150px] will-change-transform"
-          style={{ background: 'radial-gradient(circle, rgba(122,88,190,0.34), transparent 70%)' }}
+          className="pointer-events-none absolute -top-1/4 -right-1/4 w-[42rem] h-[42rem] rounded-full blur-[120px]"
+          style={{ background: 'radial-gradient(circle, rgba(122,88,190,0.32), transparent 70%)' }}
         />
 
         <div ref={stackRef} className="mx-auto px-8 relative z-10 w-full max-w-3xl text-center will-change-transform">
