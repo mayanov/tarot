@@ -97,9 +97,12 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
         </div>
       </div>
 
+      {/* gradient transition — the dark photos band fades into the light lilac */}
+      <div aria-hidden className="h-28 md:h-44" style={{ background: 'linear-gradient(180deg, #2A2258 0%, #F4F1FA 100%)' }} />
+
       {/* ===== LIGHT band — the events history + CTAs read airy on a soft lilac ===== */}
       <div className="text-ink" style={{ background: '#F4F1FA' }}>
-        <div className="mx-auto px-8 py-16 md:py-24 relative z-10">
+        <div className="mx-auto px-8 pt-4 md:pt-6 pb-16 md:pb-24 relative z-10">
           {/* HISTORY — editorial year-grouped list: lilac year markers, hairline lines */}
           <div>
             {timeline.map((grp, gi) => (
