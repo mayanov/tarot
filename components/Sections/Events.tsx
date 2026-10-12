@@ -98,47 +98,36 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               </div>
             </div>
 
-            {/* TIMELINE — on its own white panel (a different background from the
-                aurora section) so the list reads clearly */}
-            <div className="rounded-2xl bg-white text-ink p-6 md:p-9 shadow-[0_30px_70px_-40px_rgba(0,0,0,0.6)]">
-              <div className="relative pl-7 md:pl-10">
-                {/* the spine */}
-                <span
-                  aria-hidden
-                  className="absolute left-[3px] md:left-[5px] top-2 bottom-2 w-px"
-                  style={{ background: 'linear-gradient(180deg, rgba(122,127,209,0.9) 0%, rgba(122,127,209,0.45) 55%, rgba(122,127,209,0) 100%)' }}
-                />
-                {timeline.map((grp, gi) => (
-                  <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 70} dir="left" distance={0.7}>
-                    <div className="relative pb-9 md:pb-11 last:pb-0">
-                      {/* node */}
-                      <span aria-hidden className="absolute -left-[26px] md:-left-[34px] top-1.5 grid place-items-center">
-                        <span className="w-2.5 h-2.5 rounded-full bg-sky shadow-[0_0_12px_1px_rgba(122,127,209,0.4)] ring-4 ring-white" />
-                      </span>
-                      {/* year */}
-                      <div className="font-elegant font-semibold text-sky text-2xl md:text-3xl leading-none tracking-tight mb-4">
-                        {grp.year}
-                      </div>
-                      {/* that year's events */}
-                      <ul>
-                        {grp.items.map((event, ii) => (
-                          <li
-                            key={ii}
-                            className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-ink/10 first:border-t-0"
-                          >
-                            <h3 className="font-serif font-semibold text-ink text-sm md:text-base xl:text-lg leading-[1.2] tracking-[-0.005em] transition-transform duration-500 group-hover:translate-x-1.5 group-hover:text-[#39234E]">
-                              {event.title}
-                            </h3>
-                            <span className="shrink-0 text-[0.78rem] tracking-[0.01em] text-ink/60 font-light leading-snug sm:text-right">
-                              {event.loc}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
+            {/* HISTORY — editorial year-grouped list on the dark section (no white
+                card, no timeline spine/dots): the year is a quiet lilac margin marker,
+                the events flow beside it as hairline-ruled lines */}
+            <div>
+              {timeline.map((grp, gi) => (
+                <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 70} dir="up" distance={0.7}>
+                  <div className="grid md:grid-cols-[7rem_1fr] gap-y-3 md:gap-x-12 md:items-start border-t border-cream/15 pt-6 md:pt-7 pb-7 md:pb-9">
+                    {/* year marker */}
+                    <div className="font-elegant italic text-[#C9B8E8] text-2xl md:text-[1.9rem] leading-none tracking-tight md:pt-1.5">
+                      {grp.year}
                     </div>
-                  </FadeIn>
-                ))}
-              </div>
+                    {/* that year's events */}
+                    <ul>
+                      {grp.items.map((event, ii) => (
+                        <li
+                          key={ii}
+                          className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-cream/10 first:border-t-0 first:pt-0"
+                        >
+                          <h3 className="font-serif font-medium text-cream text-sm md:text-base leading-[1.25] transition-colors duration-500 group-hover:text-[#C9B8E8]">
+                            {event.title}
+                          </h3>
+                          <span className="shrink-0 text-[0.78rem] tracking-[0.01em] text-cream/45 font-light leading-snug sm:text-right">
+                            {event.loc}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </FadeIn>
+              ))}
             </div>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
