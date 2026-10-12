@@ -59,7 +59,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
     <section
       id="events"
       className="py-20 md:py-28 relative overflow-hidden isolate"
-      style={{ background: '#1A1437' }}
+      style={{ background: 'linear-gradient(168deg, #463C82 0%, #352C6C 55%, #2A2258 100%)' }}
     >
       <div className="mx-auto px-8 relative z-10 text-cream">
           <FadeIn>
