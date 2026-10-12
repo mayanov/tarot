@@ -53,38 +53,27 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
 
     return (
         <footer ref={v.ref} className="relative z-10 text-cream text-center overflow-hidden">
-            <div className="mx-auto px-8 max-w-3xl flex flex-col items-center py-9 md:py-11">
+            <div className="mx-auto px-8 max-w-5xl flex flex-col items-center py-9 md:py-11">
 
-                {/* ===== closing invitation — the moment to book, in a frosted panel ===== */}
+                {/* ===== closing invitation — the moment to book, in a light card ===== */}
                 <div
-                    style={{ ...rise(0), background: 'linear-gradient(165deg, rgba(74,52,122,0.55) 0%, rgba(32,22,60,0.6) 55%, rgba(18,12,38,0.66) 100%)' }}
-                    className="relative w-full overflow-hidden flex flex-col items-center rounded-[1.5rem] md:rounded-[2.25rem] px-7 py-10 md:px-14 md:py-12 backdrop-blur-2xl ring-1 ring-inset ring-white/[0.14] [box-shadow:0_50px_110px_-55px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.12)]"
+                    style={rise(0)}
+                    className="relative w-full overflow-hidden flex flex-col items-center rounded-[1.5rem] md:rounded-[2.5rem] px-7 py-12 md:px-16 md:py-[4.5rem] bg-white text-ink [box-shadow:0_50px_120px_-50px_rgba(0,0,0,0.6)]"
                 >
                     {/* faint celestial watermark in the corner for a little mystique */}
-                    <CelestialMark name="constellation" className="pointer-events-none absolute -top-3 -right-2 w-28 md:w-40 text-cream/[0.06]" />
-
-                    <span className="inline-flex items-center gap-2 font-elegant italic text-[#C9B8E8] text-[0.95rem] md:text-base">
-                        <CelestialMark name="sparkle" className="w-3.5 h-3.5" />
-                        {isIndonesian ? 'Sebelum kamu pergi' : 'Before you go'}
-                    </span>
+                    <CelestialMark name="constellation" className="pointer-events-none absolute -top-3 -right-2 w-28 md:w-44 text-moon/10" />
 
                     <h2
-                        className="mt-5 font-elegant font-medium leading-[1.08] tracking-[-0.015em] text-[clamp(1.85rem,4.6vw,2.9rem)] max-w-[16ch] [text-shadow:0_6px_40px_rgba(6,4,14,0.5)]"
+                        className="font-elegant font-medium text-ink leading-[1.06] tracking-[-0.02em] text-[clamp(1.95rem,4.4vw,3rem)] max-w-[18ch]"
                     >
                         {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                     </h2>
-
-                    <p className="mt-5 max-w-md text-cream/65 font-light text-sm md:text-base leading-relaxed">
-                        {isIndonesian
-                            ? 'Mulai dari satu pertanyaan. Sisanya kita baca bareng.'
-                            : 'Start with a single question. We read the rest together.'}
-                    </p>
 
                     <div className="mt-9 md:mt-10">
                         <a
                             href="#services"
                             onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                            className="group inline-flex items-center gap-3 rounded-full bg-cream text-ink px-9 py-4 text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500 [box-shadow:0_14px_40px_-16px_rgba(0,0,0,0.6)]"
+                            className="group inline-flex items-center gap-3 rounded-full bg-ink text-cream px-9 py-4 text-sm font-medium hover:bg-plum transition-colors duration-500 [box-shadow:0_14px_40px_-18px_rgba(0,0,0,0.5)]"
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -93,12 +82,10 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 </div>
 
                 {/* ===== quiet sign-off — a signature, not a second hero ===== */}
-                <div style={rise(440)} className="mt-10 md:mt-12 w-full flex flex-col items-center">
-                    <span aria-hidden className="block h-px w-16 bg-cream/20" />
-
+                <div style={rise(440)} className="mt-12 md:mt-16 w-full flex flex-col items-center">
                     <div
                         aria-label="Mayanov Tarot"
-                        className="mt-7 md:mt-8 font-elegant font-medium leading-[0.95] tracking-[-0.02em] text-[clamp(2.3rem,7.5vw,4.4rem)] select-none [text-shadow:0_8px_60px_rgba(6,4,14,0.55)]"
+                        className="font-elegant font-medium leading-[0.95] tracking-[-0.02em] text-[clamp(2.3rem,7.5vw,4.4rem)] select-none [text-shadow:0_8px_60px_rgba(6,4,14,0.55)]"
                     >
                         Mayanov <span className="text-[#C9B8E8]">Tarot</span>
                     </div>
