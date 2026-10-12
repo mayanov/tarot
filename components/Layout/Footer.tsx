@@ -60,7 +60,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     className="relative w-full flex flex-col items-center gap-9 md:flex-row md:items-center md:justify-between md:gap-12 text-center md:text-left rounded-[1.5rem] md:rounded-[2.5rem] px-8 py-12 md:px-14 md:py-14 bg-white text-ink [box-shadow:0_50px_120px_-50px_rgba(0,0,0,0.6)]"
                 >
                     <h2
-                        className="font-elegant font-medium text-ink leading-[1.07] tracking-[-0.02em] text-[clamp(1.8rem,3.4vw,2.6rem)] max-w-[15ch]"
+                        className="font-elegant font-medium text-ink leading-[1.07] tracking-[-0.02em] text-[clamp(2rem,3.8vw,2.95rem)] max-w-[15ch]"
                     >
                         {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                     </h2>
@@ -68,7 +68,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     <a
                         href="#services"
                         onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                        className="group shrink-0 inline-flex items-center gap-3 rounded-full bg-ink text-cream px-9 py-4 text-sm font-medium hover:bg-plum transition-colors duration-500 [box-shadow:0_14px_40px_-18px_rgba(0,0,0,0.5)]"
+                        className="group shrink-0 inline-flex items-center gap-3 rounded-full bg-ink text-cream px-10 py-[1.1rem] text-[0.95rem] font-medium hover:bg-plum transition-colors duration-500 [box-shadow:0_14px_40px_-18px_rgba(0,0,0,0.5)]"
                     >
                         {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -79,28 +79,28 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 <div style={rise(440)} className="mt-12 md:mt-16 w-full flex flex-col items-center">
                     <div
                         aria-label="Mayanov Tarot"
-                        className="font-elegant font-medium leading-[0.95] tracking-[-0.02em] text-[clamp(2.3rem,7.5vw,4.4rem)] select-none [text-shadow:0_8px_60px_rgba(6,4,14,0.55)]"
+                        className="font-elegant font-medium leading-[0.95] tracking-[-0.02em] text-[clamp(2.6rem,8vw,4.9rem)] select-none [text-shadow:0_8px_60px_rgba(6,4,14,0.55)]"
                     >
                         Mayanov <span className="text-[#C9B8E8]">Tarot</span>
                     </div>
 
                     {/* socials — plain icons, no containers */}
-                    <nav className="mt-5 flex items-center gap-7" aria-label="Social">
+                    <nav className="mt-6 flex items-center gap-8" aria-label="Social">
                         <a
                             href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
                             onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
-                            className={socialLink} aria-label="Instagram"><Instagram className="w-[22px] h-[22px]" strokeWidth={1.7} /></a>
+                            className={socialLink} aria-label="Instagram"><Instagram className="w-[25px] h-[25px]" strokeWidth={1.7} /></a>
                         <a
                             href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
                             onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
-                            className={socialLink} aria-label="TikTok"><FaTiktok size={20} /></a>
+                            className={socialLink} aria-label="TikTok"><FaTiktok size={23} /></a>
                         <a
                             href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
                             onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
-                            className={socialLink} aria-label="WhatsApp"><FaWhatsapp size={22} /></a>
+                            className={socialLink} aria-label="WhatsApp"><FaWhatsapp size={25} /></a>
                     </nav>
 
-                    <p className="mt-6 text-[11px] tracking-[0.06em] text-cream/40">
+                    <p className="mt-6 text-xs tracking-[0.06em] text-cream/45">
                         Jakarta · © {year}
                     </p>
                 </div>
