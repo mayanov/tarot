@@ -24,38 +24,49 @@ const STARS_STATIC = starField(srng, 300, 0.4, 1.1, 0.3, 0.72);
 const STARS_TWINKLE_A = starField(srng, 90, 0.8, 1.5, 0.55, 0.95);
 const STARS_TWINKLE_B = starField(srng, 70, 0.6, 1.1, 0.4, 0.82);
 
-// Scroll-driven sky: interpolate from deep night (progress 0) to a lighter dusk
-// (progress 1), so the panel brightens as you scroll through it.
-const SKY_LIGHT = [[74, 54, 120], [52, 36, 92], [34, 24, 66]];  // top, mid, bottom
-const SKY_DARK = [[26, 15, 51], [17, 11, 40], [7, 5, 18]];
-const mix = (a: number[], b: number[], t: number) =>
-  `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
-const skyGradient = (p: number) =>
-  `linear-gradient(180deg, ${mix(SKY_DARK[0], SKY_LIGHT[0], p)} 0%, ${mix(SKY_DARK[1], SKY_LIGHT[1], p)} 55%, ${mix(SKY_DARK[2], SKY_LIGHT[2], p)} 100%)`;
+// Two static sky gradients — a deep night and a lighter dusk. We crossfade between
+// them with opacity (compositor-cheap) rather than regenerating a gradient string
+// every scroll frame (which forced a full-screen repaint and made scrolling laggy).
+const GRAD_DARK = 'linear-gradient(180deg, rgb(26,15,51) 0%, rgb(17,11,40) 55%, rgb(7,5,18) 100%)';
+const GRAD_LIGHT = 'linear-gradient(180deg, rgb(74,54,120) 0%, rgb(52,36,92) 55%, rgb(34,24,66) 100%)';
+const smoothstep = (t: number) => { const x = Math.min(Math.max(t, 0), 1); return x * x * (3 - 2 * x); };
 
 /**
  * A dark "presentation" band between About and Services. The section is a tall
- * scroll track with a pinned (sticky) panel over a starry night sky; as you
- * scroll through it the lines build in one by one. Reduced-motion renders it as a
- * calm static section.
+ * scroll track with a pinned (sticky) panel over a starry night sky; as you scroll
+ * through, the sky brightens (dark → dusk) and the lines build in one by one.
+ * All scroll work is done imperatively on refs (no per-frame React re-render) and
+ * via opacity/transform only, so it stays smooth. Reduced-motion is a calm static
+ * section.
  */
 const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
   const [reduce] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
   const sectionRef = useRef<HTMLElement>(null);
-  const [p, setP] = useState(reduce ? 1 : 0); // scroll progress through the track, 0..1
+  const skyLightRef = useRef<HTMLDivElement>(null);
+  const bloomRef = useRef<HTMLDivElement>(null);
+  const paraRef = useRef<HTMLParagraphElement>(null);
+  const affirmRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (reduce) return;
     let raf = 0;
+    const reveal = (el: HTMLElement | null, p: number, start: number, end: number) => {
+      if (!el) return;
+      const eased = smoothstep((p - start) / (end - start));
+      el.style.opacity = String(eased);
+      el.style.transform = `translateY(${((1 - eased) * 26).toFixed(1)}px)`;
+    };
     const update = () => {
       const el = sectionRef.current;
       if (!el) return;
-      const vh = window.innerHeight;
-      const total = el.offsetHeight - vh; // pinned range
-      const scrolled = -el.getBoundingClientRect().top;
-      setP(total > 0 ? Math.min(Math.max(scrolled / total, 0), 1) : 0);
+      const total = el.offsetHeight - window.innerHeight; // pinned range
+      const p = total > 0 ? Math.min(Math.max(-el.getBoundingClientRect().top / total, 0), 1) : 0;
+      if (skyLightRef.current) skyLightRef.current.style.opacity = p.toFixed(3);
+      if (bloomRef.current) bloomRef.current.style.transform = `translateY(${(p * 60).toFixed(1)}px)`;
+      reveal(paraRef.current, p, 0.06, 0.34);
+      reveal(affirmRef.current, p, 0.4, 0.72);
     };
     const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
     update();
@@ -68,38 +79,37 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
     };
   }, [reduce]);
 
-  // reveal a line over a slice of the scroll progress (opacity + a gentle rise)
-  const line = (start: number, end: number): React.CSSProperties => {
-    if (reduce) return { opacity: 1 };
-    const t = Math.min(Math.max((p - start) / (end - start), 0), 1);
-    const eased = t * t * (3 - 2 * t); // smoothstep
-    return {
-      opacity: eased,
-      transform: `translateY(${((1 - eased) * 26).toFixed(1)}px)`,
-      willChange: 'opacity, transform',
-    };
-  };
-
   const affirmations = isIndonesian
     ? ['Datang apa adanya', 'Tanpa tekanan', 'Tanpa dihakimi', 'Rahasia terjaga']
     : ['Come as you are', 'No pressure', 'No judgment', 'Kept between us'];
+
+  // static initial inline styles (effect takes over on scroll)
+  const hidden = reduce ? undefined : { opacity: 0 };
 
   return (
     <section
       ref={sectionRef}
       id="tarot-intro"
       className={`relative text-cream ${reduce ? 'py-24 md:py-32' : ''}`}
-      style={{
-        height: reduce ? undefined : '240vh',
-        background: 'rgb(7,5,18)',
-      }}
+      style={{ height: reduce ? undefined : '240vh', background: 'rgb(7,5,18)' }}
     >
-      <div
-        className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}
-        style={{ background: reduce ? skyGradient(0.5) : skyGradient(p) }}
-      >
-        {/* night-sky starfield — a different pattern from the hero/footer skies */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
+        {/* sky — a static dark base with a lighter dusk crossfaded over it by scroll */}
+        <div aria-hidden className="absolute inset-0" style={{ background: GRAD_DARK }} />
+        <div
+          ref={skyLightRef}
+          aria-hidden
+          className="absolute inset-0 will-change-[opacity]"
+          style={{ background: GRAD_LIGHT, opacity: reduce ? 0.5 : 0 }}
+        />
+
+        {/* night-sky starfield — promoted to its own layer so the sky crossfade
+            beneath it never forces the stars to re-rasterize */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 overflow-hidden"
+          style={{ transform: 'translateZ(0)' }}
+        >
           <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_STATIC) }} />
           <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_A), animation: reduce ? undefined : 'skyTwinkle 4.5s ease-in-out infinite' }} />
           <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_B), animation: reduce ? undefined : 'skyTwinkle 6.5s ease-in-out 1.2s infinite' }} />
@@ -107,12 +117,10 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
 
         {/* soft violet bloom — depth, drifts a touch with progress */}
         <div
+          ref={bloomRef}
           aria-hidden
-          className="pointer-events-none absolute -top-1/3 -right-1/4 w-[46rem] h-[46rem] rounded-full blur-[150px]"
-          style={{
-            background: 'radial-gradient(circle, rgba(122,88,190,0.34), transparent 70%)',
-            transform: reduce ? undefined : `translateY(${(p * 60).toFixed(1)}px)`,
-          }}
+          className="pointer-events-none absolute -top-1/3 -right-1/4 w-[46rem] h-[46rem] rounded-full blur-[150px] will-change-transform"
+          style={{ background: 'radial-gradient(circle, rgba(122,88,190,0.34), transparent 70%)' }}
         />
 
         <div className="mx-auto px-8 relative z-10 w-full max-w-3xl text-center">
@@ -123,8 +131,9 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           </h2>
 
           <p
-            style={line(0.06, 0.34)}
-            className="mt-9 md:mt-10 mx-auto max-w-2xl text-white font-light text-lg md:text-xl leading-relaxed"
+            ref={paraRef}
+            style={hidden}
+            className="mt-9 md:mt-10 mx-auto max-w-2xl text-white font-light text-lg md:text-xl leading-relaxed will-change-[opacity,transform]"
           >
             {isIndonesian
               ? 'Kita buka kartunya dan baca energi yang sedang kamu bawa — pola yang sedang kamu jalani, perasaan yang belum sempat kamu ucapkan — lalu kita ubah jadi langkah yang jelas dan bisa kamu ambil.'
@@ -132,8 +141,9 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           </p>
 
           <div
-            style={line(0.4, 0.72)}
-            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-[#C9B8E8] text-[1.05rem]"
+            ref={affirmRef}
+            style={hidden}
+            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-[#C9B8E8] text-[1.05rem] will-change-[opacity,transform]"
           >
             {affirmations.map((w, i) => (
               <span key={w} className="inline-flex items-center gap-4">
