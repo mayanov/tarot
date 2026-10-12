@@ -329,10 +329,13 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                         <h3 className="font-elegant font-medium text-cream text-[1.55rem] md:text-[2.2rem] leading-none tracking-tight transition-colors group-hover:text-cream">
                                             {g.type}
                                         </h3>
-                                        {/* category labels, next to the title */}
-                                        <span className="flex flex-wrap items-center gap-1.5">
-                                            {g.tags.map((t: string) => (
-                                                <span key={t} className="inline-flex items-center rounded-full bg-white/[0.1] px-3 py-[4px] text-[11.5px] font-light text-cream/85 ring-1 ring-inset ring-white/15 backdrop-blur-sm">{t}</span>
+                                        {/* category labels — quiet, dot-separated text (no SaaS pills) */}
+                                        <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-light text-cream/60 text-xs md:text-[13px] tracking-wide">
+                                            {g.tags.map((t: string, ti: number) => (
+                                                <span key={t} className="inline-flex items-center gap-2.5">
+                                                    {ti > 0 && <span aria-hidden className="w-[3px] h-[3px] rounded-full bg-cream/35" />}
+                                                    {t}
+                                                </span>
                                             ))}
                                         </span>
                                     </div>
