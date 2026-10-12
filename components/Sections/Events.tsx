@@ -59,7 +59,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
     <section id="events" className="relative overflow-hidden isolate">
       {/* ===== DARK band — heading + photo gallery ===== */}
       <div style={{ background: 'linear-gradient(168deg, #463C82 0%, #352C6C 55%, #2A2258 100%)' }}>
-        <div className="mx-auto px-8 pt-20 md:pt-28 pb-8 md:pb-10 relative z-10 text-cream">
+        <div className="mx-auto px-8 pt-20 md:pt-28 pb-5 md:pb-6 relative z-10 text-cream">
           <FadeIn>
             {/* HEADER — left-aligned editorial title */}
             <div className="mb-10 md:mb-14 max-w-3xl">
@@ -99,8 +99,8 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
       {/* ===== LIGHT band — one continuous gradient: it keeps lightening from the dark
           photos band through lilac and on to white at the very bottom ===== */}
-      <div className="text-ink" style={{ background: 'linear-gradient(180deg, #2A2258 0px, #F4F1FA 180px, #FFFFFF 100%)' }}>
-        <div className="mx-auto px-8 pt-44 md:pt-52 pb-16 md:pb-24 relative z-10">
+      <div className="text-ink" style={{ background: 'linear-gradient(180deg, #2A2258 0px, #F4F1FA 80px, #FFFFFF 100%)' }}>
+        <div className="mx-auto px-8 pt-20 md:pt-24 pb-16 md:pb-24 relative z-10">
           {/* HISTORY — editorial year-grouped list: lilac year markers, hairline lines */}
           <div>
             {timeline.map((grp, gi) => (
