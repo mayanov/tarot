@@ -50,7 +50,12 @@ function App() {
   // bottom margin equal to the footer's height, so scrolling to the end slides the
   // content up and uncovers the footer.
   const footerRef = useRef<HTMLDivElement>(null);
+  const footerInnerRef = useRef<HTMLDivElement>(null);
+  const footerSkyRef = useRef<HTMLDivElement>(null);
   const [footerH, setFooterH] = useState(0);
+  const [reduceMotion] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
   useEffect(() => {
     const el = footerRef.current;
     if (!el) return;
@@ -61,6 +66,30 @@ function App() {
     window.addEventListener('resize', measure);
     return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
   }, [isIndonesian, isLoading]);
+
+  // Animate the footer as it's uncovered: its content rises + fades into place and
+  // the sky behind it parallaxes a touch — so the reveal doesn't feel plain.
+  useEffect(() => {
+    if (reduceMotion || footerH <= 0) return;
+    let raf = 0;
+    const update = () => {
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const rp = Math.min(Math.max((window.scrollY - (maxScroll - footerH)) / footerH, 0), 1);
+      const e = rp * rp * (3 - 2 * rp); // smoothstep
+      if (footerInnerRef.current) {
+        footerInnerRef.current.style.transform = `translateY(${((1 - e) * 64).toFixed(1)}px)`;
+        footerInnerRef.current.style.opacity = (0.12 + e * 0.88).toFixed(3);
+      }
+      if (footerSkyRef.current) {
+        footerSkyRef.current.style.transform = `scale(1.1) translateY(${((1 - e) * -26).toFixed(1)}px)`;
+      }
+    };
+    const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); cancelAnimationFrame(raf); };
+  }, [reduceMotion, footerH]);
 
   // Define location check as a reusable function so we can retry from UI
   const performLocationCheck = async () => {
@@ -399,12 +428,14 @@ function App() {
       >
         {/* the sky photo spanning the whole region (same sky as the hero — bookends the page) */}
         <div
+          ref={footerSkyRef}
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10"
+          className="pointer-events-none absolute inset-0 -z-10 will-change-transform"
           style={{
             backgroundImage: `url(${import.meta.env.BASE_URL}sky-hero.jpg)`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
+            transform: 'scale(1.1)',
           }}
         />
         {/* legibility veil so cream text stays readable over the brighter nebula */}
@@ -414,7 +445,7 @@ function App() {
           style={{ background: 'linear-gradient(180deg, rgba(16,16,40,0.56) 0%, rgba(16,16,40,0.42) 48%, rgba(16,16,40,0.54) 100%)' }}
         />
 
-        <div className="p-3 sm:p-5 md:p-8">
+        <div ref={footerInnerRef} className="relative p-3 sm:p-5 md:p-8 will-change-transform" style={reduceMotion ? undefined : { opacity: 0.12 }}>
           <Footer isIndonesian={isIndonesian} />
         </div>
       </div>
