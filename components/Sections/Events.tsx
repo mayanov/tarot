@@ -56,12 +56,10 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
 
   return (
-    <section
-      id="events"
-      className="py-20 md:py-28 relative overflow-hidden isolate"
-      style={{ background: 'linear-gradient(168deg, #463C82 0%, #352C6C 55%, #2A2258 100%)' }}
-    >
-      <div className="mx-auto px-8 relative z-10 text-cream">
+    <section id="events" className="relative overflow-hidden isolate">
+      {/* ===== DARK band — heading + photo gallery ===== */}
+      <div style={{ background: 'linear-gradient(168deg, #463C82 0%, #352C6C 55%, #2A2258 100%)' }}>
+        <div className="mx-auto px-8 pt-20 md:pt-28 pb-16 md:pb-20 relative z-10 text-cream">
           <FadeIn>
             {/* HEADER — left-aligned editorial title */}
             <div className="mb-10 md:mb-14 max-w-3xl">
@@ -71,96 +69,98 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* PHOTO GALLERY — an even, calm grid of moments */}
-            <div className="mb-10 md:mb-14">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                {EVENT_PHOTOS.map((src, i) => (
-                  <FadeIn key={src} delay={i * 90} dir={i % 2 === 0 ? 'up' : 'down'} distance={0.8}>
-                    <button
-                      type="button"
-                      onClick={() => setLightbox(src)}
-                      className="group relative block w-full overflow-hidden rounded-[1.5rem] aspect-[3/4] bg-white/5"
-                      aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
-                    >
-                      <ImageReveal
-                        src={src}
-                        alt={isIndonesian ? `Sesi tarot Mayanov di event ${i + 1}` : `Mayanov tarot session at event ${i + 1}`}
-                        className="absolute inset-0"
-                        imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                        delay={i * 90}
-                      />
-                      {/* gentle violet duotone so the photos tone with the palette; clears on hover */}
-                      <span className="pointer-events-none absolute inset-0 bg-plum mix-blend-color opacity-40 group-hover:opacity-0 transition-opacity duration-500" />
-                      <span className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/15 group-hover:ring-cream/50 transition-all" />
-                      <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </button>
-                  </FadeIn>
-                ))}
-              </div>
-            </div>
-
-            {/* HISTORY — editorial year-grouped list on the dark section (no white
-                card, no timeline spine/dots): the year is a quiet lilac margin marker,
-                the events flow beside it as hairline-ruled lines */}
-            <div>
-              {timeline.map((grp, gi) => (
-                <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 70} dir="up" distance={0.7}>
-                  <div className="grid md:grid-cols-[7rem_1fr] gap-y-3 md:gap-x-12 md:items-start border-t border-cream/15 pt-6 md:pt-7 pb-7 md:pb-9">
-                    {/* year marker */}
-                    <div className="font-elegant italic text-[#C9B8E8] text-2xl md:text-[1.9rem] leading-none tracking-tight md:pt-1.5">
-                      {grp.year}
-                    </div>
-                    {/* that year's events */}
-                    <ul>
-                      {grp.items.map((event, ii) => (
-                        <li
-                          key={ii}
-                          className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-cream/10 first:border-t-0 first:pt-0"
-                        >
-                          <h3 className="font-serif font-medium text-cream text-sm md:text-base leading-[1.25] transition-colors duration-500 group-hover:text-[#C9B8E8]">
-                            {event.title}
-                          </h3>
-                          <span className="shrink-0 text-[0.78rem] tracking-[0.01em] text-cream/45 font-light leading-snug sm:text-right">
-                            {event.loc}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              {EVENT_PHOTOS.map((src, i) => (
+                <FadeIn key={src} delay={i * 90} dir={i % 2 === 0 ? 'up' : 'down'} distance={0.8}>
+                  <button
+                    type="button"
+                    onClick={() => setLightbox(src)}
+                    className="group relative block w-full overflow-hidden rounded-[1.5rem] aspect-[3/4] bg-white/5"
+                    aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
+                  >
+                    <ImageReveal
+                      src={src}
+                      alt={isIndonesian ? `Sesi tarot Mayanov di event ${i + 1}` : `Mayanov tarot session at event ${i + 1}`}
+                      className="absolute inset-0"
+                      imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      delay={i * 90}
+                    />
+                    {/* gentle violet duotone so the photos tone with the palette; clears on hover */}
+                    <span className="pointer-events-none absolute inset-0 bg-plum mix-blend-color opacity-40 group-hover:opacity-0 transition-opacity duration-500" />
+                    <span className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/15 group-hover:ring-cream/50 transition-all" />
+                    <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
                 </FadeIn>
               ))}
             </div>
-
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              {(() => {
-                const expanded = visibleCount >= eventList.length;
-                return (
-                  <button
-                    onClick={() => {
-                      if (expanded) {
-                        setVisibleCount(10);
-                        // keep the viewer anchored to this section after it collapses
-                        setTimeout(() => smoothScrollToId('events', 90), 60);
-                      } else {
-                        setVisibleCount(eventList.length);
-                      }
-                    }}
-                    className="inline-flex items-center justify-center gap-2 min-w-[11rem] px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-500 group"
-                  >
-                    {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
-                    <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
-                  </button>
-                );
-              })()}
-              <a
-                href="https://wa.link/5peyhb"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500"
-              >
-                {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
-              </a>
-            </div>
           </FadeIn>
+        </div>
+      </div>
+
+      {/* ===== LIGHT band — the events history + CTAs read airy on a soft lilac ===== */}
+      <div className="text-ink" style={{ background: '#F4F1FA' }}>
+        <div className="mx-auto px-8 py-16 md:py-24 relative z-10">
+          {/* HISTORY — editorial year-grouped list: lilac year markers, hairline lines */}
+          <div>
+            {timeline.map((grp, gi) => (
+              <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 70} dir="up" distance={0.7}>
+                <div className="grid md:grid-cols-[7rem_1fr] gap-y-3 md:gap-x-12 md:items-start border-t border-ink/10 pt-6 md:pt-7 pb-7 md:pb-9">
+                  {/* year marker */}
+                  <div className="font-elegant italic text-moon text-2xl md:text-[1.9rem] leading-none tracking-tight md:pt-1.5">
+                    {grp.year}
+                  </div>
+                  {/* that year's events */}
+                  <ul>
+                    {grp.items.map((event, ii) => (
+                      <li
+                        key={ii}
+                        className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-ink/10 first:border-t-0 first:pt-0"
+                      >
+                        <h3 className="font-serif font-medium text-ink text-sm md:text-base leading-[1.25] transition-colors duration-500 group-hover:text-moon">
+                          {event.title}
+                        </h3>
+                        <span className="shrink-0 text-[0.78rem] tracking-[0.01em] text-ink/50 font-light leading-snug sm:text-right">
+                          {event.loc}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            {(() => {
+              const expanded = visibleCount >= eventList.length;
+              return (
+                <button
+                  onClick={() => {
+                    if (expanded) {
+                      setVisibleCount(10);
+                      // keep the viewer anchored to this section after it collapses
+                      setTimeout(() => smoothScrollToId('events', 90), 60);
+                    } else {
+                      setVisibleCount(eventList.length);
+                    }
+                  }}
+                  className="inline-flex items-center justify-center gap-2 min-w-[11rem] px-7 py-3 rounded-full border border-ink/30 text-ink text-sm font-medium hover:bg-ink hover:text-cream transition-colors duration-500 group"
+                >
+                  {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
+                  <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
+                </button>
+              );
+            })()}
+            <a
+              href="https://wa.link/5peyhb"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-ink text-cream text-sm font-medium hover:bg-plum transition-colors duration-500"
+            >
+              {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Lightbox */}
