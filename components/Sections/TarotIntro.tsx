@@ -24,49 +24,53 @@ const STARS_STATIC = starField(srng, 300, 0.4, 1.1, 0.3, 0.72);
 const STARS_TWINKLE_A = starField(srng, 90, 0.8, 1.5, 0.55, 0.95);
 const STARS_TWINKLE_B = starField(srng, 70, 0.6, 1.1, 0.4, 0.82);
 
-// Two static sky gradients — a deep night and a lighter dusk. We crossfade between
-// them with opacity (compositor-cheap) rather than regenerating a gradient string
-// every scroll frame (which forced a full-screen repaint and made scrolling laggy).
+// Two static sky gradients — a deep night and a lighter dusk. We crossfade with
+// opacity (compositor-cheap) as the section passes through the viewport.
 const GRAD_DARK = 'linear-gradient(180deg, rgb(26,15,51) 0%, rgb(17,11,40) 55%, rgb(7,5,18) 100%)';
 const GRAD_LIGHT = 'linear-gradient(180deg, rgb(74,54,120) 0%, rgb(52,36,92) 55%, rgb(34,24,66) 100%)';
-const smoothstep = (t: number) => { const x = Math.min(Math.max(t, 0), 1); return x * x * (3 - 2 * x); };
 
 /**
- * A dark "presentation" band between About and Services. The section is a tall
- * scroll track with a pinned (sticky) panel over a starry night sky; as you scroll
- * through, the sky brightens (dark → dusk) and the lines build in one by one.
- * All scroll work is done imperatively on refs (no per-frame React re-render) and
- * via opacity/transform only, so it stays smooth. Reduced-motion is a calm static
- * section.
+ * A calm, starry "presentation" band between About and Services. It's a normal
+ * section (no scroll pinning, so entering/leaving stays smooth): the copy fades up
+ * once when it enters the viewport, and the sky brightens dark → dusk via a cheap
+ * opacity crossfade as the section travels through the viewport. Reduced-motion is
+ * a plain static section.
  */
 const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
   const [reduce] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
+  const [shown, setShown] = useState(reduce);
   const sectionRef = useRef<HTMLElement>(null);
   const skyLightRef = useRef<HTMLDivElement>(null);
   const bloomRef = useRef<HTMLDivElement>(null);
-  const paraRef = useRef<HTMLParagraphElement>(null);
-  const affirmRef = useRef<HTMLDivElement>(null);
 
+  // one-time fade-up when the section scrolls into view
   useEffect(() => {
-    if (reduce) return;
+    if (reduce) { setShown(true); return; }
+    const el = sectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setShown(true); io.disconnect(); } },
+      { threshold: 0.25 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [reduce]);
+
+  // sky crossfade (+ a touch of bloom drift) driven by the section's travel through
+  // the viewport — opacity/transform only, no re-render, no pinning
+  useEffect(() => {
+    if (reduce) { if (skyLightRef.current) skyLightRef.current.style.opacity = '0.5'; return; }
     let raf = 0;
-    const reveal = (el: HTMLElement | null, p: number, start: number, end: number) => {
-      if (!el) return;
-      const eased = smoothstep((p - start) / (end - start));
-      el.style.opacity = String(eased);
-      el.style.transform = `translateY(${((1 - eased) * 26).toFixed(1)}px)`;
-    };
     const update = () => {
       const el = sectionRef.current;
       if (!el) return;
-      const total = el.offsetHeight - window.innerHeight; // pinned range
-      const p = total > 0 ? Math.min(Math.max(-el.getBoundingClientRect().top / total, 0), 1) : 0;
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const p = Math.min(Math.max((vh - r.top) / (vh + r.height), 0), 1);
       if (skyLightRef.current) skyLightRef.current.style.opacity = p.toFixed(3);
-      if (bloomRef.current) bloomRef.current.style.transform = `translateY(${(p * 60).toFixed(1)}px)`;
-      reveal(paraRef.current, p, 0.06, 0.34);
-      reveal(affirmRef.current, p, 0.4, 0.72);
+      if (bloomRef.current) bloomRef.current.style.transform = `translateY(${(p * 50).toFixed(1)}px)`;
     };
     const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
     update();
@@ -83,18 +87,20 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
     ? ['Datang apa adanya', 'Tanpa tekanan', 'Tanpa dihakimi', 'Rahasia terjaga']
     : ['Come as you are', 'No pressure', 'No judgment', 'Kept between us'];
 
-  // static initial inline styles (effect takes over on scroll)
-  const hidden = reduce ? undefined : { opacity: 0 };
+  const rise = (delay: number): React.CSSProperties =>
+    reduce
+      ? {}
+      : {
+          opacity: shown ? 1 : 0,
+          transform: shown ? 'translateY(0)' : 'translateY(20px)',
+          transition: `opacity 0.9s ease ${delay}ms, transform 1s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+          willChange: 'opacity, transform',
+        };
 
   return (
-    <section
-      ref={sectionRef}
-      id="tarot-intro"
-      className={`relative text-cream ${reduce ? 'py-24 md:py-32' : ''}`}
-      style={{ height: reduce ? undefined : '240vh', background: 'rgb(7,5,18)' }}
-    >
-      <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
-        {/* sky — a static dark base with a lighter dusk crossfaded over it by scroll */}
+    <section ref={sectionRef} id="tarot-intro" className="relative text-cream">
+      <div className="relative flex items-center overflow-hidden min-h-[86vh] py-24 md:py-28">
+        {/* sky — a static dark base with a lighter dusk crossfaded over it */}
         <div aria-hidden className="absolute inset-0" style={{ background: GRAD_DARK }} />
         <div
           ref={skyLightRef}
@@ -115,7 +121,7 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_B), animation: reduce ? undefined : 'skyTwinkle 6.5s ease-in-out 1.2s infinite' }} />
         </div>
 
-        {/* soft violet bloom — depth, drifts a touch with progress */}
+        {/* soft violet bloom — depth, drifts a touch as the section passes by */}
         <div
           ref={bloomRef}
           aria-hidden
@@ -125,15 +131,15 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
 
         <div className="mx-auto px-8 relative z-10 w-full max-w-3xl text-center">
           <h2
+            style={rise(0)}
             className="font-elegant font-medium text-[clamp(2.2rem,6vw,4.2rem)] leading-[1.06] tracking-[-0.02em] [text-shadow:0_8px_50px_rgba(6,4,14,0.5)]"
           >
             {isIndonesian ? 'Ruang tenang untuk berpikir dengan jujur.' : 'A calm space to think out loud.'}
           </h2>
 
           <p
-            ref={paraRef}
-            style={hidden}
-            className="mt-9 md:mt-10 mx-auto max-w-2xl text-white font-light text-lg md:text-xl leading-relaxed will-change-[opacity,transform]"
+            style={rise(160)}
+            className="mt-9 md:mt-10 mx-auto max-w-2xl text-white font-light text-lg md:text-xl leading-relaxed"
           >
             {isIndonesian
               ? 'Kita buka kartunya dan baca energi yang sedang kamu bawa — pola yang sedang kamu jalani, perasaan yang belum sempat kamu ucapkan — lalu kita ubah jadi langkah yang jelas dan bisa kamu ambil.'
@@ -141,9 +147,8 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           </p>
 
           <div
-            ref={affirmRef}
-            style={hidden}
-            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-[#C9B8E8] text-[1.05rem] will-change-[opacity,transform]"
+            style={rise(300)}
+            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-[#C9B8E8] text-[1.05rem]"
           >
             {affirmations.map((w, i) => (
               <span key={w} className="inline-flex items-center gap-4">
