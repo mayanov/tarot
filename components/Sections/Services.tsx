@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import SoftAura from '../UI/SoftAura';
+import CelestialMark from '../UI/CelestialMark';
 import { trackEvent } from '../../services/analytics';
 
 const REVEAL_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -15,10 +16,16 @@ interface ServicesProps {
 const btnPrimary = "inline-flex items-center justify-center px-7 py-3 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500";
 const btnSecondary = "inline-flex items-center justify-center px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-500";
 
-// Each pricing category gets its own twilight sky, so the categories feel distinct.
-// Solid per-category band colours (deep, cohesive violet/indigo family so the
-// cream text stays legible) — replaces the per-category sky photos.
-const CAT_COLORS = ['#2A1A48', '#1C2550', '#38224E', '#201A40'];
+// Per-category band backgrounds — rich radial gradients (a glow deepening into
+// near-black) so each category feels distinct and has depth, no photos. Paired
+// with a faint celestial watermark for mystique.
+const CAT_BG = [
+  'radial-gradient(135% 120% at 15% -15%, #4e2f88 0%, #2a1550 46%, #140a2b 100%)', // violet
+  'radial-gradient(135% 120% at 15% -15%, #2f4c98 0%, #1a2656 46%, #0c1230 100%)', // indigo
+  'radial-gradient(135% 120% at 15% -15%, #612f7c 0%, #371b4e 46%, #190d2a 100%)', // plum
+  'radial-gradient(135% 120% at 15% -15%, #3f3176 0%, #221a48 46%, #110c2a 100%)', // dusk
+];
+const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent'] as const;
 
 // One offer line inside a category row: name (+ inline badge) left, price right.
 const OfferRow: React.FC<{ o: any }> = ({ o }) => (
@@ -269,10 +276,14 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             id={g.id || undefined}
                             className="relative overflow-hidden scroll-mt-28 border-b border-white/[0.08]"
                         >
-                            {/* per-category solid colour band */}
+                            {/* per-category rich gradient band + faint celestial watermark */}
                             <div
                                 className="pointer-events-none absolute inset-0"
-                                style={{ background: CAT_COLORS[i % CAT_COLORS.length] }}
+                                style={{ background: CAT_BG[i % CAT_BG.length] }}
+                            />
+                            <CelestialMark
+                                name={CAT_MARKS[i % CAT_MARKS.length]}
+                                className="pointer-events-none absolute -top-4 right-4 md:right-10 w-36 md:w-56 text-cream/[0.07]"
                             />
                             <div className="relative z-10 mx-auto px-8">
                                 {/* header row — spans full width, toggles the band */}
