@@ -16,24 +16,13 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
     <section
       id="interlude"
       className="relative overflow-hidden isolate text-cream py-24 md:py-32"
-      style={{ background: '#2A1330' }}
+      style={{ background: 'linear-gradient(165deg, #28336B 0%, #202A5C 48%, #14112B 100%)' }}
     >
-      {/* aurora sky photo — drifts slower than the content (parallax) */}
+      {/* faint indigo glow for depth */}
       <div
-        data-parallax="0.05"
-        data-parallax-scale="1.18"
-        className="pointer-events-none absolute inset-0 will-change-transform"
-        style={{
-          backgroundImage: `url(${import.meta.env.BASE_URL}aurora-quote.jpg)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 38%',
-          transform: 'scale(1.18)',
-        }}
-      />
-      {/* cool, lighter overlay so the quote reads without feeling gloomy */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(6,12,24,0.36) 0%, rgba(6,12,24,0.22) 50%, rgba(6,12,24,0.44) 100%)' }}
+        aria-hidden
+        className="pointer-events-none absolute -top-1/4 left-1/2 -translate-x-1/2 w-[60rem] h-[36rem] max-w-[120vw] rounded-full blur-[130px]"
+        style={{ background: 'radial-gradient(circle, rgba(74,96,190,0.28), transparent 70%)' }}
       />
 
 
