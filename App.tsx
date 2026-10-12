@@ -6,7 +6,6 @@ import WhyChoose from './components/Sections/WhyChoose';
 import TarotIntro from './components/Sections/TarotIntro';
 import Footer from './components/Layout/Footer';
 import Loader from './components/Layout/Loader';
-import SoftAura from './components/UI/SoftAura';
 import BookingModal from './components/Booking/BookingModal';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
 import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
@@ -412,7 +411,6 @@ function App() {
           {/* FAQ + Disclaimer share ONE white ground and ONE soft wash so there's no
               seam between them — the two sections themselves are transparent. */}
           <div className="relative isolate overflow-hidden bg-white">
-            <SoftAura />
             <FAQ isIndonesian={isIndonesian} />
             <Disclaimer isIndonesian={isIndonesian} />
           </div>
