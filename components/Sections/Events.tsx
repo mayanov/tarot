@@ -59,18 +59,8 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
     <section
       id="events"
       className="py-20 md:py-28 relative overflow-hidden isolate"
+      style={{ background: '#1A1437' }}
     >
-      {/* aurora sky background — zoomed toward the top so the horizon/ground is cropped out (sky only) */}
-      <div
-        data-parallax="0.07"
-        data-parallax-scale="1.16"
-        className="absolute inset-0 will-change-transform"
-        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}aurora-sky.jpg)`, backgroundSize: 'cover', backgroundPosition: 'center 28%', transform: 'scale(1.16)', transformOrigin: 'center' }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(6,10,16,0.42) 0%, rgba(6,10,16,0.3) 45%, rgba(6,10,16,0.72) 100%)' }}
-      />
       <div className="mx-auto px-8 relative z-10 text-cream">
           <FadeIn>
             {/* HEADER — left-aligned editorial title */}
