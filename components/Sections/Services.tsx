@@ -27,6 +27,24 @@ const CAT_BG = [
 ];
 const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent'] as const;
 
+// A faint star dusting inside each band, so every category reads like its own
+// little night sky (one pattern per category for variety).
+const sMul = (seed: number) => () => {
+  seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+const starDust = (seed: number, count: number) => {
+  const r = sMul(seed);
+  return Array.from({ length: count }, () => {
+    const x = (r() * 100).toFixed(2), y = (r() * 100).toFixed(2);
+    const rad = (0.5 + r() * 1).toFixed(2), o = (0.3 + r() * 0.55).toFixed(2);
+    return `radial-gradient(${rad}px ${rad}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, rgba(255,255,255,0) 60%)`;
+  }).join(',');
+};
+const CAT_STARS = [0, 1, 2, 3].map((k) => starDust(90210 + k * 7777, 48));
+
 // One offer line inside a category row: name (+ inline badge) left, price right.
 const OfferRow: React.FC<{ o: any }> = ({ o }) => (
     <div className="py-4 border-t border-white/10 first:border-t-0">
@@ -274,16 +292,30 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         <div
                             key={g.type}
                             id={g.id || undefined}
-                            className="relative overflow-hidden scroll-mt-28 border-b border-white/[0.08]"
+                            className="group/band relative overflow-hidden scroll-mt-28 border-b border-white/[0.08]"
                         >
-                            {/* per-category rich gradient band + faint celestial watermark */}
+                            {/* per-category rich gradient band */}
                             <div
                                 className="pointer-events-none absolute inset-0"
                                 style={{ background: CAT_BG[i % CAT_BG.length] }}
                             />
+                            {/* faint star dusting — its own little sky per category */}
+                            <div
+                                aria-hidden
+                                className="pointer-events-none absolute inset-0 opacity-70"
+                                style={{ backgroundImage: CAT_STARS[i % CAT_STARS.length] }}
+                            />
+                            {/* soft lilac glow that blooms in when the band opens */}
+                            <div
+                                aria-hidden
+                                className={`pointer-events-none absolute inset-x-0 -top-16 h-64 transition-opacity duration-700 ${open ? 'opacity-100' : 'opacity-0'}`}
+                                style={{ background: 'radial-gradient(55% 100% at 50% 0%, rgba(201,184,232,0.2), transparent 72%)' }}
+                            />
+                            {/* gentle brighten on hover */}
+                            <div aria-hidden className="pointer-events-none absolute inset-0 bg-white/0 transition-colors duration-500 group-hover/band:bg-white/[0.035]" />
                             <CelestialMark
                                 name={CAT_MARKS[i % CAT_MARKS.length]}
-                                className="pointer-events-none absolute -top-4 right-4 md:right-10 w-36 md:w-56 text-cream/[0.07]"
+                                className="pointer-events-none absolute -top-4 right-4 md:right-10 w-36 md:w-56 text-cream/[0.08] transition-transform duration-700 group-hover/band:-translate-y-1"
                             />
                             <div className="relative z-10 mx-auto px-8">
                                 {/* header row — spans full width, toggles the band */}
@@ -305,8 +337,8 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-4 md:gap-6 shrink-0">
-                                        <span className={`hidden sm:block text-sm md:text-[0.95rem] whitespace-nowrap transition-all duration-500 ${open ? 'opacity-0 -translate-x-1 pointer-events-none' : 'opacity-100'}`}>
-                                            <span className="font-serif font-semibold text-cream">{g.priceLabel}</span>
+                                        <span className={`hidden sm:block whitespace-nowrap transition-all duration-500 ${open ? 'opacity-0 -translate-x-1 pointer-events-none' : 'opacity-100'}`}>
+                                            <span className="font-serif font-semibold text-cream text-lg md:text-2xl tracking-tight">{g.priceLabel}</span>
                                         </span>
                                         <ChevronDown className={`w-5 h-5 text-cream/70 transition-transform duration-500 ${open ? 'rotate-180 text-cream' : ''}`} />
                                     </div>
