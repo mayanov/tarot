@@ -3,7 +3,6 @@ import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import SoftAura from '../UI/SoftAura';
-import CelestialMark from '../UI/CelestialMark';
 import { trackEvent } from '../../services/analytics';
 
 interface AboutProps {
@@ -80,13 +79,18 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </figcaption>
           </figure>
 
-          {/* quiet credentials — moved out of the hero; a calm line, not a KPI bar */}
-          <div className="mt-10 md:mt-12 pt-7 border-t border-ink/10 flex flex-wrap items-center gap-x-4 gap-y-3 text-ink/55 font-light text-sm">
-            <span><b className="font-elegant font-semibold not-italic text-ink text-[1.15rem] mr-1">{isIndonesian ? '7.700+' : '7,700+'}</b>{isIndonesian ? 'sesi tarot' : 'readings'}</span>
-            <CelestialMark name="sparkle" className="w-2.5 h-2.5 text-moon/60 shrink-0" />
-            <span><b className="font-elegant font-semibold not-italic text-ink text-[1.15rem] mr-1">{isIndonesian ? '1.500+' : '1,500+'}</b>{isIndonesian ? 'orang terbantu' : 'people guided'}</span>
-            <CelestialMark name="sparkle" className="w-2.5 h-2.5 text-moon/60 shrink-0" />
-            <span><b className="font-elegant font-semibold not-italic text-ink text-[1.15rem] mr-1">5.0</b>{isIndonesian ? 'di Google' : 'on Google'}</span>
+          {/* quiet credentials — a calm 3-up proof row (big serif numbers), not a KPI bar */}
+          <div className="mt-10 md:mt-12 pt-8 border-t border-ink/10 grid grid-cols-3 gap-x-5 sm:gap-x-8">
+            {[
+              { n: isIndonesian ? '7.700+' : '7,700+', l: isIndonesian ? 'sesi tarot' : 'readings' },
+              { n: isIndonesian ? '1.500+' : '1,500+', l: isIndonesian ? 'orang terbantu' : 'people guided' },
+              { n: '5.0', l: isIndonesian ? 'rating Google' : 'on Google' },
+            ].map((s, i) => (
+              <div key={i} className={i > 0 ? 'pl-5 sm:pl-8 border-l border-ink/10' : undefined}>
+                <div className="font-elegant font-semibold text-ink text-[1.9rem] md:text-[2.4rem] leading-none tracking-[-0.02em]">{s.n}</div>
+                <div className="mt-2.5 text-ink/50 font-light text-[13px] md:text-sm leading-snug">{s.l}</div>
+              </div>
+            ))}
           </div>
 
         </FadeIn>
