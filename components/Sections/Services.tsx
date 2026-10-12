@@ -44,6 +44,162 @@ const starDust = (seed: number, count: number) => {
   }).join(',');
 };
 const CAT_STARS = [0, 1, 2, 3].map((k) => starDust(90210 + k * 7777, 48));
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+
+// A single flippable tarot card: front = the card face (motif + name + price-from),
+// back = the booking options. The whole card toggles the flip; links inside stop
+// propagation so booking doesn't flip it back.
+const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean }> = ({ g, i, flipped, onFlip, isIndonesian }) => (
+    <div
+        role="button"
+        tabIndex={0}
+        aria-pressed={flipped}
+        aria-label={g.type}
+        onClick={onFlip}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onFlip(); } }}
+        className="group/card relative block w-full aspect-[5/8] cursor-pointer select-none [perspective:1400px] focus:outline-none"
+    >
+        <div
+            className="relative h-full w-full transition-transform duration-[650ms] [transform-style:preserve-3d] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]"
+            style={{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+        >
+            {/* ===== FRONT — the card face ===== */}
+            <div
+                className="absolute inset-0 [backface-visibility:hidden] overflow-hidden rounded-[1.15rem] ring-1 ring-white/15 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
+                style={{ background: CAT_BG[i % CAT_BG.length] }}
+            >
+                <div aria-hidden className="absolute inset-0 opacity-70" style={{ backgroundImage: CAT_STARS[i % CAT_STARS.length] }} />
+                {/* ornamental inner frame */}
+                <div aria-hidden className="absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-white/[0.16]" />
+                <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-10 h-40 opacity-0 transition-opacity duration-500 group-hover/card:opacity-100" style={{ background: 'radial-gradient(60% 100% at 50% 0%, rgba(201,184,232,0.28), transparent 72%)' }} />
+
+                <div className="relative h-full flex flex-col items-center justify-between py-7 px-5 text-cream text-center">
+                    <span className="font-elegant italic text-cream/55 text-sm tracking-wide">{ROMAN[i] ?? ''}</span>
+                    <div className="flex flex-col items-center gap-5">
+                        <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className="w-14 md:w-16 text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]" />
+                        <h3 className="font-elegant font-medium text-[1.3rem] md:text-[1.45rem] leading-[1.12] tracking-tight max-w-[12ch]">{g.type}</h3>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                        <span className="text-cream/45 text-[10.5px] tracking-[0.18em] uppercase">{isIndonesian ? 'Mulai dari' : 'From'}</span>
+                        <span className="font-serif font-semibold text-lg">{g.priceLabel}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ===== BACK — the booking options ===== */}
+            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] ring-1 ring-ink/10 bg-white text-ink [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]">
+                <div className="h-full overflow-y-auto p-5 flex flex-col">
+                    <h3 className="font-elegant font-semibold text-[1.05rem] leading-tight pr-6">{g.type}</h3>
+                    {g.blurb && <p className="mt-1.5 text-[11px] text-ink/55 font-light leading-snug line-clamp-3">{g.blurb}</p>}
+
+                    <ul className="mt-3 flex-1 space-y-3">
+                        {g.offers.map((o: any, oi: number) => (
+                            <li key={oi} className="border-t border-ink/10 pt-2.5">
+                                <div className="flex items-baseline justify-between gap-2">
+                                    <span className="font-medium text-[12.5px] leading-tight">{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
+                                    <span className="font-serif font-semibold text-[13px] text-moon whitespace-nowrap">{o.price}</span>
+                                </div>
+                                {o.book && o.book.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                        {o.book.map((b: any, bi: number) => (
+                                            <a
+                                                key={bi}
+                                                href={b.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => { e.stopPropagation(); b.onClick && b.onClick(); }}
+                                                className="inline-flex items-center rounded-full bg-ink text-cream px-3 py-1 text-[10.5px] font-medium hover:bg-plum transition-colors duration-300"
+                                            >
+                                                {b.platform || (isIndonesian ? 'Pesan' : 'Book')}
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onFlip(); }}
+                        className="mt-3 self-start text-[11px] text-ink/40 hover:text-ink transition-colors"
+                    >
+                        ← {isIndonesian ? 'Tutup kartu' : 'Flip back'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
+// The fanned spread. Desktop: cards overlap in an arc, hover lifts, click brings the
+// card forward + flips it. Mobile: a snap-scroll row of upright cards.
+const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, isIndonesian }) => {
+    const [selected, setSelected] = useState<number | null>(null);
+    const [hovered, setHovered] = useState<number | null>(null);
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 767px)');
+        const on = () => setIsMobile(mq.matches);
+        on();
+        mq.addEventListener('change', on);
+        return () => mq.removeEventListener('change', on);
+    }, []);
+
+    const n = groups.length;
+    const center = (n - 1) / 2;
+    const fanStyle = (i: number): React.CSSProperties => {
+        const o = i - center;
+        const isSel = selected === i;
+        const isHov = hovered === i && selected === null;
+        const anySel = selected !== null;
+        const rot = isSel ? 0 : o * 7;
+        const tx = o * 136;
+        const ty = isSel ? -62 : isHov ? -28 : Math.abs(o) * 26;
+        const scale = isSel ? 1.12 : isHov ? 1.04 : anySel ? 0.92 : 1;
+        return {
+            transform: `translate(-50%, -50%) translateX(${tx}px) translateY(${ty}px) rotate(${rot}deg) scale(${scale})`,
+            zIndex: isSel ? 50 : isHov ? 40 : 20 - Math.round(Math.abs(o)),
+            opacity: anySel && !isSel ? 0.5 : 1,
+            transition: 'transform 0.6s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease',
+        };
+    };
+
+    if (isMobile) {
+        return (
+            <div>
+                <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory px-8 pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    {groups.map((g, i) => (
+                        <div key={g.type} id={g.id || undefined} className="snap-center shrink-0 w-[72vw] max-w-[17rem] scroll-mt-28">
+                            <TarotCard g={g} i={i} flipped={selected === i} onFlip={() => setSelected(selected === i ? null : i)} isIndonesian={isIndonesian} />
+                        </div>
+                    ))}
+                </div>
+                <p className="mt-3 text-center text-ink/45 text-xs tracking-wide">{isIndonesian ? 'Geser & ketuk kartu untuk detail' : 'Swipe & tap a card for details'}</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="px-8">
+            <div className="relative mx-auto h-[32rem] max-w-5xl">
+                {groups.map((g, i) => (
+                    <div
+                        key={g.type}
+                        id={g.id || undefined}
+                        className="absolute left-1/2 top-1/2 w-[14rem] scroll-mt-28"
+                        style={fanStyle(i)}
+                        onMouseEnter={() => setHovered(i)}
+                        onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
+                    >
+                        <TarotCard g={g} i={i} flipped={selected === i} onFlip={() => setSelected(selected === i ? null : i)} isIndonesian={isIndonesian} />
+                    </div>
+                ))}
+            </div>
+            <p className="mt-2 text-center text-ink/45 text-xs tracking-wide">{isIndonesian ? 'Ketuk kartu untuk lihat detail & harga' : 'Tap a card to reveal details & pricing'}</p>
+        </div>
+    );
+};
 
 // One offer line inside a category row: name (+ inline badge) left, price right.
 const OfferRow: React.FC<{ o: any }> = ({ o }) => (
@@ -284,91 +440,11 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 </FadeIn>
             </div>
 
-            {/* ===== Pricelist — full-width twilight-sky bands, one open at a time ===== */}
-            <div className="border-t border-ink/[0.08]">
-                {groups.map((g: any, i: number) => {
-                    const open = openIdx === i;
-                    return (
-                        <div
-                            key={g.type}
-                            id={g.id || undefined}
-                            className="group/band relative overflow-hidden scroll-mt-28 border-b border-white/[0.08]"
-                        >
-                            {/* per-category rich gradient band */}
-                            <div
-                                className="pointer-events-none absolute inset-0"
-                                style={{ background: CAT_BG[i % CAT_BG.length] }}
-                            />
-                            {/* faint star dusting — its own little sky per category */}
-                            <div
-                                aria-hidden
-                                className="pointer-events-none absolute inset-0 opacity-70"
-                                style={{ backgroundImage: CAT_STARS[i % CAT_STARS.length] }}
-                            />
-                            {/* soft lilac glow that blooms in when the band opens */}
-                            <div
-                                aria-hidden
-                                className={`pointer-events-none absolute inset-x-0 -top-16 h-64 transition-opacity duration-700 ${open ? 'opacity-100' : 'opacity-0'}`}
-                                style={{ background: 'radial-gradient(55% 100% at 50% 0%, rgba(201,184,232,0.2), transparent 72%)' }}
-                            />
-                            {/* gentle brighten on hover */}
-                            <div aria-hidden className="pointer-events-none absolute inset-0 bg-white/0 transition-colors duration-500 group-hover/band:bg-white/[0.035]" />
-                            <CelestialMark
-                                name={CAT_MARKS[i % CAT_MARKS.length]}
-                                className="pointer-events-none absolute -top-4 right-4 md:right-10 w-36 md:w-56 text-cream/[0.08] transition-transform duration-700 group-hover/band:-translate-y-1"
-                            />
-                            <div className="relative z-10 mx-auto px-8">
-                                {/* header row — spans full width, toggles the band */}
-                                <button
-                                    type="button"
-                                    onClick={() => toggle(i)}
-                                    aria-expanded={open}
-                                    className="w-full flex items-center justify-between gap-4 pt-7 md:pt-9 pb-3 text-left group [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]"
-                                >
-                                    <div className="flex items-center gap-x-3 gap-y-2 flex-wrap min-w-0">
-                                        <h3 className="font-elegant font-medium text-cream text-[1.55rem] md:text-[2.2rem] leading-none tracking-tight transition-colors group-hover:text-cream">
-                                            {g.type}
-                                        </h3>
-                                        {/* category labels — quiet, dot-separated text (no SaaS pills) */}
-                                        <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-light text-cream/60 text-xs md:text-[13px] tracking-wide">
-                                            {g.tags.map((t: string, ti: number) => (
-                                                <span key={t} className="inline-flex items-center gap-2.5">
-                                                    {ti > 0 && <span aria-hidden className="w-[3px] h-[3px] rounded-full bg-cream/35" />}
-                                                    {t}
-                                                </span>
-                                            ))}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-4 md:gap-6 shrink-0">
-                                        <span className={`hidden sm:block whitespace-nowrap transition-all duration-500 ${open ? 'opacity-0 -translate-x-1 pointer-events-none' : 'opacity-100'}`}>
-                                            <span className="font-serif font-semibold text-cream text-lg md:text-2xl tracking-tight">{g.priceLabel}</span>
-                                        </span>
-                                        <ChevronDown className={`w-5 h-5 text-cream/70 transition-transform duration-500 ${open ? 'rotate-180 text-cream' : ''}`} />
-                                    </div>
-                                </button>
-
-                                {/* short explanation — always visible, even before expanding */}
-                                {g.blurb && (
-                                    <p className="pb-7 md:pb-9 text-sm text-cream/95 font-light leading-relaxed max-w-2xl [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">{g.blurb}</p>
-                                )}
-
-                                {/* body — collapses smoothly via grid-rows trick */}
-                                <div className="grid transition-all duration-500 ease-out" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
-                                    <div className="overflow-hidden min-h-0">
-                                        <div className="pb-9 md:pb-12">
-                                            <div className="border-t border-white/10">
-                                                {g.offers.map((o: any, oi: number) => (<OfferRow key={oi} o={o} />))}
-                                            </div>
-                                            <div className="mt-6">
-                                                <OrderButton g={g} isIndonesian={isIndonesian} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
+            {/* ===== Pricelist — a fanned tarot spread; click a card to flip for details ===== */}
+            <div className="pb-6 md:pb-10">
+                <FadeIn dir="up">
+                    <TarotFan groups={groups} isIndonesian={isIndonesian} />
+                </FadeIn>
             </div>
 
             {/* ===== How it works — heading on top, steps flow horizontally so it stays
