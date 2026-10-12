@@ -95,7 +95,7 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
       ref={sectionRef}
       id="tarot-intro"
       className={`relative text-cream ${reduce ? 'py-24 md:py-32' : ''}`}
-      style={{ height: reduce ? undefined : '220vh', background: 'rgb(7,5,18)' }}
+      style={{ height: reduce ? undefined : '155vh', background: 'rgb(7,5,18)' }}
     >
       <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
         {/* sky — a static dark base with a lighter dusk crossfaded over it by scroll */}
