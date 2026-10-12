@@ -46,10 +46,17 @@ const starDust = (seed: number, count: number) => {
 const CAT_STARS = [0, 1, 2, 3].map((k) => starDust(90210 + k * 7777, 48));
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
-// A single flippable tarot card: front = the card face (motif + name + price-from),
-// back = the booking options. The whole card toggles the flip; links inside stop
-// propagation so booking doesn't flip it back.
-const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean }> = ({ g, i, flipped, onFlip, isIndonesian }) => (
+// Cheapest single price in a category (for the card's "from" line — not a range).
+const priceValue = (p: any) => { const n = parseFloat(String(p).replace(/[^0-9.]/g, '')); return isNaN(n) ? Infinity : n; };
+const fromPrice = (g: any): string => {
+    const prices = (g.offers || []).map((o: any) => o.price).filter(Boolean);
+    if (!prices.length) return g.priceLabel;
+    return prices.reduce((a: string, b: string) => (priceValue(b) < priceValue(a) ? b : a));
+};
+
+// A single tarot card: front = the card face (motif + name + cheapest price), back =
+// the booking options. `big` scales it up for the full-screen "drawn card" reveal.
+const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean; big?: boolean }> = ({ g, i, flipped, onFlip, isIndonesian, big = false }) => (
     <div
         role="button"
         tabIndex={0}
@@ -57,7 +64,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
         aria-label={g.type}
         onClick={onFlip}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onFlip(); } }}
-        className="group/card relative block w-full aspect-[5/8] cursor-pointer select-none [perspective:1400px] focus:outline-none"
+        className="group/card relative block w-full aspect-[5/8] cursor-pointer select-none [perspective:1600px] focus:outline-none"
     >
         <div
             className="relative h-full w-full transition-transform duration-[650ms] [transform-style:preserve-3d] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]"
@@ -74,30 +81,30 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-10 h-40 opacity-0 transition-opacity duration-500 group-hover/card:opacity-100" style={{ background: 'radial-gradient(60% 100% at 50% 0%, rgba(201,184,232,0.28), transparent 72%)' }} />
 
                 <div className="relative h-full flex flex-col items-center justify-between py-7 px-5 text-cream text-center">
-                    <span className="font-elegant italic text-cream/55 text-sm tracking-wide">{ROMAN[i] ?? ''}</span>
+                    <span className={`font-elegant italic text-cream/55 tracking-wide ${big ? 'text-base' : 'text-sm'}`}>{ROMAN[i] ?? ''}</span>
                     <div className="flex flex-col items-center gap-5">
-                        <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className="w-14 md:w-16 text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]" />
-                        <h3 className="font-elegant font-medium text-[1.3rem] md:text-[1.45rem] leading-[1.12] tracking-tight max-w-[12ch]">{g.type}</h3>
+                        <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={`${big ? 'w-20' : 'w-14 md:w-16'} text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]`} />
+                        <h3 className={`font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch] ${big ? 'text-[1.75rem]' : 'text-[1.3rem] md:text-[1.45rem]'}`}>{g.type}</h3>
                     </div>
                     <div className="flex flex-col items-center gap-1">
                         <span className="text-cream/45 text-[10.5px] tracking-[0.18em] uppercase">{isIndonesian ? 'Mulai dari' : 'From'}</span>
-                        <span className="font-serif font-semibold text-lg">{g.priceLabel}</span>
+                        <span className={`font-serif font-semibold ${big ? 'text-2xl' : 'text-lg'}`}>{fromPrice(g)}</span>
                     </div>
                 </div>
             </div>
 
             {/* ===== BACK — the booking options ===== */}
             <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] ring-1 ring-ink/10 bg-white text-ink [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]">
-                <div className="h-full overflow-y-auto p-5 flex flex-col">
-                    <h3 className="font-elegant font-semibold text-[1.05rem] leading-tight pr-6">{g.type}</h3>
-                    {g.blurb && <p className="mt-1.5 text-[11px] text-ink/55 font-light leading-snug line-clamp-3">{g.blurb}</p>}
+                <div className={`h-full overflow-y-auto flex flex-col ${big ? 'p-7' : 'p-5'}`}>
+                    <h3 className={`font-elegant font-semibold leading-tight ${big ? 'text-[1.4rem]' : 'text-[1.05rem]'}`}>{g.type}</h3>
+                    {g.blurb && <p className={`mt-1.5 text-ink/55 font-light leading-snug ${big ? 'text-[13.5px]' : 'text-[11px] line-clamp-3'}`}>{g.blurb}</p>}
 
-                    <ul className="mt-3 flex-1 space-y-3">
+                    <ul className={`flex-1 ${big ? 'mt-5 space-y-4' : 'mt-3 space-y-3'}`}>
                         {g.offers.map((o: any, oi: number) => (
-                            <li key={oi} className="border-t border-ink/10 pt-2.5">
+                            <li key={oi} className="border-t border-ink/10 pt-3">
                                 <div className="flex items-baseline justify-between gap-2">
-                                    <span className="font-medium text-[12.5px] leading-tight">{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
-                                    <span className="font-serif font-semibold text-[13px] text-moon whitespace-nowrap">{o.price}</span>
+                                    <span className={`font-medium leading-tight ${big ? 'text-[14.5px]' : 'text-[12.5px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
+                                    <span className={`font-serif font-semibold text-moon whitespace-nowrap ${big ? 'text-[15px]' : 'text-[13px]'}`}>{o.price}</span>
                                 </div>
                                 {o.book && o.book.length > 0 && (
                                     <div className="mt-2 flex flex-wrap gap-1.5">
@@ -108,7 +115,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 onClick={(e) => { e.stopPropagation(); b.onClick && b.onClick(); }}
-                                                className="inline-flex items-center rounded-full bg-ink text-cream px-3 py-1 text-[10.5px] font-medium hover:bg-plum transition-colors duration-300"
+                                                className={`inline-flex items-center rounded-full bg-ink text-cream font-medium hover:bg-plum transition-colors duration-300 ${big ? 'px-4 py-1.5 text-[12px]' : 'px-3 py-1 text-[10.5px]'}`}
                                             >
                                                 {b.platform || (isIndonesian ? 'Pesan' : 'Book')}
                                             </a>
@@ -118,24 +125,18 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                             </li>
                         ))}
                     </ul>
-
-                    <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); onFlip(); }}
-                        className="mt-3 self-start text-[11px] text-ink/40 hover:text-ink transition-colors"
-                    >
-                        ← {isIndonesian ? 'Tutup kartu' : 'Flip back'}
-                    </button>
                 </div>
             </div>
         </div>
     </div>
 );
 
-// The fanned spread. Desktop: cards overlap in an arc, hover lifts, click brings the
-// card forward + flips it. Mobile: a snap-scroll row of upright cards.
+// The spread. Desktop: cards fanned in an arc, hover lifts. Mobile: a 2x2 grid so all
+// cards are visible at once. Clicking any card "draws" it into a full-screen reveal
+// that flips to the details; clicking the dark backdrop (anywhere outside) closes it.
 const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, isIndonesian }) => {
     const [selected, setSelected] = useState<number | null>(null);
+    const [revealed, setRevealed] = useState(false); // overlay card flipped to details
     const [hovered, setHovered] = useState<number | null>(null);
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
@@ -146,57 +147,82 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         return () => mq.removeEventListener('change', on);
     }, []);
 
+    // open: show the drawn card (front), then flip it to details
+    const draw = (i: number) => {
+        setSelected(i);
+        setRevealed(false);
+        requestAnimationFrame(() => requestAnimationFrame(() => setRevealed(true)));
+    };
+    const close = () => setSelected(null);
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
+    useEffect(() => {
+        document.body.style.overflow = selected !== null ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [selected]);
+
     const n = groups.length;
     const center = (n - 1) / 2;
     const fanStyle = (i: number): React.CSSProperties => {
         const o = i - center;
-        const isSel = selected === i;
-        const isHov = hovered === i && selected === null;
-        const anySel = selected !== null;
-        const rot = isSel ? 0 : o * 7;
-        const tx = o * 136;
-        const ty = isSel ? -62 : isHov ? -28 : Math.abs(o) * 26;
-        const scale = isSel ? 1.12 : isHov ? 1.04 : anySel ? 0.92 : 1;
+        const isHov = hovered === i;
+        const ty = isHov ? -30 : Math.abs(o) * 26;
         return {
-            transform: `translate(-50%, -50%) translateX(${tx}px) translateY(${ty}px) rotate(${rot}deg) scale(${scale})`,
-            zIndex: isSel ? 50 : isHov ? 40 : 20 - Math.round(Math.abs(o)),
-            opacity: anySel && !isSel ? 0.5 : 1,
-            transition: 'transform 0.6s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease',
+            transform: `translate(-50%, -50%) translateX(${o * 136}px) translateY(${ty}px) rotate(${o * 7}deg) scale(${isHov ? 1.05 : 1})`,
+            zIndex: isHov ? 40 : 20 - Math.round(Math.abs(o)),
+            transition: 'transform 0.5s cubic-bezier(0.22,1,0.36,1)',
         };
     };
 
-    if (isMobile) {
-        return (
-            <div>
-                <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory px-8 pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    return (
+        <div>
+            {isMobile ? (
+                <div className="grid grid-cols-2 gap-4 px-8 max-w-md mx-auto">
                     {groups.map((g, i) => (
-                        <div key={g.type} id={g.id || undefined} className="snap-center shrink-0 w-[72vw] max-w-[17rem] scroll-mt-28">
-                            <TarotCard g={g} i={i} flipped={selected === i} onFlip={() => setSelected(selected === i ? null : i)} isIndonesian={isIndonesian} />
+                        <div key={g.type} id={g.id || undefined} className="scroll-mt-28">
+                            <TarotCard g={g} i={i} flipped={false} onFlip={() => draw(i)} isIndonesian={isIndonesian} />
                         </div>
                     ))}
                 </div>
-                <p className="mt-3 text-center text-ink/45 text-xs tracking-wide">{isIndonesian ? 'Geser & ketuk kartu untuk detail' : 'Swipe & tap a card for details'}</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="px-8">
-            <div className="relative mx-auto h-[32rem] max-w-5xl">
-                {groups.map((g, i) => (
-                    <div
-                        key={g.type}
-                        id={g.id || undefined}
-                        className="absolute left-1/2 top-1/2 w-[14rem] scroll-mt-28"
-                        style={fanStyle(i)}
-                        onMouseEnter={() => setHovered(i)}
-                        onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
-                    >
-                        <TarotCard g={g} i={i} flipped={selected === i} onFlip={() => setSelected(selected === i ? null : i)} isIndonesian={isIndonesian} />
+            ) : (
+                <div className="px-8">
+                    <div className="relative mx-auto h-[30rem] max-w-5xl">
+                        {groups.map((g, i) => (
+                            <div
+                                key={g.type}
+                                id={g.id || undefined}
+                                className="absolute left-1/2 top-1/2 w-[13.5rem] scroll-mt-28"
+                                style={fanStyle(i)}
+                                onMouseEnter={() => setHovered(i)}
+                                onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
+                            >
+                                <TarotCard g={g} i={i} flipped={false} onFlip={() => draw(i)} isIndonesian={isIndonesian} />
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
-            <p className="mt-2 text-center text-ink/45 text-xs tracking-wide">{isIndonesian ? 'Ketuk kartu untuk lihat detail & harga' : 'Tap a card to reveal details & pricing'}</p>
+                </div>
+            )}
+            <p className="mt-4 md:mt-2 text-center text-ink/45 text-xs tracking-wide">
+                {isIndonesian ? 'Ketuk kartu untuk menariknya' : 'Tap a card to draw it'}
+            </p>
+
+            {/* full-screen "drawn card" reveal — click anywhere outside to close */}
+            {selected !== null && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6" onClick={close} role="dialog" aria-modal="true">
+                    <div aria-hidden className="absolute inset-0 bg-ink/75 backdrop-blur-md" style={{ animation: 'tarotFade 0.3s ease' }} />
+                    <div
+                        className="relative"
+                        style={{ width: 'clamp(15rem, 80vw, 20.5rem)', animation: 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <TarotCard g={groups[selected]} i={selected} flipped={revealed} onFlip={() => setRevealed((r) => !r)} isIndonesian={isIndonesian} big />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
