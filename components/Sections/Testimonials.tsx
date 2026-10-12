@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
-import CelestialMark from '../UI/CelestialMark';
 
 interface TestimonialsProps {
   isIndonesian?: boolean;
@@ -228,11 +227,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
       {/* intro — a warm, human framing (no star-rating stat) */}
       <FadeIn>
         <div className="mx-auto px-8 max-w-2xl text-center">
-          <p className="inline-flex items-center gap-2 text-moon text-sm font-medium tracking-wide">
-            <CelestialMark name="sparkle" className="w-3.5 h-3.5 shrink-0" />
-            {isIndonesian ? 'Dari sesi sebelumnya' : 'From past sessions'}
-          </p>
-          <h2 className="mt-4 font-elegant font-semibold text-ink text-[2rem] sm:text-[2.6rem] lg:text-[3rem] leading-[1.06] tracking-[-0.02em]">
+          <h2 className="font-elegant font-semibold text-ink text-[2rem] sm:text-[2.6rem] lg:text-[3rem] leading-[1.06] tracking-[-0.02em]">
             {isIndonesian ? 'Dalam kata mereka' : 'In their own words'}
           </h2>
         </div>
