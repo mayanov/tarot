@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import SoftAura from '../UI/SoftAura';
@@ -215,10 +216,11 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                 {isIndonesian ? 'Ketuk kartu untuk menariknya' : 'Tap a card to draw it'}
             </p>
 
-            {/* full-screen "drawn card" reveal — click anywhere outside to close */}
-            {selected !== null && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6" onClick={close} role="dialog" aria-modal="true">
-                    <div aria-hidden className="absolute inset-0 bg-ink/75 backdrop-blur-md" style={{ animation: 'tarotFade 0.3s ease' }} />
+            {/* full-screen "drawn card" reveal — portaled to <body> so it sits above the
+                nav and blurs the WHOLE page; click anywhere outside to close */}
+            {selected !== null && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 z-[300] flex items-center justify-center p-6" onClick={close} role="dialog" aria-modal="true">
+                    <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} />
                     <div
                         className="relative aspect-[5/8]"
                         style={{ height: 'min(84vh, 140vw, 40rem)', animation: 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)' }}
@@ -226,7 +228,8 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                     >
                         <TarotCard g={groups[selected]} i={selected} flipped={revealed} onFlip={() => setRevealed((r) => !r)} onBook={() => bookGroup(groups[selected])} isIndonesian={isIndonesian} big />
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
