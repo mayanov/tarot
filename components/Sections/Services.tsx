@@ -16,7 +16,9 @@ const btnPrimary = "inline-flex items-center justify-center px-7 py-3 rounded-fu
 const btnSecondary = "inline-flex items-center justify-center px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-500";
 
 // Each pricing category gets its own twilight sky, so the categories feel distinct.
-const CAT_SKIES = ['sky-hero.jpg', 'catsky-aurora.jpg', 'sky-footer.jpg', 'aurora-meetup.jpg'];
+// Solid per-category band colours (deep, cohesive violet/indigo family so the
+// cream text stays legible) — replaces the per-category sky photos.
+const CAT_COLORS = ['#2A1A48', '#1C2550', '#38224E', '#201A40'];
 
 // One offer line inside a category row: name (+ inline badge) left, price right.
 const OfferRow: React.FC<{ o: any }> = ({ o }) => (
@@ -267,21 +269,10 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             id={g.id || undefined}
                             className="relative overflow-hidden scroll-mt-28 border-b border-white/[0.08]"
                         >
-                            {/* per-category twilight sky + dark overlay (lighter at the header, darker over the pricelist for legibility) */}
-                            <div
-                                data-parallax="0.06"
-                                data-parallax-scale="1.14"
-                                className="pointer-events-none absolute inset-0 will-change-transform"
-                                style={{
-                                    backgroundImage: `url(${import.meta.env.BASE_URL}${CAT_SKIES[i % CAT_SKIES.length]})`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    transform: 'scale(1.14)',
-                                }}
-                            />
+                            {/* per-category solid colour band */}
                             <div
                                 className="pointer-events-none absolute inset-0"
-                                style={{ background: 'linear-gradient(180deg, rgba(24,16,34,0.14) 0%, rgba(24,16,34,0.28) 42%, rgba(24,16,34,0.52) 100%)' }}
+                                style={{ background: CAT_COLORS[i % CAT_COLORS.length] }}
                             />
                             <div className="relative z-10 mx-auto px-8">
                                 {/* header row — spans full width, toggles the band */}
