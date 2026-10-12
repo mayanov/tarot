@@ -56,10 +56,13 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
 
   return (
-    <section id="events" className="relative overflow-hidden isolate">
-      {/* ===== DARK band — heading + photo gallery ===== */}
-      <div style={{ background: 'linear-gradient(168deg, #463C82 0%, #352C6C 55%, #2A2258 100%)' }}>
-        <div className="mx-auto px-8 pt-20 md:pt-28 pb-5 md:pb-6 relative z-10 text-cream">
+    <section
+      id="events"
+      className="relative overflow-hidden isolate"
+      style={{ background: 'linear-gradient(180deg, #2A2258 0px, #4C4088 190px, #9B8FC8 360px, #DDD6F0 520px, #FFFFFF 760px)' }}
+    >
+      {/* heading + photo gallery — on the dark top of the gradient */}
+      <div className="mx-auto px-8 pt-20 md:pt-28 relative z-10 text-cream">
           <FadeIn>
             {/* HEADER — left-aligned editorial title */}
             <div className="mb-10 md:mb-14 max-w-3xl">
@@ -94,13 +97,10 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               ))}
             </div>
           </FadeIn>
-        </div>
       </div>
 
-      {/* ===== LIGHT band — one continuous gradient: it keeps lightening from the dark
-          photos band through lilac and on to white at the very bottom ===== */}
-      <div className="text-ink" style={{ background: 'linear-gradient(180deg, #2A2258 0px, #F4F1FA 80px, #FFFFFF 100%)' }}>
-        <div className="mx-auto px-8 pt-20 md:pt-24 pb-16 md:pb-24 relative z-10">
+      {/* events history + CTAs — on the light lower part of the gradient */}
+      <div className="mx-auto px-8 pt-14 md:pt-16 pb-16 md:pb-24 relative z-10 text-ink">
           {/* HISTORY — editorial year-grouped list: lilac year markers, hairline lines */}
           <div>
             {timeline.map((grp, gi) => (
@@ -161,7 +161,6 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
             </a>
           </div>
-        </div>
       </div>
 
       {/* Lightbox */}
