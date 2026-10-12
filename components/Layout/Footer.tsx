@@ -54,22 +54,26 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         <footer ref={v.ref} className="relative z-10 text-cream text-center overflow-hidden">
             <div className="mx-auto px-8 max-w-3xl flex flex-col items-center py-20 md:py-28">
 
-                {/* ===== closing invitation — the moment to book ===== */}
-                <h2
-                    style={rise(0)}
-                    className="font-elegant font-medium leading-[1.1] tracking-[-0.015em] text-[clamp(1.6rem,4.2vw,2.5rem)] max-w-[18ch] [text-shadow:0_6px_40px_rgba(6,4,14,0.5)]"
+                {/* ===== closing invitation — the moment to book, inside a soft panel ===== */}
+                <div
+                    style={{ ...rise(0), background: 'linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))' }}
+                    className="w-full flex flex-col items-center rounded-[1.75rem] md:rounded-[2.5rem] px-7 py-14 md:px-14 md:py-20 ring-1 ring-inset ring-white/[0.12] backdrop-blur-[2px] [box-shadow:0_40px_90px_-55px_rgba(0,0,0,0.6)]"
                 >
-                    {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
-                </h2>
-                <div style={rise(120)} className="mt-8">
-                    <a
-                        href="#services"
-                        onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                        className="group inline-flex items-center gap-3 rounded-full bg-cream text-ink px-9 py-4 text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500"
+                    <h2
+                        className="font-elegant font-medium leading-[1.1] tracking-[-0.015em] text-[clamp(1.7rem,4.4vw,2.7rem)] max-w-[18ch] [text-shadow:0_6px_40px_rgba(6,4,14,0.5)]"
                     >
-                        {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </a>
+                        {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
+                    </h2>
+                    <div className="mt-8 md:mt-9">
+                        <a
+                            href="#services"
+                            onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
+                            className="group inline-flex items-center gap-3 rounded-full bg-cream text-ink px-9 py-4 text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500"
+                        >
+                            {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </a>
+                    </div>
                 </div>
 
                 {/* ===== quiet sign-off — a signature, not a second hero ===== */}
