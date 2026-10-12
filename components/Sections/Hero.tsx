@@ -13,12 +13,13 @@ const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const [shown, setShown] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  // The hero scrolls away at the same speed as the section below (it's pushed up
-  // by it), so we don't move it here — we only softly blur it out of focus as it
-  // goes, for a dreamy defocus rather than a plain scroll-off.
+  // As the hero scrolls away we softly blur the MASTHEAD out of focus — only the
+  // text/CTA, never the starfield behind it (blurring 900 star gradients every
+  // frame tanked scroll perf). The sky just scrolls off, sharp and cheap.
   useEffect(() => {
-    const el = heroRef.current;
+    const el = contentRef.current;
     if (!el) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     let raf = 0;
@@ -31,6 +32,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         const e = p * p * (3 - 2 * p);        // smoothstep
         const blur = Math.pow(e, 1.7) * 7;    // ramps in later, not instantly
         el.style.filter = blur > 0.02 ? `blur(${blur.toFixed(2)}px)` : 'none';
+        el.style.opacity = String(1 - e * 0.55);
       });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -71,14 +73,13 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       ref={heroRef}
       id="hero"
       className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden isolate text-cream pt-28 md:pt-32 pb-16 md:pb-20"
-      style={{ willChange: 'filter' }}
     >
       {/* the night-sky backdrop, scoped to the hero (so a pinned footer behind the
           page can't show through a transparent hero) */}
       <Background />
 
       {/* MASTHEAD — a calm, centered stack under a quiet crescent moon. */}
-      <div className="relative z-10 w-full mx-auto px-8 flex flex-col items-center">
+      <div ref={contentRef} className="relative z-10 w-full mx-auto px-8 flex flex-col items-center will-change-[filter,opacity]">
         <Rise delay={100}>
           <CelestialMark name="crescent" className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
         </Rise>
