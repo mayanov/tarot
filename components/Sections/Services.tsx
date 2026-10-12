@@ -56,7 +56,7 @@ const fromPrice = (g: any): string => {
 
 // A single tarot card: front = the card face (motif + name + cheapest price), back =
 // the booking options. `big` scales it up for the full-screen "drawn card" reveal.
-const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean; big?: boolean }> = ({ g, i, flipped, onFlip, isIndonesian, big = false }) => (
+const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean; big?: boolean; onBook?: () => void }> = ({ g, i, flipped, onFlip, isIndonesian, big = false, onBook }) => (
     <div
         role="button"
         tabIndex={0}
@@ -99,32 +99,36 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                     <h3 className={`font-elegant font-semibold leading-tight ${big ? 'text-[1.4rem]' : 'text-[1.05rem]'}`}>{g.type}</h3>
                     {g.blurb && <p className={`mt-1.5 text-ink/55 font-light leading-snug ${big ? 'text-[13.5px]' : 'text-[11px] line-clamp-3'}`}>{g.blurb}</p>}
 
-                    <ul className={`flex-1 ${big ? 'mt-5 space-y-4' : 'mt-3 space-y-3'}`}>
+                    <ul className={`${big ? 'mt-5 space-y-3.5' : 'mt-3 space-y-3'}`}>
                         {g.offers.map((o: any, oi: number) => (
-                            <li key={oi} className="border-t border-ink/10 pt-3">
-                                <div className="flex items-baseline justify-between gap-2">
-                                    <span className={`font-medium leading-tight ${big ? 'text-[14.5px]' : 'text-[12.5px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
-                                    <span className={`font-serif font-semibold text-moon whitespace-nowrap ${big ? 'text-[15px]' : 'text-[13px]'}`}>{o.price}</span>
-                                </div>
-                                {o.book && o.book.length > 0 && (
-                                    <div className="mt-2 flex flex-wrap gap-1.5">
-                                        {o.book.map((b: any, bi: number) => (
-                                            <a
-                                                key={bi}
-                                                href={b.href}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={(e) => { e.stopPropagation(); b.onClick && b.onClick(); }}
-                                                className={`inline-flex items-center rounded-full bg-ink text-cream font-medium hover:bg-plum transition-colors duration-300 ${big ? 'px-4 py-1.5 text-[12px]' : 'px-3 py-1 text-[10.5px]'}`}
-                                            >
-                                                {b.platform || (isIndonesian ? 'Pesan' : 'Book')}
-                                            </a>
-                                        ))}
-                                    </div>
-                                )}
+                            <li key={oi} className="border-t border-ink/10 pt-3 flex items-baseline justify-between gap-3">
+                                <span className={`font-medium leading-tight ${big ? 'text-[14.5px]' : 'text-[12.5px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
+                                <span className={`font-serif font-semibold text-moon whitespace-nowrap ${big ? 'text-[15px]' : 'text-[13px]'}`}>{o.price}</span>
                             </li>
                         ))}
                     </ul>
+
+                    {/* one book button per card — opens the normal booking flow */}
+                    <div className={`mt-auto flex flex-col gap-2 ${big ? 'pt-6' : 'pt-4'}`}>
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); onBook && onBook(); }}
+                            className={`w-full inline-flex items-center justify-center rounded-full bg-ink text-cream font-medium hover:bg-plum transition-colors duration-300 ${big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
+                        >
+                            {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                        </button>
+                        {g.mapUrl && (
+                            <a
+                                href={g.mapUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className={`w-full inline-flex items-center justify-center rounded-full border border-ink/25 text-ink font-medium hover:bg-ink hover:text-cream transition-colors duration-300 ${big ? 'py-2.5 text-[13px]' : 'py-2 text-[12px]'}`}
+                            >
+                                {isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}
+                            </a>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
@@ -154,6 +158,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         requestAnimationFrame(() => requestAnimationFrame(() => setRevealed(true)));
     };
     const close = () => setSelected(null);
+    const bookGroup = (g: any) => { close(); openBooking(BOOKING_MAP[g.type]); };
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
@@ -215,11 +220,11 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6" onClick={close} role="dialog" aria-modal="true">
                     <div aria-hidden className="absolute inset-0 bg-ink/75 backdrop-blur-md" style={{ animation: 'tarotFade 0.3s ease' }} />
                     <div
-                        className="relative"
-                        style={{ width: 'clamp(15rem, 80vw, 20.5rem)', animation: 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)' }}
+                        className="relative aspect-[5/8]"
+                        style={{ height: 'min(84vh, 140vw, 40rem)', animation: 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)' }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <TarotCard g={groups[selected]} i={selected} flipped={revealed} onFlip={() => setRevealed((r) => !r)} isIndonesian={isIndonesian} big />
+                        <TarotCard g={groups[selected]} i={selected} flipped={revealed} onFlip={() => setRevealed((r) => !r)} onBook={() => bookGroup(groups[selected])} isIndonesian={isIndonesian} big />
                     </div>
                 </div>
             )}
