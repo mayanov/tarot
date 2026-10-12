@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import Background from './components/Layout/Background';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from './components/Layout/Header';
 import Hero from './components/Sections/Hero';
 import About from './components/Sections/About';
@@ -46,6 +45,22 @@ function App() {
   const [isGeoError, setIsGeoError] = useState<boolean>(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isDevOverride, setIsDevOverride] = useState<boolean>(false);
+
+  // Footer "scroll-reveal": the footer is pinned behind the page; the content gets a
+  // bottom margin equal to the footer's height, so scrolling to the end slides the
+  // content up and uncovers the footer.
+  const footerRef = useRef<HTMLDivElement>(null);
+  const [footerH, setFooterH] = useState(0);
+  useEffect(() => {
+    const el = footerRef.current;
+    if (!el) return;
+    const measure = () => setFooterH(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
+  }, [isIndonesian, isLoading]);
 
   // Define location check as a reusable function so we can retry from UI
   const performLocationCheck = async () => {
@@ -343,9 +358,6 @@ function App() {
     <div className="min-h-screen relative font-sans text-cream selection:bg-ink/20">
       <Loader ready={!isLoading} isIndonesian={isIndonesian} />
 
-      <Background />
-
-
       <Header isIndonesian={isIndonesian} onSwitchRegion={handleSwitchRegion} />
 
       {/* DEV MODE INDICATOR */}
@@ -355,7 +367,7 @@ function App() {
         </div>
       )}
 
-      <main className="relative z-10">
+      <main className="relative z-10 bg-white" style={{ marginBottom: footerH }}>
         <Hero isIndonesian={isIndonesian} />
         <About isIndonesian={isIndonesian} />
         <TarotIntro isIndonesian={isIndonesian} />
@@ -378,22 +390,21 @@ function App() {
         </React.Suspense>
       </main>
 
-      {/* Night-sky backdrop behind the Footer — the page returns to the night and the
-          footer rests on it (bookends the dusk hero). Pulled up with a rounded top so
-          the sky rises over the white section above it, like an overlapping panel. */}
-      <div className="relative z-10 isolate overflow-hidden -mt-10 md:-mt-20 rounded-t-[2.25rem] md:rounded-t-[3.5rem] shadow-[0_-30px_70px_-40px_rgba(16,16,40,0.45)]">
-        {/* the sky photo spanning the whole region (same sky as the hero — bookends the
-            page); drifts slower than the content for parallax depth */}
+      {/* Night-sky Footer, PINNED behind the page (scroll-reveal): the content above
+          has a bottom margin equal to this footer's height, so scrolling to the end
+          slides the page up and uncovers the footer sitting here. */}
+      <div
+        ref={footerRef}
+        className="fixed bottom-0 inset-x-0 z-0 isolate overflow-hidden rounded-t-[2.25rem] md:rounded-t-[3.5rem]"
+      >
+        {/* the sky photo spanning the whole region (same sky as the hero — bookends the page) */}
         <div
           aria-hidden
-          data-parallax="0.05"
-          data-parallax-scale="1.12"
-          className="pointer-events-none absolute inset-0 -z-10 will-change-transform"
+          className="pointer-events-none absolute inset-0 -z-10"
           style={{
             backgroundImage: `url(${import.meta.env.BASE_URL}sky-hero.jpg)`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            transform: 'scale(1.12)',
           }}
         />
         {/* legibility veil so cream text stays readable over the brighter nebula */}

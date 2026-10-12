@@ -106,7 +106,7 @@ const Background: React.FC = () => {
     reduce ? undefined : `skyTwinkle ${dur}s ease-in-out ${delay}s infinite${drift ? `, skyDrift ${38 + dur * 3}s ease-in-out ${delay}s infinite` : ''}`;
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* 1 — deep atmospheric base: a smooth vertical twilight, zenith darkest,
           shaded a touch bluer through the middle so it reads as sky */}
       <div

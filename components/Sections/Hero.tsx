@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
+import Background from '../Layout/Background';
 
 interface HeroProps {
   isIndonesian?: boolean;
@@ -72,8 +73,12 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden isolate text-cream pt-28 md:pt-32 pb-16 md:pb-20"
       style={{ willChange: 'filter' }}
     >
+      {/* the night-sky backdrop, scoped to the hero (so a pinned footer behind the
+          page can't show through a transparent hero) */}
+      <Background />
+
       {/* MASTHEAD — a calm, centered stack under a quiet crescent moon. */}
-      <div className="relative w-full mx-auto px-8 flex flex-col items-center">
+      <div className="relative z-10 w-full mx-auto px-8 flex flex-col items-center">
         <Rise delay={100}>
           <CelestialMark name="crescent" className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
         </Rise>
