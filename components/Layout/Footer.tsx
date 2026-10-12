@@ -3,7 +3,6 @@ import { ArrowRight, Instagram } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
-import CelestialMark from '../UI/CelestialMark';
 
 interface FooterProps {
     isIndonesian?: boolean;
@@ -55,30 +54,25 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         <footer ref={v.ref} className="relative z-10 text-cream text-center overflow-hidden">
             <div className="mx-auto px-8 max-w-5xl flex flex-col items-center py-9 md:py-11">
 
-                {/* ===== closing invitation — the moment to book, in a light card ===== */}
+                {/* ===== closing invitation — heading and CTA side by side ===== */}
                 <div
                     style={rise(0)}
-                    className="relative w-full overflow-hidden flex flex-col items-center rounded-[1.5rem] md:rounded-[2.5rem] px-7 py-12 md:px-16 md:py-[4.5rem] bg-white text-ink [box-shadow:0_50px_120px_-50px_rgba(0,0,0,0.6)]"
+                    className="relative w-full flex flex-col items-center gap-9 md:flex-row md:items-center md:justify-between md:gap-12 text-center md:text-left rounded-[1.5rem] md:rounded-[2.5rem] px-8 py-12 md:px-14 md:py-14 bg-white text-ink [box-shadow:0_50px_120px_-50px_rgba(0,0,0,0.6)]"
                 >
-                    {/* faint celestial watermark in the corner for a little mystique */}
-                    <CelestialMark name="constellation" className="pointer-events-none absolute -top-3 -right-2 w-28 md:w-44 text-moon/10" />
-
                     <h2
-                        className="font-elegant font-medium text-ink leading-[1.06] tracking-[-0.02em] text-[clamp(1.95rem,4.4vw,3rem)] max-w-[18ch]"
+                        className="font-elegant font-medium text-ink leading-[1.07] tracking-[-0.02em] text-[clamp(1.8rem,3.4vw,2.6rem)] max-w-[15ch]"
                     >
                         {isIndonesian ? 'Siap untuk pikiran yang lebih jernih?' : 'Ready for a clearer view?'}
                     </h2>
 
-                    <div className="mt-9 md:mt-10">
-                        <a
-                            href="#services"
-                            onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                            className="group inline-flex items-center gap-3 rounded-full bg-ink text-cream px-9 py-4 text-sm font-medium hover:bg-plum transition-colors duration-500 [box-shadow:0_14px_40px_-18px_rgba(0,0,0,0.5)]"
-                        >
-                            {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </a>
-                    </div>
+                    <a
+                        href="#services"
+                        onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
+                        className="group shrink-0 inline-flex items-center gap-3 rounded-full bg-ink text-cream px-9 py-4 text-sm font-medium hover:bg-plum transition-colors duration-500 [box-shadow:0_14px_40px_-18px_rgba(0,0,0,0.5)]"
+                    >
+                        {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </a>
                 </div>
 
                 {/* ===== quiet sign-off — a signature, not a second hero ===== */}
