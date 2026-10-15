@@ -57,7 +57,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 {/* ===== closing invitation — heading and CTA side by side ===== */}
                 <div
                     style={rise(0)}
-                    className="relative w-full flex flex-col items-center gap-9 md:flex-row md:items-center md:justify-between md:gap-12 text-center md:text-left rounded-[1.5rem] md:rounded-[2.5rem] px-8 py-12 md:px-14 md:py-14 bg-white text-ink [box-shadow:0_50px_120px_-50px_rgba(0,0,0,0.6)]"
+                    className="relative w-full flex flex-col items-center gap-9 md:flex-row md:items-center md:justify-between md:gap-12 text-center md:text-left rounded-[1.5rem] md:rounded-[2.5rem] px-8 py-12 md:px-14 md:py-14 bg-paper text-ink [box-shadow:0_50px_120px_-50px_rgba(0,0,0,0.6)]"
                 >
                     <h2
                         className="font-elegant font-medium text-ink leading-[1.07] tracking-[-0.02em] text-[clamp(2rem,3.8vw,2.95rem)] max-w-[15ch]"

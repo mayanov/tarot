@@ -395,7 +395,7 @@ function App() {
         </div>
       )}
 
-      <main className="relative z-10 bg-white" style={{ marginBottom: footerH }}>
+      <main className="relative z-10 bg-paper" style={{ marginBottom: footerH }}>
         <Hero isIndonesian={isIndonesian} />
         <About isIndonesian={isIndonesian} />
         <TarotIntro isIndonesian={isIndonesian} />
@@ -410,7 +410,7 @@ function App() {
           <Events isIndonesian={isIndonesian} />
           {/* FAQ + Disclaimer share ONE white ground and ONE soft wash so there's no
               seam between them — the two sections themselves are transparent. */}
-          <div className="relative isolate overflow-hidden bg-white">
+          <div className="relative isolate overflow-hidden">
             <FAQ isIndonesian={isIndonesian} />
             <Disclaimer isIndonesian={isIndonesian} />
           </div>

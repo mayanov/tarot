@@ -59,7 +59,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
     <section
       id="events"
       className="relative overflow-hidden isolate"
-      style={{ background: 'linear-gradient(180deg, #2A2258 0px, #2A2258 640px, #A090C8 710px, #DDD6F0 760px, #FFFFFF 100%)' }}
+      style={{ background: 'linear-gradient(180deg, #2A2258 0px, #2A2258 640px, #A090C8 710px, #DDD6F0 760px, #FFFFFF 860px, rgba(255,255,255,0) 980px)' }}
     >
       {/* heading + photo gallery — on the dark top of the gradient */}
       <div className="mx-auto px-8 pt-20 md:pt-28 relative z-10 text-cream">
