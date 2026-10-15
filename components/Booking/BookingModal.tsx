@@ -222,7 +222,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   // Payment methods card (Indonesian market). `compact` stacks QRIS above bank
   // so it fits in a narrow side-by-side column on the confirmation step.
   const paymentPanel = (compact: boolean) => !isIndonesian ? null : (
-    <div className="text-left rounded-lg bg-white border border-ink/10 overflow-hidden h-full flex flex-col">
+    <div className="text-left rounded-lg bg-paper border border-ink/10 overflow-hidden h-full flex flex-col">
       <div className="px-4 py-3 bg-ink/[0.05] border-b border-ink/10">
         <span className="text-xs uppercase tracking-[0.16em] text-ink font-semibold">{t('Cara pembayaran', 'How to pay')}</span>
       </div>
@@ -265,7 +265,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       </div>
 
       {/* panel — clean white, sharp corners */}
-      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-lg bg-white text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] ring-1 ring-ink/10 border border-ink/10 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${(step === 3 && isIndonesian) || step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
+      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-lg bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] ring-1 ring-ink/10 border border-ink/10 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${(step === 3 && isIndonesian) || step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
 
         {/* scroll only the content, not the decorations (data-lenis-prevent lets this
             scroll natively instead of the page's smooth-scroll hijacking the wheel) */}
@@ -399,7 +399,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               )}
               <div className="md:grid md:grid-cols-2 md:gap-4 md:items-stretch">
               {/* calendar */}
-              <div className="booking-cal rounded-lg bg-white border border-ink/10 shadow-sm text-ink p-2 sm:p-3 flex items-center justify-center md:h-full">
+              <div className="booking-cal rounded-lg bg-paper border border-ink/10 shadow-sm text-ink p-2 sm:p-3 flex items-center justify-center md:h-full">
                 <DayPicker
                   mode="single"
                   selected={date}
@@ -557,7 +557,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               <div className="space-y-5">
               <div className={`grid gap-5 items-stretch ${isIndonesian ? 'md:grid-cols-2' : ''}`}>
-              <div className="rounded-lg bg-white border border-ink/10 overflow-hidden flex flex-col">
+              <div className="rounded-lg bg-paper border border-ink/10 overflow-hidden flex flex-col">
                 <div className="px-4 py-3 bg-ink/[0.05] border-b border-ink/10">
                   <span className="text-xs uppercase tracking-[0.16em] text-ink font-semibold">{t('Ringkasan', 'Summary')}</span>
                 </div>
@@ -607,7 +607,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </div>
 
               {isIndonesian && (
-                <div className="rounded-lg bg-white border border-ink/10 p-5">
+                <div className="rounded-lg bg-paper border border-ink/10 p-5">
                   <div className="text-xs uppercase tracking-[0.16em] text-ink font-semibold mb-4">{t('Cara & Ketentuan', 'How it works')}</div>
                   <ol className="grid gap-4 sm:grid-cols-2">
                     {[
@@ -650,7 +650,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 {t('Terima kasih, ', 'Thank you, ')}{name || t('kamu', 'friend')}. {t('Aku akan menghubungimu via WhatsApp', 'I’ll reach out on WhatsApp')} ({whatsapp}) {t('untuk konfirmasi.', 'to confirm.')}
               </p>
               {/* booking details — labelled rows for easy reading */}
-              <div className="mt-6 text-left rounded-lg bg-white border border-ink/10 divide-y divide-ink/10 overflow-hidden">
+              <div className="mt-6 text-left rounded-lg bg-paper border border-ink/10 divide-y divide-ink/10 overflow-hidden">
                 <div className="flex items-start justify-between gap-4 px-4 py-3">
                   <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Layanan', 'Service')}</span>
                   <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
