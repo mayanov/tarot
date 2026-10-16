@@ -105,27 +105,29 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-20" style={{ background: `radial-gradient(85% 100% at 50% 0%, ${accent}1f, transparent 72%)` }} />
 
                 <div className={`relative h-full flex flex-col ${big ? 'p-5' : 'p-3.5'}`}>
-                    {/* FRAME — a tarot-style frame in the card's colour wrapping the content */}
-                    <div className={`relative flex-1 min-h-0 flex flex-col rounded-[0.9rem] border ${big ? 'px-5 pt-5 pb-5' : 'px-4 pt-4 pb-4'}`} style={{ borderColor: accent }}>
-                        {/* inner keyline — the second frame line, in the card's colour */}
-                        <div aria-hidden className="pointer-events-none absolute inset-[5px] rounded-[0.72rem] border" style={{ borderColor: `${accent}33` }} />
+                    {/* FRAME — a solid band in the card's colour (the matte), wrapping a paper content panel */}
+                    <div className="relative flex-1 min-h-0 flex rounded-[0.95rem] p-[0.4rem]" style={{ background: accent }}>
+                        <div className={`relative flex-1 min-h-0 flex flex-col overflow-hidden rounded-[0.68rem] bg-paper ${big ? 'px-5 pt-5 pb-5' : 'px-4 pt-4 pb-4'}`}>
+                            {/* inner keyline in the card's colour */}
+                            <div aria-hidden className="pointer-events-none absolute inset-[4px] rounded-[0.5rem] border" style={{ borderColor: `${accent}26` }} />
 
-                        {/* crest — the card's mark at the top of the frame */}
-                        <div className="relative flex justify-center" style={{ color: accent }}>
-                            <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={big ? 'w-9' : 'w-7'} />
+                            {/* crest — the card's mark at the top */}
+                            <div className="relative flex justify-center" style={{ color: accent }}>
+                                <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={big ? 'w-9' : 'w-7'} />
+                            </div>
+                            <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{ROMAN[i] ?? ''}</span>
+                            <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight ${big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
+                            {g.blurb && <p className={`relative mt-1.5 text-center text-ink/55 font-light leading-snug ${big ? 'text-[13px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
+
+                            <ul className={`relative flex-1 min-h-0 overflow-y-auto ${big ? 'mt-4 space-y-3' : 'mt-3 space-y-2.5'}`}>
+                                {g.offers.map((o: any, oi: number) => (
+                                    <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0 flex items-baseline justify-between gap-3">
+                                        <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
+                                        <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-                        <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{ROMAN[i] ?? ''}</span>
-                        <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight ${big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
-                        {g.blurb && <p className={`relative mt-1.5 text-center text-ink/55 font-light leading-snug ${big ? 'text-[13px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
-
-                        <ul className={`relative flex-1 min-h-0 overflow-y-auto ${big ? 'mt-4 space-y-3' : 'mt-3 space-y-2.5'}`}>
-                            {g.offers.map((o: any, oi: number) => (
-                                <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0 flex items-baseline justify-between gap-3">
-                                    <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
-                                    <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
-                                </li>
-                            ))}
-                        </ul>
                     </div>
 
                     {/* booking button — OUTSIDE the frame, like a tarot card's title label */}
