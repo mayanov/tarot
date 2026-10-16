@@ -145,7 +145,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                       key={cat}
                       onClick={() => setActiveCat(cat)}
                       aria-pressed={active}
-                      className={`group/cat relative pb-1.5 font-medium tracking-wide transition-colors duration-500 ${active ? 'text-moon' : 'text-ink/40 hover:text-ink/70'}`}
+                      className={`group/cat relative pb-1.5 tracking-wide transition-colors duration-500 ${active ? 'text-ink font-bold' : 'text-ink font-normal'}`}
                     >
                       {cat}
                       <span className={`absolute left-0 -bottom-px h-px bg-moon transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${active ? 'w-full' : 'w-0 group-hover/cat:w-full group-hover/cat:bg-ink/20'}`} />
