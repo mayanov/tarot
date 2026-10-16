@@ -99,7 +99,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
             </div>
 
             {/* ===== BACK — the booking options ===== */}
-            <div style={{ borderColor: accent }} className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] border-2 bg-paper text-ink [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]">
+            <div style={{ borderColor: accent }} className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] border-4 bg-paper text-ink [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]">
                 <div className={`h-full overflow-y-auto flex flex-col ${big ? 'p-7' : 'p-5'}`}>
                     <h3 className={`font-elegant font-semibold leading-tight ${big ? 'text-[1.4rem]' : 'text-[1.05rem]'}`}>{g.type}</h3>
                     {g.blurb && <p className={`mt-1.5 text-ink/55 font-light leading-snug ${big ? 'text-[13.5px]' : 'text-[11px] line-clamp-3'}`}>{g.blurb}</p>}
