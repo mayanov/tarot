@@ -106,25 +106,23 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 
                 <div className={`relative h-full flex flex-col ${big ? 'p-5' : 'p-3.5'}`}>
                     {/* FRAME — a tarot-style frame in the card's colour wrapping the content */}
-                    <div className={`relative flex-1 min-h-0 flex flex-col overflow-hidden rounded-[0.9rem] border ${big ? 'px-5 pt-5 pb-5' : 'px-4 pt-4 pb-4'}`} style={{ borderColor: accent, background: CAT_BG[i % CAT_BG.length] }}>
-                        {/* star dust so the panel reads like the card face */}
-                        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-60" style={{ backgroundImage: CAT_STARS[i % CAT_STARS.length] }} />
-                        {/* inner keyline — a light second frame line, like a tarot card's border */}
-                        <div aria-hidden className="pointer-events-none absolute inset-[5px] rounded-[0.72rem] border border-white/20" />
+                    <div className={`relative flex-1 min-h-0 flex flex-col rounded-[0.9rem] border ${big ? 'px-5 pt-5 pb-5' : 'px-4 pt-4 pb-4'}`} style={{ borderColor: accent }}>
+                        {/* inner keyline — the second frame line, in the card's colour */}
+                        <div aria-hidden className="pointer-events-none absolute inset-[5px] rounded-[0.72rem] border" style={{ borderColor: `${accent}33` }} />
 
                         {/* crest — the card's mark at the top of the frame */}
-                        <div className="relative flex justify-center text-cream/90">
+                        <div className="relative flex justify-center" style={{ color: accent }}>
                             <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={big ? 'w-9' : 'w-7'} />
                         </div>
-                        <span className={`relative block text-center font-elegant italic tracking-[0.15em] text-cream/55 ${big ? 'text-[13px]' : 'text-[11px]'}`}>{ROMAN[i] ?? ''}</span>
-                        <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight text-cream ${big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
-                        {g.blurb && <p className={`relative mt-1.5 text-center text-cream/60 font-light leading-snug ${big ? 'text-[13px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
+                        <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{ROMAN[i] ?? ''}</span>
+                        <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight ${big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
+                        {g.blurb && <p className={`relative mt-1.5 text-center text-ink/55 font-light leading-snug ${big ? 'text-[13px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
 
                         <ul className={`relative flex-1 min-h-0 overflow-y-auto ${big ? 'mt-4 space-y-3' : 'mt-3 space-y-2.5'}`}>
                             {g.offers.map((o: any, oi: number) => (
-                                <li key={oi} className="border-t border-white/15 first:border-t-0 pt-2.5 first:pt-0 flex items-baseline justify-between gap-3">
-                                    <span className={`text-cream/85 font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-cream/45 font-light"> · {o.sub}</span>}</span>
-                                    <span className={`text-cream font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
+                                <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0 flex items-baseline justify-between gap-3">
+                                    <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
+                                    <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
                                 </li>
                             ))}
                         </ul>
@@ -135,8 +133,8 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onBook && onBook(); }}
-                            style={{ ['--acc' as any]: accent }}
-                            className={`w-full inline-flex items-center justify-center rounded-full bg-white text-[var(--acc)] font-medium shadow-[0_10px_26px_-12px_rgba(12,8,30,0.5)] hover:bg-[var(--acc)] hover:text-cream transition-colors duration-300 ${big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
+                            style={{ backgroundColor: accent }}
+                            className={`w-full inline-flex items-center justify-center rounded-full text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                         </button>
