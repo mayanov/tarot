@@ -23,6 +23,8 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     if (!el) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     let raf = 0;
+    let lastBlur = -1;
+    let lastOp = -1;
     const onScroll = () => {
       if (raf) return;
       raf = requestAnimationFrame(() => {
@@ -30,9 +32,20 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         const h = window.innerHeight || 1;
         const p = Math.min(Math.max(window.scrollY / h, 0), 1);
         const e = p * p * (3 - 2 * p);        // smoothstep
-        const blur = Math.pow(e, 1.7) * 7;    // ramps in later, not instantly
-        el.style.filter = blur > 0.02 ? `blur(${blur.toFixed(2)}px)` : 'none';
-        el.style.opacity = String(1 - e * 0.55);
+        // Quantize the blur to 0.5px steps. Each distinct value re-rasterizes the
+        // whole masthead on the GPU, so writing a fresh float every frame was the
+        // top-section scroll jank; this caps it to a handful of re-rasters. Opacity
+        // is compositor-cheap but we still skip redundant writes.
+        const blur = Math.round(Math.pow(e, 1.7) * 7 * 2) / 2;
+        if (blur !== lastBlur) {
+          lastBlur = blur;
+          el.style.filter = blur > 0.02 ? `blur(${blur}px)` : 'none';
+        }
+        const op = Math.round((1 - e * 0.55) * 100) / 100;
+        if (op !== lastOp) {
+          lastOp = op;
+          el.style.opacity = String(op);
+        }
       });
     };
     window.addEventListener('scroll', onScroll, { passive: true });

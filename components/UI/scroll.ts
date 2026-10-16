@@ -60,14 +60,20 @@ export function initParallax() {
     const update = () => {
         raf = 0;
         const vh = window.innerHeight;
-        document.querySelectorAll<HTMLElement>('[data-parallax]').forEach((el) => {
+        // Two passes: read every rect first, THEN write every transform. Interleaving
+        // getBoundingClientRect() with style writes forces a layout recalc on each
+        // element — a thrash that stutters scrolling. Batching keeps it to one layout.
+        const els = document.querySelectorAll<HTMLElement>('[data-parallax]');
+        const writes: Array<[HTMLElement, string]> = [];
+        els.forEach((el) => {
             const speed = parseFloat(el.dataset.parallax || '0');
             if (!speed) return;
             const r = el.getBoundingClientRect();
             const offset = (vh / 2 - (r.top + r.height / 2)) * speed;
             const scale = el.dataset.parallaxScale;
-            el.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)` + (scale ? ` scale(${scale})` : '');
+            writes.push([el, `translate3d(0, ${offset.toFixed(1)}px, 0)` + (scale ? ` scale(${scale})` : '')]);
         });
+        for (const [el, t] of writes) el.style.transform = t;
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
     update();

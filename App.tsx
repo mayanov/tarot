@@ -225,7 +225,8 @@ function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowBackToTop(window.scrollY > 500);
+      const v = window.scrollY > 500;
+      setShowBackToTop((prev) => (prev === v ? prev : v));
     };
 
     // Handle Payment Redirects
@@ -236,7 +237,7 @@ function App() {
     }
 
     performLocationCheck();
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

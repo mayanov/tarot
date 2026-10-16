@@ -83,7 +83,9 @@ const toGlows = (dots: Dot[]): string =>
 // content sections are opaque): overlapping atmospheric color fields with a diffuse
 // Milky-Way band and a living, multi-temperature starfield that drifts on scroll.
 const Background: React.FC = () => {
+  const rootRef = useRef<HTMLDivElement>(null);
   const fieldRef = useRef<HTMLDivElement>(null);
+  const visibleRef = useRef(true);
   const [reduce] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
@@ -92,7 +94,8 @@ const Background: React.FC = () => {
     if (reduce) return;
     let raf = 0;
     const update = () => {
-      if (fieldRef.current) {
+      // skip the parallax write while the sky is scrolled out of view
+      if (visibleRef.current && fieldRef.current) {
         fieldRef.current.style.transform = `translate3d(0, ${(window.scrollY * 0.06).toFixed(1)}px, 0)`;
       }
     };
@@ -102,11 +105,28 @@ const Background: React.FC = () => {
     return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
   }, [reduce]);
 
+  // Freeze the (otherwise infinite) twinkle/drift/nebula animations once the sky
+  // leaves the viewport — they're only visible at the hero, so animating them while
+  // scrolled past was pure, continuous GPU cost that dragged the rest of the page.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || reduce) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        visibleRef.current = e.isIntersecting;
+        root.classList.toggle('sky-paused', !e.isIntersecting);
+      },
+      { rootMargin: '120px' }
+    );
+    io.observe(root);
+    return () => io.disconnect();
+  }, [reduce]);
+
   const anim = (dur: number, delay: number, drift: boolean) =>
     reduce ? undefined : `skyTwinkle ${dur}s ease-in-out ${delay}s infinite${drift ? `, skyDrift ${38 + dur * 3}s ease-in-out ${delay}s infinite` : ''}`;
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div ref={rootRef} className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* 1 — deep atmospheric base: a smooth vertical twilight, zenith darkest,
           shaded a touch bluer through the middle so it reads as sky */}
       <div

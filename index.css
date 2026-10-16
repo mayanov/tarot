@@ -453,3 +453,11 @@ html.lenis body {
   background-size: 600px 600px;
   background-position: center top;
 }
+
+/* Freeze the hero sky's infinite animations when it's scrolled out of view
+   (toggled by an IntersectionObserver in Background.tsx) — removes continuous
+   offscreen GPU work so the rest of the page scrolls free. */
+.sky-paused,
+.sky-paused * {
+  animation-play-state: paused !important;
+}
