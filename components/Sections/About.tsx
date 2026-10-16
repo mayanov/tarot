@@ -87,7 +87,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
               { n: '5.0', l: isIndonesian ? 'rating Google' : 'on Google' },
             ].map((s, i) => (
               <div key={i} className={i > 0 ? 'pl-5 sm:pl-8 border-l border-ink/10' : undefined}>
-                <div className="font-elegant font-semibold text-ink text-[1.9rem] md:text-[2.4rem] leading-none tracking-[-0.02em]">{s.n}</div>
+                <div className="font-elegant font-semibold text-moon text-[1.9rem] md:text-[2.4rem] leading-none tracking-[-0.02em]">{s.n}</div>
                 <div className="mt-2.5 text-ink/50 font-light text-[13px] md:text-sm leading-snug">{s.l}</div>
               </div>
             ))}
