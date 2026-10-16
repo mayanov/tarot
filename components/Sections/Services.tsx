@@ -78,8 +78,8 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
         >
             {/* ===== FRONT — the card face ===== */}
             <div
-                className="absolute inset-0 [backface-visibility:hidden] overflow-hidden rounded-[1.15rem] border-4 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
-                style={{ background: CAT_BG[i % CAT_BG.length], borderColor: accent }}
+                className="absolute inset-0 [backface-visibility:hidden] overflow-hidden rounded-[1.15rem] ring-1 ring-white/15 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
+                style={{ background: CAT_BG[i % CAT_BG.length] }}
             >
                 <div aria-hidden className="absolute inset-0 opacity-70" style={{ backgroundImage: CAT_STARS[i % CAT_STARS.length] }} />
                 {/* ornamental inner frame */}
@@ -107,6 +107,8 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                 </div>
                 {/* soft accent glow from the top edge for depth */}
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-24" style={{ background: `radial-gradient(85% 100% at 50% 0%, ${accent}22, transparent 72%)` }} />
+                {/* inner keyline — the second frame line, like a tarot card's border */}
+                <div aria-hidden className="pointer-events-none absolute inset-[0.5rem] rounded-[0.82rem] border" style={{ borderColor: `${accent}40` }} />
 
                 <div className={`relative h-full overflow-y-auto flex flex-col ${big ? 'p-7' : 'p-5'}`}>
                     {/* identity eyebrow — the card's tarot numeral + a hairline + its mark */}
