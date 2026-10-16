@@ -21,10 +21,10 @@ const btnSecondary = "inline-flex items-center justify-center px-7 py-3 rounded-
 // near-black) so each category feels distinct and has depth, no photos. Paired
 // with a faint celestial watermark for mystique.
 const CAT_BG = [
-  'radial-gradient(135% 120% at 15% -15%, #4e2f88 0%, #2a1550 46%, #140a2b 100%)', // violet
-  'radial-gradient(135% 120% at 15% -15%, #2f4c98 0%, #1a2656 46%, #0c1230 100%)', // indigo
-  'radial-gradient(135% 120% at 15% -15%, #612f7c 0%, #371b4e 46%, #190d2a 100%)', // plum
-  'radial-gradient(135% 120% at 15% -15%, #3f3176 0%, #221a48 46%, #110c2a 100%)', // dusk
+  'radial-gradient(135% 120% at 15% -15%, #35508f 0%, #22396F 52%, #162744 100%)', // blue  #22396F
+  'radial-gradient(135% 120% at 15% -15%, #553172 0%, #39234E 52%, #20132f 100%)', // plum  #39234E
+  'radial-gradient(135% 120% at 15% -15%, #e05b7c 0%, #CB3B5F 52%, #8a2942 100%)', // rose  #CB3B5F
+  'radial-gradient(135% 120% at 15% -15%, #ff8a6d 0%, #F76949 52%, #c2472a 100%)', // coral #F76949
 ];
 const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent'] as const;
 
