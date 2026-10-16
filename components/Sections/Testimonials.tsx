@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
+import { btnSecondaryLight } from '../UI/buttons';
 
 interface TestimonialsProps {
   isIndonesian?: boolean;
@@ -296,7 +297,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           href="https://share.google/4LrmhpcgHNXX9bTzr"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-ink/20 hover:border-ink hover:bg-ink hover:text-cream transition-all duration-500 text-ink font-medium"
+          className={`${btnSecondaryLight} inline-flex gap-2 px-7 py-3`}
         >
           <span>{isIndonesian ? 'Lihat semua review di Google' : 'Read all reviews on Google'}</span>
         </a>

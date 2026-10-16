@@ -3,6 +3,7 @@ import { ArrowRight, Instagram } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
+import { btnPrimaryDark } from '../UI/buttons';
 
 interface FooterProps {
     isIndonesian?: boolean;
@@ -68,7 +69,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     <a
                         href="#services"
                         onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                        className="group shrink-0 inline-flex items-center gap-3 rounded-full bg-ink text-cream px-10 py-[1.1rem] text-[0.95rem] font-medium hover:bg-plum transition-colors duration-500 [box-shadow:0_14px_40px_-18px_rgba(0,0,0,0.5)]"
+                        className={`${btnPrimaryDark} inline-flex group shrink-0 gap-3 px-10 py-[1.1rem] text-[0.95rem] [box-shadow:0_14px_40px_-18px_rgba(0,0,0,0.5)]`}
                     >
                         {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

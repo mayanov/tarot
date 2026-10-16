@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
+import { btnPrimaryDark, btnSecondaryDark } from '../UI/buttons';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
 import { trackEvent } from '../../services/analytics';
@@ -13,9 +14,9 @@ interface ServicesProps {
 }
 
 // Standardised button styles (used across the pricelist bands, which sit on dark sky):
-// primary = solid cream fill (hover → brand plum); secondary = cream outline.
-const btnPrimary = "inline-flex items-center justify-center px-7 py-3 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500";
-const btnSecondary = "inline-flex items-center justify-center px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-500";
+// shared button system (dark-background variants — used on the dark card reveal).
+const btnPrimary = `${btnPrimaryDark} inline-flex px-7 py-3 text-sm`;
+const btnSecondary = `${btnSecondaryDark} inline-flex px-7 py-3 text-sm`;
 
 // Per-category band backgrounds — rich radial gradients (a glow deepening into
 // near-black) so each category feels distinct and has depth, no photos. Paired

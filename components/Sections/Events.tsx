@@ -4,6 +4,7 @@ import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import { ChevronDown, X } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
+import { btnPrimaryLight, btnSecondaryLight } from '../UI/buttons';
 
 interface EventsProps {
   isIndonesian?: boolean;
@@ -147,7 +148,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                       setVisibleCount(eventList.length);
                     }
                   }}
-                  className="inline-flex items-center justify-center gap-2 min-w-[11rem] px-7 py-3 rounded-full border border-ink/30 text-ink text-sm font-medium hover:bg-ink hover:text-cream transition-colors duration-500 group"
+                  className={`${btnSecondaryLight} inline-flex group gap-2 min-w-[11rem] px-7 py-3 text-sm`}
                 >
                   {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
                   <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
@@ -158,7 +159,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               href="https://wa.link/5peyhb"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-ink text-cream text-sm font-medium hover:bg-plum transition-colors duration-500"
+              className={`${btnPrimaryLight} inline-flex px-7 py-3 text-sm`}
             >
               {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
             </a>

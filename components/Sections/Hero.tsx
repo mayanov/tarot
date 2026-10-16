@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
+import { btnPrimaryDark } from '../UI/buttons';
 import Background from '../Layout/Background';
 
 interface HeroProps {
@@ -118,7 +119,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
             <a
               href="#services"
               onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-              className="group inline-flex items-center gap-3 rounded-full bg-cream text-ink px-8 py-3.5 text-sm font-medium hover:bg-moon hover:text-cream transition-colors duration-500"
+              className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-sm`}
             >
               {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
