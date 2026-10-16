@@ -78,8 +78,8 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
         >
             {/* ===== FRONT — the card face ===== */}
             <div
-                className="absolute inset-0 [backface-visibility:hidden] overflow-hidden rounded-[1.15rem] ring-1 ring-white/15 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
-                style={{ background: CAT_BG[i % CAT_BG.length] }}
+                className="absolute inset-0 [backface-visibility:hidden] overflow-hidden rounded-[1.15rem] border-4 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
+                style={{ background: CAT_BG[i % CAT_BG.length], borderColor: accent }}
             >
                 <div aria-hidden className="absolute inset-0 opacity-70" style={{ backgroundImage: CAT_STARS[i % CAT_STARS.length] }} />
                 {/* ornamental inner frame */}
