@@ -79,6 +79,52 @@ const toGlows = (dots: Dot[]): string =>
       `radial-gradient(${(r * 3).toFixed(1)}px ${(r * 3).toFixed(1)}px at ${x}% ${y}%, rgba(${COLORS[c]},${o}) 0%, rgba(${COLORS[c]},${(o * 0.35).toFixed(2)}) 22%, rgba(${COLORS[c]},0) 70%)`)
     .join(',');
 
+// Render a set of star dots into a <canvas> ONCE (and on resize) instead of as
+// hundreds of live CSS radial-gradients. 900+ gradients across the hero were being
+// re-rasterized by the GPU on scroll and after idle — the scroll lag. As a canvas
+// bitmap each layer rasters once and then only composites (cheap), and the twinkle
+// animation still works because opacity/transform on the <canvas> is compositor-only.
+const StarCanvas: React.FC<{ dots: Dot[]; glow?: boolean; className?: string; style?: React.CSSProperties }> = ({ dots, glow, className, style }) => {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const cv = ref.current;
+    const parent = cv?.parentElement;
+    if (!cv || !parent) return;
+    let raf = 0;
+    const draw = () => {
+      const rect = parent.getBoundingClientRect();
+      const W = Math.max(1, Math.round(rect.width));
+      const H = Math.max(1, Math.round(rect.height));
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cv.width = Math.round(W * dpr);
+      cv.height = Math.round(H * dpr);
+      const ctx = cv.getContext('2d');
+      if (!ctx) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      for (const [x, y, r, o, c] of dots) {
+        const px = (x / 100) * W;
+        const py = (y / 100) * H;
+        const R = glow ? r * 3 : r;
+        const g = ctx.createRadialGradient(px, py, 0, px, py, Math.max(R, 0.4));
+        g.addColorStop(0, `rgba(${COLORS[c]},${o})`);
+        if (glow) g.addColorStop(0.22, `rgba(${COLORS[c]},${o * 0.35})`);
+        g.addColorStop(glow ? 0.7 : 0.6, `rgba(${COLORS[c]},0)`);
+        g.addColorStop(1, `rgba(${COLORS[c]},0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(px, py, Math.max(R, 0.4), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+    draw();
+    const ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); });
+    ro.observe(parent);
+    return () => { ro.disconnect(); cancelAnimationFrame(raf); };
+  }, [dots, glow]);
+  return <canvas ref={ref} aria-hidden className={className} style={style} />;
+};
+
 // Fixed night sky behind the whole page (only visible at the hero, since the
 // content sections are opaque): overlapping atmospheric color fields with a diffuse
 // Milky-Way band and a living, multi-temperature starfield that drifts on scroll.
@@ -177,19 +223,20 @@ const Background: React.FC = () => {
       {/* 4 — the starfield: a fixed dusting (incl. the band cluster) plus twinkling
           layers and bright accent stars, all drifting together a touch on scroll */}
       <div ref={fieldRef} className="absolute -inset-y-[10%] inset-x-0 will-change-transform">
-        <div aria-hidden className="absolute inset-0" style={{ backgroundImage: toGradients(STATIC_DOTS) }} />
+        <StarCanvas dots={STATIC_DOTS} className="absolute inset-0 w-full h-full" />
         {TWINKLE_LAYERS.map((layer, i) => (
-          <div
+          <StarCanvas
             key={i}
-            aria-hidden
-            className="absolute inset-0"
-            style={{ backgroundImage: toGradients(layer.dots), animation: anim(layer.dur, layer.delay, layer.drift) }}
+            dots={layer.dots}
+            className="absolute inset-0 w-full h-full"
+            style={{ animation: anim(layer.dur, layer.delay, layer.drift) }}
           />
         ))}
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{ backgroundImage: toGlows(ACCENTS), animation: reduce ? undefined : 'starPulse 3.6s ease-in-out infinite' }}
+        <StarCanvas
+          dots={ACCENTS}
+          glow
+          className="absolute inset-0 w-full h-full"
+          style={{ animation: reduce ? undefined : 'starPulse 3.6s ease-in-out infinite' }}
         />
       </div>
 
