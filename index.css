@@ -447,9 +447,9 @@ html.lenis body {
    near-white already; a translucent white wash on top keeps the grain subtle.
 --------------------------------------------------------------------------- */
 .bg-paper {
-  background-color: #ffffff;
+  background-color: #f3f1ec;
   background-image: url('/paper.webp');
   background-repeat: repeat;
-  background-size: 420px 420px;
+  background-size: 600px 600px;
   background-position: center top;
 }
