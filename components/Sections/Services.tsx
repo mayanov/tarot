@@ -100,37 +100,36 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
             </div>
 
             {/* ===== BACK — the booking options ===== */}
-            <div style={{ borderColor: accent }} className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] border-4 bg-paper text-ink [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]">
-                {/* faint celestial watermark — the same mark as the card face, in its colour */}
-                <div aria-hidden className="pointer-events-none absolute -bottom-8 -right-7 opacity-[0.07]" style={{ color: accent }}>
-                    <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={big ? 'w-48' : 'w-36'} />
-                </div>
-                {/* soft accent glow from the top edge for depth */}
-                <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-24" style={{ background: `radial-gradient(85% 100% at 50% 0%, ${accent}22, transparent 72%)` }} />
-                {/* inner keyline — the second frame line, like a tarot card's border */}
-                <div aria-hidden className="pointer-events-none absolute inset-[0.5rem] rounded-[0.82rem] border" style={{ borderColor: `${accent}40` }} />
+            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] bg-paper text-ink [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]">
+                {/* soft accent glow from the top for depth */}
+                <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-20" style={{ background: `radial-gradient(85% 100% at 50% 0%, ${accent}1f, transparent 72%)` }} />
 
-                <div className={`relative h-full overflow-y-auto flex flex-col ${big ? 'p-7' : 'p-5'}`}>
-                    {/* identity eyebrow — the card's tarot numeral + a hairline + its mark */}
-                    <div className="flex items-center gap-2.5" style={{ color: accent }}>
-                        <span className={`font-elegant italic tracking-wide leading-none ${big ? 'text-[15px]' : 'text-[13px]'}`}>{ROMAN[i] ?? ''}</span>
-                        <span aria-hidden className="h-px flex-1 rounded-full" style={{ background: `${accent}40` }} />
-                        <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={big ? 'w-5' : 'w-4'} />
+                <div className={`relative h-full flex flex-col ${big ? 'p-5' : 'p-3.5'}`}>
+                    {/* FRAME — a tarot-style frame in the card's colour wrapping the content */}
+                    <div className={`relative flex-1 min-h-0 flex flex-col rounded-[0.9rem] border ${big ? 'px-5 pt-8 pb-5' : 'px-4 pt-7 pb-4'}`} style={{ borderColor: accent }}>
+                        {/* inner keyline — the second frame line */}
+                        <div aria-hidden className="pointer-events-none absolute inset-[5px] rounded-[0.72rem] border" style={{ borderColor: `${accent}33` }} />
+                        {/* crest — the card's mark breaking the top of the frame, like a tarot medallion */}
+                        <div className={`absolute left-1/2 -translate-x-1/2 grid place-items-center bg-paper px-2 ${big ? '-top-4' : '-top-[0.85rem]'}`} style={{ color: accent }}>
+                            <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={big ? 'w-7' : 'w-5'} />
+                        </div>
+
+                        <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{ROMAN[i] ?? ''}</span>
+                        <h3 className={`mt-1 text-center font-elegant font-semibold leading-tight ${big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
+                        {g.blurb && <p className={`mt-1.5 text-center text-ink/55 font-light leading-snug ${big ? 'text-[13px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
+
+                        <ul className={`relative flex-1 min-h-0 overflow-y-auto ${big ? 'mt-4 space-y-3' : 'mt-3 space-y-2.5'}`}>
+                            {g.offers.map((o: any, oi: number) => (
+                                <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0 flex items-baseline justify-between gap-3">
+                                    <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
+                                    <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
-                    <h3 className={`mt-3 font-elegant font-semibold leading-tight ${big ? 'text-[1.5rem]' : 'text-[1.12rem]'}`}>{g.type}</h3>
-                    {g.blurb && <p className={`mt-1.5 text-ink/55 font-light leading-snug ${big ? 'text-[13.5px]' : 'text-[11px] line-clamp-3'}`}>{g.blurb}</p>}
 
-                    <ul className={`${big ? 'mt-5 space-y-3.5' : 'mt-4 space-y-3'}`}>
-                        {g.offers.map((o: any, oi: number) => (
-                            <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t pt-3 flex items-baseline justify-between gap-3">
-                                <span className={`font-medium leading-tight ${big ? 'text-[14.5px]' : 'text-[12.5px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
-                                <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[13px]'}`}>{o.price}</span>
-                            </li>
-                        ))}
-                    </ul>
-
-                    {/* one book button per card — opens the normal booking flow */}
-                    <div className={`mt-auto flex flex-col gap-2 ${big ? 'pt-6' : 'pt-4'}`}>
+                    {/* booking button — OUTSIDE the frame, like a tarot card's title label */}
+                    <div className={`flex flex-col gap-2 shrink-0 ${big ? 'pt-4' : 'pt-3'}`}>
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onBook && onBook(); }}
