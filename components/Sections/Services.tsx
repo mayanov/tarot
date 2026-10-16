@@ -26,6 +26,8 @@ const CAT_BG = [
   'radial-gradient(135% 120% at 15% -15%, #e05b7c 0%, #CB3B5F 52%, #8a2942 100%)', // rose  #CB3B5F
   'radial-gradient(135% 120% at 15% -15%, #ff8a6d 0%, #F76949 52%, #c2472a 100%)', // coral #F76949
 ];
+// The solid accent per card — the flipped detail borrows its card's colour.
+const CAT_ACCENT = ['#22396F', '#39234E', '#CB3B5F', '#F76949'];
 const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent'] as const;
 
 // A faint star dusting inside each band, so every category reads like its own
@@ -57,7 +59,9 @@ const fromPrice = (g: any): string => {
 
 // A single tarot card: front = the card face (motif + name + cheapest price), back =
 // the booking options. `big` scales it up for the full-screen "drawn card" reveal.
-const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean; big?: boolean; onBook?: () => void }> = ({ g, i, flipped, onFlip, isIndonesian, big = false, onBook }) => (
+const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean; big?: boolean; onBook?: () => void }> = ({ g, i, flipped, onFlip, isIndonesian, big = false, onBook }) => {
+  const accent = CAT_ACCENT[i % CAT_ACCENT.length];
+  return (
     <div
         role="button"
         tabIndex={0}
@@ -104,7 +108,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                         {g.offers.map((o: any, oi: number) => (
                             <li key={oi} className="border-t border-ink/10 pt-3 flex items-baseline justify-between gap-3">
                                 <span className={`font-medium leading-tight ${big ? 'text-[14.5px]' : 'text-[12.5px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
-                                <span className={`font-serif font-semibold text-moon whitespace-nowrap ${big ? 'text-[15px]' : 'text-[13px]'}`}>{o.price}</span>
+                                <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[13px]'}`}>{o.price}</span>
                             </li>
                         ))}
                     </ul>
@@ -114,7 +118,8 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onBook && onBook(); }}
-                            className={`w-full inline-flex items-center justify-center rounded-full bg-ink text-cream font-medium hover:bg-plum transition-colors duration-300 ${big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
+                            style={{ backgroundColor: accent }}
+                            className={`w-full inline-flex items-center justify-center rounded-full text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                         </button>
@@ -124,7 +129,8 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className={`w-full inline-flex items-center justify-center rounded-full border border-ink/25 text-ink font-medium hover:bg-ink hover:text-cream transition-colors duration-300 ${big ? 'py-2.5 text-[13px]' : 'py-2 text-[12px]'}`}
+                                style={{ ['--acc' as any]: accent }}
+                                className={`w-full inline-flex items-center justify-center rounded-full border border-[var(--acc)] text-[var(--acc)] font-medium hover:bg-[var(--acc)] hover:text-cream transition-colors duration-300 ${big ? 'py-2.5 text-[13px]' : 'py-2 text-[12px]'}`}
                             >
                                 {isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}
                             </a>
@@ -134,7 +140,8 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
             </div>
         </div>
     </div>
-);
+  );
+};
 
 // The spread. Desktop: cards fanned in an arc, hover lifts. Mobile: a 2x2 grid so all
 // cards are visible at once. Clicking any card "draws" it into a full-screen reveal
