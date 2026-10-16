@@ -101,13 +101,26 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 
             {/* ===== BACK — the booking options ===== */}
             <div style={{ borderColor: accent }} className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] border-4 bg-paper text-ink [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]">
-                <div className={`h-full overflow-y-auto flex flex-col ${big ? 'p-7' : 'p-5'}`}>
-                    <h3 className={`font-elegant font-semibold leading-tight ${big ? 'text-[1.4rem]' : 'text-[1.05rem]'}`}>{g.type}</h3>
+                {/* faint celestial watermark — the same mark as the card face, in its colour */}
+                <div aria-hidden className="pointer-events-none absolute -bottom-8 -right-7 opacity-[0.07]" style={{ color: accent }}>
+                    <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={big ? 'w-48' : 'w-36'} />
+                </div>
+                {/* soft accent glow from the top edge for depth */}
+                <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-24" style={{ background: `radial-gradient(85% 100% at 50% 0%, ${accent}22, transparent 72%)` }} />
+
+                <div className={`relative h-full overflow-y-auto flex flex-col ${big ? 'p-7' : 'p-5'}`}>
+                    {/* identity eyebrow — the card's tarot numeral + a hairline + its mark */}
+                    <div className="flex items-center gap-2.5" style={{ color: accent }}>
+                        <span className={`font-elegant italic tracking-wide leading-none ${big ? 'text-[15px]' : 'text-[13px]'}`}>{ROMAN[i] ?? ''}</span>
+                        <span aria-hidden className="h-px flex-1 rounded-full" style={{ background: `${accent}40` }} />
+                        <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={big ? 'w-5' : 'w-4'} />
+                    </div>
+                    <h3 className={`mt-3 font-elegant font-semibold leading-tight ${big ? 'text-[1.5rem]' : 'text-[1.12rem]'}`}>{g.type}</h3>
                     {g.blurb && <p className={`mt-1.5 text-ink/55 font-light leading-snug ${big ? 'text-[13.5px]' : 'text-[11px] line-clamp-3'}`}>{g.blurb}</p>}
 
-                    <ul className={`${big ? 'mt-5 space-y-3.5' : 'mt-3 space-y-3'}`}>
+                    <ul className={`${big ? 'mt-5 space-y-3.5' : 'mt-4 space-y-3'}`}>
                         {g.offers.map((o: any, oi: number) => (
-                            <li key={oi} className="border-t border-ink/10 pt-3 flex items-baseline justify-between gap-3">
+                            <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t pt-3 flex items-baseline justify-between gap-3">
                                 <span className={`font-medium leading-tight ${big ? 'text-[14.5px]' : 'text-[12.5px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
                                 <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[13px]'}`}>{o.price}</span>
                             </li>
