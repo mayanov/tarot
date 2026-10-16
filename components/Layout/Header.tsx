@@ -145,7 +145,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <div className="flex items-center gap-4">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
-                className="hidden sm:inline-flex items-center px-6 py-2.5 rounded-full bg-cream text-ink text-[13px] tracking-[0.01em] font-medium whitespace-nowrap hover:bg-moon hover:text-cream transition-colors duration-500 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
+                className="hidden sm:inline-flex items-center px-6 py-2.5 rounded-full bg-moon text-cream text-[13px] tracking-[0.01em] font-medium whitespace-nowrap hover:bg-white hover:text-ink transition-colors duration-500 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]"
               >
                 {isIndonesian ? 'Pesan' : 'Book'}
               </button>
@@ -251,7 +251,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
               <button
                 onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
-                className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-cream text-ink text-sm font-medium hover:bg-moon hover:text-cream transition-colors duration-500"
+                className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-moon text-cream text-sm font-medium hover:bg-white hover:text-ink transition-colors duration-500"
               >
                 {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

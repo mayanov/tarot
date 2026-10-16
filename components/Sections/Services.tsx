@@ -14,7 +14,7 @@ interface ServicesProps {
 
 // Standardised button styles (used across the pricelist bands, which sit on dark sky):
 // primary = solid cream fill (hover → brand plum); secondary = cream outline.
-const btnPrimary = "inline-flex items-center justify-center px-7 py-3 rounded-full bg-cream text-ink text-sm font-medium hover:bg-plum hover:text-cream transition-colors duration-500";
+const btnPrimary = "inline-flex items-center justify-center px-7 py-3 rounded-full bg-moon text-cream text-sm font-medium hover:bg-white hover:text-ink transition-colors duration-500";
 const btnSecondary = "inline-flex items-center justify-center px-7 py-3 rounded-full border border-cream/35 text-cream text-sm font-medium hover:bg-cream hover:text-ink transition-colors duration-500";
 
 // Per-category band backgrounds — rich radial gradients (a glow deepening into
