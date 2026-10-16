@@ -453,7 +453,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 priceLabel: '$20',
                 offers: [
                     {
-                        name: '5-Card Deep', price: '$20', badge: 'Most Popular', badgeTone: 'bg-moon text-plum-deep',
+                        name: '5-Card Deep', price: '$20', badge: 'Most Popular', badgeTone: 'bg-moon text-plum',
                         desc: "The bigger picture — hidden influences and what's coming next, read in depth.",
                         features: <>5-card spread · high-res photo · priority 24h · <span className="text-cream font-medium">1 qty = 1 question</span></>,
                         book: [{ href: 'https://www.paypal.com/ncp/payment/V6U4QMAU642KA', onClick: handleBookDeep }],

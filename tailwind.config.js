@@ -19,7 +19,6 @@ export default {
       colors: {
         // --- Brand palette v2.0 (jewel tones) ---
         plum: '#39234E',
-        'plum-deep': '#39234E',
         // Status colours — admin-only, theme-aware (index.css --adm-*)
         blue: 'rgb(var(--adm-done) / <alpha-value>)',
         mauve: 'rgb(var(--adm-cancelled) / <alpha-value>)',
@@ -29,9 +28,6 @@ export default {
         sky: '#7A7FD1',
         // --- Accent: a single violet (plum family) for the whole public site ---
         moon: '#6B3FA0',
-        'moon-bright': '#6B3FA0',
-        'moon-deep': '#6B3FA0',
-        'moon-mist': '#6B3FA0',
         charcoal: '#564D4D',
         'charcoal-deep': '#3A3234',
         sage: 'rgb(var(--adm-confirmed) / <alpha-value>)',
@@ -40,10 +36,7 @@ export default {
         // --- Semantic tokens ---
         taupe: '#8A7D7D',
         paper: '#FFFFFF',
-        'paper-2': '#EAE0D5',
-        'paper-3': '#E0D4C6',
         line: '#E7E5E1',
-        espresso: '#2C1B3E',
         // --- Back-compat aliases ---
         terracotta: '#F19F58',
         'terracotta-dark': '#DA8636',

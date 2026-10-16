@@ -68,14 +68,14 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           {/* goal — a flush-left closing statement (aligned with the title), with
               a decorative quote mark above and a signature, so it stays designed */}
           <figure className="relative mt-10 md:mt-12">
-            <span aria-hidden className="block font-serif text-moon-deep/30 text-[4rem] leading-[0.4] h-7 select-none">”</span>
+            <span aria-hidden className="block font-serif text-moon/30 text-[4rem] leading-[0.4] h-7 select-none">”</span>
             <blockquote className="font-elegant text-ink text-[1.5rem] md:text-[1.9rem] leading-[1.24] tracking-[-0.02em]">
               {isIndonesian
                 ? 'Tujuan saya simpel: memberikan kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                 : 'My goal is simple: to give you the clarity to make decisions with confidence.'}
             </blockquote>
-            <figcaption className="mt-5 flex items-center gap-2.5 font-elegant italic text-[1.05rem] tracking-[0.01em] text-moon-deep">
-              <span aria-hidden className="h-px w-6 bg-moon-deep/60" /> Mayanov
+            <figcaption className="mt-5 flex items-center gap-2.5 font-elegant italic text-[1.05rem] tracking-[0.01em] text-moon">
+              <span aria-hidden className="h-px w-6 bg-moon/60" /> Mayanov
             </figcaption>
           </figure>
 
