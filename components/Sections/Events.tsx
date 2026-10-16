@@ -59,10 +59,9 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
     <section
       id="events"
       className="relative overflow-hidden isolate"
-      style={{ background: 'linear-gradient(180deg, #2A2258 0px, #2A2258 640px, #A090C8 710px, #DDD6F0 760px, #FFFFFF 860px, rgba(255,255,255,0) 980px)' }}
     >
-      {/* heading + photo gallery — on the dark top of the gradient */}
-      <div className="mx-auto px-8 pt-20 md:pt-28 relative z-10 text-cream">
+      {/* heading + photo gallery — on a solid purple block */}
+      <div className="bg-[#2A2258] mx-auto px-8 pt-20 md:pt-28 pb-16 md:pb-20 relative z-10 text-cream">
           <FadeIn>
             {/* HEADER — left-aligned editorial title */}
             <div className="mb-10 md:mb-14 max-w-3xl">
@@ -99,8 +98,8 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
           </FadeIn>
       </div>
 
-      {/* events history + CTAs — on the light lower part of the gradient */}
-      <div className="mx-auto px-8 pt-44 md:pt-52 pb-16 md:pb-24 relative z-10 text-ink">
+      {/* events history + CTAs — on the paper ground below the purple block */}
+      <div className="mx-auto px-8 pt-14 md:pt-20 pb-16 md:pb-24 relative z-10 text-ink">
           {/* HISTORY — editorial year-grouped list: lilac year markers, hairline lines */}
           <div>
             {timeline.map((grp, gi) => (
