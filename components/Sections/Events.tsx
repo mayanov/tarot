@@ -63,14 +63,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       {/* heading + photo gallery — on a solid purple block */}
       <div className="bg-[#2A2258] mx-auto px-8 pt-20 md:pt-28 pb-16 md:pb-20 relative z-10 text-cream">
           <FadeIn>
-            {/* HEADER — left-aligned editorial title */}
-            <div className="mb-10 md:mb-14 max-w-3xl">
-              <h2 className="font-elegant font-semibold text-cream text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
-                <MaskReveal>{isIndonesian ? "Event & collaboration" : "Community & events"}</MaskReveal>
-              </h2>
-            </div>
-
-            {/* PHOTO GALLERY — an even, calm grid of moments */}
+            {/* PHOTO GALLERY — a purple-backed band of moments that opens the section */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {EVENT_PHOTOS.map((src, i) => (
                 <FadeIn key={src} delay={i * 90} dir={i % 2 === 0 ? 'up' : 'down'} distance={0.8}>
@@ -100,6 +93,16 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
       {/* events history + CTAs — on the paper ground below the purple block */}
       <div className="mx-auto px-8 pt-14 md:pt-20 pb-16 md:pb-24 relative z-10 text-ink">
+          {/* HEADER — now leads its own explanation on the paper ground, so the
+              title and the event list read as one unit instead of the title being
+              marooned up in the purple band */}
+          <FadeIn>
+            <div className="mb-9 md:mb-12 max-w-3xl">
+              <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+                <MaskReveal>{isIndonesian ? "Event & collaboration" : "Community & events"}</MaskReveal>
+              </h2>
+            </div>
+          </FadeIn>
           {/* HISTORY — editorial year-grouped list: lilac year markers, hairline lines */}
           <div>
             {timeline.map((grp, gi) => (
