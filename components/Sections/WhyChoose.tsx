@@ -37,7 +37,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
   return (
     <section id="why-choose" className="relative isolate overflow-hidden">
       {/* LIGHT band — white with dark text (no seam lines) */}
-      <div className="relative isolate overflow-hidden text-ink" style={{ background: '#FFFFFF' }}>
+      <div className="bg-paper relative isolate overflow-hidden text-ink">
         <SoftAura />
         <div className="relative z-10 mx-auto px-8 pt-20 md:pt-28">
           {/* Lead — centered heading + paragraph */}

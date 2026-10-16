@@ -454,7 +454,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
         ];
 
     return (
-        <section id="services" className="relative isolate overflow-hidden text-ink" style={{ background: '#FFFFFF' }}>
+        <section id="services" className="bg-paper relative isolate overflow-hidden text-ink">
             <SoftAura />
             {/* HEADER — transparent over the sky */}
             <div className="mx-auto px-8 pt-20 md:pt-28 pb-16 md:pb-20">
