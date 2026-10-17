@@ -461,3 +461,11 @@ html.lenis body {
 .sky-paused * {
   animation-play-state: paused !important;
 }
+
+/* Loader reveal: a soft bloom of moonlight blooms out from the moon as the
+   aperture opens, so the transition feels like light opening the page. */
+@keyframes ldFlash {
+  0%   { opacity: 0; transform: scale(0.7); }
+  16%  { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(1.3); }
+}

@@ -88,6 +88,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   if (gone) return null;
 
   return (
+    <>
     <div
       aria-hidden
       onAnimationEnd={(e) => { if (leaving && e.animationName === 'ldAperture') setGone(true); }}
@@ -98,8 +99,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         // The full moon dilates open — a circle of light growing from its center
         // to unveil the page (an "aperture" reveal). The mask is only applied once
         // the exit begins, so no pinhole of the page shows through beforehand.
-        WebkitMaskImage: leaving && !reduce ? 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))' : undefined,
-        maskImage: leaving && !reduce ? 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 0.6%))' : undefined,
+        WebkitMaskImage: leaving && !reduce ? 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 2.6%))' : undefined,
+        maskImage: leaving && !reduce ? 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 2.6%))' : undefined,
         animation: leaving && !reduce ? 'ldAperture 1200ms cubic-bezier(0.33,0,0.2,1) 110ms forwards' : undefined,
         opacity: leaving && reduce ? 0 : 1,
         transition: reduce ? 'opacity 300ms ease' : undefined,
@@ -159,6 +160,18 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         </div>
       </div>
     </div>
+    {leaving && !reduce && (
+      <div
+        aria-hidden
+        className="fixed inset-0 z-[201] pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at 50% 43%, rgba(255,255,255,0.8) 0%, rgba(201,184,232,0.55) 11%, rgba(201,184,232,0) 46%)',
+          animation: 'ldFlash 900ms ease-out 40ms forwards',
+          opacity: 0,
+        }}
+      />
+    )}
+    </>
   );
 };
 
