@@ -523,14 +523,17 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         <ol className="mt-12 md:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-8 lg:gap-x-6 gap-y-10">
                             {steps.map((step, i) => (
                                 <li key={i} className="group animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
-                                    <span
-                                        aria-hidden
-                                        className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-base md:text-lg leading-none transition-colors duration-500 group-hover:bg-moon/[0.16]"
-                                    >
-                                        {String(i + 1).padStart(2, '0')}
-                                    </span>
-                                    <h4 className="mt-4 text-lg md:text-xl font-serif font-semibold leading-snug text-ink tracking-tight">{step.title}</h4>
-                                    <p className="mt-2 text-sm md:text-[0.95rem] leading-relaxed font-light text-ink/60">{step.desc}</p>
+                                    {/* number + title side by side, so each step stays short */}
+                                    <div className="flex items-center gap-3">
+                                        <span
+                                            aria-hidden
+                                            className="shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-sm md:text-base leading-none transition-colors duration-500 group-hover:bg-moon/[0.16]"
+                                        >
+                                            {String(i + 1).padStart(2, '0')}
+                                        </span>
+                                        <h4 className="text-base md:text-lg font-serif font-semibold leading-tight text-ink tracking-tight">{step.title}</h4>
+                                    </div>
+                                    <p className="mt-2.5 text-sm md:text-[0.95rem] leading-relaxed font-light text-ink/60">{step.desc}</p>
                                 </li>
                             ))}
                         </ol>
