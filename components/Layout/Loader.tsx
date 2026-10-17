@@ -101,7 +101,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         // the exit begins, so no pinhole of the page shows through beforehand.
         WebkitMaskImage: leaving && !reduce ? 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 2.6%))' : undefined,
         maskImage: leaving && !reduce ? 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 2.6%))' : undefined,
-        animation: leaving && !reduce ? 'ldAperture 1200ms cubic-bezier(0.33,0,0.2,1) 110ms forwards' : undefined,
+        animation: leaving && !reduce ? 'ldAperture 1280ms cubic-bezier(0.5,0,0.25,1) 300ms forwards' : undefined,
         opacity: leaving && reduce ? 0 : 1,
         transition: reduce ? 'opacity 300ms ease' : undefined,
         willChange: 'mask',
@@ -123,10 +123,20 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           transition: leaving ? (reduce ? 'opacity 250ms ease' : undefined) : 'opacity 800ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
-        {/* the moon — a real photo, revealed as the shadow disc slides off */}
+        {/* the moon — a real photo, revealed as the shadow disc slides off; on exit
+            it brightens, rushes toward the viewer and dissolves into its own light */}
         <div
-          className="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden"
-          style={{ boxShadow: `0 0 ${wax * 1.1}px ${wax * 0.22}px rgba(255,255,255,${0.06 + wax / 260})` }}
+          className="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden will-change-transform"
+          style={{
+            boxShadow: leaving
+              ? '0 0 160px 56px rgba(255,255,255,0.55)'
+              : `0 0 ${wax * 1.1}px ${wax * 0.22}px rgba(255,255,255,${0.06 + wax / 260})`,
+            transform: leaving && !reduce ? 'scale(2.6)' : 'scale(1)',
+            opacity: leaving && !reduce ? 0 : 1,
+            transition: leaving && !reduce
+              ? 'transform 1200ms cubic-bezier(0.5,0,0.25,1) 60ms, opacity 1050ms ease-in 120ms, box-shadow 520ms ease'
+              : 'none',
+          }}
         >
           <img
             src={`${import.meta.env.BASE_URL}moon.jpg`}
@@ -148,15 +158,18 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           />
         </div>
 
-        {/* wordmark */}
-        <div className="mt-9 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
-          <span className="text-cream">Mayanov</span>
-          <span className="text-cream">Tarot</span>
-        </div>
-
-        {/* label */}
-        <div className="mt-3 text-[11px] uppercase tracking-[0.28em] text-cream/40">
-          Loading
+        {/* wordmark + label — fade out first, so only the moon's light carries the reveal */}
+        <div
+          style={{ opacity: leaving && !reduce ? 0 : undefined, transition: 'opacity 320ms ease' }}
+          className="flex flex-col items-center"
+        >
+          <div className="mt-9 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
+            <span className="text-cream">Mayanov</span>
+            <span className="text-cream">Tarot</span>
+          </div>
+          <div className="mt-3 text-[11px] uppercase tracking-[0.28em] text-cream/40">
+            Loading
+          </div>
         </div>
       </div>
     </div>
