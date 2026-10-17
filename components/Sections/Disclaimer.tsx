@@ -45,18 +45,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
         // apart only by a hairline rule.
         <section id="disclaimer" className="relative text-ink pb-20 md:pb-28">
             <div className="mx-auto px-8 relative z-10">
-                {/* celestial section break — no rule: a quiet constellation over a soft
-                    glow marks the shift into a new section on the same white ground */}
-                <div className="relative flex justify-center pt-3 md:pt-4 pb-6 md:pb-8">
-                    <div
-                        aria-hidden
-                        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[26rem] h-[13rem] max-w-[88vw] rounded-full blur-[80px]"
-                        style={{ background: 'radial-gradient(closest-side, rgba(107,63,160,0.12), transparent)' }}
-                    />
-                    <CelestialMark name="constellation" className="relative w-20 md:w-24 text-moon/40" />
-                </div>
-
-                <div className="relative">
+                <div className="relative pt-4 md:pt-6">
                     {/* gentle, human framing — no "disclaimer", no legalese */}
                     <FadeIn>
                         <div className="max-w-2xl">

@@ -125,7 +125,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="faq"
-      className="pt-20 md:pt-28 pb-4 md:pb-6 relative text-ink"
+      className="pt-8 md:pt-12 pb-4 md:pb-6 relative text-ink"
     >
       <div className="mx-auto px-8 relative z-10">
         <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">

@@ -82,7 +82,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         aria-label="Mayanov Tarot"
                         className="font-elegant font-medium leading-[0.95] tracking-[-0.02em] text-[clamp(2.6rem,8vw,4.9rem)] select-none [text-shadow:0_8px_60px_rgba(6,4,14,0.55)]"
                     >
-                        Mayanov <span className="text-[#C9B8E8]">Tarot</span>
+                        Mayanov <span className="text-cream">Tarot</span>
                     </div>
 
                     {/* socials — plain icons, no containers */}
