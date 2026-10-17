@@ -512,11 +512,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             <h3 className="font-elegant font-medium text-ink text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
                                 {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
                             </h3>
-                            <p className="mt-4 text-ink/55 font-light leading-relaxed">
-                                {isIndonesian
-                                    ? 'Langkah sederhana — dari pilih layanan sampai pulang dengan arah yang jelas.'
-                                    : 'A few simple steps — from choosing a reading to walking away with clear direction.'}
-                            </p>
                         </div>
 
                         {/* steps — a horizontal row on desktop (wraps on small screens) */}
