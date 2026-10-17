@@ -133,7 +133,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           <div
             className="absolute inset-0 rounded-full"
             style={{
-              background: '#0A0916',
+              background: '#2A1A4D',
               transform: `translateX(${wax * 1.02}%)`,
               filter: 'blur(3px)',
             }}
