@@ -244,7 +244,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         {/* a large, faint opening quote mark */}
         <div aria-hidden className="pointer-events-none text-center font-elegant text-moon/20 text-[5rem] md:text-[7rem] leading-[0.28] select-none">&ldquo;</div>
 
-        <div className="relative grid max-w-3xl mx-auto mt-5 md:mt-7">
+        <div className="relative grid max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto mt-5 md:mt-7">
           {reviews.map((r, i) => {
             const active = i === index;
             return (
