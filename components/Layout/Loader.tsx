@@ -94,15 +94,12 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
       style={{
         background: '#0b0924',
-        // Exit: the whole night-sky scene lifts away — a gentle scale-up + fade
-        // (transform/opacity only, so it stays buttery), revealing the identical
-        // page sky beneath as the hero title rises in.
-        transform: leaving && !reduce ? 'scale(1.14)' : 'scale(1)',
+        // Exit: the SKY never moves (it just cross-fades into the identical page
+        // sky, so the stars stay aligned and the hand-off is invisible). Only the
+        // moon rises and dissolves, and the hero title rises in beneath.
         opacity: leaving ? 0 : 1,
-        transition: leaving
-          ? (reduce ? 'opacity 320ms ease' : 'transform 1300ms cubic-bezier(0.4,0,0.2,1), opacity 1050ms cubic-bezier(0.5,0,0.3,1) 160ms')
-          : undefined,
-        willChange: 'transform, opacity',
+        transition: leaving ? (reduce ? 'opacity 320ms ease' : 'opacity 1100ms cubic-bezier(0.4,0,0.2,1) 140ms') : undefined,
+        willChange: 'opacity',
       }}
     >
       {/* the hero's own night sky — so the loader IS the page's sky, and the
@@ -117,8 +114,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           // No bloom/scale on exit — the moon holds still and the aperture simply
           // opens from its center (the mask reveals straight through it).
           opacity: leaving ? (reduce ? 0 : 1) : enter ? 1 : 0,
-          transform: `translateY(${!leaving && !enter ? 12 : 0}px) scale(1)`,
-          transition: leaving ? (reduce ? 'opacity 250ms ease' : undefined) : 'opacity 800ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
+          transform: leaving && !reduce ? 'translateY(-34px)' : `translateY(${!leaving && !enter ? 12 : 0}px)`,
+          transition: leaving ? (reduce ? 'opacity 250ms ease' : 'transform 1150ms cubic-bezier(0.22,1,0.3,1)') : 'opacity 800ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
         {/* the moon — a real photo, revealed as the shadow disc slides off; on exit
