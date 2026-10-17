@@ -24,24 +24,18 @@ export default {
         mauve: 'rgb(var(--adm-cancelled) / <alpha-value>)',
         coral: 'rgb(var(--adm-pending) / <alpha-value>)',
         'coral-deep': 'rgb(var(--adm-pending-text) / <alpha-value>)',
-        // --- Secondary accent: periwinkle (in-family blue, harmonizes w/ violet/indigo) ---
-        sky: '#7A7FD1',
         // --- Accent: a single violet (plum family) for the whole public site ---
         moon: '#6B3FA0',
-        charcoal: '#564D4D',
-        'charcoal-deep': '#3A3234',
         sage: 'rgb(var(--adm-confirmed) / <alpha-value>)',
         cream: '#FFFFFF',
         ink: '#211E2E',
         // --- Semantic tokens ---
-        taupe: '#8A7D7D',
         paper: '#FFFFFF',
         line: '#E7E5E1',
-        // --- Back-compat aliases ---
+        // --- 404 page / dev-mode indicator only (not public palette) ---
         terracotta: '#F19F58',
         'terracotta-dark': '#DA8636',
         gold: '#F19F58',
-        'gold-soft': '#F0A15C',
         lilac: 'rgb(var(--adm-accent) / <alpha-value>)',
         'lilac-dark': 'rgb(var(--adm-accent-deep) / <alpha-value>)',
         'gold-accent': 'rgb(var(--adm-accent) / <alpha-value>)',
