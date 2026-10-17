@@ -16,7 +16,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
     <section
       id="interlude"
       className="relative overflow-hidden isolate text-cream py-24 md:py-32"
-      style={{ background: 'linear-gradient(165deg, #28336B 0%, #202A5C 48%, #14112B 100%)' }}
+      style={{ background: 'linear-gradient(165deg, #28336B 0%, #202A5C 48%, #0E1A3D 100%)' }}
     >
       {/* faint indigo glow for depth */}
       <div
