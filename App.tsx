@@ -346,7 +346,7 @@ function App() {
   if (isGeoError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-cream text-ink p-4 text-center">
-        <div className="bg-paper p-8 rounded-2xl border border-line max-w-md shadow-[0_24px_60px_-30px_rgba(42,35,32,0.4)]">
+        <div className="bg-paper p-8 rounded-2xl border border-ink/10 max-w-md shadow-[0_24px_60px_-30px_rgba(42,35,32,0.4)]">
           <div className="mx-auto mb-4 w-12 h-16 border-2 border-terracotta rounded-lg flex items-center justify-center relative bg-terracotta/10 animate-float">
             <div className="w-8 h-12 border border-terracotta/50 rounded-sm flex items-center justify-center">
               <span className="text-xl">⚡</span>

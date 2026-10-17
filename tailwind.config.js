@@ -30,8 +30,7 @@ export default {
         // --- The one light surface for the whole public site ---
         cream: '#F3F1EC',
         paper: '#F3F1EC',
-        ink: '#211E2E',
-        line: '#E7E5E1',
+        ink: '#000000',
         // --- 404 page / dev-mode indicator only (not public palette) ---
         terracotta: '#F19F58',
         'terracotta-dark': '#DA8636',
