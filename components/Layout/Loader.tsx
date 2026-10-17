@@ -6,6 +6,18 @@ interface LoaderProps {
   isIndonesian?: boolean;
 }
 
+// A faint star dusting so the loader reads as the same night sky as the rest of
+// the site (deterministic, generated once).
+const loaderStars = (() => {
+  let s = 7793;
+  const rnd = () => { s |= 0; s = (s + 0x6d2b79f5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  return Array.from({ length: 56 }, () => {
+    const x = (rnd() * 100).toFixed(2), y = (rnd() * 100).toFixed(2);
+    const r = (0.4 + rnd() * 1).toFixed(2), o = (0.22 + rnd() * 0.5).toFixed(2);
+    return `radial-gradient(${r}px ${r}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, rgba(255,255,255,0) 60%)`;
+  }).join(',');
+})();
+
 // Black loader: a real moon waxes from new → full (a soft shadow slides off it as
 // it loads, its glow growing), settles full for a beat, then the full moon blooms
 // brighter and dilates open — a circle of light expanding outward from its center
@@ -105,6 +117,13 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         willChange: 'mask',
       }}
     >
+      {/* star dusting — the same night sky as the site */}
+      <div aria-hidden className="absolute inset-0" style={{ backgroundImage: loaderStars, opacity: enter ? 1 : 0, transition: 'opacity 1200ms ease' }} />
+      {/* soft violet bloom cradling the moon, so it sits in a pool of light */}
+      <div aria-hidden className="absolute left-1/2 top-[43%] h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(140,98,196,0.38) 0%, rgba(140,98,196,0) 68%)', opacity: enter ? 1 : 0, transition: 'opacity 1100ms ease' }} />
+      {/* vignette for depth, so the purple isn't a flat slab */}
+      <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(circle at 50% 43%, transparent 42%, rgba(12,8,26,0.55) 100%)' }} />
+
       <div
         className="relative flex flex-col items-center"
         style={{
