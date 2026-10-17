@@ -18,7 +18,7 @@ const Marquee: React.FC<MarqueeProps> = ({ isIndonesian = false }) => {
       {Array.from({ length: REPEAT }).flatMap((_, r) =>
         words.map((w, i) => (
           <span key={`${r}-${i}`} className="flex items-center">
-            <span className="px-6 md:px-9 font-elegant italic text-white text-base md:text-lg leading-none">
+            <span className="px-6 md:px-9 font-elegant italic text-cream text-base md:text-lg leading-none">
               {w}
             </span>
             <span aria-hidden className="text-cream/20 text-xs leading-none">&middot;</span>

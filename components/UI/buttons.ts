@@ -14,8 +14,8 @@
 // the variant stays out of the way of responsive hiding (e.g. the nav pill).
 const BASE = 'items-center justify-center rounded-full font-medium transition-colors duration-300';
 
-export const btnPrimaryDark = `${BASE} bg-white text-ink hover:bg-moon hover:text-cream`;
+export const btnPrimaryDark = `${BASE} bg-cream text-ink hover:bg-moon hover:text-cream`;
 export const btnPrimaryLight = `${BASE} bg-moon text-cream hover:bg-plum hover:text-cream`;
 
-export const btnSecondaryDark = `${BASE} bg-transparent border border-cream/45 text-cream hover:bg-white hover:text-ink hover:border-white`;
+export const btnSecondaryDark = `${BASE} bg-transparent border border-cream/45 text-cream hover:bg-cream hover:text-ink hover:border-cream`;
 export const btnSecondaryLight = `${BASE} bg-transparent border border-ink/30 text-ink hover:bg-plum hover:text-cream hover:border-plum`;

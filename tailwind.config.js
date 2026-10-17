@@ -27,10 +27,10 @@ export default {
         // --- Accent: a single violet (plum family) for the whole public site ---
         moon: '#6B3FA0',
         sage: 'rgb(var(--adm-confirmed) / <alpha-value>)',
-        cream: '#FFFFFF',
+        // --- The one light surface for the whole public site ---
+        cream: '#F3F1EC',
+        paper: '#F3F1EC',
         ink: '#211E2E',
-        // --- Semantic tokens ---
-        paper: '#FFFFFF',
         line: '#E7E5E1',
         // --- 404 page / dev-mode indicator only (not public palette) ---
         terracotta: '#F19F58',

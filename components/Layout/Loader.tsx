@@ -142,8 +142,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
 
         {/* wordmark */}
         <div className="mt-9 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
-          <span className="text-white">Mayanov</span>
-          <span className="text-white">Tarot</span>
+          <span className="text-cream">Mayanov</span>
+          <span className="text-cream">Tarot</span>
         </div>
 
         {/* label */}
