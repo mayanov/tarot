@@ -88,23 +88,21 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   if (gone) return null;
 
   return (
-    <>
     <div
       aria-hidden
-      onAnimationEnd={(e) => { if (leaving && e.animationName === 'ldAperture') setGone(true); }}
-      onTransitionEnd={(e) => { if (leaving && reduce && e.propertyName === 'opacity') setGone(true); }}
+      onTransitionEnd={(e) => { if (leaving && e.propertyName === 'opacity') setGone(true); }}
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
       style={{
         background: '#0b0924',
-        // The full moon dilates open — a circle of light growing from its center
-        // to unveil the page (an "aperture" reveal). The mask is only applied once
-        // the exit begins, so no pinhole of the page shows through beforehand.
-        WebkitMaskImage: leaving && !reduce ? 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 2.6%))' : undefined,
-        maskImage: leaving && !reduce ? 'radial-gradient(circle at 50% 43%, transparent var(--ldIris), #000 calc(var(--ldIris) + 2.6%))' : undefined,
-        animation: leaving && !reduce ? 'ldAperture 1280ms cubic-bezier(0.5,0,0.25,1) 300ms forwards' : undefined,
-        opacity: leaving && reduce ? 0 : 1,
-        transition: reduce ? 'opacity 300ms ease' : undefined,
-        willChange: 'mask',
+        // Exit: the whole night-sky scene lifts away — a gentle scale-up + fade
+        // (transform/opacity only, so it stays buttery), revealing the identical
+        // page sky beneath as the hero title rises in.
+        transform: leaving && !reduce ? 'scale(1.14)' : 'scale(1)',
+        opacity: leaving ? 0 : 1,
+        transition: leaving
+          ? (reduce ? 'opacity 320ms ease' : 'transform 1300ms cubic-bezier(0.4,0,0.2,1), opacity 1050ms cubic-bezier(0.5,0,0.3,1) 160ms')
+          : undefined,
+        willChange: 'transform, opacity',
       }}
     >
       {/* the hero's own night sky — so the loader IS the page's sky, and the
@@ -126,16 +124,12 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         {/* the moon — a real photo, revealed as the shadow disc slides off; on exit
             it brightens, rushes toward the viewer and dissolves into its own light */}
         <div
-          className="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden will-change-transform"
+          className="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden"
           style={{
-            boxShadow: leaving
-              ? '0 0 160px 56px rgba(255,255,255,0.55)'
+            boxShadow: leaving && !reduce
+              ? '0 0 120px 34px rgba(255,255,255,0.4)'
               : `0 0 ${wax * 1.1}px ${wax * 0.22}px rgba(255,255,255,${0.06 + wax / 260})`,
-            transform: leaving && !reduce ? 'scale(2.6)' : 'scale(1)',
-            opacity: leaving && !reduce ? 0 : 1,
-            transition: leaving && !reduce
-              ? 'transform 1200ms cubic-bezier(0.5,0,0.25,1) 60ms, opacity 1050ms ease-in 120ms, box-shadow 520ms ease'
-              : 'none',
+            transition: leaving && !reduce ? 'box-shadow 800ms ease' : 'none',
           }}
         >
           <img
@@ -173,18 +167,6 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         </div>
       </div>
     </div>
-    {leaving && !reduce && (
-      <div
-        aria-hidden
-        className="fixed inset-0 z-[201] pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle at 50% 43%, rgba(255,255,255,0.8) 0%, rgba(201,184,232,0.55) 11%, rgba(201,184,232,0) 46%)',
-          animation: 'ldFlash 900ms ease-out 40ms forwards',
-          opacity: 0,
-        }}
-      />
-    )}
-    </>
   );
 };
 
