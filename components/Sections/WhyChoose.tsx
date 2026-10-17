@@ -47,7 +47,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             </h2>
             <p className="mt-6 text-lg md:text-xl text-ink/60 font-light leading-relaxed max-w-2xl mx-auto text-center">
               {isIndonesian
-                ? 'Sesi tarot yang tidak kaku atau menyeramkan — melainkan ruang aman untuk bercerita, dengan kesimpulan yang jelas dan langkah yang bisa kamu ambil.'
+                ? 'Sesi tarot yang tidak kaku atau menyeramkan — ruang aman untuk bercerita, dengan kesimpulan jelas dan langkah yang bisa kamu ambil.'
                 : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
             </p>
           </FadeIn>
