@@ -282,37 +282,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           </button>
         </div>
 
-        {/* stepper */}
+        {/* progress — a quiet row of dots, not a numbered wizard */}
         {step < 4 && (() => {
           const seq = scheduled ? [0, 1, 2, 3] : [0, 2, 3];
           const cur = seq.indexOf(step);
           return (
-            <div className="px-5 md:px-6 pt-4">
-              <div className="flex items-start">
-                {seq.map((s, i) => {
-                  const done = i < cur;
-                  const active = i === cur;
-                  return (
-                    <React.Fragment key={s}>
-                      <div className="flex flex-col items-center gap-1.5 shrink-0 w-16">
-                        <div className={`w-6 h-6 rounded-xl grid place-items-center text-xs font-bold border-2 transition-colors ${
-                          done ? 'bg-moon border-moon text-cream'
-                            : active ? 'bg-moon/10 border-moon text-moon'
-                              : 'bg-white border-ink/10 text-ink/50'
-                        }`}>
-                          {done ? <Check className="w-3.5 h-3.5" /> : i + 1}
-                        </div>
-                        <span className={`text-[9px] uppercase tracking-wide text-center leading-tight ${active ? 'text-ink font-semibold' : 'text-ink/50'}`}>
-                          {stepLabels[s]}
-                        </span>
-                      </div>
-                      {i < seq.length - 1 && (
-                        <div className={`flex-1 h-0.5 mt-3.5 rounded transition-colors ${i < cur ? 'bg-moon' : 'bg-ink/10'}`} />
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
+            <div className="flex items-center justify-center gap-2 px-5 md:px-6 pt-5">
+              {seq.map((s, i) => (
+                <span
+                  key={s}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    i === cur ? 'w-7 bg-moon' : i < cur ? 'w-1.5 bg-moon/70' : 'w-1.5 bg-ink/15'
+                  }`}
+                />
+              ))}
             </div>
           );
         })()}
