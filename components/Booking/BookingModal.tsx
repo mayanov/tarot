@@ -255,7 +255,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       <div className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} onClick={close} />
 
       {/* panel — clean white, sharp corners */}
-      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] ring-1 ring-ink/10 border border-ink/10 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${(step === 3 && isIndonesian) || step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
+      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${(step === 3 && isIndonesian) || step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
 
         {/* scroll only the content, not the decorations (data-lenis-prevent lets this
             scroll natively instead of the page's smooth-scroll hijacking the wheel) */}
@@ -267,17 +267,17 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               <button
                 onClick={() => setStep(step === 3 ? 2 : step === 2 ? (scheduled ? 1 : 0) : 0)}
                 aria-label="Back"
-                className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-cream/25 bg-white/10 text-cream hover:bg-white/20 hover:border-cream/40 transition-colors"
+                className="shrink-0 text-cream/75 hover:text-cream transition-colors"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-5 h-5" />
               </button>
             )}
             <div className="font-serif font-semibold text-cream text-[1.1rem] md:text-[1.2rem] leading-tight">
               {step < 4 ? stepLabels[step] : t('Booking Sesi', 'Book a Session')}
             </div>
           </div>
-          <button onClick={close} aria-label="Close" className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-cream/25 bg-white/10 text-cream hover:bg-white/20 hover:border-cream/40 transition-colors">
-            <X className="w-4 h-4" />
+          <button onClick={close} aria-label="Close" className="shrink-0 text-cream/75 hover:text-cream transition-colors">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
