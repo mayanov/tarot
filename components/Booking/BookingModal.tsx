@@ -446,10 +446,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 2 — details */}
           {step === 2 && (
             <div>
-              <p className="text-sm text-ink/70 mb-5 flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-ink" />
-                {summaryLine}
-              </p>
+              {scheduled && (
+                <p className="text-sm text-ink/70 mb-5 flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-ink" />
+                  {summaryLine}
+                </p>
+              )}
 
               <div className="space-y-3">
                 {service?.packages && !scheduled && (
