@@ -251,20 +251,18 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
-      {/* backdrop — a soft, dreamy blurred night sky behind the popup */}
-      <div className="absolute inset-0 overflow-hidden" onClick={close}>
-        <div
-          aria-hidden
-          className="absolute inset-0 scale-[1.18]"
-          style={{
-            backgroundImage: `url(${import.meta.env.BASE_URL}footer-stars.jpg)`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'blur(26px)',
-          }}
-        />
-        <div className="absolute inset-0 bg-ink/45" />
-      </div>
+      {/* backdrop — a soft violet-indigo nebula (the brand night sky, not flat black) */}
+      <div
+        className="absolute inset-0"
+        onClick={close}
+        style={{
+          background:
+            'radial-gradient(68% 56% at 20% 18%, rgba(107,63,160,0.55), transparent 62%),' +
+            'radial-gradient(62% 52% at 84% 80%, rgba(40,51,107,0.6), transparent 64%),' +
+            'radial-gradient(48% 44% at 68% 10%, rgba(178,98,158,0.24), transparent 60%),' +
+            'linear-gradient(160deg, #2a1f4f 0%, #1d1a3d 50%, #141026 100%)',
+        }}
+      />
 
       {/* panel — clean white, sharp corners */}
       <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] ring-1 ring-ink/10 border border-ink/10 animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${(step === 3 && isIndonesian) || step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
