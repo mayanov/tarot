@@ -355,6 +355,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                             <div className="text-center mb-6">
                                                 <div className="text-4xl font-extrabold text-teal-accent">Pay As You Like</div>
                                             </div>
+                                            <p className="text-teal-accent/90 text-center text-sm font-bold mb-3">Dalam rangka merayakan HUT Mayanov, jangan ketinggalan promo Pay As U Like!</p>
                                             <p className="text-text-light text-center text-sm mb-6 flex-grow">Bayar sesukamu, dapat <b>1 pertanyaan</b> yang dijawab melalui voice note via WhatsApp.</p>
                                             <div className="mt-auto">
                                                 <a href={`https://wa.me/6287786280310?text=${encodeURIComponent('Kak aku mau yang promo Operation Happy Birthday 2026 yang pay as u like untuk 1 pertanyaan yaah.')}`} target="_blank" rel="noopener noreferrer" onClick={handleHappyBirthday} className={tealButtonClass}>Ambil Promo Ini</a>
