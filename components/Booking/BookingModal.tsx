@@ -261,22 +261,22 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
             scroll natively instead of the page's smooth-scroll hijacking the wheel) */}
         <div className="relative max-h-[92vh] overflow-y-auto overscroll-contain" data-lenis-prevent>
         {/* header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-5 md:px-6 py-4 bg-paper/85 backdrop-blur border-b border-ink/10">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-5 md:px-6 py-4 bg-plum border-b border-white/10">
           <div className="flex items-center gap-3">
             {(step === 1 || step === 2 || step === 3) && (
               <button
                 onClick={() => setStep(step === 3 ? 2 : step === 2 ? (scheduled ? 1 : 0) : 0)}
                 aria-label="Back"
-                className="shrink-0 grid place-items-center w-9 h-9 rounded-xl border border-ink/10 bg-white/70 text-ink/70 hover:text-ink hover:border-ink/25 hover:bg-white transition-colors"
+                className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-cream/25 bg-white/10 text-cream hover:bg-white/20 hover:border-cream/40 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
             )}
-            <div className="font-serif font-semibold text-ink text-[1.1rem] md:text-[1.2rem] leading-tight">
+            <div className="font-serif font-semibold text-cream text-[1.1rem] md:text-[1.2rem] leading-tight">
               {step < 4 ? stepLabels[step] : t('Booking Sesi', 'Book a Session')}
             </div>
           </div>
-          <button onClick={close} aria-label="Close" className="shrink-0 grid place-items-center w-9 h-9 rounded-xl border border-ink/10 bg-white/70 text-ink/70 hover:text-ink hover:border-ink/25 hover:bg-white transition-colors">
+          <button onClick={close} aria-label="Close" className="shrink-0 grid place-items-center w-9 h-9 rounded-full border border-cream/25 bg-white/10 text-cream hover:bg-white/20 hover:border-cream/40 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
