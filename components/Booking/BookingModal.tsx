@@ -251,16 +251,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
-      {/* backdrop — a soft violet-indigo nebula (the brand night sky, not flat black) */}
+      {/* backdrop — a semi-transparent violet-indigo nebula over a blur of the page */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 backdrop-blur-xl"
         onClick={close}
         style={{
           background:
-            'radial-gradient(68% 56% at 20% 18%, rgba(107,63,160,0.55), transparent 62%),' +
-            'radial-gradient(62% 52% at 84% 80%, rgba(40,51,107,0.6), transparent 64%),' +
-            'radial-gradient(48% 44% at 68% 10%, rgba(178,98,158,0.24), transparent 60%),' +
-            'linear-gradient(160deg, #2a1f4f 0%, #1d1a3d 50%, #141026 100%)',
+            'radial-gradient(68% 56% at 20% 18%, rgba(107,63,160,0.5), transparent 62%),' +
+            'radial-gradient(62% 52% at 84% 80%, rgba(40,51,107,0.5), transparent 64%),' +
+            'radial-gradient(48% 44% at 68% 10%, rgba(178,98,158,0.2), transparent 60%),' +
+            'linear-gradient(160deg, rgba(42,31,79,0.5) 0%, rgba(29,26,61,0.5) 50%, rgba(20,16,38,0.58) 100%)',
         }}
       />
 
