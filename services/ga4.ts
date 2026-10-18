@@ -179,7 +179,7 @@ const processReports = (reports: any[]) => {
 
     // Exact string match keys (must match 'item_name' sent in tracking events)
     const ID_KEYS = [
-        "New Year Reading 2026", "Promo Beli 3 Dapat 5", "3 Question Chat",
+        "New Year Reading 2026", "Operation Happy Birthday", "Promo Beli 3 Dapat 5", "3 Question Chat",
         "1 Question Chat", "30-Min Call", "60-Min Call", "Meetup Session"
     ];
     const GLOBAL_KEYS = [
@@ -189,6 +189,7 @@ const processReports = (reports: any[]) => {
     // Friendly Display Name Mappings (User asked for specific display names)
     const DISPLAY_NAMES: Record<string, string> = {
         "New Year Reading 2026": "New Year Reading",
+        "Operation Happy Birthday": "Happy Birthday",
         "Promo Beli 3 Dapat 5": "Buy 3 Get 5",
         "3 Question Chat": "3 Question Chat",
         "1 Question Chat": "1 Question Chat",

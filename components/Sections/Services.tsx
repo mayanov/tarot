@@ -49,12 +49,12 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
         );
     };
 
-    const handlePromoBuy3Get5 = () => {
+    const handleHappyBirthday = () => {
         trackEvent(
             'begin_checkout',
-            { item_name: 'Promo Beli 3 Dapat 5', market: 'ID' },
+            { item_name: 'Operation Happy Birthday', market: 'ID' },
             'InitiateCheckout',
-            { content_name: 'Promo Beli 3 Dapat 5', value: 315000, currency: 'IDR', content_category: 'ID Service' }
+            { content_name: 'Operation Happy Birthday', currency: 'IDR', content_category: 'ID Service' }
         );
     };
 
@@ -312,29 +312,28 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {/* Promo Beli 3 Dapat 5 */}
+                                {/* Operation Happy Birthday */}
                                 <FadeIn delay={100} className="h-full">
                                     <div className="group relative h-full">
                                         <div className="absolute inset-0 bg-gradient-to-b from-teal-accent/20 to-transparent rounded-3xl blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
                                         <div className="relative bg-surface-1 border-2 border-teal-accent/50 flex flex-col h-full p-6 rounded-2xl hover:border-teal-accent transition duration-300 shadow-[0_0_20px_rgba(129,244,255,0.1)]">
                                             <div className="absolute top-0 right-0 bg-teal-accent text-[#05050A] font-bold px-3 py-1 text-xs rounded-bl-lg">PROMO</div>
                                             <div className="mb-4 pt-4 text-center min-h-[80px] flex flex-col justify-end">
-                                                <h3 className="text-xl font-bold text-white font-serif">Beli 3 Dapat 5</h3>
-                                                <p className="text-xs uppercase tracking-wider text-teal-accent font-bold mt-1">Best Value</p>
+                                                <h3 className="text-xl font-bold text-white font-serif">Operation Happy Birthday</h3>
+                                                <p className="text-xs uppercase tracking-wider text-teal-accent font-bold mt-1">Birthday Special</p>
                                             </div>
                                             <div className="text-center mb-6">
-                                                <div className="text-4xl font-extrabold text-teal-accent">Rp 315.000</div>
-                                                <p className="text-xs text-text-subtle line-through opacity-60">Normal: Rp 500.000+</p>
+                                                <div className="text-4xl font-extrabold text-teal-accent">Pay As You Like</div>
                                             </div>
-                                            <p className="text-text-light text-center text-sm mb-4 flex-grow">Cukup bayar 3 pertanyaan, dapat <b>5 pertanyaan</b>. Lebih hemat.</p>
+                                            <p className="text-text-light text-center text-sm mb-4 flex-grow">Bayar sesukamu, dapat <b>1 pertanyaan</b> yang dijawab sesuai harga yang kamu pilih.</p>
                                             <div className="bg-teal-accent/10 border border-teal-accent/20 p-3 rounded-lg mb-6">
                                                 <p className="text-xs text-teal-accent/90 flex gap-2">
                                                     <AlertCircle className="w-4 h-4 shrink-0" />
-                                                    <span><b>Syarat:</b> 5 pertanyaan harus digunakan di hari yang sama.</span>
+                                                    <span>Klik tombol di bawah untuk chat via WhatsApp dan sebutkan harga pilihanmu.</span>
                                                 </p>
                                             </div>
                                             <div className="mt-auto">
-                                                <a href="http://lynk.id/mayanovtarot/mm7ykgdwndez/" target="_blank" rel="noopener noreferrer" onClick={handlePromoBuy3Get5} className={tealButtonClass}>Ambil Promo Ini</a>
+                                                <a href={`https://wa.me/6287786280310?text=${encodeURIComponent('Halo Mayanov, saya ingin ikut Operation Happy Birthday 🎂\n\nHarga yang saya pilih: Rp \nPertanyaan saya: ')}`} target="_blank" rel="noopener noreferrer" onClick={handleHappyBirthday} className={tealButtonClass}>Ambil Promo Ini</a>
                                             </div>
                                         </div>
                                     </div>
