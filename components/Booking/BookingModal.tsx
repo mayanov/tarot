@@ -273,7 +273,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               </button>
             )}
             <div className="font-serif font-semibold text-cream text-[1.1rem] md:text-[1.2rem] leading-tight">
-              {step < 4 ? stepLabels[step] : t('Booking Sesi', 'Book a Session')}
+              {step === 0 ? stepLabels[step] : (service?.name ?? (step < 4 ? stepLabels[step] : t('Booking Sesi', 'Book a Session')))}
             </div>
           </div>
           <button onClick={close} aria-label="Close" className="shrink-0 text-cream/75 hover:text-cream transition-colors">
