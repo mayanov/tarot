@@ -272,9 +272,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 <ArrowLeft className="w-4 h-4" />
               </button>
             )}
-            <div>
-              <div className="text-[0.62rem] uppercase tracking-[0.24em] text-ink font-semibold">{t('Booking Sesi', 'Book a Session')}</div>
-              {step < 4 && <div className="mt-0.5 text-sm font-serif font-semibold text-ink leading-tight">{stepLabels[step]}</div>}
+            <div className="font-serif font-semibold text-ink text-[1.1rem] md:text-[1.2rem] leading-tight">
+              {step < 4 ? stepLabels[step] : t('Booking Sesi', 'Book a Session')}
             </div>
           </div>
           <button onClick={close} aria-label="Close" className="shrink-0 grid place-items-center w-9 h-9 rounded-xl border border-ink/10 bg-white/70 text-ink/70 hover:text-ink hover:border-ink/25 hover:bg-white transition-colors">
@@ -312,11 +311,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 >
                   <span className="min-w-0">
                     <span className="block font-serif font-semibold text-ink">{s.name}</span>
-                    <span className="flex flex-wrap gap-1.5 mt-1.5">
-                      {s.meta.split(' · ').map((t) => (
-                        <span key={t} className="px-2 py-0.5 text-[9px] font-medium tracking-[0.14em] uppercase border border-ink/20 text-ink/55 rounded">{t}</span>
-                      ))}
-                    </span>
+                    <span className="block mt-1 text-[11px] tracking-[0.04em] text-moon/75 font-medium">{s.meta}</span>
                     <span className="block text-xs text-ink/70 leading-snug mt-1.5">{s.desc}</span>
                   </span>
                   <ChevronRight className="w-5 h-5 text-ink/40 group-hover:text-ink group-hover:translate-x-0.5 transition-all shrink-0" />
