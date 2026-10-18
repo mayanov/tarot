@@ -354,8 +354,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 </div>
               )}
 
-              {/* calendar + time — revealed only after a duration is chosen */}
-              {(!needsPackage || pkg) && (
+              {/* calendar + time — shown straight away (duration picker sits above) */}
+              {true && (
               <>
               {(service?.id === 'meetup' || service?.id === 'call') && (
                 <p className="mb-3 flex items-center gap-2 text-xs text-ink/70 rounded-xl border border-ink/10 bg-ink/[0.02] px-3 py-2">
