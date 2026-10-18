@@ -508,18 +508,20 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             <div className="mx-auto px-8 py-16 md:py-24">
                 <FadeIn>
                     <div id="process" className="scroll-mt-24">
-                        <div className="max-w-2xl">
+                        <div className="max-w-2xl mx-auto text-center">
                             <h3 className="font-elegant font-medium text-ink text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
                                 {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
                             </h3>
                         </div>
 
-                        {/* steps — a horizontal row on desktop (wraps on small screens) */}
-                        <ol className="mt-12 md:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-8 lg:gap-x-6 gap-y-10">
-                            {steps.map((step, i) => (
-                                <li key={i} className="group animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                        {/* steps — 2 per row on mobile, a single row on desktop */}
+                        <ol className="mt-10 md:mt-16 grid grid-cols-2 lg:grid-cols-5 gap-x-5 lg:gap-x-6 gap-y-9">
+                            {steps.map((step, i) => {
+                                const isLast = i === steps.length - 1;
+                                return (
+                                <li key={i} className={`group animate-fade-up ${isLast ? 'col-span-2 lg:col-span-1' : ''}`} style={{ animationDelay: `${i * 80}ms` }}>
                                     {/* number + title side by side, so each step stays short */}
-                                    <div className="flex items-center gap-3">
+                                    <div className={`flex items-center gap-3 ${isLast ? 'justify-center lg:justify-start' : ''}`}>
                                         <span
                                             aria-hidden
                                             className="shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-sm md:text-base leading-none transition-colors duration-500 group-hover:bg-moon/[0.16]"
@@ -528,9 +530,10 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                         </span>
                                         <h4 className="text-base md:text-lg font-serif font-semibold leading-tight text-ink tracking-tight">{step.title}</h4>
                                     </div>
-                                    <p className="mt-2.5 text-sm md:text-[0.95rem] leading-relaxed font-light text-ink/60">{step.desc}</p>
+                                    <p className={`mt-2.5 text-sm md:text-[0.95rem] leading-relaxed font-light text-ink/60 ${isLast ? 'text-center lg:text-left' : ''}`}>{step.desc}</p>
                                 </li>
-                            ))}
+                                );
+                            })}
                         </ol>
                     </div>
                 </FadeIn>
