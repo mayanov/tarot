@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, AlertCircle, Sparkles, MessageCircle, Phone, MapPin, X, ChevronRight, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Sparkles, MessageCircle, Phone, MapPin, X, ChevronRight, ExternalLink } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import { trackEvent } from '../../services/analytics';
 
@@ -325,15 +325,9 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                             <div className="text-center mb-6">
                                                 <div className="text-4xl font-extrabold text-teal-accent">Pay As You Like</div>
                                             </div>
-                                            <p className="text-text-light text-center text-sm mb-4 flex-grow">Bayar sesukamu, dapat <b>1 pertanyaan</b> yang dijawab melalui voice note via WhatsApp.</p>
-                                            <div className="bg-teal-accent/10 border border-teal-accent/20 p-3 rounded-lg mb-6">
-                                                <p className="text-xs text-teal-accent/90 flex gap-2">
-                                                    <AlertCircle className="w-4 h-4 shrink-0" />
-                                                    <span>Klik tombol di bawah untuk chat via WhatsApp dan sebutkan harga pilihanmu.</span>
-                                                </p>
-                                            </div>
+                                            <p className="text-text-light text-center text-sm mb-6 flex-grow">Bayar sesukamu, dapat <b>1 pertanyaan</b> yang dijawab melalui voice note via WhatsApp.</p>
                                             <div className="mt-auto">
-                                                <a href={`https://wa.me/6287786280310?text=${encodeURIComponent('Kak aku mau yang promo Operation Happy Birthday 2026 yang pay as u like untuk 1 pertanyaan yaah 😁.')}`} target="_blank" rel="noopener noreferrer" onClick={handleHappyBirthday} className={tealButtonClass}>Ambil Promo Ini</a>
+                                                <a href={`https://wa.me/6287786280310?text=${encodeURIComponent('Kak aku mau yang promo Operation Happy Birthday 2026 yang pay as u like untuk 1 pertanyaan yaah.')}`} target="_blank" rel="noopener noreferrer" onClick={handleHappyBirthday} className={tealButtonClass}>Ambil Promo Ini</a>
                                             </div>
                                         </div>
                                     </div>
