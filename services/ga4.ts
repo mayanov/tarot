@@ -183,7 +183,7 @@ const processReports = (reports: any[]) => {
         "1 Question Chat", "30-Min Call", "60-Min Call", "Meetup Session"
     ];
     const GLOBAL_KEYS = [
-        "3-Card Reading", "5-Card Reading", "Live Call Session"
+        "Operation Happy Birthday (Global)", "3-Card Reading", "5-Card Reading", "Live Call Session"
     ];
 
     // Friendly Display Name Mappings (User asked for specific display names)
@@ -198,7 +198,8 @@ const processReports = (reports: any[]) => {
         "Meetup Session": "Meetup Session",
         "3-Card Reading": "3 Cards Reading",
         "5-Card Reading": "5 Cards Reading",
-        "Live Call Session": "Call"
+        "Live Call Session": "Call",
+        "Operation Happy Birthday (Global)": "Happy Birthday"
     };
 
     // Initialize counts with 0

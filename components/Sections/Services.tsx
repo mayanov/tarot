@@ -28,6 +28,14 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             { content_name: '5-Card Reading', value: 20.00, currency: 'USD', content_category: 'Global Service' }
         );
     };
+    const handleHappyBirthdayGlobal = () => {
+        trackEvent(
+            'begin_checkout',
+            { item_name: 'Operation Happy Birthday (Global)', market: 'Global' },
+            'InitiateCheckout',
+            { content_name: 'Operation Happy Birthday (Global)', currency: 'USD', content_category: 'Global Service' }
+        );
+    };
     const handleBookLive = () => {
         trackEvent(
             'schedule',
@@ -170,6 +178,27 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
 
                 {!isIndonesian ? (
                     /* --- GLOBAL (USD) LAYOUT --- */
+                    <div className="space-y-10">
+                    {/* Operation Happy Birthday */}
+                    <FadeIn className="max-w-md mx-auto">
+                        <div className="group relative h-full">
+                            <div className="absolute inset-0 bg-gradient-to-b from-teal-accent/20 to-transparent rounded-3xl blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
+                            <div className="relative bg-surface-1 border-2 border-teal-accent/50 flex flex-col h-full p-6 rounded-2xl hover:border-teal-accent transition duration-300 shadow-[0_0_20px_rgba(129,244,255,0.1)]">
+                                <div className="absolute top-0 right-0 bg-teal-accent text-[#05050A] font-bold px-3 py-1 text-xs rounded-bl-lg">PROMO</div>
+                                <div className="mb-4 pt-4 text-center">
+                                    <h3 className="text-xl font-bold text-white font-serif">Operation Happy Birthday</h3>
+                                    <p className="text-xs uppercase tracking-wider text-teal-accent font-bold mt-1">Birthday Special</p>
+                                </div>
+                                <div className="text-center mb-6">
+                                    <div className="text-4xl font-extrabold text-teal-accent">Pay As You Like</div>
+                                </div>
+                                <p className="text-text-light text-center text-sm mb-6">Pay what you like and get <b>1 question</b>, answered with a voice note via WhatsApp.</p>
+                                <div className="mt-auto">
+                                    <a href={`https://wa.me/6287786280310?text=${encodeURIComponent("Hi! I'd like the Operation Happy Birthday 2026 promo, pay as you like for 1 question.")}`} target="_blank" rel="noopener noreferrer" onClick={handleHappyBirthdayGlobal} className={tealButtonClass}>Claim This Promo</a>
+                                </div>
+                            </div>
+                        </div>
+                    </FadeIn>
                     <div className="grid gap-6 items-stretch grid-cols-1 lg:grid-cols-3">
                         {/* 1. Basic (3-CARD SPREAD) */}
                         <FadeIn className="h-full">
@@ -251,6 +280,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 </div>
                             </div>
                         </FadeIn>
+                    </div>
                     </div>
                 ) : (
                     /* --- INDONESIA (IDR) LAYOUT - GROUPED CATEGORIES --- */
