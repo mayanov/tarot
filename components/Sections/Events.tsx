@@ -18,9 +18,10 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
   // Original list in chronological order (2016 -> 2025)
   const rawEventList = [
+    { year: "2016", title: "Tarot Reading @ Horizon Radio", loc: "Prasetiya Mulya Business School" },
     { year: "2016", title: "Music Night 2016: Rollin With The Homies", loc: "Prasetiya Mulya Business School" },
+    { year: "2017", title: "Tarot Reading @ Horizon Radio", loc: "Prasetiya Mulya Business School" },
     { year: "2017", title: "Music Night 2017: Music Night Getaway", loc: "Prasetiya Mulya Business School" },
-    { year: "2016-2017", title: "Tarot Reading @ Horizon Radio", loc: "Prasetiya Mulya Business School" },
     { year: "2019", title: "Bincang: Komunitas dan Profesi Tarot", loc: "Perpusnas Expo" },
     { year: "2019", title: "Halloweekend 2019", loc: "Lobbyn Sky Terrace" },
     { year: "2019", title: "Halloween Event 2019", loc: "Ibis Styles Simatupang" },
