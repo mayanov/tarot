@@ -116,16 +116,13 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                         </div>
                         <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{ROMAN[i] ?? ''}</span>
                         <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight ${big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
-                        {g.blurb && <p className={`relative mt-1.5 text-center text-ink/55 font-light leading-snug ${big ? 'text-[13px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
+                        {(g.detail || g.blurb) && <p className={`relative mt-1.5 text-center text-ink/60 font-light leading-snug ${big ? 'text-[13px]' : 'text-[10.5px] line-clamp-2'}`}>{g.detail || g.blurb}</p>}
 
                         <ul className={`relative flex-1 min-h-0 overflow-y-auto ${big ? 'mt-4 space-y-3' : 'mt-3 space-y-2.5'}`}>
                             {g.offers.map((o: any, oi: number) => (
-                                <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0">
-                                    <div className="flex items-baseline justify-between gap-3">
-                                        <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
-                                        <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
-                                    </div>
-                                    {o.desc && <p className={`mt-1 text-ink/60 font-light leading-snug ${big ? 'text-[12.5px]' : 'text-[10.5px] line-clamp-2'}`}>{o.desc}</p>}
+                                <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0 flex items-baseline justify-between gap-3">
+                                    <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
+                                    <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
                                 </li>
                             ))}
                         </ul>
@@ -373,6 +370,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: 'service-special', type: 'Edisi Spesial', tags: ['PDF', 'Musiman'], seasonal: true,
                 blurb: 'Bacaan tematik & musiman, dikirim rapi sebagai PDF via WhatsApp.',
+                detail: 'Bacaan tematik sesuai momen, membahas gambaran umum, karier & keuangan, hingga percintaan, lengkap dengan saran strategis. Hasilnya dikirim sebagai PDF via WhatsApp dalam 2 hari kerja.',
                 priceLabel: 'Rp 250K',
                 offers: [
                     {
@@ -386,22 +384,20 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: 'service-chat', type: 'Konsultasi via Chat', tags: ['Chat', 'WhatsApp'],
                 blurb: 'Konsultasi via WhatsApp Chat. Harga per pertanyaan — pertanyaan dapat ditabung untuk lain waktu.',
+                detail: 'Kirim pertanyaan dan konteks singkat lewat WhatsApp, lalu saya balas dengan analisa tertulis yang mendalam. Cocok untuk pertanyaan spesifik tanpa harus ngobrol langsung. Pertanyaan yang belum dipakai bisa ditabung untuk lain waktu.',
                 priceLabel: 'Rp 140rb–315rb',
                 offers: [
                     {
                         name: '1 Pertanyaan', price: 'Rp 140K',
-                        desc: 'Solusi kilat untuk satu pertanyaan mendesak yang butuh jawaban segera.',
                         book: [{ href: 'https://lynk.id/mayanovtarot/AKbGK0X', onClick: handleChat1Question }],
                     },
                     {
                         name: '3 Pertanyaan', price: 'Rp 315K',
-                        desc: 'Kirim pertanyaanmu, saya balas dengan analisa mendalam via WhatsApp. Pertanyaan bisa ditabung untuk lain waktu.',
                         book: [{ href: 'https://lynk.id/mayanovtarot/XBpJGb5', onClick: handleChat3Question }],
                     },
                     {
                         name: 'Beli 3 Dapat 5 Pertanyaan', price: 'Rp 315K',
                         badge: 'Promo', badgeTone: 'bg-moon/10 text-moon',
-                        desc: 'Bayar 3, dapat 5 pertanyaan. Semua pertanyaan dipakai di hari yang sama.',
                         features: 'Bayar 3, dapat 5 pertanyaan (dipakai di hari yang sama).',
                         book: [{ href: 'http://lynk.id/mayanovtarot/mm7ykgdwndez/', onClick: handlePromoBuy3Get5 }],
                     },
@@ -410,16 +406,15 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: 'service-call', type: 'Panggilan Suara & Video', tags: ['Video', 'Real-time'],
                 blurb: 'Ngobrol langsung via call / video — tak terbatas jumlah pertanyaan.',
+                detail: 'Ngobrol langsung via WhatsApp Call atau Google Meet, sesuai pilihanmu. Bebas bertanya sebanyak yang muat dalam durasi sesi, cocok untuk curhat lebih leluasa dan membedah masalah sampai ke akarnya.',
                 priceLabel: 'Rp 220rb–360rb',
                 offers: [
                     {
                         name: '30-Min Call', price: 'Rp 220K',
-                        desc: 'Ngobrol langsung 30 menit via WhatsApp Call/GMeet. Tidak terbatas jumlah pertanyaan — curhat lebih nyaman dan leluasa.',
                         book: [{ platform: 'Lynk.id', href: 'https://lynk.id/mayanovtarot/9ANjbJE', onClick: handleCall30Lynk }, { platform: 'Picktime', href: 'https://www.picktime.com/mayanovtarot', onClick: handleCall30Picktime }],
                     },
                     {
                         name: '60-Min Call', price: 'Rp 360K',
-                        desc: 'Ngobrol langsung 60 menit via WhatsApp Call/GMeet. Tidak terbatas jumlah pertanyaan — bedah masalahmu sampai ke akarnya.',
                         book: [{ platform: 'Lynk.id', href: 'https://lynk.id/mayanovtarot/gw0kzbA', onClick: handleCall60Lynk }, { platform: 'Picktime', href: 'https://www.picktime.com/mayanovtarot', onClick: handleCall60Picktime }],
                     },
                 ],
@@ -427,17 +422,16 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: 'service-meetup', type: 'Sesi Tatap Muka', tags: ['Jaksel', '1 Jam'],
                 blurb: 'Temu langsung di Jakarta Selatan — energi lebih terasa, analisa lebih personal.',
+                detail: 'Sesi tarot reading tatap muka di Jakarta Selatan. Energi lebih terasa dan analisa lebih personal. Minimal 1 jam, bisa diperpanjang per jam kalau masih ada yang ingin dibahas.',
                 mapUrl: 'https://maps.app.goo.gl/LE2YwZiM2exhqunh8',
                 priceLabel: 'Rp 450K',
                 offers: [
                     {
                         name: 'Jam Pertama', price: 'Rp 450K',
-                        desc: 'Sesi tarot reading temu langsung di Jakarta Selatan. Energi lebih terasa, analisa lebih personal.',
                         book: [{ href: 'https://www.picktime.com/mayanovtarot', onClick: handleMeetup }],
                     },
                     {
                         name: 'Jam Berikutnya', sub: 'per jam', price: 'Rp 360K',
-                        desc: 'Tambahan waktu setelah jam pertama, kalau masih ada yang ingin dibahas.',
                         book: [],
                     },
                 ],
@@ -447,6 +441,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: '', type: '3-Card Spread', tags: ['Quick', '24h'],
                 blurb: 'A quick, direct check-in on one specific question.',
+                detail: 'Three cards on one specific question, direct and to the point. You get a photo of your spread and a written reading within 24 hours.',
                 priceLabel: '$12',
                 offers: [
                     {
@@ -460,6 +455,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: '', type: '5-Card Deep', tags: ['In-depth', 'Popular'],
                 blurb: "The bigger picture — hidden influences and what's coming next.",
+                detail: "A five-card spread on one question, looking at the bigger picture, hidden influences and what's coming next. Includes a high-res photo of your cards and priority delivery within 24 hours.",
                 priceLabel: '$20',
                 offers: [
                     {
@@ -473,6 +469,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: '', type: 'Live Session', tags: ['Live', '30 min'],
                 blurb: 'Talk it out live on Google Meet and go as deep as you want.',
+                detail: 'A 30-minute live session on Google Meet. Ask as many questions as we can fit, with real-time back-and-forth and no script.',
                 priceLabel: '$45',
                 offers: [
                     {
