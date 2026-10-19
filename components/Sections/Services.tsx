@@ -120,9 +120,12 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 
                         <ul className={`relative flex-1 min-h-0 overflow-y-auto ${big ? 'mt-4 space-y-3' : 'mt-3 space-y-2.5'}`}>
                             {g.offers.map((o: any, oi: number) => (
-                                <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0 flex items-baseline justify-between gap-3">
-                                    <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
-                                    <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
+                                <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0">
+                                    <div className="flex items-baseline justify-between gap-3">
+                                        <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
+                                        <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
+                                    </div>
+                                    {o.desc && <p className={`mt-1 text-ink/60 font-light leading-snug ${big ? 'text-[12.5px]' : 'text-[10.5px] line-clamp-2'}`}>{o.desc}</p>}
                                 </li>
                             ))}
                         </ul>
@@ -387,15 +390,18 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 offers: [
                     {
                         name: '1 Pertanyaan', price: 'Rp 140K',
+                        desc: 'Solusi kilat untuk satu pertanyaan mendesak yang butuh jawaban segera.',
                         book: [{ href: 'https://lynk.id/mayanovtarot/AKbGK0X', onClick: handleChat1Question }],
                     },
                     {
                         name: '3 Pertanyaan', price: 'Rp 315K',
+                        desc: 'Kirim pertanyaanmu, saya balas dengan analisa mendalam via WhatsApp. Pertanyaan bisa ditabung untuk lain waktu.',
                         book: [{ href: 'https://lynk.id/mayanovtarot/XBpJGb5', onClick: handleChat3Question }],
                     },
                     {
                         name: 'Beli 3 Dapat 5 Pertanyaan', price: 'Rp 315K',
                         badge: 'Promo', badgeTone: 'bg-moon/10 text-moon',
+                        desc: 'Bayar 3, dapat 5 pertanyaan. Semua pertanyaan dipakai di hari yang sama.',
                         features: 'Bayar 3, dapat 5 pertanyaan (dipakai di hari yang sama).',
                         book: [{ href: 'http://lynk.id/mayanovtarot/mm7ykgdwndez/', onClick: handlePromoBuy3Get5 }],
                     },
@@ -408,10 +414,12 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 offers: [
                     {
                         name: '30-Min Call', price: 'Rp 220K',
+                        desc: 'Ngobrol langsung 30 menit via WhatsApp Call/GMeet. Tidak terbatas jumlah pertanyaan — curhat lebih nyaman dan leluasa.',
                         book: [{ platform: 'Lynk.id', href: 'https://lynk.id/mayanovtarot/9ANjbJE', onClick: handleCall30Lynk }, { platform: 'Picktime', href: 'https://www.picktime.com/mayanovtarot', onClick: handleCall30Picktime }],
                     },
                     {
                         name: '60-Min Call', price: 'Rp 360K',
+                        desc: 'Ngobrol langsung 60 menit via WhatsApp Call/GMeet. Tidak terbatas jumlah pertanyaan — bedah masalahmu sampai ke akarnya.',
                         book: [{ platform: 'Lynk.id', href: 'https://lynk.id/mayanovtarot/gw0kzbA', onClick: handleCall60Lynk }, { platform: 'Picktime', href: 'https://www.picktime.com/mayanovtarot', onClick: handleCall60Picktime }],
                     },
                 ],
@@ -424,10 +432,12 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 offers: [
                     {
                         name: 'Jam Pertama', price: 'Rp 450K',
+                        desc: 'Sesi tarot reading temu langsung di Jakarta Selatan. Energi lebih terasa, analisa lebih personal.',
                         book: [{ href: 'https://www.picktime.com/mayanovtarot', onClick: handleMeetup }],
                     },
                     {
                         name: 'Jam Berikutnya', sub: 'per jam', price: 'Rp 360K',
+                        desc: 'Tambahan waktu setelah jam pertama, kalau masih ada yang ingin dibahas.',
                         book: [],
                     },
                 ],
