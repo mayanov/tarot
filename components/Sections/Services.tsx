@@ -118,19 +118,33 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                         <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight ${big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
                         {g.blurb && <p className={`relative mt-1 text-center text-ink/55 font-light leading-snug ${big ? 'text-[13px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
 
-                        <ul className={`relative flex-1 min-h-0 overflow-y-auto ${big ? 'mt-4 space-y-3' : 'mt-3 space-y-2.5'}`}>
-                            {g.offers.map((o: any, oi: number) => (
-                                <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0 flex items-baseline justify-between gap-3">
-                                    <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
-                                    <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
-                                </li>
-                            ))}
-                        </ul>
+                        <div className={`relative flex-1 min-h-0 overflow-y-auto ${big ? 'mt-4' : 'mt-3'}`}>
+                            <ul className={big ? 'space-y-3' : 'space-y-2.5'}>
+                                {g.offers.map((o: any, oi: number) => (
+                                    <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0 flex items-baseline justify-between gap-3">
+                                        <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
+                                        <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
+                                    </li>
+                                ))}
+                            </ul>
 
-                        {/* the fuller explanation of the service, under its options */}
-                        {big && g.detail && (
-                            <p style={{ borderColor: `${accent}26` }} className="relative shrink-0 mt-3 pt-3 border-t text-center text-ink/65 font-light leading-relaxed text-[12.5px]">{g.detail}</p>
-                        )}
+                            {/* what the service includes — short points in a soft panel tinted with the card's colour */}
+                            {big && g.points?.length > 0 && (
+                                <div className="mt-5 rounded-[0.7rem] px-4 py-3.5" style={{ backgroundColor: `${accent}0d` }}>
+                                    <span className="block text-[10px] font-medium tracking-[0.18em] uppercase" style={{ color: accent }}>
+                                        {isIndonesian ? 'Yang kamu dapat' : 'What you get'}
+                                    </span>
+                                    <ul className="mt-2.5 space-y-2">
+                                        {g.points.map((pt: string, pi: number) => (
+                                            <li key={pi} className="flex items-start gap-2.5 text-[13px] leading-snug text-ink/75">
+                                                <span aria-hidden className="mt-[0.4em] w-[5px] h-[5px] rotate-45 shrink-0" style={{ backgroundColor: accent }} />
+                                                <span>{pt}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* booking button — OUTSIDE the frame, like a tarot card's title label */}
@@ -375,7 +389,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: 'service-special', type: 'Edisi Spesial', tags: ['PDF', 'Musiman'], seasonal: true,
                 blurb: 'Bacaan tematik musiman, dikirim sebagai PDF.',
-                detail: 'Membahas gambaran umum, karier & keuangan, hingga percintaan sesuai momennya, lengkap dengan saran strategis. Hasilnya dikirim via WhatsApp dalam 2 hari kerja.',
+                points: ['Gambaran umum sesuai momennya', 'Karier & keuangan, hingga percintaan', 'Saran strategis yang bisa dijalankan', 'PDF via WhatsApp, 2 hari kerja'],
                 priceLabel: 'Rp 250K',
                 offers: [
                     {
@@ -389,7 +403,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: 'service-chat', type: 'Konsultasi via Chat', tags: ['Chat', 'WhatsApp'],
                 blurb: 'Tanya-jawab tertulis via WhatsApp, per pertanyaan.',
-                detail: 'Kirim pertanyaan dan konteks singkat lewat WhatsApp, lalu saya balas dengan analisa tertulis yang mendalam. Cocok untuk pertanyaan spesifik tanpa harus ngobrol langsung. Pertanyaan yang belum dipakai bisa ditabung untuk lain waktu.',
+                points: ['Analisa tertulis yang mendalam', 'Cocok untuk pertanyaan spesifik', 'Tanpa harus ngobrol langsung', 'Sisa pertanyaan bisa ditabung'],
                 priceLabel: 'Rp 140rb–315rb',
                 offers: [
                     {
@@ -411,7 +425,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: 'service-call', type: 'Panggilan Suara & Video', tags: ['Video', 'Real-time'],
                 blurb: 'Ngobrol langsung via call atau video.',
-                detail: 'Pilih WhatsApp Call atau Google Meet. Bebas bertanya sebanyak yang muat dalam durasi sesi, cocok untuk curhat lebih leluasa dan membedah masalah sampai ke akarnya.',
+                points: ['Via WhatsApp Call atau Google Meet', 'Bebas bertanya selama sesi', 'Curhat lebih leluasa', 'Bedah masalah sampai ke akarnya'],
                 priceLabel: 'Rp 220rb–360rb',
                 offers: [
                     {
@@ -427,7 +441,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: 'service-meetup', type: 'Sesi Tatap Muka', tags: ['Jaksel', '1 Jam'],
                 blurb: 'Sesi tatap muka di Jakarta Selatan.',
-                detail: 'Ketemu langsung bikin energi lebih terasa dan analisa lebih personal. Minimal 1 jam, bisa diperpanjang per jam kalau masih ada yang ingin dibahas.',
+                points: ['Energi lebih terasa', 'Analisa lebih personal', 'Minimal 1 jam', 'Bisa diperpanjang per jam'],
                 mapUrl: 'https://maps.app.goo.gl/LE2YwZiM2exhqunh8',
                 priceLabel: 'Rp 450K',
                 offers: [
@@ -446,7 +460,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: '', type: '3-Card Spread', tags: ['Quick', '24h'],
                 blurb: 'A quick check-in on one question.',
-                detail: 'Three cards, direct and to the point. You get a photo of your spread and a written reading within 24 hours.',
+                points: ['Three-card spread', 'Photo of your spread', 'Written reading within 24h'],
                 priceLabel: '$12',
                 offers: [
                     {
@@ -460,7 +474,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: '', type: '5-Card Deep', tags: ['In-depth', 'Popular'],
                 blurb: 'An in-depth look at one question.',
-                detail: "Five cards on the bigger picture, hidden influences and what's coming next. Includes a high-res photo of your cards and priority delivery within 24 hours.",
+                points: ['Bigger picture & hidden influences', "What's coming next", 'High-res photo of your cards', 'Priority delivery within 24h'],
                 priceLabel: '$20',
                 offers: [
                     {
@@ -474,7 +488,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {
                 id: '', type: 'Live Session', tags: ['Live', '30 min'],
                 blurb: 'A live 30-minute call on Google Meet.',
-                detail: 'Ask as many questions as we can fit, with real-time back-and-forth and no script.',
+                points: ['Ask as many questions as we can fit', 'Real-time back-and-forth', 'No script, natural flow'],
                 priceLabel: '$45',
                 offers: [
                     {
