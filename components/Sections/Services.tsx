@@ -642,17 +642,18 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                                 const isLast = i === steps.length - 1;
                                 return (
                                 <li key={i} className={`group animate-fade-up ${isLast ? 'col-span-2 lg:col-span-1' : ''}`} style={{ animationDelay: `${i * 80}ms` }}>
-                                    {/* number + title side by side, so each step stays short */}
-                                    <div className={`flex items-center gap-3 ${isLast ? 'justify-center lg:justify-start' : ''}`}>
+                                    {/* number + title side by side, so each step stays short — a bare
+                                        italic numeral (no badge) sitting right beside the title */}
+                                    <div className={`flex items-baseline gap-1.5 md:gap-2 ${isLast ? 'justify-center lg:justify-start' : ''}`}>
                                         <span
                                             aria-hidden
-                                            className="shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-moon/10 text-moon grid place-items-center font-elegant font-semibold text-sm md:text-base leading-none transition-colors duration-500 group-hover:bg-moon/[0.16]"
+                                            className="shrink-0 font-elegant italic font-medium text-moon/80 text-base md:text-lg leading-none tabular-nums transition-colors duration-500 group-hover:text-moon"
                                         >
                                             {String(i + 1).padStart(2, '0')}
                                         </span>
                                         <h4 className="text-base md:text-lg font-serif font-semibold leading-tight text-ink tracking-tight">{step.title}</h4>
                                     </div>
-                                    <p className={`mt-2.5 text-sm md:text-[0.95rem] leading-relaxed font-light text-ink/60 ${isLast ? 'text-center lg:text-left' : ''}`}>{step.desc}</p>
+                                    <p className={`mt-1.5 md:mt-2 text-sm md:text-[0.95rem] leading-relaxed font-light text-ink/60 ${isLast ? 'text-center lg:text-left' : ''}`}>{step.desc}</p>
                                 </li>
                                 );
                             })}
