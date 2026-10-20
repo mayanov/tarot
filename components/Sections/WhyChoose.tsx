@@ -52,10 +52,10 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             </p>
           </FadeIn>
 
-          {/* Editorial list — no cards, no feature icons: two calm centered columns
-              of big serif statements, each with a small lowercase italic label as a
-              quiet kicker above it. Compact but still magazine, not a feature grid. */}
-          <div className="mt-14 md:mt-20 mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-x-16 lg:gap-x-24 gap-y-10 md:gap-y-14">
+          {/* Editorial list — no cards, no feature icons: calm centered columns (two on
+              tablets, three on bigger screens) of big serif statements, each with a small
+              lowercase italic label as a quiet kicker above it. Magazine, not a feature grid. */}
+          <div className="mt-14 md:mt-20 mx-auto max-w-4xl lg:max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 lg:gap-x-14 gap-y-10 md:gap-y-14">
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
                 <div className="group/row text-center">
@@ -64,7 +64,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
                     {reason.label}
                   </span>
                   {/* the statement does the talking */}
-                  <p className="mt-2.5 font-elegant text-ink text-[1.5rem] md:text-[1.95rem] leading-[1.2] tracking-[-0.015em]">
+                  <p className="mt-2.5 font-elegant text-ink text-[1.5rem] md:text-[1.95rem] lg:text-[1.6rem] xl:text-[1.95rem] leading-[1.2] tracking-[-0.015em]">
                     {reason.stat}
                   </p>
                 </div>
