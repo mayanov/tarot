@@ -60,8 +60,11 @@ const fromPrice = (g: any): string => {
 
 // A single tarot card: front = the card face (motif + name + cheapest price), back =
 // the booking options. `big` scales it up for the full-screen "drawn card" reveal.
-const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean; big?: boolean; onBook?: () => void }> = ({ g, i, flipped, onFlip, isIndonesian, big = false, onBook }) => {
+// `fill` makes the card take its parent's exact size instead of keeping the 5:8 shape (used on phones).
+const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean; big?: boolean; fill?: boolean; compact?: boolean; onBook?: () => void }> = ({ g, i, flipped, onFlip, isIndonesian, big = false, fill = false, compact = false, onBook }) => {
   const accent = CAT_ACCENT[i % CAT_ACCENT.length];
+  // `compact` squeezes the big card's back for short phone screens so nothing needs scrolling
+  const tight = big && compact;
   return (
     <div
         role="button"
@@ -70,7 +73,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
         aria-label={g.type}
         onClick={onFlip}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onFlip(); } }}
-        className="group/card relative block w-full aspect-[5/8] cursor-pointer select-none [perspective:1600px] focus:outline-none"
+        className={`group/card relative block w-full ${fill ? 'h-full' : 'aspect-[5/8]'} cursor-pointer select-none [perspective:1600px] focus:outline-none`}
     >
         <div
             className="relative h-full w-full transition-transform duration-[650ms] [transform-style:preserve-3d] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]"
@@ -104,39 +107,43 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                 {/* soft accent glow from the top for depth */}
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-20" style={{ background: `radial-gradient(85% 100% at 50% 0%, ${accent}1f, transparent 72%)` }} />
 
-                <div className={`relative h-full flex flex-col ${big ? 'p-5' : 'p-3.5'}`}>
+                <div className={`relative h-full flex flex-col ${tight ? 'p-3' : big ? 'p-5' : 'p-3.5'}`}>
                     {/* FRAME — a tarot-style frame in the card's colour wrapping the content */}
-                    <div className={`relative flex-1 min-h-0 flex flex-col rounded-[0.9rem] border ${big ? 'px-5 pt-5 pb-5' : 'px-4 pt-4 pb-4'}`} style={{ borderColor: accent }}>
+                    <div className={`relative flex-1 min-h-0 flex flex-col rounded-[0.9rem] border ${tight ? 'px-4 pt-3.5 pb-3' : big ? 'px-5 pt-5 pb-5' : 'px-4 pt-4 pb-4'}`} style={{ borderColor: accent }}>
                         {/* inner keyline — the second frame line, in the card's colour */}
                         <div aria-hidden className="pointer-events-none absolute inset-[5px] rounded-[0.72rem] border" style={{ borderColor: `${accent}33` }} />
 
                         {/* crest — the card's mark at the top of the frame */}
-                        <div className="relative flex justify-center" style={{ color: accent }}>
-                            <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={big ? 'w-9' : 'w-7'} />
-                        </div>
-                        <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{ROMAN[i] ?? ''}</span>
-                        <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight ${big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
-                        {g.blurb && <p className={`relative mt-1 text-center text-ink/55 font-light leading-snug ${big ? 'text-[13px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
+                        {!tight && (
+                            <>
+                                <div className="relative flex justify-center" style={{ color: accent }}>
+                                    <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={big ? 'w-9' : 'w-7'} />
+                                </div>
+                                <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{ROMAN[i] ?? ''}</span>
+                            </>
+                        )}
+                        <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight ${tight ? 'text-[1.3rem]' : big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
+                        {g.blurb && <p className={`relative mt-1 text-center text-ink/55 font-light leading-snug ${tight ? 'text-[13px]' : big ? 'text-[14px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
 
-                        <div className={`relative flex-1 min-h-0 overflow-y-auto ${big ? 'mt-4' : 'mt-3'}`}>
-                            <ul className={big ? 'space-y-3' : 'space-y-2.5'}>
+                        <div className={`relative flex-1 min-h-0 overflow-y-auto ${tight ? 'mt-3' : big ? 'mt-4' : 'mt-3'}`}>
+                            <ul className={tight ? 'space-y-2' : big ? 'space-y-3' : 'space-y-2.5'}>
                                 {g.offers.map((o: any, oi: number) => (
-                                    <li key={oi} style={{ borderColor: `${accent}26` }} className="border-t first:border-t-0 pt-2.5 first:pt-0 flex items-baseline justify-between gap-3">
-                                        <span className={`font-medium leading-tight ${big ? 'text-[14px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
-                                        <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[15px]' : 'text-[12.5px]'}`}>{o.price}</span>
+                                    <li key={oi} style={{ borderColor: `${accent}26` }} className={`border-t first:border-t-0 ${tight ? 'pt-2' : 'pt-2.5'} first:pt-0 flex items-baseline justify-between gap-3`}>
+                                        <span className={`font-medium leading-tight ${big ? 'text-[15px]' : 'text-[12px]'}`}>{o.name}{o.sub && <span className="text-ink/45 font-light"> · {o.sub}</span>}</span>
+                                        <span style={{ color: accent }} className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-[16px]' : 'text-[12.5px]'}`}>{o.price}</span>
                                     </li>
                                 ))}
                             </ul>
 
                             {/* what the service includes — short points in a soft panel tinted with the card's colour */}
                             {big && g.points?.length > 0 && (
-                                <div className="mt-4 rounded-[0.7rem] px-4 py-3" style={{ backgroundColor: `${accent}0d` }}>
+                                <div className={`rounded-[0.7rem] px-4 ${tight ? 'mt-3 py-2.5' : 'mt-4 py-3'}`} style={{ backgroundColor: `${accent}0d` }}>
                                     <span className="block text-[10px] font-medium tracking-[0.18em] uppercase" style={{ color: accent }}>
                                         {isIndonesian ? 'Yang kamu dapat' : 'What you get'}
                                     </span>
-                                    <ul className="mt-2 space-y-1.5">
+                                    <ul className={tight ? 'mt-1.5 space-y-1' : 'mt-2 space-y-1.5'}>
                                         {g.points.map((pt: string, pi: number) => (
-                                            <li key={pi} className="flex items-start gap-2.5 text-[13px] leading-snug text-ink/75">
+                                            <li key={pi} className={`flex items-start gap-2.5 ${tight ? 'text-[13.5px]' : 'text-[14px]'} leading-snug text-ink/75`}>
                                                 <span aria-hidden className="mt-[0.4em] w-[5px] h-[5px] rotate-45 shrink-0" style={{ backgroundColor: accent }} />
                                                 <span>{pt}</span>
                                             </li>
@@ -148,12 +155,12 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                     </div>
 
                     {/* booking button — OUTSIDE the frame, like a tarot card's title label */}
-                    <div className={`flex flex-col gap-2 shrink-0 ${big ? 'pt-4' : 'pt-3'}`}>
+                    <div className={`flex flex-col gap-2 shrink-0 ${tight ? 'pt-3' : big ? 'pt-4' : 'pt-3'}`}>
                         <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onBook && onBook(); }}
                             style={{ backgroundColor: accent }}
-                            className={`w-full inline-flex items-center justify-center rounded-full text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
+                            className={`w-full inline-flex items-center justify-center rounded-full text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${tight ? 'py-2.5 text-sm' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
                         >
                             {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                         </button>
@@ -164,7 +171,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
                                 style={{ ['--acc' as any]: accent }}
-                                className={`w-full inline-flex items-center justify-center rounded-full border border-[var(--acc)] text-[var(--acc)] font-medium hover:bg-[var(--acc)] hover:text-cream transition-colors duration-300 ${big ? 'py-2.5 text-[13px]' : 'py-2 text-[12px]'}`}
+                                className={`w-full inline-flex items-center justify-center rounded-full border border-[var(--acc)] text-[var(--acc)] font-medium hover:bg-[var(--acc)] hover:text-cream transition-colors duration-300 ${tight ? 'py-2 text-[13px]' : big ? 'py-2.5 text-[13px]' : 'py-2 text-[12px]'}`}
                             >
                                 {isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}
                             </a>
@@ -194,6 +201,14 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         ro.observe(el);
         return () => ro.disconnect();
     }, [isMobile]);
+    const [isShort, setIsShort] = useState(false); // short phone screen → compact card, one-row tabs
+    useEffect(() => {
+        const mq = window.matchMedia('(max-height: 719px)');
+        const on = () => setIsShort(mq.matches);
+        on();
+        mq.addEventListener('change', on);
+        return () => mq.removeEventListener('change', on);
+    }, []);
     useEffect(() => {
         const mq = window.matchMedia('(max-width: 767px)');
         const on = () => setIsMobile(mq.matches);
@@ -300,11 +315,11 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             {/* full-screen "drawn card" reveal — portaled to <body> so it sits above the
                 nav and blurs the WHOLE page; click anywhere outside to close */}
             {selected !== null && typeof document !== 'undefined' && createPortal(
-                <div className="fixed inset-0 z-[300] flex flex-col items-center justify-center gap-5 p-6 overflow-hidden" onClick={close} role="dialog" aria-modal="true">
+                <div className={`fixed inset-0 z-[300] flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden ${isShort ? 'gap-3 px-5 py-3' : 'gap-4 px-5 py-6'}`} onClick={close} role="dialog" aria-modal="true">
                     <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} />
                     <div
-                        className="relative aspect-[5/8]"
-                        style={{ height: 'min(78vh, 150vw, 38rem)' }}
+                        className={isMobile ? 'relative' : 'relative aspect-[5/8]'}
+                        style={isMobile ? { width: 'calc(100vw - 2.5rem)', height: `min(calc(100dvh - ${isShort ? '6.5rem' : '10rem'}), 36rem)` } : { height: 'min(82vh, 38rem)' }}
                         onTouchStart={onTouchStart}
                         onTouchEnd={onTouchEnd}
                     >
@@ -320,14 +335,14 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                     type="button"
                                     aria-label={isIndonesian ? `Lihat ${g.type}` : `See ${g.type}`}
                                     onClick={(e) => { e.stopPropagation(); switchTo(j); }}
-                                    className="absolute inset-0 rounded-[1.15rem] transition-[transform,opacity,filter] duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] opacity-70 hover:opacity-100 brightness-75 hover:brightness-95 focus:outline-none focus-visible:opacity-100"
+                                    className="absolute inset-0 rounded-[1.15rem] transition-[transform,opacity,filter] duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] brightness-[0.8] hover:brightness-100 focus:outline-none focus-visible:brightness-100"
                                     style={{
                                         transform: `translateX(${side * (38 + (depth - 1) * 9)}%) translateY(${depth * 3}%) rotate(${side * (7 + (depth - 1) * 4)}deg) scale(${0.86 - (depth - 1) * 0.05})`,
                                         zIndex: 10 - depth,
                                     }}
                                 >
                                     <span aria-hidden className="pointer-events-none block h-full w-full">
-                                        <TarotCard g={g} i={j} flipped={false} onFlip={() => {}} isIndonesian={isIndonesian} big />
+                                        <TarotCard g={g} i={j} flipped={false} onFlip={() => {}} isIndonesian={isIndonesian} big fill={isMobile} compact={isMobile && isShort} />
                                     </span>
                                 </button>
                             );
@@ -339,19 +354,19 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                             style={{ animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)' }}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <TarotCard g={groups[selected]} i={selected} flipped={revealed} onFlip={() => setRevealed((r) => !r)} onBook={() => bookGroup(groups[selected])} isIndonesian={isIndonesian} big />
+                            <TarotCard g={groups[selected]} i={selected} flipped={revealed} onFlip={() => setRevealed((r) => !r)} onBook={() => bookGroup(groups[selected])} isIndonesian={isIndonesian} big fill={isMobile} compact={isMobile && isShort} />
                         </div>
                     </div>
 
                     {/* service tabs — jump straight to another service by name */}
-                    <div className="relative z-30 flex flex-wrap justify-center gap-2 max-w-xl" onClick={(e) => e.stopPropagation()}>
+                    <div className={`relative z-30 flex gap-2 max-w-xl ${isMobile && isShort ? 'w-full flex-nowrap overflow-x-auto justify-start [scrollbar-width:none]' : 'flex-wrap justify-center'}`} onClick={(e) => e.stopPropagation()}>
                         {groups.map((g, j) => (
                             <button
                                 key={g.type}
                                 type="button"
                                 onClick={() => switchTo(j)}
                                 aria-current={j === selected}
-                                className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors duration-300 ${j === selected ? 'bg-cream text-ink' : 'bg-white/10 text-cream/85 hover:bg-white/20'}`}
+                                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors duration-300 ${j === selected ? 'bg-cream text-ink' : 'bg-white/10 text-cream/85 hover:bg-white/20'}`}
                             >
                                 {g.type}
                             </button>
