@@ -13,7 +13,7 @@ interface EventsProps {
 const EVENT_PHOTOS = ['/event-1.jpeg', '/event-2.jpeg', '/event-3.jpeg', '/event-4.jpeg'];
 
 const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
-  const [visibleCount, setVisibleCount] = useState(10);
+  const [showAll, setShowAll] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
 
   // Original list in chronological order (2016 -> 2025)
@@ -46,7 +46,9 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
 
   // Reverse list to show newest events first
   const eventList = [...rawEventList].reverse();
-  const displayedEvents = eventList.slice(0, visibleCount);
+  // Collapsed view shows only the two most recent years, so no year is cut off mid-list
+  const recentYears = [...new Set(eventList.map((ev) => ev.year))].slice(0, 2);
+  const displayedEvents = showAll ? eventList : eventList.filter((ev) => recentYears.includes(ev.year));
 
   // Group the shown events by year (list is already newest-first) for the timeline
   const timeline: { year: string; items: typeof eventList }[] = [];
@@ -94,12 +96,12 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       </div>
 
       {/* events history + CTAs — on the paper ground below the purple block */}
-      <div className="mx-auto px-8 pt-14 md:pt-20 pb-10 md:pb-14 relative z-10 text-ink">
+      <div className="mx-auto px-8 pt-10 md:pt-14 pb-10 md:pb-12 relative z-10 text-ink">
           {/* HEADER — now leads its own explanation on the paper ground, so the
               title and the event list read as one unit instead of the title being
               marooned up in the purple band */}
           <FadeIn>
-            <div className="mb-9 md:mb-12 max-w-3xl">
+            <div className="mb-6 md:mb-8 max-w-3xl">
               <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                 <MaskReveal>{isIndonesian ? "Event & collaboration" : "Community & events"}</MaskReveal>
               </h2>
@@ -109,7 +111,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
           <div>
             {timeline.map((grp, gi) => (
               <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 70} dir="up" distance={0.7}>
-                <div className="grid md:grid-cols-[7rem_1fr] gap-y-3 md:gap-x-12 md:items-start border-t border-ink/10 pt-6 md:pt-7 pb-7 md:pb-9">
+                <div className="grid md:grid-cols-[7rem_1fr] gap-y-3 md:gap-x-12 md:items-start border-t border-ink/10 pt-4 md:pt-5 pb-4 md:pb-5">
                   {/* year marker */}
                   <div className="font-elegant italic text-moon text-2xl md:text-[1.9rem] leading-none tracking-tight md:pt-1.5">
                     {grp.year}
@@ -119,7 +121,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                     {grp.items.map((event, ii) => (
                       <li
                         key={ii}
-                        className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2.5 border-t border-ink/10 first:border-t-0 first:pt-0"
+                        className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2 border-t border-ink/10 first:border-t-0 first:pt-0"
                       >
                         <h3 className="font-serif font-medium text-ink text-sm md:text-base leading-[1.25] transition-colors duration-500 group-hover:text-moon">
                           {event.title}
@@ -135,18 +137,18 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
             ))}
           </div>
 
-          <div className="mt-10 flex flex-wrap items-center gap-3">
+          <div className="mt-6 md:mt-8 flex flex-wrap items-center gap-3">
             {(() => {
-              const expanded = visibleCount >= eventList.length;
+              const expanded = showAll;
               return (
                 <button
                   onClick={() => {
                     if (expanded) {
-                      setVisibleCount(10);
+                      setShowAll(false);
                       // keep the viewer anchored to this section after it collapses
                       setTimeout(() => smoothScrollToId('events', 90), 60);
                     } else {
-                      setVisibleCount(eventList.length);
+                      setShowAll(true);
                     }
                   }}
                   className={`${btnSecondaryLight} inline-flex group gap-2 min-w-[11rem] px-7 py-3 text-sm`}
