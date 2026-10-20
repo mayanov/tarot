@@ -106,6 +106,15 @@ html.lenis body {
   from { opacity: 0; transform: translateY(34px) scale(0.84); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+/* switching to another card inside the reveal — it slides in from the side it came from */
+@keyframes tarotSwapFromRight {
+  from { opacity: 0; transform: translateX(18%) scale(0.92) rotate(4deg); }
+  to   { opacity: 1; transform: translateX(0) scale(1) rotate(0); }
+}
+@keyframes tarotSwapFromLeft {
+  from { opacity: 0; transform: translateX(-18%) scale(0.92) rotate(-4deg); }
+  to   { opacity: 1; transform: translateX(0) scale(1) rotate(0); }
+}
 /* occasional shooting star — a quick diagonal dart that fades, then a long gap.
    Travel direction (28deg down-right) matches the streak's own tilt so the tail
    trails the head instead of sliding sideways like a moving dash. */

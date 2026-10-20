@@ -130,11 +130,11 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 
                             {/* what the service includes — short points in a soft panel tinted with the card's colour */}
                             {big && g.points?.length > 0 && (
-                                <div className="mt-5 rounded-[0.7rem] px-4 py-3.5" style={{ backgroundColor: `${accent}0d` }}>
+                                <div className="mt-4 rounded-[0.7rem] px-4 py-3" style={{ backgroundColor: `${accent}0d` }}>
                                     <span className="block text-[10px] font-medium tracking-[0.18em] uppercase" style={{ color: accent }}>
                                         {isIndonesian ? 'Yang kamu dapat' : 'What you get'}
                                     </span>
-                                    <ul className="mt-2.5 space-y-2">
+                                    <ul className="mt-2 space-y-1.5">
                                         {g.points.map((pt: string, pi: number) => (
                                             <li key={pi} className="flex items-start gap-2.5 text-[13px] leading-snug text-ink/75">
                                                 <span aria-hidden className="mt-[0.4em] w-[5px] h-[5px] rotate-45 shrink-0" style={{ backgroundColor: accent }} />
@@ -204,6 +204,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
 
     // open: show the drawn card (front), then flip it to details
     const draw = (i: number) => {
+        setSwapDir(null);
         setSelected(i);
         setRevealed(false);
         requestAnimationFrame(() => requestAnimationFrame(() => setRevealed(true)));
@@ -211,11 +212,39 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const close = () => setSelected(null);
     const bookGroup = (g: any) => { close(); openBooking(BOOKING_MAP[g.type]); };
 
+    // switch to another service while the reveal is open — it arrives already showing its details
+    const [swapDir, setSwapDir] = useState<'left' | 'right' | null>(null);
+    const switchTo = (j: number) => {
+        if (selected === null || j === selected || j < 0 || j >= groups.length) return;
+        setSwapDir(j > selected ? 'right' : 'left');
+        setSelected(j);
+        setRevealed(true);
+    };
+    const switchRef = useRef(switchTo);
+    switchRef.current = switchTo;
+    const selectedRef = useRef(selected);
+    selectedRef.current = selected;
+
     useEffect(() => {
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') close();
+            if (selectedRef.current === null) return;
+            if (e.key === 'ArrowRight') switchRef.current(selectedRef.current + 1);
+            if (e.key === 'ArrowLeft') switchRef.current(selectedRef.current - 1);
+        };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, []);
+
+    // swipe left/right on the revealed card to move to the next/previous service
+    const touchX = useRef<number | null>(null);
+    const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; };
+    const onTouchEnd = (e: React.TouchEvent) => {
+        if (touchX.current === null || selected === null) return;
+        const dx = e.changedTouches[0].clientX - touchX.current;
+        touchX.current = null;
+        if (Math.abs(dx) > 50) switchTo(selected + (dx < 0 ? 1 : -1));
+    };
     useEffect(() => {
         document.body.style.overflow = selected !== null ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
@@ -271,14 +300,62 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             {/* full-screen "drawn card" reveal — portaled to <body> so it sits above the
                 nav and blurs the WHOLE page; click anywhere outside to close */}
             {selected !== null && typeof document !== 'undefined' && createPortal(
-                <div className="fixed inset-0 z-[300] flex items-center justify-center p-6" onClick={close} role="dialog" aria-modal="true">
+                <div className="fixed inset-0 z-[300] flex flex-col items-center justify-center gap-5 p-6 overflow-hidden" onClick={close} role="dialog" aria-modal="true">
                     <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} />
                     <div
                         className="relative aspect-[5/8]"
-                        style={{ height: 'min(84vh, 140vw, 40rem)', animation: 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)' }}
-                        onClick={(e) => e.stopPropagation()}
+                        style={{ height: 'min(78vh, 150vw, 38rem)' }}
+                        onTouchStart={onTouchStart}
+                        onTouchEnd={onTouchEnd}
                     >
-                        <TarotCard g={groups[selected]} i={selected} flipped={revealed} onFlip={() => setRevealed((r) => !r)} onBook={() => bookGroup(groups[selected])} isIndonesian={isIndonesian} big />
+                        {/* the other services, peeking out behind the drawn card — tap one to switch */}
+                        {groups.map((g, j) => {
+                            if (j === selected) return null;
+                            const d = j - selected;
+                            const side = Math.sign(d);
+                            const depth = Math.abs(d);
+                            return (
+                                <button
+                                    key={g.type}
+                                    type="button"
+                                    aria-label={isIndonesian ? `Lihat ${g.type}` : `See ${g.type}`}
+                                    onClick={(e) => { e.stopPropagation(); switchTo(j); }}
+                                    className="absolute inset-0 rounded-[1.15rem] transition-[transform,opacity,filter] duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] opacity-70 hover:opacity-100 brightness-75 hover:brightness-95 focus:outline-none focus-visible:opacity-100"
+                                    style={{
+                                        transform: `translateX(${side * (38 + (depth - 1) * 9)}%) translateY(${depth * 3}%) rotate(${side * (7 + (depth - 1) * 4)}deg) scale(${0.86 - (depth - 1) * 0.05})`,
+                                        zIndex: 10 - depth,
+                                    }}
+                                >
+                                    <span aria-hidden className="pointer-events-none block h-full w-full">
+                                        <TarotCard g={g} i={j} flipped={false} onFlip={() => {}} isIndonesian={isIndonesian} big />
+                                    </span>
+                                </button>
+                            );
+                        })}
+
+                        <div
+                            key={selected}
+                            className="relative z-20 h-full w-full"
+                            style={{ animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)' }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <TarotCard g={groups[selected]} i={selected} flipped={revealed} onFlip={() => setRevealed((r) => !r)} onBook={() => bookGroup(groups[selected])} isIndonesian={isIndonesian} big />
+                        </div>
+                    </div>
+
+                    {/* service tabs — jump straight to another service by name */}
+                    <div className="relative z-30 flex flex-wrap justify-center gap-2 max-w-xl" onClick={(e) => e.stopPropagation()}>
+                        {groups.map((g, j) => (
+                            <button
+                                key={g.type}
+                                type="button"
+                                onClick={() => switchTo(j)}
+                                aria-current={j === selected}
+                                className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors duration-300 ${j === selected ? 'bg-cream text-ink' : 'bg-white/10 text-cream/85 hover:bg-white/20'}`}
+                            >
+                                {g.type}
+                            </button>
+                        ))}
                     </div>
                 </div>,
                 document.body
