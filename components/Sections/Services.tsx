@@ -88,9 +88,9 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 
                 <div className="relative h-full flex flex-col items-center justify-between py-7 px-5 text-cream text-center">
                     <span className={`font-elegant italic text-cream/55 tracking-wide ${big ? 'text-base' : 'text-sm'}`}>{ROMAN[i] ?? ''}</span>
-                    <div className="flex flex-col items-center gap-5">
-                        <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={`${big ? 'w-20' : 'w-14 md:w-16'} text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]`} />
-                        <h3 className={`font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch] ${big ? 'text-[1.75rem]' : 'text-[1.3rem] md:text-[1.45rem]'}`}>{g.type}</h3>
+                    <div className={`flex flex-col items-center ${big ? 'gap-5' : 'gap-3 md:gap-5'}`}>
+                        <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={`${big ? 'w-20' : 'w-10 md:w-16'} text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]`} />
+                        <h3 className={`font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch] ${big ? 'text-[1.75rem]' : 'text-[1.1rem] md:text-[1.45rem]'}`}>{g.type}</h3>
                     </div>
                     <div className="flex flex-col items-center gap-1">
                         <span className="text-cream/45 text-[10.5px] tracking-[0.18em] uppercase">{isIndonesian ? 'Mulai dari' : 'From'}</span>
@@ -185,6 +185,15 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const [revealed, setRevealed] = useState(false); // overlay card flipped to details
     const [hovered, setHovered] = useState<number | null>(null);
     const [isMobile, setIsMobile] = useState(false);
+    const fanRef = useRef<HTMLDivElement | null>(null);
+    const [fanW, setFanW] = useState(1024);
+    useEffect(() => {
+        const el = fanRef.current;
+        if (!el) return;
+        const ro = new ResizeObserver(([e]) => setFanW(e.contentRect.width));
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, [isMobile]);
     useEffect(() => {
         const mq = window.matchMedia('(max-width: 767px)');
         const on = () => setIsMobile(mq.matches);
@@ -217,9 +226,11 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const fanStyle = (i: number): React.CSSProperties => {
         const o = i - center;
         const isHov = hovered === i;
-        const ty = isHov ? -30 : Math.abs(o) * 26;
+        // spread the cards as wide as the row allows (card is 216px) so each title stays readable
+        const step = n > 1 ? Math.min(196, Math.max(150, (fanW - 216 - 40) / (n - 1))) : 0;
+        const ty = isHov ? -30 : Math.abs(o) * 16;
         return {
-            transform: `translate(-50%, -50%) translateX(${o * 136}px) translateY(${ty}px) rotate(${o * 7}deg) scale(${isHov ? 1.05 : 1})`,
+            transform: `translate(-50%, -50%) translateX(${o * step}px) translateY(${ty}px) rotate(${o * 4}deg) scale(${isHov ? 1.05 : 1})`,
             zIndex: isHov ? 40 : 20 - Math.round(Math.abs(o)),
             transition: 'transform 0.5s cubic-bezier(0.22,1,0.36,1)',
         };
@@ -237,7 +248,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                 </div>
             ) : (
                 <div className="px-8">
-                    <div className="relative mx-auto h-[30rem] max-w-5xl">
+                    <div ref={fanRef} className="relative mx-auto h-[30rem] max-w-5xl">
                         {groups.map((g, i) => (
                             <div
                                 key={g.type}
