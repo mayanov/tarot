@@ -228,9 +228,9 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         const isHov = hovered === i;
         // spread the cards as wide as the row allows (card is 216px) so each title stays readable
         const step = n > 1 ? Math.min(196, Math.max(150, (fanW - 216 - 40) / (n - 1))) : 0;
-        const ty = isHov ? -30 : Math.abs(o) * 16;
+        const ty = isHov ? -30 : Math.abs(o) * 28;
         return {
-            transform: `translate(-50%, -50%) translateX(${o * step}px) translateY(${ty}px) rotate(${o * 4}deg) scale(${isHov ? 1.05 : 1})`,
+            transform: `translate(-50%, -50%) translateX(${o * step}px) translateY(${ty}px) rotate(${o * 8}deg) scale(${isHov ? 1.05 : 1})`,
             zIndex: isHov ? 40 : 20 - Math.round(Math.abs(o)),
             transition: 'transform 0.5s cubic-bezier(0.22,1,0.36,1)',
         };
