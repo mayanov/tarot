@@ -5,6 +5,7 @@ import FadeIn from '../UI/FadeIn';
 import { btnPrimaryDark, btnSecondaryDark } from '../UI/buttons';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
+import { stopLenis, startLenis } from '../UI/scroll';
 import { trackEvent } from '../../services/analytics';
 
 const REVEAL_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -248,10 +249,14 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         touchX.current = null;
         if (Math.abs(dx) > 50) switchTo(selected + (dx < 0 ? 1 : -1));
     };
+    // lock the page behind the reveal — pause smooth scroll (wheel/touch) as well as native scroll
+    const isOpen = selected !== null;
     useEffect(() => {
-        document.body.style.overflow = selected !== null ? 'hidden' : '';
-        return () => { document.body.style.overflow = ''; };
-    }, [selected]);
+        if (!isOpen) return;
+        stopLenis();
+        document.body.style.overflow = 'hidden';
+        return () => { startLenis(); document.body.style.overflow = ''; };
+    }, [isOpen]);
 
     const n = groups.length;
     const center = (n - 1) / 2;
@@ -303,7 +308,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             {/* full-screen "drawn card" reveal — portaled to <body> so it sits above the
                 nav and blurs the WHOLE page; click anywhere outside to close */}
             {selected !== null && typeof document !== 'undefined' && createPortal(
-                <div className={`fixed inset-0 z-[300] flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden gap-4 px-5 py-5`} onClick={close} role="dialog" aria-modal="true">
+                <div data-lenis-prevent className={`fixed inset-0 z-[300] overscroll-none touch-none flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden gap-4 px-5 py-5`} onClick={close} role="dialog" aria-modal="true">
                     <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} />
                     <div
                         className="relative aspect-[5/8]"
