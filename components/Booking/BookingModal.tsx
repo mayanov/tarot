@@ -3,7 +3,7 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
-import { SLOT_TIMES, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
+import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
 import { trackEvent } from '../../services/analytics';
 import { stopLenis, startLenis } from '../UI/scroll';
 
@@ -403,9 +403,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   ) : (
                   <div className="grid grid-cols-3 gap-2">
                     {visibleSlots.map((slot) => {
-                      // Block this start if the whole session span isn't free / doesn't fit the day.
+                      // Block this start if the session would run past closing time or overlaps a taken slot.
                       const span = slotSpan(slot, durationMin || 30);
-                      const isTaken = !span.every((s) => SLOT_TIMES.includes(s)) || span.some((s) => taken.includes(s));
+                      const isTaken = addMinutes(slot, durationMin || 30) > CLOSING_TIME || span.some((s) => taken.includes(s));
                       const active = time === slot;
                       return (
                         <button
