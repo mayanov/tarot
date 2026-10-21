@@ -22,24 +22,22 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const ctaRef = useRef<HTMLDivElement>(null);
   const dimRef = useRef<HTMLDivElement>(null);
 
-  // Scroll choreography — as the hero scrolls away it plays like a curtain:
-  //  • the whole stage (sky + masthead) stays almost pinned, so the About sheet
-  //    (rounded top, sits above) slides up OVER it like a card laid on top, while
-  //    the hero dims underneath as it gets covered;
-  //  • the masthead recedes into the sky — the moon rises off first, the subtitle
-  //    and CTA fade early, and the title shrinks back and softly blurs out last;
-  // Transform/opacity only (compositor-cheap); blur is quantized so it rasterizes rarely.
+  // Scroll choreography — as the hero scrolls away:
+  //  • the starry sky stays almost pinned, so the About sheet (rounded top, sits
+  //    above) slides up OVER it like a card laid on top, dimming the sky as it goes;
+  //  • everything else — moon, title, subtitle, CTA — rises up and fades out, each
+  //    piece a touch faster than the one below it so they lift off in a gentle cascade.
+  // Transform/opacity only, so it stays on the compositor.
   useEffect(() => {
     const stage = skyRef.current;
     const el = contentRef.current;
     if (!stage || !el) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     let raf = 0;
-    let lastBlur = -1;
-    const set = (node: HTMLElement | null, transform: string, opacity: number) => {
+    const lift = (node: HTMLElement | null, y: number, speed: number, fadeBy: number) => {
       if (!node) return;
-      node.style.transform = transform;
-      node.style.opacity = String(Math.max(0, Math.min(1, opacity)).toFixed(3));
+      node.style.transform = `translate3d(0, ${(-y * speed).toFixed(1)}px, 0)`;
+      node.style.opacity = Math.max(0, 1 - y / fadeBy).toFixed(3);
     };
     const onScroll = () => {
       if (raf) return;
@@ -51,23 +49,15 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         const p = Math.min(Math.max(y / h, 0), 1);
         const e = p * p * (3 - 2 * p); // smoothstep
 
-        // curtain: the stage lags behind the page
-        const lag = `translate3d(0, ${(y * 0.92).toFixed(1)}px, 0)`;
-        stage.style.transform = lag;
-        el.style.transform = lag;
+        // the sky stays (nearly) put while the page slides over it
+        stage.style.transform = `translate3d(0, ${(y * 0.92).toFixed(1)}px, 0)`;
         if (dimRef.current) dimRef.current.style.opacity = (e * 0.6).toFixed(3);
 
-        // depth inside the masthead
-        set(moonRef.current, `translate3d(0, ${(-y * 0.32).toFixed(1)}px, 0) rotate(${(-e * 18).toFixed(2)}deg)`, 1 - e * 1.6);
-        set(titleRef.current, `scale(${(1 - e * 0.1).toFixed(4)})`, 1 - e * 0.85);
-        set(subRef.current, `translate3d(0, ${(-y * 0.1).toFixed(1)}px, 0)`, 1 - e * 1.9);
-        set(ctaRef.current, `translate3d(0, ${(-y * 0.16).toFixed(1)}px, 0)`, 1 - e * 2.4);
-
-        const blur = Math.round(Math.pow(e, 1.7) * 6 * 2) / 2;
-        if (blur !== lastBlur) {
-          lastBlur = blur;
-          el.style.filter = blur > 0.02 ? `blur(${blur}px)` : 'none';
-        }
+        // the masthead scrolls with the page and lifts a little extra, fading out
+        lift(moonRef.current, y, 0.45, h * 0.35);
+        lift(titleRef.current, y, 0.3, h * 0.5);
+        lift(subRef.current, y, 0.22, h * 0.42);
+        lift(ctaRef.current, y, 0.15, h * 0.38);
       });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -116,7 +106,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       </div>
 
       {/* MASTHEAD — a calm, centered stack under a quiet crescent moon. */}
-      <div ref={contentRef} className="relative z-10 w-full mx-auto px-8 flex flex-col items-center will-change-[transform,filter]">
+      <div ref={contentRef} className="relative z-10 w-full mx-auto px-8 flex flex-col items-center">
         <Rise delay={100}>
           <div ref={moonRef} className="will-change-transform">
           <CelestialMark name="crescent" className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
