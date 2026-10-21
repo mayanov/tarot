@@ -204,8 +204,15 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
     return h * 60 + m >= nowCutoffMin;
   });
 
-  // Duration for the chosen option — drives the "start–end" slot labels.
-  const durationMin = service?.packages ? durationFromText(pkg) : durationFromText(service?.meta);
+  // Duration for the chosen option — drives the "start–end" slot labels and which
+  // starts fit before closing. Until a package is picked, assume its shortest one
+  // (e.g. a 1-hour meetup), so a slot never looks open for a session that can't fit.
+  const shortestPackageMin = service?.packages
+    ? Math.min(...service.packages.map((p) => durationFromText(p) ?? Infinity))
+    : null;
+  const durationMin = service?.packages
+    ? (durationFromText(pkg) ?? (Number.isFinite(shortestPackageMin) ? shortestPackageMin : null))
+    : durationFromText(service?.meta);
   const timeRange = (start: string) => (durationMin ? `${start}–${addMinutes(start, durationMin)}` : start);
 
   const summaryLine = `${service?.name || ''}${pkg ? ` · ${pkg}` : ''}${scheduled && date ? ` · ${toISODate(date)} · ${time ? timeRange(time) : ''}` : ''}`;

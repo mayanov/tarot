@@ -89,7 +89,7 @@ const toMin = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); re
 const fmtHour = (h: number) => `${String(h).padStart(2, '0')}:00`;
 // 'YYYY-MM-DD' → 'dd Mon YYYY' (e.g. 08 Sep 2026)
 
-// Grid window: 11:00–20:00 covers all bookable slots (11:00–19:00) and their durations.
+// Grid window: covers all bookable starts (11:00–19:30) and their durations (sessions end by 20:00).
 const DAY_START = 10 * 60; // 10:00 AM
 const DAY_END = 21 * 60;   // 9:00 PM
 const HOUR_H = 56; // px per hour
