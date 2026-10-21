@@ -20,14 +20,14 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const titleRef = useRef<HTMLDivElement>(null);
   const subRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
-  const cueRef = useRef<HTMLDivElement>(null);
+  const dimRef = useRef<HTMLDivElement>(null);
 
   // Scroll choreography — as the hero scrolls away it plays like a curtain:
-  //  • the whole stage (sky + masthead) lags at ~half speed, so the About sheet
-  //    (which already has a rounded top and sits above) slides up OVER it;
+  //  • the whole stage (sky + masthead) stays almost pinned, so the About sheet
+  //    (rounded top, sits above) slides up OVER it like a card laid on top, while
+  //    the hero dims underneath as it gets covered;
   //  • the masthead recedes into the sky — the moon rises off first, the subtitle
   //    and CTA fade early, and the title shrinks back and softly blurs out last;
-  //  • the scroll cue disappears on the first bit of scroll.
   // Transform/opacity only (compositor-cheap); blur is quantized so it rasterizes rarely.
   useEffect(() => {
     const stage = skyRef.current;
@@ -52,16 +52,16 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         const e = p * p * (3 - 2 * p); // smoothstep
 
         // curtain: the stage lags behind the page
-        const lag = `translate3d(0, ${(y * 0.45).toFixed(1)}px, 0)`;
+        const lag = `translate3d(0, ${(y * 0.92).toFixed(1)}px, 0)`;
         stage.style.transform = lag;
         el.style.transform = lag;
+        if (dimRef.current) dimRef.current.style.opacity = (e * 0.6).toFixed(3);
 
         // depth inside the masthead
         set(moonRef.current, `translate3d(0, ${(-y * 0.32).toFixed(1)}px, 0) rotate(${(-e * 18).toFixed(2)}deg)`, 1 - e * 1.6);
         set(titleRef.current, `scale(${(1 - e * 0.1).toFixed(4)})`, 1 - e * 0.85);
         set(subRef.current, `translate3d(0, ${(-y * 0.1).toFixed(1)}px, 0)`, 1 - e * 1.9);
         set(ctaRef.current, `translate3d(0, ${(-y * 0.16).toFixed(1)}px, 0)`, 1 - e * 2.4);
-        if (cueRef.current) cueRef.current.style.opacity = String(Math.max(0, 1 - y / 120).toFixed(2));
 
         const blur = Math.round(Math.pow(e, 1.7) * 6 * 2) / 2;
         if (blur !== lastBlur) {
@@ -157,15 +157,8 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </Rise>
       </div>
 
-      {/* scroll cue — a thin line with a light drop travelling down it; fades on first scroll */}
-      <Rise delay={900} className="absolute bottom-16 lg:bottom-24 left-1/2 -translate-x-1/2 z-10">
-        <div ref={cueRef} aria-hidden className="flex flex-col items-center gap-2.5 text-cream/55">
-          <span className="text-[10px] tracking-[0.32em] uppercase">{isIndonesian ? 'Gulir' : 'Scroll'}</span>
-          <span className="relative block w-px h-10 md:h-12 overflow-hidden bg-cream/15">
-            <span className="absolute left-0 top-0 w-px h-1/2 bg-gradient-to-b from-transparent via-cream/90 to-transparent motion-safe:animate-[scrollCue_2.2s_cubic-bezier(0.65,0,0.35,1)_infinite]" />
-          </span>
-        </div>
-      </Rise>
+      {/* dims the hero as the next section slides over it, so the overlap reads as depth */}
+      <div ref={dimRef} aria-hidden className="pointer-events-none absolute inset-0 z-20 bg-[#07061a] opacity-0" />
     </section>
   );
 };
