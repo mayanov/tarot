@@ -131,6 +131,8 @@ const StarCanvas: React.FC<{ dots: Dot[]; glow?: boolean; className?: string; st
 const Background: React.FC = () => {
   const rootRef = useRef<HTMLDivElement>(null);
   const fieldRef = useRef<HTMLDivElement>(null);
+  const midRef = useRef<HTMLDivElement>(null);
+  const nearRef = useRef<HTMLDivElement>(null);
   const visibleRef = useRef(true);
   const [reduce] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -142,7 +144,11 @@ const Background: React.FC = () => {
     const update = () => {
       // skip the parallax write while the sky is scrolled out of view
       if (visibleRef.current && fieldRef.current) {
-        fieldRef.current.style.transform = `translate3d(0, ${(window.scrollY * 0.06).toFixed(1)}px, 0)`;
+        const y = window.scrollY;
+        fieldRef.current.style.transform = `translate3d(0, ${(y * 0.06).toFixed(1)}px, 0)`;
+        // depth: nearer star layers slide up faster than the far dusting
+        if (midRef.current) midRef.current.style.transform = `translate3d(0, ${(-y * 0.08).toFixed(1)}px, 0)`;
+        if (nearRef.current) nearRef.current.style.transform = `translate3d(0, ${(-y * 0.2).toFixed(1)}px, 0)`;
       }
     };
     const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
@@ -223,21 +229,36 @@ const Background: React.FC = () => {
       {/* 4 — the starfield: a fixed dusting (incl. the band cluster) plus twinkling
           layers and bright accent stars, all drifting together a touch on scroll */}
       <div ref={fieldRef} className="absolute -inset-y-[10%] inset-x-0 will-change-transform">
+        {/* far: the faint dusting */}
         <StarCanvas dots={STATIC_DOTS} className="absolute inset-0 w-full h-full" />
-        {TWINKLE_LAYERS.map((layer, i) => (
+        {/* mid: the dimmer twinkle layers */}
+        <div ref={midRef} className="absolute inset-0 will-change-transform">
+          {TWINKLE_LAYERS.slice(2).map((layer, i) => (
+            <StarCanvas
+              key={i}
+              dots={layer.dots}
+              className="absolute inset-0 w-full h-full"
+              style={{ animation: anim(layer.dur, layer.delay, layer.drift) }}
+            />
+          ))}
+        </div>
+        {/* near: the brighter twinkle layers and the glowing accent stars */}
+        <div ref={nearRef} className="absolute inset-0 will-change-transform">
+          {TWINKLE_LAYERS.slice(0, 2).map((layer, i) => (
+            <StarCanvas
+              key={i}
+              dots={layer.dots}
+              className="absolute inset-0 w-full h-full"
+              style={{ animation: anim(layer.dur, layer.delay, layer.drift) }}
+            />
+          ))}
           <StarCanvas
-            key={i}
-            dots={layer.dots}
+            dots={ACCENTS}
+            glow
             className="absolute inset-0 w-full h-full"
-            style={{ animation: anim(layer.dur, layer.delay, layer.drift) }}
+            style={{ animation: reduce ? undefined : 'starPulse 3.6s ease-in-out infinite' }}
           />
-        ))}
-        <StarCanvas
-          dots={ACCENTS}
-          glow
-          className="absolute inset-0 w-full h-full"
-          style={{ animation: reduce ? undefined : 'starPulse 3.6s ease-in-out infinite' }}
-        />
+        </div>
       </div>
 
       {/* occasional shooting stars — a bright head (right) with a tapering tail that
