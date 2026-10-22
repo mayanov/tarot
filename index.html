@@ -26,9 +26,9 @@
 
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-  <!-- Preload the first-paint imagery so the loader/hero appear without a fetch stall -->
-  <link rel="preload" as="image" href="/sky-hero.jpg" fetchpriority="high" />
-  <link rel="preload" as="image" href="/moon.jpg" />
+  <!-- Preload the loader's moon so it appears without a fetch stall (the sky itself is
+       drawn in code; the sky photo is only used by the footer and loads later) -->
+  <link rel="preload" as="image" href="/moon.jpg" fetchpriority="high" />
 
   <!-- Font: Switzer (self-hosted woff2 — no third-party stylesheet round-trip) -->
   <link rel="preload" as="font" type="font/woff2" href="/fonts/switzer-400.woff2" crossorigin>

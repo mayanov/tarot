@@ -14,12 +14,12 @@ const REVEAL_TOTAL_MS = 1550;         // loader fully gone
 const WORDMARK_PX = 20;               // the wordmark's size while loading
 
 // Loading is REAL: progress comes from the work the page actually waits on (fonts, the
-// hero sky image, the moon image, the location check, and the page itself), shown as
+// moon image, the location check, and the page itself), shown as
 // the lunar cycle filling up — five small moons (new → full) that brighten in turn —
 // plus a live percentage. Only at 100% do they merge into the full moon, which then
 // flies up and wanes into the crescent above the hero title.
 const PHASES = [0, 26, 52, 78, 104];  // shadow offset per phase: new → crescent → half → gibbous → full
-const TASKS = ['fonts', 'sky', 'moon', 'app', 'page'] as const;
+const TASKS = ['fonts', 'moon', 'app', 'page'] as const;
 const MIN_CLIMB_MS = 1600;   // even on a fast connection, the bar takes this long to fill (no flash)
 const SETTLE_MS = 850;       // the merged full moon holds a beat before the hand-off
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
@@ -100,7 +100,6 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
       img.src = src;
       if (img.complete && img.naturalWidth) safe(task)();
     };
-    decode(`${import.meta.env.BASE_URL}sky-hero.jpg`, 'sky');
     decode(MOON_IMG, 'moon');
     // the page itself (scripts, styles, images in the document)
     if (document.readyState === 'complete') safe('page')();

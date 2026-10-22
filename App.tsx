@@ -52,6 +52,16 @@ function App() {
   const footerInnerRef = useRef<HTMLDivElement>(null);
   const footerSkyRef = useRef<HTMLDivElement>(null);
   const [footerH, setFooterH] = useState(0);
+  // The footer's sky photo is the biggest image on the page but only seen at the very
+  // bottom — fetch it a couple of seconds after the hero is up, not during start-up.
+  const [footerSkyOn, setFooterSkyOn] = useState(false);
+  useEffect(() => {
+    let t: number | undefined;
+    const later = () => { t = window.setTimeout(() => setFooterSkyOn(true), 2000); };
+    window.addEventListener('mt:reveal', later, { once: true });
+    const fallback = window.setTimeout(() => setFooterSkyOn(true), 9000);
+    return () => { window.removeEventListener('mt:reveal', later); if (t) clearTimeout(t); clearTimeout(fallback); };
+  }, []);
   const [reduceMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
@@ -431,7 +441,7 @@ function App() {
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10 will-change-transform"
           style={{
-            backgroundImage: `url(${import.meta.env.BASE_URL}sky-hero.jpg)`,
+            backgroundImage: footerSkyOn ? `url(${import.meta.env.BASE_URL}sky-hero.jpg)` : undefined,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             transform: 'scale(1.1)',
