@@ -13,17 +13,17 @@ export const REVEAL_FLIGHT_MS = 1150; // moon flies up and wanes into the hero c
 const REVEAL_TOTAL_MS = 1550;         // loader fully gone
 const WORDMARK_PX = 20;               // the wordmark's size while loading
 
-// Loader timeline (ms from mount)
+// Loading is REAL: progress comes from the work the page actually waits on (fonts, the
+// hero sky image, the moon image, the location check, and the page itself), shown as
+// the lunar cycle filling up — five small moons (new → full) that brighten in turn —
+// plus a live percentage. Only at 100% do they merge into the full moon, which then
+// flies up and wanes into the crescent above the hero title.
 const PHASES = [0, 26, 52, 78, 104];  // shadow offset per phase: new → crescent → half → gibbous → full
-const PHASE_AT = 220;      // the first phase lights up…
-const PHASE_GAP = 300;     // …then the next, like a progress bar
-const MERGE_AT = PHASE_AT + PHASE_GAP * PHASES.length + 150; // they glide together into one full moon
-const MIN_MS = 2950;       // never hand off before the moon has settled a beat
+const TASKS = ['fonts', 'sky', 'moon', 'app', 'page'] as const;
+const MIN_CLIMB_MS = 1600;   // even on a fast connection, the bar takes this long to fill (no flash)
+const SETTLE_MS = 850;       // the merged full moon holds a beat before the hand-off
+const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 
-// The lunar cycle as a progress bar: five small moons — new, crescent, half, gibbous,
-// full — light up one after another, then glide together and merge into one full
-// moon. That moon then flies up, shrinking and waning, until it becomes the crescent
-// above the hero title, while the identical sky cross-fades underneath.
 // One moon face with its shadow parked at `offset` (0 = new, 104 = full). Defined
 // outside Loader so re-renders don't remount it (that would skip the shadow's slide).
 const MOON_IMG = `${import.meta.env.BASE_URL}moon.jpg`;
@@ -37,12 +37,10 @@ const Face: React.FC<{ offset: number; shadowStyle?: React.CSSProperties }> = ({
 
 const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const MIN = reduce ? 500 : MIN_MS;
-  const mounted = useRef(Date.now());
   const moonRef = useRef<HTMLDivElement>(null);
-  const [stage, setStage] = useState<'idle' | 'row' | 'moon'>(reduce ? 'moon' : 'idle');
-  const [lit, setLit] = useState(reduce ? PHASES.length : 0); // how many phases are lit so far
-  const [heroReady, setHeroReady] = useState(false);
+  const [stage, setStage] = useState<'idle' | 'row' | 'moon'>('idle');
+  const [pct, setPct] = useState(0); // displayed progress, 0–100
+  const [done, setDone] = useState<Record<string, boolean>>({});
   const [leaving, setLeaving] = useState(false);
   const [flight, setFlight] = useState<string | null>(null); // moon's transform toward the hero crescent
   const [gone, setGone] = useState(false);
@@ -83,64 +81,91 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // The phases light up one by one, then merge into the full moon — all on the same
-  // timers, so they can never drift apart.
-  useEffect(() => {
-    if (reduce) return;
-    const ts = [window.setTimeout(() => setStage('row'), PHASE_AT - 160)];
-    PHASES.forEach((_, i) => ts.push(window.setTimeout(() => setLit(i + 1), PHASE_AT + i * PHASE_GAP)));
-    ts.push(window.setTimeout(() => setStage('moon'), MERGE_AT));
-    return () => ts.forEach(clearTimeout);
-  }, [reduce]);
-
-  // Pre-decode the page's hero background so it doesn't decode on the reveal frame.
+  // ---- the real loading tasks ----
+  const mark = (task: string) => setDone((d) => (d[task] ? d : { ...d, [task]: true }));
   useEffect(() => {
     let cancelled = false;
-    const done = () => { if (!cancelled) setHeroReady(true); };
-    const img = new Image();
-    img.src = `${import.meta.env.BASE_URL}sky-hero.jpg`;
-    if ('decode' in img && typeof img.decode === 'function') img.decode().then(done).catch(done);
-    else { img.onload = done; img.onerror = done; }
-    const t = window.setTimeout(done, 2200); // never block forever
-    return () => { cancelled = true; clearTimeout(t); };
-  }, []);
-
-  // Only start the reveal once the app has resolved AND the hero image is decoded,
-  // so the transition never competes with a decode/paint on its first frame.
-  useEffect(() => {
-    if (!ready || !heroReady) return;
-    let t: number | undefined;
-    const begin = () => {
-      const wait = Math.max(0, MIN - (Date.now() - mounted.current));
-      t = window.setTimeout(() => {
-        // Aim the moon at the hero's crescent: the crescent's lit disc sits at
-        // (41%, 50%) of its icon and spans 62.5% of its width (see CelestialMark).
-        const from = moonRef.current?.getBoundingClientRect();
-        const target = document.querySelector('[data-hero-moon] svg')?.getBoundingClientRect();
-        if (from && target && !reduce) {
-          const size = target.width * 0.625;
-          const cx = target.left + target.width * 0.414;
-          const cy = target.top + target.height * 0.5;
-          const dx = cx - (from.left + from.width / 2);
-          const dy = cy - (from.top + from.height / 2);
-          setFlight(`translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${(size / from.width).toFixed(4)})`);
-        }
-        leavingRef.current = true;
-        setLeaving(true);
-        // tell the hero to play its entrance in step with the flight
-        try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
-        window.setTimeout(() => setGone(true), reduce ? 400 : REVEAL_TOTAL_MS);
-      }, wait);
+    const safe = (task: string) => () => { if (!cancelled) mark(task); };
+    const timers = TASKS.map((task) => window.setTimeout(safe(task), TASK_TIMEOUT_MS));
+    // fonts (the title's size depends on them)
+    const fonts = (document as any).fonts;
+    if (fonts?.ready) fonts.ready.then(safe('fonts')).catch(safe('fonts')); else safe('fonts')();
+    // images: ready once downloaded (the real wait); also decode them in the background
+    // so nothing decodes on the reveal frame — but don't wait on decode(), which some
+    // browsers hold back in background tabs
+    const decode = (src: string, task: string) => {
+      const img = new Image();
+      img.onload = () => { safe(task)(); if (typeof img.decode === 'function') img.decode().catch(() => {}); };
+      img.onerror = safe(task);
+      img.src = src;
+      if (img.complete && img.naturalWidth) safe(task)();
     };
-    if (document.readyState === 'complete') begin();
-    else {
-      const onLoad = () => begin();
-      window.addEventListener('load', onLoad, { once: true });
-      t = window.setTimeout(begin, 1400);
-      return () => { window.removeEventListener('load', onLoad); if (t) clearTimeout(t); };
-    }
-    return () => { if (t) clearTimeout(t); };
-  }, [ready, heroReady, MIN, reduce]);
+    decode(`${import.meta.env.BASE_URL}sky-hero.jpg`, 'sky');
+    decode(MOON_IMG, 'moon');
+    // the page itself (scripts, styles, images in the document)
+    if (document.readyState === 'complete') safe('page')();
+    else window.addEventListener('load', safe('page'), { once: true });
+    return () => { cancelled = true; timers.forEach(clearTimeout); };
+  }, []);
+  // the app's own startup (location check) — passed in as `ready`
+  useEffect(() => { if (ready) mark('app'); }, [ready]);
+
+  const doneCount = TASKS.filter((t) => done[t]).length;
+  const doneRef = useRef(0);
+  doneRef.current = doneCount;
+  const lastDoneAt = useRef(performance.now());
+  useEffect(() => { lastDoneAt.current = performance.now(); }, [doneCount]);
+
+  // ---- the progress bar: eases toward what's actually finished ----
+  // It can't fill faster than MIN_CLIMB_MS, never passes the work that's done (it only
+  // creeps a little into the next step while waiting, so it never looks frozen), and
+  // never shows 100% until everything has finished.
+  useEffect(() => {
+    const climb = reduce ? 1 : MIN_CLIMB_MS;
+    const t0 = performance.now();
+    let shown = 0;
+    setStage('row');
+    // a ~30fps timer rather than rAF, so progress keeps moving even in a background tab
+    const tick = () => {
+      const now = performance.now();
+      const real = doneRef.current / TASKS.length;
+      const allDone = real >= 1;
+      const timeCap = Math.min(1, (now - t0) / climb) * 100;
+      const creep = allDone ? 0 : 12 * (1 - Math.exp(-(now - lastDoneAt.current) / 1800));
+      const target = Math.min(timeCap, allDone ? 100 : Math.min(99, real * 100 + creep));
+      shown += (target - shown) * (reduce ? 1 : 0.16);
+      if (allDone && timeCap >= 100 && shown > 99.4) shown = 100;
+      setPct(shown);
+      if (shown >= 100) { clearInterval(iv); setStage('moon'); }
+    };
+    const iv = window.setInterval(tick, 33);
+    return () => clearInterval(iv);
+  }, [reduce]);
+
+  // ---- the hand-off: only once loading reached 100% and the full moon has settled ----
+  useEffect(() => {
+    if (stage !== 'moon') return;
+    const t = window.setTimeout(() => {
+      // Aim the moon at the hero's crescent: the crescent's lit disc sits at
+      // (41%, 50%) of its icon and spans 62.5% of its width (see CelestialMark).
+      const from = moonRef.current?.getBoundingClientRect();
+      const target = document.querySelector('[data-hero-moon] svg')?.getBoundingClientRect();
+      if (from && target && !reduce) {
+        const size = target.width * 0.625;
+        const cx = target.left + target.width * 0.414;
+        const cy = target.top + target.height * 0.5;
+        const dx = cx - (from.left + from.width / 2);
+        const dy = cy - (from.top + from.height / 2);
+        setFlight(`translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${(size / from.width).toFixed(4)})`);
+      }
+      leavingRef.current = true;
+      setLeaving(true);
+      // tell the hero to play its entrance in step with the flight
+      try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
+      window.setTimeout(() => setGone(true), reduce ? 400 : REVEAL_TOTAL_MS);
+    }, reduce ? 0 : SETTLE_MS);
+    return () => clearTimeout(t);
+  }, [stage, reduce]);
 
   if (gone) return null;
 
@@ -181,18 +206,19 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
               (a progress bar), then glide into the centre and dissolve into the full moon */}
           {PHASES.map((offset, i) => {
             const slot = i - (PHASES.length - 1) / 2; // -2 … 2
-            const on = i < lit;
+            const fill = Math.max(0, Math.min(1, (pct - i * 20) / 20)); // how far this phase has filled
+            const on = fill >= 1;
             return (
               <div
                 key={i}
                 className="absolute left-1/2 top-1/2 w-7 h-7 md:w-8 md:h-8 -ml-3.5 -mt-3.5 md:-ml-4 md:-mt-4 rounded-full overflow-hidden"
                 style={{
-                  transform: merged || flying ? 'translateX(0) scale(1.6)' : `translateX(${slot * 2.9}rem) scale(${on ? 1 : 0.86})`,
-                  opacity: merged || flying ? 0 : !showing ? 0 : on ? 1 : 0.22,
+                  transform: merged || flying ? 'translateX(0) scale(1.6)' : `translateX(${slot * 2.9}rem) scale(${(0.86 + fill * 0.14).toFixed(3)})`,
+                  opacity: merged || flying ? 0 : !showing ? 0 : 0.2 + fill * 0.8,
                   boxShadow: on ? '0 0 16px 2px rgba(255,255,255,0.28)' : 'none',
                   transition: merged || flying
                     ? `transform 900ms ${EASE} ${Math.abs(slot) * 40}ms, opacity 700ms ease ${180 + Math.abs(slot) * 40}ms`
-                    : `opacity 500ms ease, transform 600ms ${EASE}, box-shadow 600ms ease`,
+                    : 'box-shadow 600ms ease',
                 }}
               >
                 <Face offset={offset} />
@@ -233,7 +259,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
           className="mt-3 text-[11px] uppercase tracking-[0.28em] text-cream/40"
           style={{ opacity: leaving ? 0 : showing ? 1 : 0, transition: leaving ? 'opacity 300ms ease' : 'opacity 900ms ease 300ms' }}
         >
-          Loading
+          Loading <span className="tabular-nums text-cream/60">{Math.floor(pct)}%</span>
         </div>
       </div>
 
