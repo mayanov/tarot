@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Background from './Background';
-import CelestialMark from '../UI/CelestialMark';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -14,24 +13,23 @@ export const REVEAL_FLIGHT_MS = 1150; // moon flies up and wanes into the hero c
 const REVEAL_TOTAL_MS = 1550;         // loader fully gone
 
 // Loader timeline (ms from mount)
-const CARD_IN = 80;      // the card back drifts in
-const FLIP_AT = 950;     // …turns over
-const FLIP_MS = 900;
-const MOON_AT = FLIP_AT + FLIP_MS * 0.55; // the moon appears on the card face as it comes round
-const WAX_MS = 1150;     // and waxes from crescent to full
-const MIN_MS = 2900;     // never hand off before the moon is full and has settled a beat
+const CORONA_IN = 80;    // the eclipsed moon and its corona appear straight away
+const REVEAL_AT = 1150;  // …then the shadow starts sliding off
+const WAX_MS = 1500;     // and uncovers the full moon
+const MIN_MS = 2950;     // never hand off before the moon is full and has settled a beat
 
-// A tarot reading in miniature: a card is dealt face-down, turns over to reveal
-// "The Moon" (XVIII), and the moon waxes full on it. Then the moon lifts off the card
-// and flies up, shrinking and waning, until it becomes the crescent above the hero
-// title — while the card dissolves and the identical sky cross-fades underneath.
+// A total eclipse: the screen opens on a dark moon ringed by a glowing corona (so it
+// is never empty). The shadow slides off — a bright "diamond ring" flare where the
+// light first breaks through — until the moon is full. Then the moon flies up,
+// shrinking and waning, until it becomes the crescent above the hero title, while
+// the identical sky cross-fades underneath.
 const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const MIN = reduce ? 500 : MIN_MS;
   const mounted = useRef(Date.now());
   const moonRef = useRef<HTMLDivElement>(null);
-  const [wax, setWax] = useState(reduce ? 100 : 30); // shadow offset: 30 = crescent, 100 = full
-  const [stage, setStage] = useState<'idle' | 'in' | 'flipped' | 'moon'>(reduce ? 'moon' : 'idle');
+  const [wax, setWax] = useState(reduce ? 100 : 0); // shadow offset: 0 = eclipsed, 100 = full
+  const [stage, setStage] = useState<'idle' | 'corona' | 'reveal'>(reduce ? 'reveal' : 'idle');
   const [heroReady, setHeroReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [flight, setFlight] = useState<string | null>(null); // moon's transform toward the hero crescent
@@ -43,26 +41,25 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // deal → flip → moon appears
+  // corona appears → shadow starts sliding off
   useEffect(() => {
     if (reduce) return;
     const ts = [
-      window.setTimeout(() => setStage('in'), CARD_IN),
-      window.setTimeout(() => setStage('flipped'), FLIP_AT),
-      window.setTimeout(() => setStage('moon'), MOON_AT),
+      window.setTimeout(() => setStage('corona'), CORONA_IN),
+      window.setTimeout(() => setStage('reveal'), REVEAL_AT),
     ];
     return () => ts.forEach(clearTimeout);
   }, [reduce]);
 
-  // Wax the moon on a single rAF once it's on the card (no CSS transition chasing it).
+  // Slide the shadow off on a single rAF (no CSS transition chasing it).
   useEffect(() => {
-    if (reduce || stage !== 'moon') return;
+    if (reduce || stage !== 'reveal') return;
     let raf = 0;
     const t0 = performance.now();
     const tick = (now: number) => {
       const t = Math.min((now - t0) / WAX_MS, 1);
-      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic — slows softly into full
-      setWax(30 + eased * 70);
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // easeInOutCubic
+      setWax(eased * 100);
       if (t < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -120,12 +117,12 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   if (gone) return null;
 
   const flying = leaving && !reduce && !!flight;
-  const dealt = stage !== 'idle';
-  const flipped = stage === 'flipped' || stage === 'moon';
-  const moonOn = stage === 'moon';
+  const shown = stage !== 'idle';
+  const revealing = stage === 'reveal';
   const EASE = 'cubic-bezier(0.16,1,0.3,1)';
   const EASE_FLIGHT = 'cubic-bezier(0.65,0,0.2,1)';
-  const GOLD = 'rgba(214,190,140,0.75)';
+  // the "diamond ring": brightest just as the light first breaks through, then gone
+  const flare = revealing ? Math.max(0, Math.sin(Math.min(wax / 22, 1) * Math.PI)) : 0;
 
   return (
     <div
@@ -149,110 +146,101 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
         }}
       >
         <Background />
-        {/* soft violet bloom behind the card */}
-        <div aria-hidden className="absolute left-1/2 top-[45%] h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(140,98,196,0.3) 0%, rgba(140,98,196,0) 68%)', opacity: moonOn && !flying ? 1 : 0.4, transition: 'opacity 1200ms ease' }} />
+        {/* soft violet bloom that warms up as the moon is uncovered */}
+        <div aria-hidden className="absolute left-1/2 top-[43%] h-[24rem] w-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(140,98,196,0.32) 0%, rgba(140,98,196,0) 68%)', opacity: flying ? 0 : 0.35 + (wax / 100) * 0.65, transition: flying ? 'opacity 500ms ease' : undefined }} />
       </div>
 
-      <div className="relative flex flex-col items-center">
-        {/* THE CARD — dealt face-down, then turned over. The moon is a separate layer
-            on top (so it can fly off the card without being clipped by it). */}
-        <div className="relative w-[9.25rem] md:w-[10.5rem] aspect-[5/8]">
+      <div
+        className="relative flex flex-col items-center"
+        style={{
+          opacity: shown ? 1 : 0,
+          transform: `scale(${shown ? 1 : 0.94})`,
+          transition: `opacity 900ms ease, transform 1200ms ${EASE}`,
+        }}
+      >
+        <div className="relative w-32 h-32 md:w-36 md:h-36">
+          {/* CORONA — a soft halo plus a thin bright rim around the dark disc; it
+              breathes while eclipsed, and fades as the moon's own light takes over */}
           <div
-            className="absolute inset-0 [perspective:1400px]"
+            aria-hidden
+            className="absolute -inset-10 rounded-full pointer-events-none"
             style={{
-              opacity: flying ? 0 : dealt ? 1 : 0,
-              transform: flying ? 'translateY(10px) scale(0.94)' : dealt ? 'translateY(0)' : 'translateY(26px) scale(0.96)',
-              filter: flying ? 'blur(6px)' : 'none',
+              background: 'radial-gradient(circle, rgba(0,0,0,0) 38%, rgba(214,206,255,0.42) 41%, rgba(160,140,230,0.16) 50%, rgba(120,96,200,0) 66%)',
+              opacity: flying ? 0 : 1 - (wax / 100) * 0.85,
+              animation: !revealing && !reduce ? 'coronaBreath 2.4s ease-in-out infinite' : undefined,
+              transition: flying ? 'opacity 300ms ease' : undefined,
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute -inset-[3px] rounded-full pointer-events-none"
+            style={{
+              boxShadow: '0 0 0 1.5px rgba(240,236,255,0.85), 0 0 18px 3px rgba(220,210,255,0.55)',
+              opacity: flying ? 0 : 1 - wax / 100,
+            }}
+          />
+          {/* DIAMOND RING — a flare on the left limb where the light first breaks through */}
+          <div
+            aria-hidden
+            className="absolute left-[-6px] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, #fff 0%, rgba(255,255,255,0.85) 22%, rgba(220,210,255,0) 70%)',
+              boxShadow: '0 0 40px 14px rgba(230,222,255,0.55)',
+              opacity: flare,
+              transform: `scale(${0.6 + flare * 0.8})`,
+            }}
+          />
+
+          {/* the moon — uncovered as the shadow slides off; on exit it flies to the
+              hero crescent, shrinking and waning until it IS the crescent */}
+          <div
+            ref={moonRef}
+            className="relative w-full h-full rounded-full overflow-hidden will-change-transform"
+            style={{
+              transform: flying ? flight! : 'none',
+              opacity: flying ? 0 : 1,
+              boxShadow: flying
+                ? '0 0 26px 4px rgba(255,255,255,0.18)'
+                : `0 0 ${wax * 1.1}px ${wax * 0.22}px rgba(255,255,255,${0.04 + wax / 260})`,
               transition: flying
-                ? 'opacity 520ms ease 80ms, transform 700ms ease, filter 600ms ease 80ms'
-                : `opacity 700ms ease, transform 900ms ${EASE}`,
+                ? `transform ${REVEAL_FLIGHT_MS}ms ${EASE_FLIGHT}, box-shadow ${REVEAL_FLIGHT_MS}ms ease, opacity 320ms ease ${REVEAL_FLIGHT_MS - 120}ms`
+                : 'none',
             }}
           >
+            <img
+              src={`${import.meta.env.BASE_URL}moon.jpg`}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: 'center', transform: 'scale(1.06)' }}
+              draggable={false}
+            />
+            {/* faint moonstone tint so the grey moon reads on-brand */}
+            <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 70% at 42% 38%, rgba(107,63,160,0.16) 0%, transparent 70%)', mixBlendMode: 'screen' }} />
+            {/* the eclipse shadow — slides off to the right; slides back in on the flight
+                so the moon wanes into the crescent's lit-left shape */}
             <div
-              className="relative h-full w-full [transform-style:preserve-3d]"
+              className="absolute -inset-px rounded-full"
               style={{
-                transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                transition: reduce ? 'none' : `transform ${FLIP_MS}ms cubic-bezier(0.7,0,0.25,1)`,
+                background: '#0d0b22',
+                transform: `translateX(${flying ? 40 : wax * 1.04}%)`,
+                filter: 'blur(2px)',
+                transition: flying ? `transform ${REVEAL_FLIGHT_MS - 150}ms cubic-bezier(0.45,0,0.2,1) 120ms` : 'none',
               }}
-            >
-              {/* back — plum with a starry wash, a fine gold frame and a central star */}
-              <div
-                className="absolute inset-0 [backface-visibility:hidden] overflow-hidden rounded-[0.9rem] ring-1 ring-white/15 [box-shadow:0_30px_70px_-30px_rgba(6,4,20,0.9)]"
-                style={{ background: 'radial-gradient(135% 120% at 15% -15%, #553172 0%, #39234E 52%, #20132f 100%)' }}
-              >
-                <div aria-hidden className="absolute inset-[0.5rem] rounded-[0.6rem] border" style={{ borderColor: GOLD }} />
-                <div aria-hidden className="absolute inset-[0.8rem] rounded-[0.45rem] border border-white/10" />
-                <div className="absolute inset-0 grid place-items-center" style={{ color: GOLD }}>
-                  <CelestialMark name="star" className="w-12" />
-                </div>
-                <CelestialMark name="sparkle" className="absolute left-1/2 top-[14%] -translate-x-1/2 w-3 text-white/40" />
-                <CelestialMark name="sparkle" className="absolute left-1/2 bottom-[14%] -translate-x-1/2 w-3 text-white/40" />
-              </div>
-
-              {/* face — "The Moon" (XVIII): deep night, gold frame, numeral and name */}
-              <div
-                className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[0.9rem] ring-1 ring-white/15 [box-shadow:0_30px_70px_-30px_rgba(6,4,20,0.9)]"
-                style={{ background: 'radial-gradient(120% 90% at 50% 40%, #241f52 0%, #141233 60%, #0d0b25 100%)' }}
-              >
-                <div aria-hidden className="absolute inset-[0.5rem] rounded-[0.6rem] border" style={{ borderColor: GOLD }} />
-                <span className="absolute inset-x-0 top-[0.95rem] text-center font-elegant italic text-[13px] tracking-[0.2em]" style={{ color: GOLD }}>XVIII</span>
-                <span className="absolute inset-x-0 bottom-[0.95rem] text-center text-[9px] font-medium tracking-[0.34em] uppercase" style={{ color: GOLD }}>The Moon</span>
-              </div>
-            </div>
-          </div>
-
-          {/* the moon — sits in the middle of the card face; waxes to full, then on exit
-              flies to the hero crescent, shrinking and waning until it IS the crescent */}
-          <div className="absolute inset-0 grid place-items-center pointer-events-none">
-            <div
-              ref={moonRef}
-              className="relative w-[5.25rem] h-[5.25rem] md:w-24 md:h-24 rounded-full overflow-hidden will-change-transform"
-              style={{
-                transform: flying ? flight! : moonOn ? 'scale(1)' : 'scale(0.85)',
-                opacity: flying ? 0 : moonOn ? 1 : 0,
-                boxShadow: flying
-                  ? '0 0 26px 4px rgba(255,255,255,0.18)'
-                  : `0 0 ${wax * 0.7}px ${wax * 0.12}px rgba(255,255,255,${0.05 + wax / 380})`,
-                transition: flying
-                  ? `transform ${REVEAL_FLIGHT_MS}ms ${EASE_FLIGHT}, box-shadow ${REVEAL_FLIGHT_MS}ms ease, opacity 320ms ease ${REVEAL_FLIGHT_MS - 120}ms`
-                  : `opacity 600ms ease, transform 900ms ${EASE}`,
-              }}
-            >
-              <img
-                src={`${import.meta.env.BASE_URL}moon.jpg`}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ objectPosition: 'center', transform: 'scale(1.06)' }}
-                draggable={false}
-              />
-              {/* faint moonstone tint so the grey moon reads on-brand */}
-              <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 70% at 42% 38%, rgba(107,63,160,0.16) 0%, transparent 70%)', mixBlendMode: 'screen' }} />
-              {/* the shadow — retreats right while waxing; slides back in on the flight so
-                  the moon wanes into the crescent's lit-left shape */}
-              <div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: '#141233',
-                  transform: `translateX(${flying ? 40 : wax * 1.02}%)`,
-                  filter: 'blur(3px)',
-                  transition: flying ? `transform ${REVEAL_FLIGHT_MS - 150}ms cubic-bezier(0.45,0,0.2,1) 120ms` : 'none',
-                }}
-              />
-            </div>
+            />
           </div>
         </div>
 
         {/* wordmark + label — slip away first, so the moon carries the reveal */}
         <div
           style={{
-            opacity: leaving ? 0 : dealt ? 1 : 0,
+            opacity: leaving ? 0 : shown ? 1 : 0,
             transform: leaving && !reduce ? 'translateY(10px)' : 'none',
             filter: leaving && !reduce ? 'blur(4px)' : 'none',
             transition: leaving ? 'opacity 360ms ease, transform 420ms ease, filter 420ms ease' : 'opacity 900ms ease 300ms',
           }}
           className="flex flex-col items-center"
         >
-          <div className="mt-8 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
+          <div className="mt-10 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
             <span className="text-cream">Mayanov</span>
             <span className="text-cream">Tarot</span>
           </div>
