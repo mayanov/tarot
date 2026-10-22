@@ -102,7 +102,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   const services: ServiceOption[] = isIndonesian
     ? [
-        { id: 'chat', name: 'Konsultasi via Chat', meta: 'WhatsApp · per pertanyaan', desc: 'Tanya-jawab santai lewat WhatsApp, dijawab dalam bentuk teks. Fleksibel untuk pertanyaan spesifik.', scheduled: false, packages: ['1 Pertanyaan · Rp 140K', '3 Pertanyaan · Rp 315K', 'Beli 3 Dapat 5 · Rp 315K (Promo)'] },
+        { id: 'chat', name: 'Konsultasi via Chat', meta: 'WhatsApp · per pertanyaan', desc: 'Tanya-jawab santai lewat WhatsApp, dijawab dalam bentuk teks. Fleksibel untuk pertanyaan spesifik.', scheduled: false, packages: ['1 Pertanyaan · Rp 140K', '3 Pertanyaan · Rp 315K'] },
         { id: 'call', name: 'Call / Video Call', meta: 'Real-time · pilih durasi', desc: 'Ngobrol langsung via suara atau video. Lebih interaktif, tanya sepuasnya selama durasi.', scheduled: true, packages: ['30 Menit · Rp 220K', '60 Menit · Rp 360K'] },
         { id: 'meetup', name: 'Sesi Tatap Muka', meta: 'Jakarta Selatan', desc: 'Ketemu langsung di Jakarta Selatan — pengalaman paling personal dan mendalam.', scheduled: true, packages: ['1 Jam · Rp 450K', '2 Jam · Rp 810K', '3 Jam · Rp 1,17JT'] },
         { id: 'special', name: 'Edisi Spesial', meta: 'Bacaan tematik (PDF)', desc: 'Bacaan tematik khusus (mis. New Year Reading), dikirim rapi dalam bentuk PDF.', scheduled: false, price: 'Rp 250K' },

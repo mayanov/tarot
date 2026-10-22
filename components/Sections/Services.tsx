@@ -27,10 +27,11 @@ const CAT_BG = [
   'radial-gradient(135% 120% at 15% -15%, #553172 0%, #39234E 52%, #20132f 100%)', // plum  #39234E
   'radial-gradient(135% 120% at 15% -15%, #e05b7c 0%, #CB3B5F 52%, #8a2942 100%)', // rose  #CB3B5F
   'radial-gradient(135% 120% at 15% -15%, #ff8a6d 0%, #F76949 52%, #c2472a 100%)', // coral #F76949
+  'radial-gradient(135% 120% at 15% -15%, #e7bd63 0%, #B8862F 52%, #6e4c17 100%)', // gold  #B8862F (promo)
 ];
 // The solid accent per card — the flipped detail borrows its card's colour.
-const CAT_ACCENT = ['#22396F', '#39234E', '#CB3B5F', '#F76949'];
-const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent'] as const;
+const CAT_ACCENT = ['#22396F', '#39234E', '#CB3B5F', '#F76949', '#9A6B1F'];
+const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent', 'sun'] as const;
 
 // A faint star dusting inside each band, so every category reads like its own
 // little night sky (one pattern per category for variety).
@@ -48,7 +49,7 @@ const starDust = (seed: number, count: number) => {
     return `radial-gradient(${rad}px ${rad}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, rgba(255,255,255,0) 60%)`;
   }).join(',');
 };
-const CAT_STARS = [0, 1, 2, 3].map((k) => starDust(90210 + k * 7777, 48));
+const CAT_STARS = [0, 1, 2, 3, 4].map((k) => starDust(90210 + k * 7777, 48));
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
 // Cheapest single price in a category (for the card's "from" line — not a range).
@@ -63,7 +64,11 @@ const fromPrice = (g: any): string => {
 // the booking options. `big` scales it up for the full-screen "drawn card" reveal.
 // `fill` makes the card take its parent's exact size instead of keeping the 5:8 shape (used on phones).
 const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean; big?: boolean; fill?: boolean; compact?: boolean; onBook?: () => void }> = ({ g, i, flipped, onFlip, isIndonesian, big = false, fill = false, compact = false, onBook }) => {
-  const accent = CAT_ACCENT[i % CAT_ACCENT.length];
+  // colour theme + numeral come from the group itself (so adding/reordering cards never
+  // recolours or renumbers the others); fall back to position
+  const k = g.theme ?? i;
+  const numeral = g.numeral ?? ROMAN[i] ?? '';
+  const accent = CAT_ACCENT[k % CAT_ACCENT.length];
   // `compact` squeezes the big card's back for short phone screens so nothing needs scrolling
   const tight = big && compact;
   return (
@@ -83,22 +88,22 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
             {/* ===== FRONT — the card face ===== */}
             <div
                 className="absolute inset-0 [backface-visibility:hidden] overflow-hidden rounded-[1.15rem] ring-1 ring-white/15 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
-                style={{ background: CAT_BG[i % CAT_BG.length] }}
+                style={{ background: CAT_BG[k % CAT_BG.length] }}
             >
-                <div aria-hidden className="absolute inset-0 opacity-70" style={{ backgroundImage: CAT_STARS[i % CAT_STARS.length] }} />
+                <div aria-hidden className="absolute inset-0 opacity-70" style={{ backgroundImage: CAT_STARS[k % CAT_STARS.length] }} />
                 {/* ornamental inner frame */}
                 <div aria-hidden className="absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-white/[0.16]" />
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-10 h-40 opacity-0 transition-opacity duration-500 group-hover/card:opacity-100" style={{ background: 'radial-gradient(60% 100% at 50% 0%, rgba(201,184,232,0.28), transparent 72%)' }} />
 
                 <div className="relative h-full flex flex-col items-center justify-between py-7 px-5 text-cream text-center">
-                    <span className={`font-elegant italic text-cream/55 tracking-wide ${big ? 'text-base' : 'text-sm'}`}>{ROMAN[i] ?? ''}</span>
+                    <span className={`font-elegant italic text-cream/55 tracking-wide ${big ? 'text-base' : 'text-sm'}`}>{numeral}</span>
                     <div className={`flex flex-col items-center ${big ? 'gap-5' : 'gap-3 md:gap-5'}`}>
-                        <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={`${big ? 'w-20' : 'w-10 md:w-16'} text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]`} />
+                        <CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className={`${big ? 'w-20' : 'w-10 md:w-16'} text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]`} />
                         <h3 className={`font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch] ${big ? 'text-[1.75rem]' : 'text-[1.1rem] md:text-[1.45rem]'}`}>{g.type}</h3>
                     </div>
                     <div className="flex flex-col items-center gap-1">
-                        <span className="text-cream/45 text-[10.5px] tracking-[0.18em] uppercase">{isIndonesian ? 'Mulai dari' : 'From'}</span>
-                        <span className={`font-serif font-semibold ${big ? 'text-2xl' : 'text-lg'}`}>{fromPrice(g)}</span>
+                        <span className="text-cream/45 text-[10.5px] tracking-[0.18em] uppercase">{g.promo ? 'Promo' : isIndonesian ? 'Mulai dari' : 'From'}</span>
+                        <span className={`font-serif font-semibold ${big ? 'text-2xl' : 'text-lg'}`}>{g.promo ? g.priceLabel : fromPrice(g)}</span>
                     </div>
                 </div>
             </div>
@@ -116,9 +121,9 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 
                         {/* crest — the card's mark at the top of the frame */}
                         <div className="relative flex justify-center" style={{ color: accent }}>
-                            <CelestialMark name={CAT_MARKS[i % CAT_MARKS.length]} className={tight ? 'w-6' : big ? 'w-9' : 'w-7'} />
+                            <CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className={tight ? 'w-6' : big ? 'w-9' : 'w-7'} />
                         </div>
-                        {!tight && <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{ROMAN[i] ?? ''}</span>}
+                        {!tight && <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{numeral}</span>}
                         <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight ${tight ? 'text-[1.15rem]' : big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
                         {g.blurb && <p className={`relative mt-1 text-center text-ink/55 font-light leading-snug ${tight ? 'text-[12px]' : big ? 'text-[14px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
 
@@ -153,14 +158,28 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 
                     {/* booking button — OUTSIDE the frame, like a tarot card's title label */}
                     <div className={`flex flex-col gap-2 shrink-0 ${tight ? 'pt-3' : big ? 'pt-4' : 'pt-3'}`}>
-                        <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); onBook && onBook(); }}
-                            style={{ backgroundColor: accent }}
-                            className={`w-full inline-flex items-center justify-center rounded-full text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
-                        >
-                            {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                        </button>
+                        {g.cta ? (
+                            // promo: straight to WhatsApp with a prefilled message
+                            <a
+                                href={g.cta.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => { e.stopPropagation(); g.cta.onClick && g.cta.onClick(); }}
+                                style={{ backgroundColor: accent }}
+                                className={`w-full inline-flex items-center justify-center rounded-full text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
+                            >
+                                {g.cta.label}
+                            </a>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onBook && onBook(); }}
+                                style={{ backgroundColor: accent }}
+                                className={`w-full inline-flex items-center justify-center rounded-full text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
+                            >
+                                {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                            </button>
+                        )}
                         {g.mapUrl && (
                             <a
                                 href={g.mapUrl}
@@ -291,7 +310,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             {isMobile ? (
                 <div className="grid grid-cols-2 gap-4 px-8 max-w-md mx-auto">
                     {groups.map((g, i) => (
-                        <div key={g.type} id={g.id || undefined} className="scroll-mt-28">
+                        <div key={g.type} id={g.id || undefined} className={`scroll-mt-28 ${groups.length % 2 === 1 && i === groups.length - 1 ? 'col-span-2 justify-self-center w-[calc(50%-0.5rem)]' : ''}`}>
                             <TarotCard g={g} i={i} flipped={false} onFlip={() => draw(i)} isIndonesian={isIndonesian} />
                         </div>
                     ))}
@@ -468,7 +487,8 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
 
     // --- Handlers for Indonesia (IDR) ---
     const handleNewYear = () => trackEvent('begin_checkout', { item_name: 'New Year Reading 2026', market: 'ID' }, 'InitiateCheckout', { content_name: 'New Year Reading 2026', value: 250000, currency: 'IDR', content_category: 'ID Service' });
-    const handlePromoBuy3Get5 = () => trackEvent('begin_checkout', { item_name: 'Promo Beli 3 Dapat 5', market: 'ID' }, 'InitiateCheckout', { content_name: 'Promo Beli 3 Dapat 5', value: 315000, currency: 'IDR', content_category: 'ID Service' });
+    const handleHappyBirthday = () => trackEvent('begin_checkout', { item_name: 'Operation Happy Birthday', market: 'ID' }, 'InitiateCheckout', { content_name: 'Operation Happy Birthday', currency: 'IDR', content_category: 'ID Service' });
+    const handleHappyBirthdayGlobal = () => trackEvent('begin_checkout', { item_name: 'Operation Happy Birthday (Global)', market: 'Global' }, 'InitiateCheckout', { content_name: 'Operation Happy Birthday (Global)', currency: 'USD', content_category: 'Global Service' });
     const handleChat3Question = () => trackEvent('begin_checkout', { item_name: '3 Question Chat', market: 'ID' }, 'InitiateCheckout', { content_name: '3 Question Chat', value: 315000, currency: 'IDR', content_category: 'ID Service' });
     const handleChat1Question = () => trackEvent('begin_checkout', { item_name: '1 Question Chat', market: 'ID' }, 'InitiateCheckout', { content_name: '1 Question Chat', value: 140000, currency: 'IDR', content_category: 'ID Service' });
     const handleCall30Lynk = () => trackEvent('begin_checkout', { item_name: '30-Min Call', market: 'ID' }, 'InitiateCheckout', { content_name: '30-Min Call (Lynk)', value: 220000, currency: 'IDR', content_category: 'ID Service' });
@@ -497,7 +517,21 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     const groups = isIndonesian
         ? [
             {
-                id: 'service-special', type: 'Edisi Spesial', tags: ['PDF', 'Musiman'], seasonal: true,
+                // Operation Happy Birthday — the "0" card (The Fool: a fresh start), in gold.
+                // Its button goes straight to WhatsApp instead of the booking form.
+                id: 'service-promo', theme: 4, numeral: '0', promo: true, type: 'Operation Happy Birthday',
+                blurb: 'Dalam rangka merayakan HUT Mayanov, jangan ketinggalan promo Pay As U Like!',
+                priceLabel: 'Bayar sesukamu',
+                points: ['1 pertanyaan, topik bebas', 'Dijawab lewat voice note', 'Langsung via WhatsApp'],
+                offers: [{ name: '1 Pertanyaan', price: 'Bayar sesukamu' }],
+                cta: {
+                    label: 'Ambil Promo Ini',
+                    href: `https://wa.me/6287786280310?text=${encodeURIComponent('Kak aku mau yang promo Operation Happy Birthday 2026 yang pay as u like untuk 1 pertanyaan yaah.')}`,
+                    onClick: handleHappyBirthday,
+                },
+            },
+            {
+                id: 'service-special', theme: 0, numeral: 'I', type: 'Edisi Spesial', tags: ['PDF', 'Musiman'], seasonal: true,
                 blurb: 'Bacaan tematik musiman, dikirim sebagai PDF.',
                 points: ['Gambaran umum sesuai momennya', 'Karier & keuangan, hingga percintaan', 'Saran strategis yang bisa dijalankan', 'PDF via WhatsApp, 2 hari kerja'],
                 priceLabel: 'Rp 250K',
@@ -511,7 +545,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 ],
             },
             {
-                id: 'service-chat', type: 'Konsultasi via Chat', tags: ['Chat', 'WhatsApp'],
+                id: 'service-chat', theme: 1, numeral: 'II', type: 'Konsultasi via Chat', tags: ['Chat', 'WhatsApp'],
                 blurb: 'Tanya-jawab tertulis via WhatsApp, per pertanyaan.',
                 points: ['Analisa tertulis yang mendalam', 'Cocok untuk pertanyaan spesifik', 'Tanpa harus ngobrol langsung', 'Sisa pertanyaan bisa ditabung'],
                 priceLabel: 'Rp 140rb–315rb',
@@ -524,16 +558,10 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         name: '3 Pertanyaan', price: 'Rp 315K',
                         book: [{ href: 'https://lynk.id/mayanovtarot/XBpJGb5', onClick: handleChat3Question }],
                     },
-                    {
-                        name: 'Beli 3 Dapat 5 Pertanyaan', price: 'Rp 315K',
-                        badge: 'Promo', badgeTone: 'bg-moon/10 text-moon',
-                        features: 'Bayar 3, dapat 5 pertanyaan (dipakai di hari yang sama).',
-                        book: [{ href: 'http://lynk.id/mayanovtarot/mm7ykgdwndez/', onClick: handlePromoBuy3Get5 }],
-                    },
                 ],
             },
             {
-                id: 'service-call', type: 'Panggilan Suara & Video', tags: ['Video', 'Real-time'],
+                id: 'service-call', theme: 2, numeral: 'III', type: 'Panggilan Suara & Video', tags: ['Video', 'Real-time'],
                 blurb: 'Ngobrol langsung via call atau video.',
                 points: ['Via WhatsApp Call atau Google Meet', 'Bebas bertanya selama sesi', 'Curhat lebih leluasa', 'Bedah masalah sampai ke akarnya'],
                 priceLabel: 'Rp 220rb–360rb',
@@ -549,7 +577,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 ],
             },
             {
-                id: 'service-meetup', type: 'Sesi Tatap Muka', tags: ['Jaksel', '1 Jam'],
+                id: 'service-meetup', theme: 3, numeral: 'IV', type: 'Sesi Tatap Muka', tags: ['Jaksel', '1 Jam'],
                 blurb: 'Sesi tatap muka di Jakarta Selatan.',
                 points: ['Energi lebih terasa', 'Analisa lebih personal', 'Minimal 1 jam', 'Bisa diperpanjang per jam'],
                 mapUrl: 'https://maps.app.goo.gl/LE2YwZiM2exhqunh8',
@@ -568,7 +596,20 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
         ]
         : [
             {
-                id: '', type: '3-Card Spread', tags: ['Quick', '24h'],
+                // Operation Happy Birthday — the "0" card, in gold; button opens WhatsApp
+                id: '', theme: 4, numeral: '0', promo: true, type: 'Operation Happy Birthday',
+                blurb: "To celebrate Mayanov's birthday, don't miss our Pay As U Like promo!",
+                priceLabel: 'Pay as you like',
+                points: ['1 question, any topic', 'Answered by voice note', 'Straight on WhatsApp'],
+                offers: [{ name: '1 Question', price: 'Pay as you like' }],
+                cta: {
+                    label: 'Claim This Promo',
+                    href: `https://wa.me/6287786280310?text=${encodeURIComponent("Hi! I'd like the Operation Happy Birthday 2026 promo, pay as you like for 1 question.")}`,
+                    onClick: handleHappyBirthdayGlobal,
+                },
+            },
+            {
+                id: '', theme: 0, numeral: 'I', type: '3-Card Spread', tags: ['Quick', '24h'],
                 blurb: 'A quick check-in on one question.',
                 points: ['Three-card spread', 'Photo of your spread', 'Written reading within 24h'],
                 priceLabel: '$12',
@@ -582,7 +623,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 ],
             },
             {
-                id: '', type: '5-Card Deep', tags: ['In-depth', 'Popular'],
+                id: '', theme: 1, numeral: 'II', type: '5-Card Deep', tags: ['In-depth', 'Popular'],
                 blurb: 'An in-depth look at one question.',
                 points: ['Bigger picture & hidden influences', "What's coming next", 'High-res photo of your cards', 'Priority delivery within 24h'],
                 priceLabel: '$20',
@@ -596,7 +637,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 ],
             },
             {
-                id: '', type: 'Live Session', tags: ['Live', '30 min'],
+                id: '', theme: 2, numeral: 'III', type: 'Live Session', tags: ['Live', '30 min'],
                 blurb: 'A live 30-minute call on Google Meet.',
                 points: ['Ask as many questions as we can fit', 'Real-time back-and-forth', 'No script, natural flow'],
                 priceLabel: '$45',
