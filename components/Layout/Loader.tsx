@@ -13,24 +13,34 @@ export const REVEAL_FLIGHT_MS = 1150; // moon flies up and wanes into the hero c
 const REVEAL_TOTAL_MS = 1550;         // loader fully gone
 
 // Loader timeline (ms from mount)
-const STARS = 12;          // stars in the ring
-const STARS_AT = 200;      // the first star lights up…
-const STAR_GAP = 95;       // …then one after another round the circle
-const MOON_AT = STARS_AT + STAR_GAP * STARS + 120; // ring closes → the moon blooms inside it
-const MIN_MS = 2900;       // never hand off before the moon has settled a beat
+const PHASES = [0, 26, 52, 78, 104];  // shadow offset per phase: new → crescent → half → gibbous → full
+const PHASE_AT = 220;      // the first phase lights up…
+const PHASE_GAP = 300;     // …then the next, like a progress bar
+const MERGE_AT = PHASE_AT + PHASE_GAP * PHASES.length + 150; // they glide together into one full moon
+const MIN_MS = 2950;       // never hand off before the moon has settled a beat
 
-// A constellation being drawn: stars light up one by one in a ring and a fine line
-// joins them round; as the circle closes, the full moon blooms inside it. Then the
-// ring scatters outward and the moon flies up, shrinking and waning, until it
-// becomes the crescent above the hero title, while the identical sky cross-fades
-// underneath.
+// The lunar cycle as a progress bar: five small moons — new, crescent, half, gibbous,
+// full — light up one after another, then glide together and merge into one full
+// moon. That moon then flies up, shrinking and waning, until it becomes the crescent
+// above the hero title, while the identical sky cross-fades underneath.
+// One moon face with its shadow parked at `offset` (0 = new, 104 = full). Defined
+// outside Loader so re-renders don't remount it (that would skip the shadow's slide).
+const MOON_IMG = `${import.meta.env.BASE_URL}moon.jpg`;
+const Face: React.FC<{ offset: number; shadowStyle?: React.CSSProperties }> = ({ offset, shadowStyle }) => (
+  <>
+    <img src={MOON_IMG} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ transform: 'scale(1.06)' }} draggable={false} />
+    <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 70% at 42% 38%, rgba(107,63,160,0.16) 0%, transparent 70%)', mixBlendMode: 'screen' }} />
+    <div className="absolute -inset-px rounded-full" style={{ background: '#0d0b22', transform: `translateX(${offset}%)`, filter: 'blur(1.5px)', ...shadowStyle }} />
+  </>
+);
+
 const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const MIN = reduce ? 500 : MIN_MS;
   const mounted = useRef(Date.now());
   const moonRef = useRef<HTMLDivElement>(null);
-  const [stage, setStage] = useState<'idle' | 'drawing' | 'moon'>(reduce ? 'moon' : 'idle');
-  const [lit, setLit] = useState(reduce ? STARS : 0); // how many ring stars are lit so far
+  const [stage, setStage] = useState<'idle' | 'row' | 'moon'>(reduce ? 'moon' : 'idle');
+  const [lit, setLit] = useState(reduce ? PHASES.length : 0); // how many phases are lit so far
   const [heroReady, setHeroReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [flight, setFlight] = useState<string | null>(null); // moon's transform toward the hero crescent
@@ -42,13 +52,13 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Stars light up one by one (the joining line follows each), then the moon blooms
-  // in once the ring closes. All on the same timers, so they can never drift apart.
+  // The phases light up one by one, then merge into the full moon — all on the same
+  // timers, so they can never drift apart.
   useEffect(() => {
     if (reduce) return;
-    const ts = [window.setTimeout(() => setStage('drawing'), STARS_AT - 120)];
-    for (let i = 1; i <= STARS; i++) ts.push(window.setTimeout(() => setLit(i), STARS_AT + (i - 1) * STAR_GAP));
-    ts.push(window.setTimeout(() => setStage('moon'), MOON_AT));
+    const ts = [window.setTimeout(() => setStage('row'), PHASE_AT - 160)];
+    PHASES.forEach((_, i) => ts.push(window.setTimeout(() => setLit(i + 1), PHASE_AT + i * PHASE_GAP)));
+    ts.push(window.setTimeout(() => setStage('moon'), MERGE_AT));
     return () => ts.forEach(clearTimeout);
   }, [reduce]);
 
@@ -103,18 +113,10 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   if (gone) return null;
 
   const flying = leaving && !reduce && !!flight;
-  const drawing = stage !== 'idle';
-  const moonOn = stage === 'moon';
+  const showing = stage !== 'idle';
+  const merged = stage === 'moon';
   const EASE = 'cubic-bezier(0.16,1,0.3,1)';
   const EASE_FLIGHT = 'cubic-bezier(0.65,0,0.2,1)';
-  // ring geometry (SVG units; the moon fills r=50 of a 160 box)
-  const R = 66;
-  const ringStars = Array.from({ length: STARS }, (_, i) => {
-    const a = -Math.PI / 2 + (i / STARS) * Math.PI * 2; // start at the top, go clockwise
-    return { x: 80 + R * Math.cos(a), y: 80 + R * Math.sin(a), big: i % 3 === 0, a };
-  });
-  const CIRC = 2 * Math.PI * R;
-
   return (
     <div
       aria-hidden
@@ -137,89 +139,54 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
         }}
       >
         <Background />
-        {/* soft violet bloom that warms up when the moon arrives */}
-        <div aria-hidden className="absolute left-1/2 top-[43%] h-[24rem] w-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(140,98,196,0.32) 0%, rgba(140,98,196,0) 68%)', opacity: flying ? 0 : moonOn ? 1 : 0.3, transition: flying ? 'opacity 500ms ease' : 'opacity 1200ms ease' }} />
+        {/* soft violet bloom that warms up when the full moon forms */}
+        <div aria-hidden className="absolute left-1/2 top-[43%] h-[24rem] w-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(140,98,196,0.32) 0%, rgba(140,98,196,0) 68%)', opacity: flying ? 0 : merged ? 1 : 0.3, transition: flying ? 'opacity 500ms ease' : 'opacity 1200ms ease' }} />
       </div>
 
       <div className="relative flex flex-col items-center">
         <div className="relative w-32 h-32 md:w-36 md:h-36">
-          {/* THE CONSTELLATION — a ring of stars that light up one by one, joined by a
-              fine line drawn round after them; on exit the stars scatter outward */}
-          <svg
-            aria-hidden
-            viewBox="0 0 160 160"
-            className="absolute pointer-events-none overflow-visible"
-            style={{ inset: '-30%', width: '160%', height: '160%' }}
-          >
-            <circle
-              cx="80" cy="80" r={R}
-              fill="none"
-              stroke="rgba(214,206,255,0.38)"
-              strokeWidth="0.6"
-              strokeDasharray={CIRC}
-              strokeDashoffset={CIRC * (1 - lit / STARS)}
-              transform="rotate(-90 80 80)"
-              style={{
-                opacity: flying ? 0 : 1,
-                transition: flying ? 'opacity 360ms ease' : `stroke-dashoffset ${STAR_GAP + 40}ms linear`,
-              }}
-            />
-            {ringStars.map((st, i) => {
-              const burst = flying ? 26 : 0;
-              return (
-                <g
-                  key={i}
-                  style={{
-                    transform: `translate(${(Math.cos(st.a) * burst).toFixed(1)}px, ${(Math.sin(st.a) * burst).toFixed(1)}px)`,
-                    opacity: flying ? 0 : i < lit ? 1 : 0,
-                    transition: flying
-                      ? `transform 700ms ${EASE}, opacity 600ms ease ${i * 18}ms`
-                      : 'opacity 450ms ease',
-                  }}
-                >
-                  <circle cx={st.x} cy={st.y} r={st.big ? 5 : 3.4} fill="rgba(220,210,255,0.22)" />
-                  <circle cx={st.x} cy={st.y} r={st.big ? 1.7 : 1.1} fill="#fff" />
-                </g>
-              );
-            })}
-          </svg>
+          {/* THE PHASES — a row of small moons across the middle that light up in turn
+              (a progress bar), then glide into the centre and dissolve into the full moon */}
+          {PHASES.map((offset, i) => {
+            const slot = i - (PHASES.length - 1) / 2; // -2 … 2
+            const on = i < lit;
+            return (
+              <div
+                key={i}
+                className="absolute left-1/2 top-1/2 w-7 h-7 md:w-8 md:h-8 -ml-3.5 -mt-3.5 md:-ml-4 md:-mt-4 rounded-full overflow-hidden"
+                style={{
+                  transform: merged || flying ? 'translateX(0) scale(1.6)' : `translateX(${slot * 2.9}rem) scale(${on ? 1 : 0.86})`,
+                  opacity: merged || flying ? 0 : !showing ? 0 : on ? 1 : 0.22,
+                  boxShadow: on ? '0 0 16px 2px rgba(255,255,255,0.28)' : 'none',
+                  transition: merged || flying
+                    ? `transform 900ms ${EASE} ${Math.abs(slot) * 40}ms, opacity 700ms ease ${180 + Math.abs(slot) * 40}ms`
+                    : `opacity 500ms ease, transform 600ms ${EASE}, box-shadow 600ms ease`,
+                }}
+              >
+                <Face offset={offset} />
+              </div>
+            );
+          })}
 
-          {/* the moon — blooms into the closed ring; on exit it flies to the hero
+          {/* the full moon — forms as the phases merge; on exit it flies to the hero
               crescent, shrinking and waning until it IS the crescent */}
           <div
             ref={moonRef}
             className="relative w-full h-full rounded-full overflow-hidden will-change-transform"
             style={{
-              transform: flying ? flight! : moonOn ? 'scale(1)' : 'scale(0.82)',
-              opacity: flying ? 0 : moonOn ? 1 : 0,
-              filter: moonOn || flying ? 'blur(0)' : 'blur(8px)',
+              transform: flying ? flight! : merged ? 'scale(1)' : 'scale(0.25)',
+              opacity: flying ? 0 : merged ? 1 : 0,
               boxShadow: flying
                 ? '0 0 26px 4px rgba(255,255,255,0.18)'
-                : moonOn ? '0 0 110px 22px rgba(255,255,255,0.42)' : '0 0 0 0 rgba(255,255,255,0)',
+                : merged ? '0 0 110px 22px rgba(255,255,255,0.42)' : '0 0 0 0 rgba(255,255,255,0)',
               transition: flying
                 ? `transform ${REVEAL_FLIGHT_MS}ms ${EASE_FLIGHT}, box-shadow ${REVEAL_FLIGHT_MS}ms ease, opacity 320ms ease ${REVEAL_FLIGHT_MS - 120}ms`
-                : `opacity 900ms ease, transform 1200ms ${EASE}, filter 900ms ease, box-shadow 1400ms ease`,
+                : `opacity 700ms ease 120ms, transform 1100ms ${EASE}, box-shadow 1400ms ease`,
             }}
           >
-            <img
-              src={`${import.meta.env.BASE_URL}moon.jpg`}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: 'center', transform: 'scale(1.06)' }}
-              draggable={false}
-            />
-            {/* faint moonstone tint so the grey moon reads on-brand */}
-            <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 70% at 42% 38%, rgba(107,63,160,0.16) 0%, transparent 70%)', mixBlendMode: 'screen' }} />
-            {/* shadow — parked off to the right while full; slides back in on the
-                flight so the moon wanes into the crescent's lit-left shape */}
-            <div
-              className="absolute -inset-px rounded-full"
-              style={{
-                background: '#0d0b22',
-                transform: `translateX(${flying ? 40 : 104}%)`,
-                filter: 'blur(2px)',
-                transition: flying ? `transform ${REVEAL_FLIGHT_MS - 150}ms cubic-bezier(0.45,0,0.2,1) 120ms` : 'none',
-              }}
+            <Face
+              offset={flying ? 40 : 104}
+              shadowStyle={{ filter: 'blur(2px)', transition: flying ? `transform ${REVEAL_FLIGHT_MS - 150}ms cubic-bezier(0.45,0,0.2,1) 120ms` : 'none' }}
             />
           </div>
         </div>
@@ -227,14 +194,14 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
         {/* wordmark + label — slip away first, so the moon carries the reveal */}
         <div
           style={{
-            opacity: leaving ? 0 : drawing ? 1 : 0,
+            opacity: leaving ? 0 : showing ? 1 : 0,
             transform: leaving && !reduce ? 'translateY(10px)' : 'none',
             filter: leaving && !reduce ? 'blur(4px)' : 'none',
             transition: leaving ? 'opacity 360ms ease, transform 420ms ease, filter 420ms ease' : 'opacity 900ms ease 300ms',
           }}
           className="flex flex-col items-center"
         >
-          <div className="mt-14 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
+          <div className="mt-10 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
             <span className="text-cream">Mayanov</span>
             <span className="text-cream">Tarot</span>
           </div>
