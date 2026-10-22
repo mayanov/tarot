@@ -99,10 +99,6 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     return () => { window.removeEventListener('mt:reveal', play); clearTimeout(t); };
   }, []);
 
-  // The title writes itself in, letter by letter — each glyph rises out of a soft
-  // blur — timed so it finishes as the loader's moon lands on the crescent.
-  const TITLE = 'Mayanov Tarot';
-  const letterDelay = (i: number) => 260 + i * 55;
 
   return (
     <section
@@ -125,22 +121,14 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </Rise>
 
         <div ref={titleRef} className="will-change-transform">
-          <h1 aria-label={TITLE} className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] text-cream">
-            {TITLE.split('').map((ch, i) => (
-              <span
-                key={i}
-                aria-hidden
-                className="inline-block"
-                style={{
-                  opacity: shown ? 1 : 0,
-                  transform: shown ? 'translateY(0)' : 'translateY(0.35em)',
-                  filter: shown ? 'blur(0)' : 'blur(8px)',
-                  transition: `opacity 700ms ease ${letterDelay(i)}ms, transform 900ms ${EASE} ${letterDelay(i)}ms, filter 800ms ease ${letterDelay(i)}ms`,
-                }}
-              >
-                {ch === ' ' ? '\u00A0' : ch}
-              </span>
-            ))}
+          {/* the loader's wordmark flies up and grows into exactly this spot; the real
+              title takes over the moment it lands (same font, size and position) */}
+          <h1
+            data-hero-title
+            className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] text-cream"
+            style={{ opacity: shown ? 1 : 0, transition: `opacity 220ms ease ${REVEAL_FLIGHT_MS + 20}ms` }}
+          >
+            Mayanov Tarot
           </h1>
         </div>
 

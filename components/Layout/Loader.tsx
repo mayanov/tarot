@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Background from './Background';
 
 interface LoaderProps {
@@ -11,6 +11,7 @@ interface LoaderProps {
 // against these, so keep them in sync with Hero.tsx.
 export const REVEAL_FLIGHT_MS = 1150; // moon flies up and wanes into the hero crescent
 const REVEAL_TOTAL_MS = 1550;         // loader fully gone
+const WORDMARK_PX = 20;               // the wordmark's size while loading
 
 // Loader timeline (ms from mount)
 const PHASES = [0, 26, 52, 78, 104];  // shadow offset per phase: new → crescent → half → gibbous → full
@@ -45,6 +46,36 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const [leaving, setLeaving] = useState(false);
   const [flight, setFlight] = useState<string | null>(null); // moon's transform toward the hero crescent
   const [gone, setGone] = useState(false);
+
+  // THE WORDMARK is drawn at the hero title's real size and position (so it stays
+  // crisp) and scaled DOWN into its slot under the moon. On hand-off it simply drops
+  // that transform — gliding up and growing into the exact spot of the hero title,
+  // which then takes over invisibly (same font, size and position).
+  const slotRef = useRef<HTMLDivElement>(null);
+  const [word, setWord] = useState<null | { left: number; top: number; width: number; height: number; fontSize: string; rest: string }>(null);
+  const leavingRef = useRef(false);
+  useLayoutEffect(() => {
+    const measure = () => {
+      if (leavingRef.current) return;
+      const title = document.querySelector<HTMLElement>('[data-hero-title]');
+      const slot = slotRef.current;
+      if (!title || !slot) return;
+      const r = title.getBoundingClientRect();
+      const sr = slot.getBoundingClientRect();
+      const fs = parseFloat(getComputedStyle(title).fontSize) || 32;
+      const dx = sr.left + sr.width / 2 - (r.left + r.width / 2);
+      const dy = sr.top + sr.height / 2 - (r.top + r.height / 2);
+      setWord({
+        left: r.left, top: r.top, width: r.width, height: r.height, fontSize: `${fs}px`,
+        rest: `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${(WORDMARK_PX / fs).toFixed(4)})`,
+      });
+    };
+    measure();
+    // web fonts can change the title's size after first paint — re-measure then too
+    (document as any).fonts?.ready?.then(measure);
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -94,6 +125,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
           const dy = cy - (from.top + from.height / 2);
           setFlight(`translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${(size / from.width).toFixed(4)})`);
         }
+        leavingRef.current = true;
         setLeaving(true);
         // tell the hero to play its entrance in step with the flight
         try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
@@ -191,25 +223,38 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
           </div>
         </div>
 
-        {/* wordmark + label — slip away first, so the moon carries the reveal */}
+        {/* wordmark slot (the real wordmark is the fixed layer below) + the label */}
+        <div ref={slotRef} className="mt-10 h-[1.35rem] w-44 grid place-items-center">
+          {!word && (
+            <span className="font-serif font-medium uppercase whitespace-nowrap tracking-[-0.01em] text-cream" style={{ fontSize: WORDMARK_PX, opacity: showing && !leaving ? 1 : 0, transition: 'opacity 700ms ease' }}>Mayanov Tarot</span>
+          )}
+        </div>
         <div
-          style={{
-            opacity: leaving ? 0 : showing ? 1 : 0,
-            transform: leaving && !reduce ? 'translateY(10px)' : 'none',
-            filter: leaving && !reduce ? 'blur(4px)' : 'none',
-            transition: leaving ? 'opacity 360ms ease, transform 420ms ease, filter 420ms ease' : 'opacity 900ms ease 300ms',
-          }}
-          className="flex flex-col items-center"
+          className="mt-3 text-[11px] uppercase tracking-[0.28em] text-cream/40"
+          style={{ opacity: leaving ? 0 : showing ? 1 : 0, transition: leaving ? 'opacity 300ms ease' : 'opacity 900ms ease 300ms' }}
         >
-          <div className="mt-10 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">
-            <span className="text-cream">Mayanov</span>
-            <span className="text-cream">Tarot</span>
-          </div>
-          <div className="mt-3 text-[11px] uppercase tracking-[0.28em] text-cream/40">
-            Loading
-          </div>
+          Loading
         </div>
       </div>
+
+      {/* THE WORDMARK — sits at the hero title's exact size and spot, scaled down into
+          its slot; on hand-off it glides up and grows into the hero title */}
+      {word && (
+        <div
+          className="fixed flex items-center justify-center font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-cream [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] will-change-transform"
+          style={{
+            left: word.left, top: word.top, width: word.width, height: word.height, fontSize: word.fontSize,
+            transformOrigin: '50% 50%',
+            transform: flying ? 'none' : word.rest,
+            opacity: flying ? 0 : leaving ? 0 : showing ? 1 : 0,
+            transition: flying
+              ? `transform ${REVEAL_FLIGHT_MS}ms cubic-bezier(0.65,0,0.2,1) 40ms, opacity 240ms ease ${REVEAL_FLIGHT_MS + 40}ms`
+              : leaving ? 'opacity 300ms ease' : 'opacity 900ms ease 300ms',
+          }}
+        >
+          Mayanov Tarot
+        </div>
+      )}
     </div>
   );
 };
