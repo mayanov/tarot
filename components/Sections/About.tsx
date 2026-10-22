@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import SoftAura from '../UI/SoftAura';
 import { trackEvent } from '../../services/analytics';
+import { REVEAL_FLIGHT_MS } from '../Layout/Loader';
 
 interface AboutProps {
   isIndonesian?: boolean;
@@ -20,8 +21,27 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
     );
   }, [isIndonesian]);
 
+  // The sheet's rounded top peeks over the bottom of the hero. Keep it tucked just
+  // below the screen while the loader hands off, then let it rise into place once
+  // the moon and title have landed — so it arrives as its own beat, not a pop.
+  const [risen, setRisen] = useState(false);
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setRisen(true); return; }
+    let t: number | undefined;
+    const rise = () => { t = window.setTimeout(() => setRisen(true), REVEAL_FLIGHT_MS + 250); };
+    window.addEventListener('mt:reveal', rise, { once: true });
+    const fallback = window.setTimeout(() => setRisen(true), 6000);
+    return () => { window.removeEventListener('mt:reveal', rise); if (t) clearTimeout(t); clearTimeout(fallback); };
+  }, []);
+
   return (
-    <section id="about" className="bg-paper relative z-10 isolate overflow-hidden text-ink lg:min-h-[72vh] -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
+    <section
+      id="about"
+      style={{
+        transform: risen ? 'none' : 'translateY(6rem)',
+        transition: 'transform 1100ms cubic-bezier(0.16,1,0.3,1)',
+      }}
+      className="bg-paper relative z-10 isolate overflow-hidden text-ink lg:min-h-[72vh] -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
       <SoftAura />
       {/* portrait — top on mobile, bleeds to the right viewport edge on desktop; soft
           organic radius on the edges that face the content (arch-like, wellness feel) */}
