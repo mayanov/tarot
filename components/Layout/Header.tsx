@@ -75,6 +75,23 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     if (!found) window.location.href = `/#${id}`;
   };
 
+  // "Pesan": take visitors to the service cards. On wider screens frame the
+  // "Pilih layanan tarotmu" heading together with the whole card spread (centred when
+  // there's room), instead of stopping at the section's top padding.
+  const goToServices = () => {
+    const title = document.querySelector<HTMLElement>('#services h2');
+    const cards = document.getElementById('pricelist');
+    if (window.matchMedia('(min-width: 768px)').matches && title && cards) {
+      setMenuOpen(false);
+      const top = title.getBoundingClientRect().top + window.scrollY;
+      const bottom = cards.getBoundingClientRect().bottom + window.scrollY;
+      const gap = Math.max(96, (window.innerHeight - (bottom - top)) / 2);
+      smoothScrollTo(Math.max(0, top - gap));
+      return;
+    }
+    scrollToSection('services');
+  };
+
   const handleLogoClick = () => {
     if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
       smoothScrollTo(0);
@@ -145,7 +162,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             {/* one 'Pesan' pill + a bare menu icon (no second pill) */}
             <div className="flex items-center gap-4">
               <button
-                onClick={() => scrollToSection('services')}
+                onClick={goToServices}
                 className={`${btnPrimaryDark} hidden sm:inline-flex px-6 py-2.5 text-[13px] tracking-[0.01em] whitespace-nowrap shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]`}
               >
                 {isIndonesian ? 'Pesan' : 'Book'}
@@ -251,7 +268,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               </nav>
 
               <button
-                onClick={() => scrollToSection('services')}
+                onClick={goToServices}
                 className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-sm`}
               >
                 {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}

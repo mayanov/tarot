@@ -214,7 +214,20 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         requestAnimationFrame(() => requestAnimationFrame(() => setRevealed(true)));
     };
     const close = () => setSelected(null);
-    const bookGroup = (g: any) => { close(); openBooking(BOOKING_MAP[g.type]); };
+    const bookGroup = (g: any) => { const from = selected ?? undefined; close(); openBooking(BOOKING_MAP[g.type], from); };
+
+    // coming back from the booking form → reopen the card they booked from, on its details
+    useEffect(() => {
+        const onReopen = (e: Event) => {
+            const index = (e as CustomEvent<{ index: number }>).detail?.index;
+            if (typeof index !== 'number' || index < 0 || index >= groups.length) return;
+            setSwapDir(null);
+            setSelected(index);
+            setRevealed(true);
+        };
+        window.addEventListener('reopen-pricelist-card', onReopen);
+        return () => window.removeEventListener('reopen-pricelist-card', onReopen);
+    }, [groups.length]);
 
     // switch to another service while the reveal is open — it arrives already showing its details
     const [swapDir, setSwapDir] = useState<'left' | 'right' | null>(null);
@@ -405,8 +418,9 @@ const BOOKING_MAP: Record<string, string> = {
     'Live Session': 'live',
 };
 
-const openBooking = (serviceId?: string) =>
-    window.dispatchEvent(new CustomEvent('open-booking', { detail: serviceId ? { serviceId } : {} }));
+// `returnToCard` (a pricelist card index) lets the booking form's "back" reopen that card.
+const openBooking = (serviceId?: string, returnToCard?: number) =>
+    window.dispatchEvent(new CustomEvent('open-booking', { detail: { ...(serviceId ? { serviceId } : {}), ...(returnToCard !== undefined ? { returnToCard } : {}) } }));
 
 // The order button for a category — opens the on-site booking flow.
 const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndonesian }) => {
@@ -619,7 +633,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             </div>
 
             {/* ===== Pricelist — a fanned tarot spread; click a card to flip for details ===== */}
-            <div className="pb-6 md:pb-10">
+            <div id="pricelist" className="pb-6 md:pb-10">
                 <FadeIn dir="up">
                     <TarotFan groups={groups} isIndonesian={isIndonesian} />
                 </FadeIn>

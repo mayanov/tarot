@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock } from 'lucide-react';
@@ -120,11 +120,28 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   const close = useCallback(() => { setOpen(false); }, []);
 
+  // When the form was opened from a pricelist card, "back" past the first step returns
+  // to that card (reopened on its details) instead of the generic service picker.
+  const returnToCard = useRef<number | null>(null);
+  const goBack = () => {
+    const target = step === 3 ? 2 : step === 2 ? (scheduled ? 1 : 0) : 0;
+    if (target === 0 && returnToCard.current !== null) {
+      const index = returnToCard.current;
+      returnToCard.current = null;
+      setOpen(false);
+      // after this modal has closed (and released the page scroll), reopen the card
+      window.setTimeout(() => window.dispatchEvent(new CustomEvent('reopen-pricelist-card', { detail: { index } })), 60);
+      return;
+    }
+    setStep(target);
+  };
+
   // Open via a global event (dispatched by the nav / CTA buttons).
   useEffect(() => {
     const onOpen = (e: Event) => {
       reset();
-      const detail = (e as CustomEvent<{ serviceId?: string }>).detail;
+      const detail = (e as CustomEvent<{ serviceId?: string; returnToCard?: number }>).detail;
+      returnToCard.current = typeof detail?.returnToCard === 'number' ? detail.returnToCard : null;
       if (detail?.serviceId) {
         const preset = services.find((s) => s.id === detail.serviceId);
         if (preset) { setService(preset); setStep(preset.scheduled ? 1 : 2); }
@@ -272,7 +289,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           <div className="flex items-center gap-3">
             {(step === 1 || step === 2 || step === 3) && (
               <button
-                onClick={() => setStep(step === 3 ? 2 : step === 2 ? (scheduled ? 1 : 0) : 0)}
+                onClick={goBack}
                 aria-label="Back"
                 className="shrink-0 text-cream/75 hover:text-cream transition-colors"
               >
