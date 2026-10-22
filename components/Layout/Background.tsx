@@ -58,14 +58,6 @@ const TWINKLE_LAYERS: { dur: number; delay: number; drift: boolean; dots: Dot[] 
 // bright accent stars that pulse harder and carry a soft glow
 const ACCENTS: Dot[] = field(rng, 28, 1.4, 2.3, 0.9, 1);
 
-// Occasional shooting stars — [top%, left%, widthRem, duration s, delay s]; they
-// start upper-left and dart down-right (matching the keyframe's 28deg travel).
-const SHOOTERS: [number, number, number, number, number][] = [
-  [8, 12, 7, 7.5, 3],
-  [18, 40, 6, 9.5, 8],
-  [5, 64, 8, 12, 14],
-];
-
 // Solid-core dot with a soft falloff.
 const toGradients = (dots: Dot[]): string =>
   dots
@@ -260,26 +252,6 @@ const Background: React.FC = () => {
           />
         </div>
       </div>
-
-      {/* occasional shooting stars — a bright head (right) with a tapering tail that
-          trails behind it as it darts down-right; long quiet gaps between */}
-      {!reduce && SHOOTERS.map(([top, left, w, dur, delay], i) => (
-        <span
-          key={i}
-          aria-hidden
-          className="absolute h-[2px] rounded-full will-change-transform"
-          style={{
-            top: `${top}%`,
-            left: `${left}%`,
-            width: `${w}rem`,
-            transformOrigin: 'right center',
-            background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 55%, rgba(255,255,255,0.95) 92%, #fff 100%)',
-            filter: 'drop-shadow(0 0 7px rgba(255,255,255,0.7))',
-            animation: `shootingStar ${dur}s ease-in ${delay}s infinite`,
-            opacity: 0,
-          }}
-        />
-      ))}
 
       {/* 5 — legibility: a soft central pool + bottom scrim so the cream wordmark/CTA
           stay readable over the glow */}

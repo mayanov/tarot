@@ -115,18 +115,6 @@ html.lenis body {
   from { opacity: 0; transform: translateX(-18%) scale(0.92) rotate(-4deg); }
   to   { opacity: 1; transform: translateX(0) scale(1) rotate(0); }
 }
-/* occasional shooting star — a quick diagonal dart that fades, then a long gap.
-   Travel direction (28deg down-right) matches the streak's own tilt so the tail
-   trails the head instead of sliding sideways like a moving dash. */
-@keyframes shootingStar {
-  0%    { transform: translate3d(0, 0, 0) rotate(28deg) scaleX(0.3); opacity: 0; }
-  3%    { opacity: 1; }
-  4%    { transform: translate3d(60px, 32px, 0) rotate(28deg) scaleX(1); opacity: 1; }
-  12%   { transform: translate3d(430px, 228px, 0) rotate(28deg) scaleX(1); opacity: 1; }
-  15%   { transform: translate3d(500px, 266px, 0) rotate(28deg) scaleX(0.4); opacity: 0; }
-  100%  { transform: translate3d(500px, 266px, 0) rotate(28deg) scaleX(0.4); opacity: 0; }
-}
-
 /* ---- Nav menu items slide in from the left ---- */
 @keyframes navSlide {
   0%   { opacity: 0; transform: translateX(-14px); }
