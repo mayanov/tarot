@@ -7,18 +7,26 @@ interface LoaderProps {
   isIndonesian?: boolean;
 }
 
+// How long the hand-off to the hero takes (ms). The hero times its own entrance
+// against these, so keep them in sync with Hero.tsx.
+export const REVEAL_FLIGHT_MS = 1150; // moon flies up and wanes into the hero crescent
+const REVEAL_TOTAL_MS = 1550;         // loader fully gone
+
 // Black loader: a real moon waxes from new → full (a soft shadow slides off it as
-// it loads, its glow growing), settles full for a beat, then the full moon blooms
-// brighter and dilates open — a circle of light expanding outward from its center
-// to unveil the page, continuing the moon's growth as one flowing motion.
-const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) => {
+// it loads, its glow growing) and settles full for a beat. Then, instead of fading
+// away, the moon itself becomes the hero: it flies up, shrinks and wanes into the
+// small crescent above the title, while the sky stays put (the loader's sky is the
+// page's identical sky, cross-faded underneath) and the title writes itself in.
+const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const MIN = reduce ? 500 : 2500;
   const mounted = useRef(Date.now());
+  const moonRef = useRef<HTMLDivElement>(null);
   const [wax, setWax] = useState(0); // 0 = new moon, 100 = full
   const [enter, setEnter] = useState(false);
   const [heroReady, setHeroReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [flight, setFlight] = useState<string | null>(null); // moon's transform toward the hero crescent
   const [gone, setGone] = useState(false);
 
   useEffect(() => {
@@ -70,9 +78,22 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     const begin = () => {
       const wait = Math.max(0, MIN - (Date.now() - mounted.current));
       t = window.setTimeout(() => {
+        // Aim the moon at the hero's crescent: the crescent's lit disc sits at
+        // (41%, 50%) of its icon and spans 62.5% of its width (see CelestialMark).
+        const from = moonRef.current?.getBoundingClientRect();
+        const target = document.querySelector('[data-hero-moon] svg')?.getBoundingClientRect();
+        if (from && target && !reduce) {
+          const size = target.width * 0.625;
+          const cx = target.left + target.width * 0.414;
+          const cy = target.top + target.height * 0.5;
+          const dx = cx - (from.left + from.width / 2);
+          const dy = cy - (from.top + from.height / 2);
+          setFlight(`translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${(size / from.width).toFixed(4)})`);
+        }
         setLeaving(true);
-        // tell the hero to play its entrance as the aperture opens
+        // tell the hero to play its entrance in step with the flight
         try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
+        window.setTimeout(() => setGone(true), reduce ? 400 : REVEAL_TOTAL_MS);
       }, wait);
     };
     if (document.readyState === 'complete') begin();
@@ -83,50 +104,62 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       return () => { window.removeEventListener('load', onLoad); if (t) clearTimeout(t); };
     }
     return () => { if (t) clearTimeout(t); };
-  }, [ready, heroReady, MIN]);
+  }, [ready, heroReady, MIN, reduce]);
 
   if (gone) return null;
+
+  const flying = leaving && !reduce && !!flight;
+  const EASE_FLIGHT = 'cubic-bezier(0.65,0,0.2,1)';
 
   return (
     <div
       aria-hidden
-      onTransitionEnd={(e) => { if (leaving && e.propertyName === 'opacity') setGone(true); }}
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
       style={{
-        background: '#0b0924',
-        // Exit: the SKY never moves (it just cross-fades into the identical page
-        // sky, so the stars stay aligned and the hand-off is invisible). Only the
-        // moon rises and dissolves, and the hero title rises in beneath.
-        opacity: leaving ? 0 : 1,
-        transition: leaving ? (reduce ? 'opacity 320ms ease' : 'opacity 1100ms cubic-bezier(0.4,0,0.2,1) 140ms') : undefined,
-        willChange: 'opacity',
+        pointerEvents: leaving ? 'none' : undefined,
+        // reduced motion (or no target to fly to): a simple quick fade
+        opacity: leaving && !flying ? 0 : 1,
+        transition: leaving && !flying ? 'opacity 380ms ease' : undefined,
       }}
     >
-      {/* the hero's own night sky — so the loader IS the page's sky, and the
-          aperture reveal dilates straight into the identical (deterministic) sky */}
-      <Background />
-      {/* soft violet bloom cradling the moon, so it sits in a pool of light */}
-      <div aria-hidden className="absolute left-1/2 top-[43%] h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(140,98,196,0.3) 0%, rgba(140,98,196,0) 68%)', opacity: enter ? 1 : 0, transition: 'opacity 1100ms ease' }} />
+      {/* the hero's own night sky — identical to the page's, so it can cross-fade
+          away underneath the flying moon without the stars ever jumping */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: '#0b0924',
+          opacity: flying ? 0 : 1,
+          transition: flying ? 'opacity 900ms cubic-bezier(0.4,0,0.2,1) 260ms' : undefined,
+        }}
+      >
+        <Background />
+        {/* soft violet bloom cradling the moon, so it sits in a pool of light */}
+        <div aria-hidden className="absolute left-1/2 top-[43%] h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(140,98,196,0.3) 0%, rgba(140,98,196,0) 68%)', opacity: enter && !flying ? 1 : 0, transition: flying ? 'opacity 500ms ease' : 'opacity 1100ms ease' }} />
+      </div>
 
       <div
         className="relative flex flex-col items-center"
         style={{
-          // No bloom/scale on exit — the moon holds still and the aperture simply
-          // opens from its center (the mask reveals straight through it).
-          opacity: leaving ? (reduce ? 0 : 1) : enter ? 1 : 0,
-          transform: leaving && !reduce ? 'translateY(-34px)' : `translateY(${!leaving && !enter ? 12 : 0}px)`,
-          transition: leaving ? (reduce ? 'opacity 250ms ease' : 'transform 1150ms cubic-bezier(0.22,1,0.3,1)') : 'opacity 800ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
+          opacity: enter ? 1 : 0,
+          transform: `translateY(${!enter ? 12 : 0}px)`,
+          transition: 'opacity 800ms ease, transform 900ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
-        {/* the moon — a real photo, revealed as the shadow disc slides off; on exit
-            it brightens, rushes toward the viewer and dissolves into its own light */}
+        {/* the moon — a real photo, revealed as the shadow disc slides off. On exit it
+            flies to the hero crescent, shrinking and waning (the shadow slides back
+            in from the right) until it IS the crescent, then hands off to it. */}
         <div
-          className="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden"
+          ref={moonRef}
+          className="relative w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden will-change-transform"
           style={{
-            boxShadow: leaving && !reduce
-              ? '0 0 120px 34px rgba(255,255,255,0.4)'
+            transform: flying ? flight! : 'none',
+            opacity: flying ? 0 : 1,
+            boxShadow: flying
+              ? '0 0 26px 4px rgba(255,255,255,0.18)'
               : `0 0 ${wax * 1.1}px ${wax * 0.22}px rgba(255,255,255,${0.06 + wax / 260})`,
-            transition: leaving && !reduce ? 'box-shadow 800ms ease' : 'none',
+            transition: flying
+              ? `transform ${REVEAL_FLIGHT_MS}ms ${EASE_FLIGHT}, box-shadow ${REVEAL_FLIGHT_MS}ms ease, opacity 320ms ease ${REVEAL_FLIGHT_MS - 120}ms`
+              : 'none',
           }}
         >
           <img
@@ -138,20 +171,27 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           />
           {/* faint moonstone tint so the grey moon reads on-brand */}
           <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 70% at 42% 38%, rgba(107,63,160,0.16) 0%, transparent 70%)', mixBlendMode: 'screen' }} />
-          {/* the shadow that retreats to the right, waxing the moon (soft terminator) */}
+          {/* the shadow — retreats right while waxing; slides back in on the flight so
+              the moon wanes into the crescent's lit-left shape */}
           <div
             className="absolute inset-0 rounded-full"
             style={{
               background: '#181A44',
-              transform: `translateX(${wax * 1.02}%)`,
+              transform: `translateX(${flying ? 40 : wax * 1.02}%)`,
               filter: 'blur(3px)',
+              transition: flying ? `transform ${REVEAL_FLIGHT_MS - 150}ms cubic-bezier(0.45,0,0.2,1) 120ms` : 'none',
             }}
           />
         </div>
 
-        {/* wordmark + label — fade out first, so only the moon's light carries the reveal */}
+        {/* wordmark + label — slip away first, so the moon carries the reveal */}
         <div
-          style={{ opacity: leaving && !reduce ? 0 : undefined, transition: 'opacity 320ms ease' }}
+          style={{
+            opacity: leaving ? 0 : 1,
+            transform: leaving && !reduce ? 'translateY(10px)' : 'none',
+            filter: leaving && !reduce ? 'blur(4px)' : 'none',
+            transition: 'opacity 360ms ease, transform 420ms ease, filter 420ms ease',
+          }}
           className="flex flex-col items-center"
         >
           <div className="mt-9 flex items-baseline gap-[0.28em] text-lg sm:text-xl font-elegant font-semibold tracking-[0.02em]">

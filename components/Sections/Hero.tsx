@@ -4,12 +4,35 @@ import { smoothScrollToId } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
 import { btnPrimaryDark } from '../UI/buttons';
 import Background from '../Layout/Background';
+import { REVEAL_FLIGHT_MS } from '../Layout/Loader';
 
 interface HeroProps {
   isIndonesian?: boolean;
 }
 
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
+
+// Soft fade-and-rise for each hero piece — opacity + transform only, so it's fully
+// GPU-composited. `land` is opacity-only (no movement): used for the crescent, which
+// must already sit at its final spot when the loader's moon measures it and flies in
+// to become it. Defined OUTSIDE Hero so it isn't re-created (and remounted, which
+// skipped the transition) on every render.
+const Rise: React.FC<{ shown: boolean; children: React.ReactNode; delay?: number; className?: string; land?: boolean }> = ({ shown, children, delay = 0, className = '', land = false }) => (
+  <div
+    className={className}
+    style={land ? {
+      opacity: shown ? 1 : 0,
+      transition: `opacity 420ms ease ${delay}ms`,
+    } : {
+      opacity: shown ? 1 : 0,
+      transform: shown ? 'translateY(0)' : 'translateY(22px)',
+      transition: `opacity 1s ease ${delay}ms, transform 1.1s ${EASE} ${delay}ms`,
+      willChange: 'opacity, transform',
+    }}
+  >
+    {children}
+  </div>
+);
 
 const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const [shown, setShown] = useState(false);
@@ -76,22 +99,10 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     return () => { window.removeEventListener('mt:reveal', play); clearTimeout(t); };
   }, []);
 
-  // Soft fade-and-rise for each piece — opacity + transform only, so it's fully
-  // GPU-composited and stays smooth. `hero` gives the big title an extra scale
-  // "settle" so it blooms up in sync with the loader dissolve.
-  const Rise: React.FC<{ children: React.ReactNode; delay?: number; className?: string; hero?: boolean }> = ({ children, delay = 0, className = '', hero = false }) => (
-    <div
-      className={className}
-      style={{
-        opacity: shown ? 1 : 0,
-        transform: shown ? 'translateY(0) scale(1)' : `translateY(${hero ? 16 : 22}px) scale(${hero ? 0.95 : 1})`,
-        transition: `opacity ${hero ? 1.2 : 1}s ease ${delay}ms, transform ${hero ? 1.4 : 1.1}s ${EASE} ${delay}ms`,
-        willChange: 'opacity, transform',
-      }}
-    >
-      {children}
-    </div>
-  );
+  // The title writes itself in, letter by letter — each glyph rises out of a soft
+  // blur — timed so it finishes as the loader's moon lands on the crescent.
+  const TITLE = 'Mayanov Tarot';
+  const letterDelay = (i: number) => 260 + i * 55;
 
   return (
     <section
@@ -107,21 +118,33 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
       {/* MASTHEAD — a calm, centered stack under a quiet crescent moon. */}
       <div ref={contentRef} className="relative z-10 w-full mx-auto px-8 flex flex-col items-center">
-        <Rise delay={100}>
-          <div ref={moonRef} className="will-change-transform">
+        <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 180} land>
+          <div ref={moonRef} data-hero-moon className="will-change-transform">
           <CelestialMark name="crescent" className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
           </div>
         </Rise>
 
-        <Rise delay={160} hero>
-          <div ref={titleRef} className="will-change-transform">
-          <h1 className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)]">
-            <span className="text-cream">Mayanov Tarot</span>
+        <div ref={titleRef} className="will-change-transform">
+          <h1 aria-label={TITLE} className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] text-cream">
+            {TITLE.split('').map((ch, i) => (
+              <span
+                key={i}
+                aria-hidden
+                className="inline-block"
+                style={{
+                  opacity: shown ? 1 : 0,
+                  transform: shown ? 'translateY(0)' : 'translateY(0.35em)',
+                  filter: shown ? 'blur(0)' : 'blur(8px)',
+                  transition: `opacity 700ms ease ${letterDelay(i)}ms, transform 900ms ${EASE} ${letterDelay(i)}ms, filter 800ms ease ${letterDelay(i)}ms`,
+                }}
+              >
+                {ch === ' ' ? '\u00A0' : ch}
+              </span>
+            ))}
           </h1>
-          </div>
-        </Rise>
+        </div>
 
-        <Rise delay={340}>
+        <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 100}>
           <div ref={subRef} className="will-change-transform">
           <p className="mt-7 md:mt-9 font-elegant font-medium leading-[1.2] md:leading-[1.14] tracking-[-0.01em] text-[1.3rem] sm:text-[1.6rem] md:text-[1.95rem] lg:text-[2.2rem] xl:text-[2.45rem] text-cream max-w-[20ch] md:max-w-none md:whitespace-nowrap [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
             {isIndonesian ? (
@@ -133,7 +156,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           </div>
         </Rise>
 
-        <Rise delay={520}>
+        <Rise shown={shown} delay={REVEAL_FLIGHT_MS + 80}>
           <div ref={ctaRef} className="mt-8 md:mt-9 will-change-transform">
             <a
               href="#services"
