@@ -66,12 +66,13 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
     >
       {/* heading + photo gallery — on a solid purple block */}
       <div className="bg-[#2A2258] mx-auto px-8 pt-20 md:pt-28 pb-16 md:pb-20 relative z-10 text-cream">
-          <FadeIn>
-            {/* PHOTO GALLERY — a purple-backed band of moments that opens the section */}
+          {/* PHOTO GALLERY — a purple-backed band of moments that opens the section.
+              Each photo has a single unveil (ImageReveal), which waits for the photo to
+              load — no extra fade layers stacking delay on top of it. */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {EVENT_PHOTOS.map((src, i) => (
-                <FadeIn key={src} delay={i * 90} dir={i % 2 === 0 ? 'up' : 'down'} distance={0.8}>
                   <button
+                    key={src}
                     type="button"
                     onClick={() => setLightbox(src)}
                     className="group relative block w-full overflow-hidden rounded-[1.5rem] aspect-[3/4] bg-white/5"
@@ -89,10 +90,8 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                     <span className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/15 group-hover:ring-cream/50 transition-all" />
                     <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
-                </FadeIn>
               ))}
             </div>
-          </FadeIn>
       </div>
 
       {/* events history + CTAs — on the paper ground below the purple block */}

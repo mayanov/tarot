@@ -15,28 +15,59 @@ interface ImageRevealProps {
 // up from behind a clip mask while a subtle zoom settles. Respects reduced motion.
 export const ImageReveal: React.FC<ImageRevealProps> = ({ src, alt, className = '', imgClassName = '', delay = 0, loading = 'lazy' }) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [shown, setShown] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [inView, setInView] = useState(false);
+  const [near, setNear] = useState(loading === 'eager');
+  const [loaded, setLoaded] = useState(false);
+  const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShown(true); return; }
+    if (reduce) { setInView(true); return; }
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) { setShown(true); obs.unobserve(e.target); } });
-    }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
+      entries.forEach((e) => { if (e.isIntersecting) { setInView(true); obs.unobserve(e.target); } });
+    }, { threshold: 0.12 });
     obs.observe(el);
     return () => obs.disconnect();
-  }, []);
+  }, [reduce]);
+
+  // Start downloading well before the photo scrolls in (~1.5 screens ahead). The
+  // browser's own loading="lazy" decides "near" very differently per browser — iOS
+  // Safari waits until it's almost on screen — so we do it ourselves, the same everywhere.
+  useEffect(() => {
+    if (near) return;
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { setNear(true); obs.disconnect(); }
+    }, { rootMargin: '150% 0px 150% 0px' });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [near]);
+
+  // the image may already be cached (complete) before React attaches onLoad
+  useEffect(() => {
+    const img = imgRef.current;
+    if (near && img && img.complete && img.naturalWidth) setLoaded(true);
+  }, [near]);
+
+  // Only unveil once the photo is actually there — otherwise the reveal plays over
+  // an empty tile and the photo pops in afterwards. If it's slow, it simply waits.
+  const shown = inView && loaded;
 
   return (
     <div ref={ref} className={`overflow-hidden ${className}`}>
       <img
-        src={src}
+        ref={imgRef}
+        src={near ? src : undefined}
         alt={alt}
-        loading={loading}
+        loading="eager"
         decoding="async"
+        onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(true)}
         className={imgClassName}
-        style={{
+        style={reduce ? undefined : {
           clipPath: shown ? 'inset(0 0 0 0)' : 'inset(0 0 100% 0)',
           transform: shown ? 'scale(1)' : 'scale(1.14)',
           transition: `clip-path 1.1s ${EASE} ${delay}ms, transform 1.5s ${EASE} ${delay}ms`,
