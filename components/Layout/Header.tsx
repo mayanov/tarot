@@ -145,7 +145,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             {/* one 'Pesan' pill + a bare menu icon (no second pill) */}
             <div className="flex items-center gap-4">
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('open-booking'))}
+                onClick={() => scrollToSection('services')}
                 className={`${btnPrimaryDark} hidden sm:inline-flex px-6 py-2.5 text-[13px] tracking-[0.01em] whitespace-nowrap shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]`}
               >
                 {isIndonesian ? 'Pesan' : 'Book'}
@@ -251,7 +251,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               </nav>
 
               <button
-                onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('open-booking')); }}
+                onClick={() => scrollToSection('services')}
                 className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-sm`}
               >
                 {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
