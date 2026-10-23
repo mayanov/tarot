@@ -1,10 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ArrowRight, Instagram } from 'lucide-react';
-import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
+import { ArrowRight } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
 import { btnPrimaryDark, btnSecondaryDark } from '../UI/buttons';
-import CelestialMark from '../UI/CelestialMark';
 
 interface FooterProps {
     isIndonesian?: boolean;
@@ -30,29 +29,22 @@ const useInView = (threshold = 0.12, rootMargin = '0px 0px -6% 0px') => {
     return { ref, inView };
 };
 
-// A face-down tarot card back — plum, a fine gold frame and a star (matches the
-// pricelist's card backs). Purely visual; the parent button handles the click.
-const CardBack: React.FC = () => (
-    <div className="relative h-full w-full overflow-hidden rounded-[0.7rem] ring-1 ring-white/20 [box-shadow:0_24px_50px_-22px_rgba(6,4,20,0.9)]" style={{ background: 'radial-gradient(135% 120% at 15% -15%, #553172 0%, #39234E 52%, #20132f 100%)' }}>
-        <div aria-hidden className="absolute inset-[0.35rem] rounded-[0.45rem] border border-[rgba(214,190,140,0.7)]" />
-        <div className="absolute inset-0 grid place-items-center text-[rgba(214,190,140,0.85)]">
-            <CelestialMark name="star" className="w-7" />
-        </div>
-    </div>
-);
+const WA_NUMBER = '6287786280310';
+const WA_HELLO = `https://wa.me/${WA_NUMBER}?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading`;
 
 /**
- * The footer is the close of the evening — the page dissolves back into the night
- * sky it opened on. No white card: the invitation sits right on the sky (echoing the
- * hero's "jernih"), with three face-down tarot cards to "draw" — any of them takes you
- * to the pricelist — then a quiet sign-off bar with links and socials.
+ * The footer is the close of the evening — the page settles back onto the night sky
+ * it opened on. An editorial sign-off rather than a card: the invitation on the
+ * left, the real ways to reach Mayanov on the right, and a giant wordmark running
+ * edge to edge along the bottom like a signature.
  */
 const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
     const year = new Date().getFullYear();
     const v = useInView();
     const t = (id: string, en: string) => (isIndonesian ? id : en);
-    const goServices = (e?: React.MouseEvent) => { e?.preventDefault(); smoothScrollToId('services', 80); };
-    const goTo = (id: string) => (e: React.MouseEvent) => { e.preventDefault(); smoothScrollToId(id, 80); };
+    const market = isIndonesian ? 'ID' : 'Global';
+    const goServices = (e: React.MouseEvent) => { e.preventDefault(); smoothScrollToId('services', 80); };
+    const trackWA = () => trackEvent('contact', { method: 'WhatsApp', market }, 'Contact', { content_name: 'WhatsApp Chat', content_category: market });
 
     // soft blur-rise that settles into focus
     const rise = (delay: number): React.CSSProperties => ({
@@ -63,96 +55,81 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
         willChange: 'transform, opacity, filter',
     });
 
-    // plain icons (no circular containers), with a soft shadow so they read on the starfield
-    const socialLink = 'inline-flex text-cream/75 hover:text-cream transition-all duration-500 hover:-translate-y-0.5 [filter:drop-shadow(0_2px_8px_rgba(6,4,14,0.55))]';
-    const textLink = 'text-cream/70 hover:text-cream transition-colors duration-300';
-
-    // the three cards: resting fan → spread wider on hover
-    const FAN = [
-        { rest: 'translateX(-62%) rotate(-11deg)', open: 'translateX(-92%) translateY(-6px) rotate(-15deg)' },
-        { rest: 'translateY(-8px)', open: 'translateY(-20px)' },
-        { rest: 'translateX(62%) rotate(11deg)', open: 'translateX(92%) translateY(-6px) rotate(15deg)' },
+    // the contact list — real details, set like a colophon
+    const contacts: { label: string; value: string; href?: string; onClick?: () => void }[] = [
+        { label: 'WhatsApp', value: '+62 877 8628 0310', href: WA_HELLO, onClick: trackWA },
+        {
+            label: 'Instagram', value: '@mayanov_', href: 'https://www.instagram.com/mayanov_/',
+            onClick: () => trackEvent('view_item', { item_name: 'Instagram Profile', market }, 'ViewContent', { content_name: 'Instagram', content_category: market }),
+        },
+        {
+            label: 'TikTok', value: '@mayanov_', href: 'https://www.tiktok.com/@mayanov_',
+            onClick: () => trackEvent('view_item', { item_name: 'TikTok Profile', market }, 'ViewContent', { content_name: 'TikTok', content_category: market }),
+        },
+        { label: t('Jam sesi', 'Session hours'), value: '11.00 – 20.00 WIB' },
+        { label: t('Lokasi', 'Based in'), value: 'Jakarta Selatan' },
     ];
+
+    const SH = '[@media(max-height:780px)]'; // short screens: the pinned footer must stay shorter than the screen
 
     return (
         <footer ref={v.ref} className="relative z-10 text-cream overflow-hidden">
-            <div className="mx-auto px-6 md:px-10 max-w-6xl pt-8 md:pt-12 [@media(max-height:780px)]:md:pt-8 pb-4 md:pb-5">
-
-                {/* ===== the close — right on the night sky ===== */}
-                <div style={rise(0)} className="flex flex-col items-center text-center">
-                    <span className="text-[11px] tracking-[0.32em] uppercase text-cream/55">
-                        {t('Kartu terakhir', 'One last card')}
-                    </span>
-                    <h2 className="mt-4 font-elegant font-medium text-cream leading-[1.05] tracking-[-0.02em] text-[clamp(2.1rem,4.6vw,3.7rem)] [@media(max-height:780px)]:text-[clamp(1.9rem,3.6vw,2.8rem)] max-w-[15ch] [text-shadow:0_8px_60px_rgba(6,4,14,0.55)]">
-                        {isIndonesian
-                            ? <>Siap untuk pikiran yang lebih <span className="italic">jernih</span>?</>
-                            : <>Ready for a <span className="italic">clearer</span> view?</>}
-                    </h2>
-
-                    {/* three face-down cards — draw any one to see the readings */}
-                    <div className="group/fan relative mt-8 md:mt-9 [@media(max-height:780px)]:mt-6 h-[7.5rem] md:h-[8.25rem] w-[4.8rem] md:w-[5.2rem] [@media(max-height:780px)]:h-[6rem] [@media(max-height:780px)]:w-[3.8rem]">
-                        {FAN.map((f, i) => (
-                            <a
-                                key={i}
-                                href="#services"
-                                onClick={goServices}
-                                aria-label={t('Tarik kartu — lihat layanan', 'Draw a card — see the readings')}
-                                className={`absolute inset-0 transition-transform duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] [transform:var(--rest)] group-hover/fan:[transform:var(--open)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream/60 rounded-[0.7rem] ${i === 1 ? 'z-10' : ''}`}
-                                style={{ ['--rest' as any]: f.rest, ['--open' as any]: f.open }}
-                            >
-                                <CardBack />
+            <div className={`mx-auto px-6 md:px-10 max-w-6xl pt-8 md:pt-14 ${SH}:pt-3 ${SH}:md:pt-8`}>
+                <div className={`grid md:grid-cols-12 gap-y-8 ${SH}:gap-y-5 md:gap-x-12 md:items-end`}>
+                    {/* LEFT — the invitation */}
+                    <div style={rise(0)} className="md:col-span-7">
+                        <h2 className={`font-elegant font-medium text-cream leading-[1.04] tracking-[-0.02em] text-[clamp(2.2rem,5vw,4.3rem)] ${SH}:text-[clamp(2rem,3.8vw,3.1rem)] max-w-[14ch] [text-shadow:0_8px_60px_rgba(6,4,14,0.55)]`}>
+                            {isIndonesian
+                                ? <>Siap untuk pikiran yang lebih <span className="italic">jernih</span>?</>
+                                : <>Ready for a <span className="italic">clearer</span> view?</>}
+                        </h2>
+                        <p className={`mt-5 ${SH}:hidden text-cream/65 font-light text-[0.95rem] leading-relaxed max-w-md`}>
+                            {t('Lewat chat, call, atau tatap muka di Jakarta Selatan — pilih yang paling nyaman buatmu.',
+                               'By chat, call, or in person in South Jakarta — whichever feels easiest for you.')}
+                        </p>
+                        <div className={`mt-7 ${SH}:mt-5 flex flex-wrap items-center gap-3`}>
+                            <a href="#services" onClick={goServices} className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-sm`}>
+                                {t('Pesan Sesi', 'Book a Reading')}
+                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </a>
-                        ))}
+                            <a href={WA_HELLO} target="_blank" rel="noopener noreferrer" onClick={trackWA} className={`${btnSecondaryDark} inline-flex gap-2.5 px-7 py-3.5 text-sm`}>
+                                <FaWhatsapp size={17} />
+                                {t('Chat di WhatsApp', 'Chat on WhatsApp')}
+                            </a>
+                        </div>
                     </div>
-                    <p className="mt-5 text-xs tracking-wide text-cream/55 [@media(max-height:780px)]:hidden">
-                        {t('Tarik satu kartu untuk melihat layanan', 'Draw a card to see the readings')}
-                    </p>
 
-                    <div className="mt-6 [@media(max-height:780px)]:mt-5 flex flex-wrap items-center justify-center gap-3">
-                        <a href="#services" onClick={goServices} className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-sm`}>
-                            {t('Pesan Sesi', 'Book a Reading')}
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </a>
-                        <a
-                            href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
-                            onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
-                            className={`${btnSecondaryDark} inline-flex gap-2.5 px-7 py-3.5 text-sm`}
-                        >
-                            <FaWhatsapp size={17} />
-                            {t('Chat di WhatsApp', 'Chat on WhatsApp')}
-                        </a>
-                    </div>
+                    {/* RIGHT — ways to reach Mayanov, as ruled rows */}
+                    <dl style={rise(180)} className="md:col-span-4 md:col-start-9 text-sm grid grid-cols-2 gap-x-6 gap-y-4 border-t border-cream/15 pt-5 md:block md:border-t-0 md:pt-0">
+                        {contacts.map((c) => (
+                            <div key={c.label} className={`md:flex md:items-baseline md:justify-between md:gap-6 md:border-t md:border-cream/15 md:py-3 ${SH}:md:py-2.5 md:last:border-b`}>
+                                <dt className="text-cream/50 text-[11px] tracking-[0.16em] uppercase">{c.label}</dt>
+                                <dd className="mt-1 md:mt-0 md:text-right">
+                                    {c.href ? (
+                                        <a href={c.href} target="_blank" rel="noopener noreferrer" onClick={c.onClick} className="text-cream/90 hover:text-cream underline-offset-4 hover:underline decoration-cream/40">
+                                            {c.value}
+                                        </a>
+                                    ) : (
+                                        <span className="text-cream/90">{c.value}</span>
+                                    )}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
                 </div>
 
-                {/* ===== sign-off bar ===== */}
-                <div style={rise(380)} className="mt-10 md:mt-14 [@media(max-height:780px)]:md:mt-9 pt-6 [@media(max-height:780px)]:pt-5 border-t border-cream/15">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-5 md:gap-6">
-                        <div aria-label="Mayanov Tarot" className="font-elegant font-medium text-[1.6rem] leading-none tracking-[-0.01em] select-none">
-                            Mayanov Tarot
-                        </div>
-                        <nav aria-label={t('Tautan', 'Links')} className="hidden sm:flex items-center gap-7 text-sm">
-                            <a href="#services" onClick={goTo('services')} className={textLink}>{t('Layanan', 'Readings')}</a>
-                            <a href="#about" onClick={goTo('about')} className={textLink}>{t('Tentang', 'About')}</a>
-                            <a href="#faq" onClick={goTo('faq')} className={textLink}>FAQ</a>
-                        </nav>
-                        <nav className="flex items-center gap-7" aria-label="Social">
-                            <a
-                                href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
-                                onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
-                                className={socialLink} aria-label="Instagram"><Instagram className="w-[22px] h-[22px]" strokeWidth={1.7} /></a>
-                            <a
-                                href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
-                                onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
-                                className={socialLink} aria-label="TikTok"><FaTiktok size={20} /></a>
-                            <a
-                                href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
-                                onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
-                                className={socialLink} aria-label="WhatsApp"><FaWhatsapp size={22} /></a>
-                        </nav>
-                    </div>
-                    <p className="mt-5 text-center md:text-left text-xs tracking-[0.06em] text-cream/45">
-                        Jakarta · © {year} · 18+
-                    </p>
+                {/* small print, above the signature */}
+                <div style={rise(320)} className={`mt-10 md:mt-16 ${SH}:mt-7 ${SH}:md:mt-8 flex items-center justify-between gap-4 text-[11px] tracking-[0.08em] text-cream/45`}>
+                    <span>© {year} Mayanov Tarot · 18+</span>
+                    <span className="hidden sm:inline">{t('Dibuat dengan tenang di Jakarta', 'Made calmly in Jakarta')}</span>
+                </div>
+            </div>
+
+            {/* THE SIGNATURE — a giant wordmark running edge to edge, its baseline tucked
+                just under the bottom edge so it reads as part of the sky */}
+            <div style={rise(420)} aria-hidden className="mt-3 -mx-3 sm:-mx-5 md:-mx-6 -mb-3 sm:-mb-5 md:-mb-6 select-none overflow-hidden">
+                <div className={`font-serif font-medium uppercase whitespace-nowrap text-center leading-[0.78] tracking-[-0.02em] text-cream/90 text-[12.6vw] ${SH}:md:text-[8.5vw] translate-y-[12%] [text-shadow:0_10px_80px_rgba(6,4,14,0.5)]`}>
+                    Mayanov Tarot
                 </div>
             </div>
         </footer>
