@@ -454,7 +454,7 @@ function App() {
           style={{ background: 'linear-gradient(180deg, rgba(16,16,40,0.56) 0%, rgba(16,16,40,0.42) 48%, rgba(16,16,40,0.54) 100%)' }}
         />
 
-        <div ref={footerInnerRef} className="relative p-3 sm:p-5 md:p-8 will-change-transform" style={reduceMotion ? undefined : { opacity: 0.12 }}>
+        <div ref={footerInnerRef} className="relative p-3 sm:p-5 md:p-6 will-change-transform" style={reduceMotion ? undefined : { opacity: 0.12 }}>
           <Footer isIndonesian={isIndonesian} />
         </div>
       </div>
