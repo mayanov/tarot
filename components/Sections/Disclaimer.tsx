@@ -61,13 +61,8 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                             <h2 className="mt-4 font-elegant font-semibold text-ink text-[2.1rem] sm:text-[2.7rem] lg:text-[3.3rem] leading-[1.04] tracking-[-0.02em]">
                                 {isIndonesian ? 'Beberapa catatan jujur' : 'A few honest notes'}
                             </h2>
+                            {/* the agreement is the subtitle */}
                             <p className="mt-6 text-ink/60 font-light leading-relaxed text-base md:text-lg max-w-sm">
-                                {isIndonesian
-                                    ? 'Biar sesinya nyaman dan kita sepaham, ini beberapa hal yang baik kamu tahu dulu.'
-                                    : "So the session feels easy and we're on the same page, here are a few things worth knowing first."}
-                            </p>
-                            {/* the agreement sits under the intro on desktop */}
-                            <p className="hidden lg:block mt-14 pt-6 border-t border-ink/[0.07] text-ink/50 font-light text-sm leading-relaxed max-w-xs">
                                 {agreement}
                             </p>
                         </FadeIn>
@@ -92,12 +87,6 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         ))}
                     </ol>
 
-                    {/* the agreement closes the list on phones/tablets */}
-                    <FadeIn className="lg:hidden">
-                        <p className="text-ink/55 font-light text-sm leading-relaxed max-w-2xl">
-                            {agreement}
-                        </p>
-                    </FadeIn>
                 </div>
             </div>
         </section>
