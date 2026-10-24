@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, X, ChevronUp, ChevronDown } from 'lucide-react';
 import PageHeader from './ui/PageHeader';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import { CONTROL } from './ui/Field';
 import InlineLoader from './ui/InlineLoader';
-import { fetchEvents, createEvent, updateEvent, deleteEvent, EventItem } from '../../services/events';
+import { fetchEvents, createEvent, updateEvent, deleteEvent, moveEvent, EventItem } from '../../services/events';
 
 // Admin — manage the "Events & Collaborations" list shown on the public site.
-// Add an event (year, title, location), edit one in place, or delete it.
+// Add an event (year, title, location), edit one in place, move it up/down within
+// its year, or delete it.
 const FLD = `w-full px-3 py-2 ${CONTROL}`;
 const LBL = 'block text-xs font-medium text-text-subtle mb-1.5';
 const thisYear = String(new Date().getFullYear());
@@ -87,6 +88,29 @@ const EventsView: React.FC = () => {
         } finally { setBusyId(null); }
     };
 
+    // reorder within the same year — swap with the neighbour on screen right away,
+    // then take the server's list
+    const move = async (ev: EventItem, dir: 'up' | 'down') => {
+        if (!ev.id) return;
+        setBusyId(ev.id);
+        setError('');
+        setEvents((list) => {
+            const i = list.indexOf(ev);
+            const j = dir === 'up' ? i - 1 : i + 1;
+            if (i < 0 || !list[j] || list[j].year !== ev.year) return list;
+            const next = [...list];
+            [next[i], next[j]] = [next[j], next[i]];
+            return next;
+        });
+        try {
+            const { events: fresh } = await moveEvent(ev.id, dir);
+            setEvents(fresh);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Could not move the event.');
+            load();
+        } finally { setBusyId(null); }
+    };
+
     // group by year (list already comes newest-first)
     const byYear = useMemo(() => {
         const groups: { year: string; items: EventItem[] }[] = [];
@@ -149,7 +173,7 @@ const EventsView: React.FC = () => {
                         <div key={g.year} className="border-b border-adm-line last:border-0">
                             <div className="px-5 py-2.5 bg-adm-hover/40 text-xs font-semibold tracking-[0.14em] text-text-subtle">{g.year}</div>
                             <ul>
-                                {g.items.map((ev) => {
+                                {g.items.map((ev, idx) => {
                                     const editing = editId === ev.id;
                                     const busy = busyId === ev.id;
                                     return (
@@ -174,6 +198,18 @@ const EventsView: React.FC = () => {
                                                         {ev.loc && <p className="text-xs font-medium text-lilac truncate mt-0.5">{ev.loc}</p>}
                                                     </div>
                                                     <div className="flex items-center gap-1 shrink-0">
+                                                        {g.items.length > 1 && (
+                                                            <div className="flex items-center mr-1 pr-1 border-r border-adm-line">
+                                                                <button onClick={() => move(ev, 'up')} disabled={busy || idx === 0} title="Move up" aria-label={`Move ${ev.title} up`}
+                                                                    className="p-2 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors disabled:opacity-25 disabled:hover:bg-transparent">
+                                                                    <ChevronUp size={15} />
+                                                                </button>
+                                                                <button onClick={() => move(ev, 'down')} disabled={busy || idx === g.items.length - 1} title="Move down" aria-label={`Move ${ev.title} down`}
+                                                                    className="p-2 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors disabled:opacity-25 disabled:hover:bg-transparent">
+                                                                    <ChevronDown size={15} />
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                         <button onClick={() => startEdit(ev)} disabled={busy} title="Edit" aria-label={`Edit ${ev.title}`}
                                                             className="p-2 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors disabled:opacity-40">
                                                             <Pencil size={15} />

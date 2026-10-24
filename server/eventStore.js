@@ -149,3 +149,30 @@ export async function deleteEvent(id) {
   writeFile(next);
   return true;
 }
+
+// Move an event one place up or down within its own year (swaps its `order` with
+// the neighbour's). Returns the new full list, null if the id is unknown, or the
+// list unchanged when it's already first/last in that year.
+export async function moveEvent(id, dir) {
+  const list = await listEvents();
+  const ev = list.find((e) => e.id === id);
+  if (!ev) return null;
+  const sameYear = list.filter((e) => e.year === ev.year); // already shown order
+  const i = sameYear.indexOf(ev);
+  const other = sameYear[dir === 'up' ? i - 1 : i + 1];
+  if (!other) return list;
+  let a = other.order ?? 0;
+  let b = ev.order ?? 0;
+  if (a === b) a = dir === 'up' ? b + 1 : b - 1; // tie — make them distinct
+  if (db) {
+    const batch = db.batch();
+    batch.update(db.collection(COLLECTION).doc(ev.id), { order: a });
+    batch.update(db.collection(COLLECTION).doc(other.id), { order: b });
+    await batch.commit();
+  } else {
+    writeFile(readFile().map((e) => (e.id === ev.id ? { ...e, order: a } : e.id === other.id ? { ...e, order: b } : e)));
+  }
+  ev.order = a;
+  other.order = b;
+  return sortEvents(list);
+}

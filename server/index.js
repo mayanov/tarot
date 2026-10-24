@@ -326,6 +326,20 @@ app.put('/api/admin/events/:id', verifyToken, async (req, res) => {
     }
 });
 
+// Reorder within a year: { dir: 'up' | 'down' } → the full, re-sorted list.
+app.post('/api/admin/events/:id/move', verifyToken, async (req, res) => {
+    const dir = req.body?.dir;
+    if (dir !== 'up' && dir !== 'down') return res.status(400).json({ error: "dir must be 'up' or 'down'" });
+    try {
+        const events = await eventStore.moveEvent(req.params.id, dir);
+        if (!events) return res.status(404).json({ error: 'Event not found' });
+        res.json({ events });
+    } catch (e) {
+        console.error('event move failed:', e);
+        res.status(500).json({ error: 'Failed to move event' });
+    }
+});
+
 app.delete('/api/admin/events/:id', verifyToken, async (req, res) => {
     try {
         if (!(await eventStore.deleteEvent(req.params.id))) return res.status(404).json({ error: 'Event not found' });

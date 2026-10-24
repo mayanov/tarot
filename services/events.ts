@@ -48,3 +48,4 @@ async function send(path: string, method: string, body?: unknown) {
 export const createEvent = (e: Omit<EventItem, 'id'>): Promise<EventItem> => send('/api/admin/events', 'POST', e);
 export const updateEvent = (id: string, e: Omit<EventItem, 'id'>): Promise<EventItem> => send(`/api/admin/events/${encodeURIComponent(id)}`, 'PUT', e);
 export const deleteEvent = (id: string): Promise<{ ok: true }> => send(`/api/admin/events/${encodeURIComponent(id)}`, 'DELETE');
+export const moveEvent = (id: string, dir: 'up' | 'down'): Promise<{ events: EventItem[] }> => send(`/api/admin/events/${encodeURIComponent(id)}/move`, 'POST', { dir });
