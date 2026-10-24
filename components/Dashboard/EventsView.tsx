@@ -171,7 +171,7 @@ const EventsView: React.FC = () => {
                                                 <div className="flex items-center gap-4">
                                                     <div className="min-w-0 flex-1">
                                                         <p className="text-sm font-medium text-text-light truncate">{ev.title}</p>
-                                                        {ev.loc && <p className="text-xs text-text-subtle truncate mt-0.5">{ev.loc}</p>}
+                                                        {ev.loc && <p className="text-xs font-medium text-lilac truncate mt-0.5">{ev.loc}</p>}
                                                     </div>
                                                     <div className="flex items-center gap-1 shrink-0">
                                                         <button onClick={() => startEdit(ev)} disabled={busy} title="Edit" aria-label={`Edit ${ev.title}`}

@@ -107,7 +107,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         <h3 className="font-serif font-medium text-ink text-sm md:text-base leading-[1.25] transition-colors duration-500 group-hover:text-moon">
                           {event.title}
                         </h3>
-                        <span className="shrink-0 text-[0.78rem] tracking-[0.01em] text-ink/50 font-light leading-snug sm:text-right">
+                        <span className="shrink-0 text-[0.8rem] md:text-[0.85rem] tracking-[0.01em] text-moon font-medium leading-snug sm:text-right">
                           {event.loc}
                         </span>
                       </li>
