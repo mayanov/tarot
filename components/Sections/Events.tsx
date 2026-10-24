@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchEvents, FALLBACK_EVENTS, EventItem } from '../../services/events';
 import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
@@ -16,36 +17,17 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   const [showAll, setShowAll] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
 
-  // Original list in chronological order (2016 -> 2025)
-  const rawEventList = [
-    { year: "2016", title: "Tarot Reading @ Horizon Radio", loc: "Prasetiya Mulya Business School" },
-    { year: "2016", title: "Music Night 2016: Rollin With The Homies", loc: "Prasetiya Mulya Business School" },
-    { year: "2017", title: "Tarot Reading @ Horizon Radio", loc: "Prasetiya Mulya Business School" },
-    { year: "2017", title: "Music Night 2017: Music Night Getaway", loc: "Prasetiya Mulya Business School" },
-    { year: "2019", title: "Bincang: Komunitas dan Profesi Tarot", loc: "Perpusnas Expo" },
-    { year: "2019", title: "Halloweekend 2019", loc: "Lobbyn Sky Terrace" },
-    { year: "2019", title: "Halloween Event 2019", loc: "Ibis Styles Simatupang" },
-    { year: "2019", title: "Hashloween 2019: Cursed Wedding", loc: "Hash Entertainment" },
-    { year: "2020", title: "Interview with Bibir Jakarta", loc: "Bibir Jakarta by Harry DeFretes" },
-    { year: "2020", title: "Santuy Kuy Year-End Gathering", loc: "HM Sampoerna" },
-    { year: "2021", title: "Live Tarot Reading Session", loc: "C Channel Indonesia" },
-    { year: "2021", title: "Meramal Masa Depan dengan Tarot", loc: "Late Night Shift Podcast" },
-    { year: "2022", title: "Misteri dan Tarot Maraton", loc: "Tiktok Indonesia" },
-    { year: "2022", title: "BERAWALMULA Pop Up Store at Dekhad", loc: "BERAWALMULA" },
-    { year: "2022", title: "Jerit Malam", loc: "UMN Radio" },
-    { year: "2023", title: "Gordon's Fall Gin Love Party at Bocarica", loc: "Gordon's" },
-    { year: "2023", title: "UR Night to Remember KOL Gathering", loc: "Urban Republic" },
-    { year: "2024", title: "Kokatto 10th Anniversary", loc: "Kokatto" },
-    { year: "2024", title: "Dual Muse Collection Launch", loc: "Dya Sejiiwa" },
-    { year: "2024", title: "Fomo Market in collaboration with Padu Sinar", loc: "Fomo Market ASHTA District 8" },
-    { year: "2024", title: "New Year 2025 Event", loc: "Grand Dafam Hotel Ancol" },
-    { year: "2025", title: "Pasar Kaget Banget in collaboration with Padu Sinar", loc: "Pasar Kaget Banget MBloc" },
-    { year: "2025", title: "Hotel Ciputra Jakarta Halloween Event", loc: "Hotel Ciputra Jakarta" },
-    { year: "2025", title: "Logs and Pebbles Halloween Event", loc: "Logs and Pebbles" },
-  ];
+  // The list is managed from the admin dashboard (Events) and comes newest-first from
+  // the API; the built-in list shows instantly and stays if the API can't be reached.
+  const [eventList, setEventList] = useState<EventItem[]>(FALLBACK_EVENTS);
+  useEffect(() => {
+    let cancelled = false;
+    fetchEvents()
+      .then((list) => { if (!cancelled && list.length) setEventList(list); })
+      .catch(() => { /* keep the built-in list */ });
+    return () => { cancelled = true; };
+  }, []);
 
-  // Reverse list to show newest events first
-  const eventList = [...rawEventList].reverse();
   // Collapsed view shows only the two most recent years, so no year is cut off mid-list
   const recentYears = [...new Set(eventList.map((ev) => ev.year))].slice(0, 2);
   const displayedEvents = showAll ? eventList : eventList.filter((ev) => recentYears.includes(ev.year));
@@ -119,7 +101,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                   <ul>
                     {grp.items.map((event, ii) => (
                       <li
-                        key={ii}
+                        key={event.id || ii}
                         className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2 border-t border-ink/10 first:border-t-0 first:pt-0"
                       >
                         <h3 className="font-serif font-medium text-ink text-sm md:text-base leading-[1.25] transition-colors duration-500 group-hover:text-moon">

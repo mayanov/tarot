@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as bookingStore from './bookingStore.js';
+import * as eventStore from './eventStore.js';
 import * as userStore from './userStore.js';
 import * as gcal from './googleCalendar.js';
 import jwt from 'jsonwebtoken';
@@ -287,6 +288,51 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
 // ------------------------------------------------------------------
 // BOOKINGS
 // ------------------------------------------------------------------
+
+// ---- Events & Collaborations (public list + admin editing) ----
+app.get('/api/events', async (req, res) => {
+    try {
+        res.set('Cache-Control', 'public, max-age=60');
+        res.json({ events: await eventStore.listEvents() });
+    } catch (e) {
+        console.error('events list failed:', e);
+        res.status(500).json({ error: 'Failed to load events' });
+    }
+});
+
+app.post('/api/admin/events', verifyToken, async (req, res) => {
+    const { value, error } = eventStore.validate(req.body);
+    if (error) return res.status(400).json({ error });
+    try {
+        res.status(201).json(await eventStore.createEvent(value));
+    } catch (e) {
+        console.error('event create failed:', e);
+        res.status(500).json({ error: 'Failed to add event' });
+    }
+});
+
+app.put('/api/admin/events/:id', verifyToken, async (req, res) => {
+    const { value, error } = eventStore.validate(req.body);
+    if (error) return res.status(400).json({ error });
+    try {
+        const ev = await eventStore.updateEvent(req.params.id, value);
+        if (!ev) return res.status(404).json({ error: 'Event not found' });
+        res.json(ev);
+    } catch (e) {
+        console.error('event update failed:', e);
+        res.status(500).json({ error: 'Failed to update event' });
+    }
+});
+
+app.delete('/api/admin/events/:id', verifyToken, async (req, res) => {
+    try {
+        if (!(await eventStore.deleteEvent(req.params.id))) return res.status(404).json({ error: 'Event not found' });
+        res.json({ ok: true });
+    } catch (e) {
+        console.error('event delete failed:', e);
+        res.status(500).json({ error: 'Failed to delete event' });
+    }
+});
 
 // Public: which time slots are already taken on a date (no personal data).
 app.get('/api/availability', async (req, res) => {

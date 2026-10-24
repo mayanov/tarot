@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound } from 'lucide-react';
+import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound, Sparkles } from 'lucide-react';
 import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance } from '../../services/mockAnalytics';
 import { initGoogleAPI, loginToGoogle, fetchGA4Data } from '../../services/ga4';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { format, parseISO } from 'date-fns';
 import BookingsView from './BookingsView';
+import EventsView from './EventsView';
 import RevenueView from './RevenueView';
 import CustomersView from './CustomersView';
 import SalesView from './SalesView';
@@ -35,6 +36,9 @@ const NAV_GROUPS: { label: string; items: { id: string; name: string; icon: Reac
     { label: 'Insights', items: [
         { id: 'analytics', name: 'Analytics', icon: BarChart2 },
         { id: 'revenue', name: 'Dashboard', icon: Wallet },
+    ] },
+    { label: 'Website', items: [
+        { id: 'events', name: 'Events', icon: Sparkles },
     ] },
     { label: 'Admin', items: [
         { id: 'users', name: 'Manage Users', icon: Users },
@@ -429,6 +433,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 {/* MAIN CONTENT SWITCHER */}
                 {activeView === 'bookings' ? (
                     <BookingsView />
+                ) : activeView === 'events' ? (
+                    <EventsView />
                 ) : activeView === 'sales' ? (
                     <SalesView />
                 ) : activeView === 'revenue' ? (

@@ -1,0 +1,126 @@
+// Server-side store for the "Events & Collaborations" list (edited from the admin
+// dashboard, shown on the public site).
+//
+// Same setup as bookingStore: Firestore when FIREBASE_SERVICE_ACCOUNT is set,
+// otherwise a local JSON file so dev works with zero setup. The first time the store
+// is read it's filled with the events that used to be hard-coded on the site
+// (events-seed.json), so nothing disappears when switching over.
+
+import fs from 'fs';
+import path from 'path';
+import crypto from 'node:crypto';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DATA_DIR = path.join(__dirname, 'data');
+const FILE = path.join(DATA_DIR, 'events.json');
+// loaded via require so Vercel's bundler is sure to ship it with the function
+const SEED = createRequire(import.meta.url)('./events-seed.json');
+const COLLECTION = 'events';
+const META = { collection: 'meta', doc: 'events' }; // remembers that the seed was applied
+
+// ---- Firestore (shares the app initialised by bookingStore, if any) ----
+let db = null;
+try {
+  let raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (raw) {
+    if (!raw.trim().startsWith('{')) raw = Buffer.from(raw, 'base64').toString('utf8');
+    const { initializeApp, cert, getApps } = await import('firebase-admin/app');
+    const { getFirestore } = await import('firebase-admin/firestore');
+    if (!getApps().length) initializeApp({ credential: cert(JSON.parse(raw)) });
+    db = getFirestore();
+  }
+} catch (e) {
+  console.error('[events] Firestore init failed, falling back to JSON file:', e.message);
+  db = null;
+}
+
+// ---- validation ----
+const clean = (v, max) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+export function validate(input) {
+  const year = clean(input?.year, 4);
+  const title = clean(input?.title, 140);
+  const loc = clean(input?.loc, 140);
+  if (!/^\d{4}$/.test(year) || +year < 2000 || +year > 2100) return { error: 'Year must be a 4-digit year' };
+  if (!title) return { error: 'Title is required' };
+  return { value: { year, title, loc } };
+}
+
+// Newest year first; within a year, the most recently added first.
+const sortEvents = (list) => [...list].sort((a, b) => (b.year - a.year) || ((b.order ?? 0) - (a.order ?? 0)));
+const newId = () => crypto.randomBytes(8).toString('hex');
+// Seed order keeps the old on-site order (later in the old list = shown first in its year).
+const seeded = () => SEED.map((e, i) => ({ id: newId(), ...e, order: i, createdAt: new Date(0).toISOString() }));
+
+// ---- JSON fallback ----
+function readFile() {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(FILE)) fs.writeFileSync(FILE, JSON.stringify(seeded(), null, 2));
+  try { return JSON.parse(fs.readFileSync(FILE, 'utf8') || '[]'); } catch { return []; }
+}
+const writeFile = (list) => fs.writeFileSync(FILE, JSON.stringify(list, null, 2));
+
+// ---- Firestore seed (once) ----
+async function ensureSeeded() {
+  const metaRef = db.collection(META.collection).doc(META.doc);
+  const meta = await metaRef.get();
+  if (meta.exists && meta.data()?.seeded) return;
+  const existing = await db.collection(COLLECTION).limit(1).get();
+  const batch = db.batch();
+  if (existing.empty) seeded().forEach((e) => batch.set(db.collection(COLLECTION).doc(e.id), e));
+  batch.set(metaRef, { seeded: true, seededAt: new Date().toISOString() }, { merge: true });
+  await batch.commit();
+}
+
+// ---- public API ----
+export async function listEvents() {
+  if (db) {
+    await ensureSeeded();
+    const snap = await db.collection(COLLECTION).get();
+    return sortEvents(snap.docs.map((d) => d.data()));
+  }
+  return sortEvents(readFile());
+}
+
+export async function createEvent(value) {
+  const ev = { id: newId(), ...value, order: Date.now(), createdAt: new Date().toISOString() };
+  if (db) {
+    await ensureSeeded();
+    await db.collection(COLLECTION).doc(ev.id).set(ev);
+  } else {
+    writeFile([...readFile(), ev]);
+  }
+  return ev;
+}
+
+export async function updateEvent(id, value) {
+  if (db) {
+    const ref = db.collection(COLLECTION).doc(id);
+    const doc = await ref.get();
+    if (!doc.exists) return null;
+    const ev = { ...doc.data(), ...value, updatedAt: new Date().toISOString() };
+    await ref.set(ev);
+    return ev;
+  }
+  const list = readFile();
+  const i = list.findIndex((e) => e.id === id);
+  if (i < 0) return null;
+  list[i] = { ...list[i], ...value, updatedAt: new Date().toISOString() };
+  writeFile(list);
+  return list[i];
+}
+
+export async function deleteEvent(id) {
+  if (db) {
+    const ref = db.collection(COLLECTION).doc(id);
+    if (!(await ref.get()).exists) return false;
+    await ref.delete();
+    return true;
+  }
+  const list = readFile();
+  const next = list.filter((e) => e.id !== id);
+  if (next.length === list.length) return false;
+  writeFile(next);
+  return true;
+}
