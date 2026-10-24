@@ -60,15 +60,42 @@ function readFile() {
 const writeFile = (list) => fs.writeFileSync(FILE, JSON.stringify(list, null, 2));
 
 // ---- Firestore seed (once) ----
+// In a transaction, with fixed ids (seed-0 … seed-N), so two requests arriving at the
+// same moment on a fresh deploy can't both seed it.
+const SEED_EPOCH = new Date(0).toISOString();
+let seedChecked = false;
 async function ensureSeeded() {
+  if (seedChecked) return;
   const metaRef = db.collection(META.collection).doc(META.doc);
-  const meta = await metaRef.get();
-  if (meta.exists && meta.data()?.seeded) return;
-  const existing = await db.collection(COLLECTION).limit(1).get();
+  await db.runTransaction(async (tx) => {
+    const meta = await tx.get(metaRef);
+    if (meta.exists && meta.data()?.seeded) return;
+    const existing = await tx.get(db.collection(COLLECTION).limit(1));
+    if (existing.empty) {
+      SEED.forEach((e, i) => tx.set(db.collection(COLLECTION).doc(`seed-${i}`), { id: `seed-${i}`, ...e, order: i, createdAt: SEED_EPOCH }));
+    }
+    tx.set(metaRef, { seeded: true, seededAt: new Date().toISOString() }, { merge: true });
+  });
+  seedChecked = true;
+}
+
+// Self-heal: remove duplicate copies of seeded events (same year/title/venue/order,
+// seeded timestamp) — e.g. from a double seed — keeping one of each.
+async function removeSeedDuplicates(docs) {
+  const seen = new Set();
+  const dupes = [];
+  for (const d of docs) {
+    if (d.createdAt !== SEED_EPOCH) continue;
+    const key = `${d.year}|${d.title}|${d.loc}|${d.order}`;
+    if (seen.has(key)) dupes.push(d.id); else seen.add(key);
+  }
+  if (!dupes.length) return docs;
   const batch = db.batch();
-  if (existing.empty) seeded().forEach((e) => batch.set(db.collection(COLLECTION).doc(e.id), e));
-  batch.set(metaRef, { seeded: true, seededAt: new Date().toISOString() }, { merge: true });
+  dupes.forEach((id) => batch.delete(db.collection(COLLECTION).doc(id)));
   await batch.commit();
+  console.log(`[events] removed ${dupes.length} duplicate seeded events`);
+  const gone = new Set(dupes);
+  return docs.filter((d) => !gone.has(d.id));
 }
 
 // ---- public API ----
@@ -76,7 +103,7 @@ export async function listEvents() {
   if (db) {
     await ensureSeeded();
     const snap = await db.collection(COLLECTION).get();
-    return sortEvents(snap.docs.map((d) => d.data()));
+    return sortEvents(await removeSeedDuplicates(snap.docs.map((d) => d.data())));
   }
   return sortEvents(readFile());
 }
