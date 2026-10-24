@@ -12,6 +12,9 @@ import { fetchEvents, createEvent, updateEvent, deleteEvent, EventItem } from '.
 const FLD = `w-full px-3 py-2 ${CONTROL}`;
 const LBL = 'block text-xs font-medium text-text-subtle mb-1.5';
 const thisYear = String(new Date().getFullYear());
+// newest year first; within a year, the most recently added first (matches the server)
+const sortNewestFirst = (list: EventItem[]) =>
+    [...list].sort((a, b) => (+b.year - +a.year) || (((b as any).order ?? 0) - ((a as any).order ?? 0)));
 
 const EventsView: React.FC = () => {
     const [events, setEvents] = useState<EventItem[]>([]);
@@ -44,9 +47,10 @@ const EventsView: React.FC = () => {
         setAdding(true);
         setError('');
         try {
-            await createEvent(draft);
+            const created = await createEvent(draft);
+            setEvents((list) => sortNewestFirst([created, ...list]));
             setDraft({ year: draft.year, title: '', loc: '' });
-            await load();
+            load();
             flash('Event added — it’s live on the site.');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Could not add the event.');
@@ -59,9 +63,10 @@ const EventsView: React.FC = () => {
         setBusyId(editId);
         setError('');
         try {
-            await updateEvent(editId, edit);
+            const updated = await updateEvent(editId, edit);
+            setEvents((list) => sortNewestFirst(list.map((e) => (e.id === updated.id ? updated : e))));
             setEditId(null);
-            await load();
+            load();
             flash('Event updated.');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Could not save the event.');
@@ -74,7 +79,8 @@ const EventsView: React.FC = () => {
         setError('');
         try {
             await deleteEvent(ev.id);
-            await load();
+            setEvents((list) => list.filter((e) => e.id !== ev.id));
+            load();
             flash('Event deleted.');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Could not delete the event.');

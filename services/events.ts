@@ -17,10 +17,12 @@ export const FALLBACK_EVENTS: EventItem[] = [...(SEED as EventItem[])]
   .sort((a, b) => (+b.year - +a.year) || (b.i - a.i))
   .map(({ i: _i, ...e }) => e);
 
-// `fresh` skips the browser cache (the public list may be cached ~1 min) — the admin
-// dashboard always wants the latest after an add/edit/delete.
+// `fresh` skips the browser + CDN cache (the public list may be cached ~1 min) — the
+// admin dashboard always wants the latest after an add/edit/delete.
 export async function fetchEvents(fresh = false): Promise<EventItem[]> {
-  const res = await fetch(`${API_BASE}/api/events`, fresh ? { cache: 'no-store' } : undefined);
+  // a unique ?fresh=… also gets past Vercel's CDN copy (cached per URL)
+  const url = fresh ? `${API_BASE}/api/events?fresh=${Date.now()}` : `${API_BASE}/api/events`;
+  const res = await fetch(url, fresh ? { cache: 'no-store' } : undefined);
   if (!res.ok) throw new Error(`HTTP_${res.status}`);
   const data = await res.json();
   return Array.isArray(data?.events) ? data.events : [];

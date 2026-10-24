@@ -292,7 +292,9 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
 // ---- Events & Collaborations (public list + admin editing) ----
 app.get('/api/events', async (req, res) => {
     try {
-        res.set('Cache-Control', 'public, max-age=60');
+        // The public site may use a ~1 min cached copy; the admin dashboard asks with
+        // ?fresh=… and must always get the live list (no browser or CDN cache).
+        res.set('Cache-Control', req.query.fresh ? 'no-store' : 'public, max-age=60');
         res.json({ events: await eventStore.listEvents() });
     } catch (e) {
         console.error('events list failed:', e);
