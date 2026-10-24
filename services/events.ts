@@ -1,5 +1,5 @@
 // Events & Collaborations — public list + admin editing (talks to the Express API).
-import SEED from '../server/events-seed.json';
+import SEED from '../server/eventsSeed.js';
 
 export interface EventItem {
   id?: string;

@@ -4,19 +4,17 @@
 // Same setup as bookingStore: Firestore when FIREBASE_SERVICE_ACCOUNT is set,
 // otherwise a local JSON file so dev works with zero setup. The first time the store
 // is read it's filled with the events that used to be hard-coded on the site
-// (events-seed.json), so nothing disappears when switching over.
+// (eventsSeed.js), so nothing disappears when switching over.
 
 import fs from 'fs';
 import path from 'path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'url';
-import { createRequire } from 'module';
+import SEED from './eventsSeed.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
 const FILE = path.join(DATA_DIR, 'events.json');
-// loaded via require so Vercel's bundler is sure to ship it with the function
-const SEED = createRequire(import.meta.url)('./events-seed.json');
 const COLLECTION = 'events';
 const META = { collection: 'meta', doc: 'events' }; // remembers that the seed was applied
 

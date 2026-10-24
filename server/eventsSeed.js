@@ -1,4 +1,7 @@
-[
+// The Events & Collaborations list as it was hard-coded on the site (oldest first).
+// Seeds the events store on first use, and is the site's fallback if the API can't be
+// reached. A plain module (not JSON) so the server bundle always includes it.
+export default [
   {
     "year": "2016",
     "title": "Tarot Reading @ Horizon Radio",
@@ -119,4 +122,4 @@
     "title": "Logs and Pebbles Halloween Event",
     "loc": "Logs and Pebbles"
   }
-]
+];
