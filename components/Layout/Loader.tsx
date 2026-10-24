@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Background from './Background';
+import { stopLenis, startLenis } from '../UI/scroll';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -75,11 +76,35 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
+  // The page must not scroll while loading. Native overflow:hidden isn't enough: the
+  // smooth-scroll library (Lenis) starts right after this and drives the scroll itself.
+  // So: pause Lenis, block wheel / touch / keyboard scrolling, keep the page pinned at
+  // the top — and release it all the moment the hand-off begins.
   useEffect(() => {
-    const prev = document.body.style.overflow;
+    if (leaving) return;
+    const html = document.documentElement;
+    const prevBody = document.body.style.overflow;
+    const prevHtml = html.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
-  }, []);
+    html.style.overflow = 'hidden';
+    const block = (e: Event) => { e.preventDefault(); stopLenis(); };
+    const KEYS = new Set([' ', 'PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End']);
+    const onKey = (e: KeyboardEvent) => { if (KEYS.has(e.key)) e.preventDefault(); };
+    const opts: AddEventListenerOptions = { passive: false, capture: true };
+    window.addEventListener('wheel', block, opts);
+    window.addEventListener('touchmove', block, opts);
+    window.addEventListener('keydown', onKey, opts);
+    const pause = window.setTimeout(() => { stopLenis(); window.scrollTo(0, 0); }, 0); // after Lenis starts
+    return () => {
+      clearTimeout(pause);
+      window.removeEventListener('wheel', block, opts);
+      window.removeEventListener('touchmove', block, opts);
+      window.removeEventListener('keydown', onKey, opts);
+      document.body.style.overflow = prevBody;
+      html.style.overflow = prevHtml;
+      startLenis();
+    };
+  }, [leaving]);
 
   // ---- the real loading tasks ----
   const mark = (task: string) => setDone((d) => (d[task] ? d : { ...d, [task]: true }));
