@@ -49,6 +49,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         <ImageReveal
           src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
           alt="Mayanov"
+          // peeks in at the bottom of the screen on landing — unveil as soon as any of it shows
+          threshold={0}
           className="absolute inset-0"
           imgClassName="w-full h-full object-cover object-top"
           loading="eager"

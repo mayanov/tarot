@@ -9,11 +9,13 @@ interface ImageRevealProps {
   imgClassName?: string;   // classes for the <img>
   delay?: number;
   loading?: 'lazy' | 'eager';
+  /** how much of the image must be on screen before it unveils (0 = any pixel) */
+  threshold?: number;
 }
 
 // Editorial image reveal (noho-style): as it scrolls into view the image wipes
 // up from behind a clip mask while a subtle zoom settles. Respects reduced motion.
-export const ImageReveal: React.FC<ImageRevealProps> = ({ src, alt, className = '', imgClassName = '', delay = 0, loading = 'lazy' }) => {
+export const ImageReveal: React.FC<ImageRevealProps> = ({ src, alt, className = '', imgClassName = '', delay = 0, loading = 'lazy', threshold = 0.12 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [inView, setInView] = useState(false);
@@ -27,10 +29,10 @@ export const ImageReveal: React.FC<ImageRevealProps> = ({ src, alt, className = 
     if (!el) return;
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((e) => { if (e.isIntersecting) { setInView(true); obs.unobserve(e.target); } });
-    }, { threshold: 0.12 });
+    }, { threshold });
     obs.observe(el);
     return () => obs.disconnect();
-  }, [reduce]);
+  }, [reduce, threshold]);
 
   // Start downloading well before the photo scrolls in (~1.5 screens ahead). The
   // browser's own loading="lazy" decides "near" very differently per browser — iOS

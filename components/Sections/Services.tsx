@@ -99,15 +99,15 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                     <span className={`font-elegant italic text-cream/55 tracking-wide ${big ? 'text-base' : 'text-sm'}`}>{numeral}</span>
                     {/* fixed slots — the icon box and a two-line title box are the same height on
                         every card, so icons, titles and prices line up across the whole spread */}
-                    <div className={`flex flex-col items-center ${big ? 'gap-5' : 'gap-3 md:gap-4'}`}>
-                        <div className={`grid place-items-center ${big ? 'h-20' : 'h-10 md:h-16'}`}>
-                            <CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className={`${big ? 'w-20' : 'w-10 md:w-16'} text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]`} />
+                    <div className={`flex flex-col items-center ${big ? 'gap-5' : 'gap-4'}`}>
+                        <div className={`grid place-items-center ${big ? 'h-20' : 'h-16'}`}>
+                            <CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className={`${big ? 'w-20' : 'w-16'} text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]`} />
                         </div>
-                        <h3 className={`min-h-[2.24em] flex items-center justify-center font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch] ${big ? 'text-[1.75rem]' : 'text-[1.1rem] md:text-[1.4rem]'}`}>{g.type}</h3>
+                        <h3 className={`min-h-[2.24em] flex items-center justify-center font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch] ${big ? 'text-[1.75rem]' : 'text-[1.4rem]'}`}>{g.type}</h3>
                     </div>
                     <div className="flex flex-col items-center gap-1">
                         <span className="text-cream/45 text-[10.5px] tracking-[0.18em] uppercase">{g.promo ? 'Promo' : isIndonesian ? 'Mulai dari' : 'From'}</span>
-                        <span className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-2xl' : g.promo ? 'text-base md:text-[1.05rem]' : 'text-lg'}`}>{g.promo ? g.priceLabel : fromPrice(g)}</span>
+                        <span className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-2xl' : g.promo ? 'text-[1.05rem]' : 'text-lg'}`}>{g.promo ? g.priceLabel : fromPrice(g)}</span>
                     </div>
                 </div>
             </div>
@@ -214,6 +214,8 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const [isMobile, setIsMobile] = useState(false);
     const fanRef = useRef<HTMLDivElement | null>(null);
     const [fanW, setFanW] = useState(1024);
+    // 1 on desktop; shrinks the fan on narrower screens (tablet ≈0.85, phone 0.5)
+    const fanScale = Math.max(0.5, Math.min(1, fanW / 840));
     useEffect(() => {
         const el = fanRef.current;
         if (!el) return;
@@ -299,16 +301,20 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const fanStyle = (i: number): React.CSSProperties => {
         const o = i - center;
         const isHov = hovered === i;
-        // spread the cards as wide as the row allows (card is 216px) so each title stays readable
-        const step = n > 1 ? Math.min(196, Math.max(150, (fanW - 216 - 40) / (n - 1))) : 0;
+        // On narrow screens the whole fan is scaled down (cards keep their desktop
+        // proportions) and the spread tightens so every card stays on screen.
+        const s = fanScale;
+        const cardW = 216 * s;
+        // spread the cards as wide as the row allows so each title stays readable
+        const step = n > 1 ? Math.min(196 * s, (fanW - cardW - 56 * s) / (n - 1)) : 0;
         // The fan's total tilt and drop stay the same however many cards there are (the
         // outermost card always leans 18deg and sits 50px lower), and the drop follows a
         // curve (o^2), so it reads as a held hand of cards rather than a V.
         const edge = Math.max(1, (n - 1) / 2); // |o| of the outermost card
         const rot = (o / edge) * 18;
-        const ty = isHov ? -30 : (o / edge) ** 2 * 50;
+        const ty = (isHov ? -30 : (o / edge) ** 2 * 50) * s;
         return {
-            transform: `translate(-50%, -50%) translateX(${o * step}px) translateY(${ty.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${isHov ? 1.05 : 1})`,
+            transform: `translate(-50%, -50%) translateX(${(o * step).toFixed(1)}px) translateY(${ty.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${(s * (isHov ? 1.05 : 1)).toFixed(4)})`,
             zIndex: isHov ? 40 : 20 - Math.round(Math.abs(o)),
             transition: 'transform 0.5s cubic-bezier(0.22,1,0.36,1)',
         };
@@ -316,17 +322,9 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
 
     return (
         <div>
-            {isMobile ? (
-                <div className="grid grid-cols-2 gap-4 px-8 max-w-md mx-auto">
-                    {groups.map((g, i) => (
-                        <div key={g.type} id={g.id || undefined} className={`scroll-mt-28 ${groups.length % 2 === 1 && i === groups.length - 1 ? 'col-span-2 justify-self-center w-[calc(50%-0.5rem)]' : ''}`}>
-                            <TarotCard g={g} i={i} flipped={false} onFlip={() => draw(i)} isIndonesian={isIndonesian} />
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="px-8">
-                    <div ref={fanRef} className="relative mx-auto h-[30rem] max-w-5xl">
+            {(
+                <div className="px-4 md:px-8">
+                    <div ref={fanRef} className="relative mx-auto max-w-5xl" style={{ height: `${(30 * fanScale).toFixed(2)}rem` }}>
                         {groups.map((g, i) => (
                             <div
                                 key={g.type}
