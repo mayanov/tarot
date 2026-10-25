@@ -28,8 +28,8 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
     return () => { cancelled = true; };
   }, []);
 
-  // Collapsed view shows only the two most recent years, so no year is cut off mid-list
-  const recentYears = [...new Set(eventList.map((ev) => ev.year))].slice(0, 2);
+  // Collapsed view shows only the three most recent years, so no year is cut off mid-list
+  const recentYears = [...new Set(eventList.map((ev) => ev.year))].slice(0, 3);
   const displayedEvents = showAll ? eventList : eventList.filter((ev) => recentYears.includes(ev.year));
 
   // Group the shown events by year (list is already newest-first) for the timeline
