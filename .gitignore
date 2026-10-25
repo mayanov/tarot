@@ -32,3 +32,6 @@ full_analytics_response*.json
 .claude/
 .env*
 server/data/
+
+# Password for the private Vercel site (also set as SITE_PASSWORD on Vercel)
+.site-password
