@@ -207,7 +207,9 @@ app.delete('/api/users', verifyToken, async (req, res) => {
 
 app.get('/api/analytics', verifyToken, async (req, res) => {
     try {
-        const propertyId = process.env.GA4_PROPERTY_ID; // '386315459'
+        // not a secret (the dashboard ships it too) — default it so the server works
+        // without the env var
+        const propertyId = process.env.GA4_PROPERTY_ID || '386315459';
         const { startDate, endDate } = req.query;
 
         if (!propertyId) {

@@ -299,8 +299,9 @@ export const fetchGA4Data = async (
         const res = await fetch(`${backendUrl}?startDate=${startDate}&endDate=${endDate}&propertyId=${propertyId}`, {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            credentials: 'include', // also send the admin_token cookie
         });
 
         if (!res.ok) {
