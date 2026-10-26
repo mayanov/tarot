@@ -98,5 +98,7 @@ export const SERVICE_TRACK_NAME: Record<string, string> = {
     '5card': '5-Card Deep',
 };
 // The birthday promo appears in both markets; the global one gets its own name.
+// Prefixed so it doesn't mix with the old pricelist (still on the live site),
+// which sends plain 'Operation Happy Birthday' without any card-open step.
 export const promoTrackName = (isIndonesian: boolean) =>
-    isIndonesian ? 'Operation Happy Birthday' : 'Operation Happy Birthday (Global)';
+    isIndonesian ? 'Promo · Operation Happy Birthday' : 'Promo · Operation Happy Birthday (Global)';

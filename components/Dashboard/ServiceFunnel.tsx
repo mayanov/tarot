@@ -158,7 +158,7 @@ const ServiceFunnel: React.FC<Props> = ({ services }) => {
             </div>
             {!empty && counts[1] > counts[0] && (
                 <p className="text-xs text-text-subtle">
-                    More Pesan clicks than card opens: some clicks come from pages without the card step (the live site still has the old pricelist).
+                    More Pesan clicks than card opens: Google Analytics can take up to a day to count card opens, so recent numbers may still be catching up.
                 </p>
             )}
 

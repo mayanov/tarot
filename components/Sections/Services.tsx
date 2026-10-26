@@ -502,8 +502,8 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
 
     // --- Handlers for Indonesia (IDR) ---
     const handleNewYear = () => trackEvent('begin_checkout', { item_name: 'New Year Reading 2026', market: 'ID' }, 'InitiateCheckout', { content_name: 'New Year Reading 2026', value: 250000, currency: 'IDR', content_category: 'ID Service' });
-    const handleHappyBirthday = () => trackEvent('begin_checkout', { item_name: 'Operation Happy Birthday', market: 'ID' }, 'InitiateCheckout', { content_name: 'Operation Happy Birthday', currency: 'IDR', content_category: 'ID Service' });
-    const handleHappyBirthdayGlobal = () => trackEvent('begin_checkout', { item_name: 'Operation Happy Birthday (Global)', market: 'Global' }, 'InitiateCheckout', { content_name: 'Operation Happy Birthday (Global)', currency: 'USD', content_category: 'Global Service' });
+    const handleHappyBirthday = () => trackEvent('begin_checkout', { item_name: promoTrackName(true), market: 'ID' }, 'InitiateCheckout', { content_name: promoTrackName(true), currency: 'IDR', content_category: 'ID Service' });
+    const handleHappyBirthdayGlobal = () => trackEvent('begin_checkout', { item_name: promoTrackName(false), market: 'Global' }, 'InitiateCheckout', { content_name: promoTrackName(false), currency: 'USD', content_category: 'Global Service' });
     const handleChat3Question = () => trackEvent('begin_checkout', { item_name: '3 Question Chat', market: 'ID' }, 'InitiateCheckout', { content_name: '3 Question Chat', value: 315000, currency: 'IDR', content_category: 'ID Service' });
     const handleChat1Question = () => trackEvent('begin_checkout', { item_name: '1 Question Chat', market: 'ID' }, 'InitiateCheckout', { content_name: '1 Question Chat', value: 140000, currency: 'IDR', content_category: 'ID Service' });
     const handleCall30Lynk = () => trackEvent('begin_checkout', { item_name: '30-Min Call', market: 'ID' }, 'InitiateCheckout', { content_name: '30-Min Call (Lynk)', value: 220000, currency: 'IDR', content_category: 'ID Service' });

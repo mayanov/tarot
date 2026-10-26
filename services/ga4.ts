@@ -195,24 +195,19 @@ const processReports = (reports: any[]) => {
     // booking is purchase.
     const eventRows = reports[4].rows || [];
 
-    // Current services, in pricelist order, with the starting price (for the
-    // revenue estimate = clicks × price).
-    const ID_SERVICES: [string, number][] = [
-        ['Operation Happy Birthday', 0], ['Edisi Spesial', 250000], ['Konsultasi via Chat', 140000],
-        ['Panggilan Suara & Video', 220000], ['Sesi Tatap Muka', 450000],
+    // Current services, in pricelist order: [tracked item name, label, starting price].
+    // Only the new pricelist's names are counted — the old pricelist (still on the
+    // live site) uses other names and has no card-open step, so mixing it in would
+    // show Pesan clicks with nobody opening a card.
+    const ID_SERVICES: [string, string, number][] = [
+        ['Promo · Operation Happy Birthday', 'Operation Happy Birthday', 0], ['Edisi Spesial', 'Edisi Spesial', 250000],
+        ['Konsultasi via Chat', 'Konsultasi via Chat', 140000], ['Panggilan Suara & Video', 'Panggilan Suara & Video', 220000],
+        ['Sesi Tatap Muka', 'Sesi Tatap Muka', 450000],
     ];
-    const GLOBAL_SERVICES: [string, number][] = [
-        ['Operation Happy Birthday (Global)', 0], ['3-Card Spread', 12], ['5-Card Deep', 20],
+    const GLOBAL_SERVICES: [string, string, number][] = [
+        ['Promo · Operation Happy Birthday (Global)', 'Operation Happy Birthday', 0],
+        ['3-Card Spread', '3-Card Spread', 12], ['5-Card Deep', '5-Card Deep', 20],
     ];
-    // Item names used before the pricelist redesign, folded into today's services so
-    // older date ranges still count. (Removed services are left out.)
-    const LEGACY: Record<string, string> = {
-        'New Year Reading 2026': 'Edisi Spesial',
-        '1 Question Chat': 'Konsultasi via Chat', '3 Question Chat': 'Konsultasi via Chat',
-        '30-Min Call': 'Panggilan Suara & Video', '60-Min Call': 'Panggilan Suara & Video',
-        'Meetup Session': 'Sesi Tatap Muka',
-        '3-Card Reading': '3-Card Spread', '5-Card Reading': '5-Card Deep',
-    };
 
     type Counts = { views: number; clicks: number; bookings: number };
     const counts = new Map<string, Counts>();
@@ -220,16 +215,16 @@ const processReports = (reports: any[]) => {
 
     eventRows.forEach((row: any) => {
         const raw = row.dimensionValues[0]?.value || '';
-        const c = counts.get(LEGACY[raw] || raw);
-        if (!c) return; // '(not set)', 'Booking flow' (opened without a service), removed services
+        const c = counts.get(raw);
+        if (!c) return; // old-pricelist names, '(not set)', 'Booking flow' (opened without a service)
         const [views, clicks, bookings] = row.metricValues.map((m: any) => parseInt(m.value) || 0);
         c.views += views;
         c.clicks += clicks;
         c.bookings += bookings;
     });
 
-    const toRows = (list: [string, number][]): ServicePerformance[] => list.map(([name, price]) => {
-        const c = counts.get(name)!;
+    const toRows = (list: [string, string, number][]): ServicePerformance[] => list.map(([key, name, price]) => {
+        const c = counts.get(key)!;
         return { name, ...c, revenuePotential: c.clicks * price };
     });
     const topServicesID = toRows(ID_SERVICES);

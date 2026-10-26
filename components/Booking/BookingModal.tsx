@@ -135,6 +135,18 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
     setStep(target);
   };
 
+  // Picking a service inside the form (opened from the header/hero "Pesan", not a
+  // pricelist card) counts as seeing that service and clicking Pesan for it, so the
+  // admin's booking funnel (opened → Pesan → booked) adds up for every booking.
+  const pickService = (s: ServiceOption) => {
+    setService(s);
+    const name = SERVICE_TRACK_NAME[s.id];
+    if (!name) return;
+    const market = isIndonesian ? 'ID' : 'Global';
+    trackEvent('view_item', { item_name: name, market }, 'ViewContent', { content_name: name });
+    trackEvent('begin_checkout', { item_name: name, market }, 'InitiateCheckout', { content_name: name });
+  };
+
   // Open via a global event (dispatched by the nav / CTA buttons).
   useEffect(() => {
     const onOpen = (e: Event) => {
@@ -330,7 +342,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
               {services.map((s) => (
                 <button
                   key={s.id}
-                  onClick={() => { setService(s); setPkg(null); setTime(null); setDate(undefined); setStep(s.scheduled ? 1 : 2); }}
+                  onClick={() => { pickService(s); setPkg(null); setTime(null); setDate(undefined); setStep(s.scheduled ? 1 : 2); }}
                   className="group w-full flex items-center justify-between gap-4 text-left rounded-xl border border-ink/10 bg-white hover:border-moon/50 hover:shadow-[0_14px_34px_-18px_rgba(107,63,160,0.4)] hover:-translate-y-0.5 transition-all px-4 py-3.5"
                 >
                   <span className="min-w-0">
