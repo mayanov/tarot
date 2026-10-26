@@ -65,7 +65,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           {/* hook title */}
           <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>
-              {isIndonesian ? 'Kejelasan, bukan ramalan.' : 'Clarity, not fortune-telling.'}
+              {isIndonesian ? 'Perkenalkan, saya Mayanov' : 'Meet Mayanov'}
             </MaskReveal>
           </h2>
 
