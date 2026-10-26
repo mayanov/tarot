@@ -10,6 +10,7 @@ import 'react-day-picker/style.css';
 import { format, parseISO } from 'date-fns';
 import BookingsView from './BookingsView';
 import EventsView from './EventsView';
+import ServiceFunnel from './ServiceFunnel';
 import RevenueView from './RevenueView';
 import CustomersView from './CustomersView';
 import SalesView from './SalesView';
@@ -868,7 +869,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         <div className="p-5 border-b border-adm-line flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                             <h3 className="text-xl font-serif flex items-center gap-2">
                                                 <BarChart2 size={20} className="text-gold-accent" />
-                                                Service Engagement
+                                                Booking Funnel
                                             </h3>
                                             <div className="flex bg-bg-dark rounded-lg p-1 border border-adm-line-2">
                                                 <button
@@ -897,41 +898,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                 <RefreshCcw className="animate-spin text-gold-accent" size={32} />
                                             </div>
                                         ) : (
-                                            <div className="p-5 overflow-x-auto">
-                                                <table className="w-full text-left border-collapse">
-                                                    <thead>
-                                                        <tr className="text-xs text-text-subtle uppercase border-b border-adm-line">
-                                                            <th className="py-3 font-semibold pb-4">Service Name</th>
-                                                            <th className="py-3 font-semibold pb-4 text-right" title="Pricelist card opened">Card Opened</th>
-                                                            <th className="py-3 font-semibold pb-4 text-right" title="Pesan clicked (booking form or WhatsApp opened)">Clicked Pesan</th>
-                                                            <th className="py-3 font-semibold pb-4 text-right" title="Booking form completed">Booked</th>
-                                                            <th className="py-3 font-semibold pb-4 text-right" title="Clicked Pesan × starting price">Est. Revenue Potential</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="text-sm">
-                                                        {(serviceTab === 'ID' ? data?.topServicesID : data?.topServicesGlobal)?.map((service, idx) => (
-                                                            <tr key={idx} className="border-b border-adm-line last:border-0 hover:bg-adm-hover transition-colors group">
-                                                                <td className="py-4 font-medium text-text-light group-hover:text-lilac transition-colors">
-                                                                    {service.name}
-                                                                </td>
-                                                                <td className="py-4 text-right font-mono text-text-subtle">
-                                                                    {service.views}
-                                                                </td>
-                                                                <td className="py-4 text-right font-mono text-text-subtle">
-                                                                    {service.clicks}
-                                                                </td>
-                                                                <td className="py-4 text-right font-mono text-text-subtle">
-                                                                    {service.bookings}
-                                                                </td>
-                                                                <td className="py-4 text-right font-mono text-gold-accent">
-                                                                    {serviceTab === 'Global' ? '$' : 'Rp '}
-                                                                    {service.revenuePotential.toLocaleString()}
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                            <ServiceFunnel
+                                                services={(serviceTab === 'ID' ? data?.topServicesID : data?.topServicesGlobal) || []}
+                                                currency={serviceTab === 'Global' ? 'USD' : 'IDR'}
+                                            />
                                         )}
                                     </div>
 
