@@ -307,14 +307,13 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         const cardW = 216 * s;
         // spread the cards as wide as the row allows so each title stays readable
         const step = n > 1 ? Math.min(196 * s, (fanW - cardW - 56 * s) / (n - 1)) : 0;
-        // The fan's total tilt and drop stay the same however many cards there are (the
-        // outermost card always leans 18deg and sits 80px lower), and the drop follows a
-        // curve (o^2), so it reads as a held hand of cards rather than a V. The drop has
-        // to outpace the tilt: a tilted card's inner top corner lifts, and with less drop
-        // the outer cards' corners sit level with their neighbours and look raised.
+        // A tilted spread: the tilt and drop stay the same however many cards there are
+        // (the outermost card leans 16deg and sits 58px lower, on an o^2 curve). The drop
+        // is matched to the tilt so the tops follow one even arc — less drop and the
+        // outer cards look raised, more and they look sunk.
         const edge = Math.max(1, (n - 1) / 2); // |o| of the outermost card
-        const rot = (o / edge) * 18;
-        const ty = (isHov ? -30 : (o / edge) ** 2 * 80) * s;
+        const rot = (o / edge) * 16;
+        const ty = (isHov ? -30 : (o / edge) ** 2 * 58) * s;
         return {
             transform: `translate(-50%, -50%) translateX(${(o * step).toFixed(1)}px) translateY(${ty.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${(s * (isHov ? 1.05 : 1)).toFixed(4)})`,
             zIndex: isHov ? 40 : 20 - Math.round(Math.abs(o)),
@@ -326,7 +325,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         <div>
             {(
                 <div className="px-4 md:px-8">
-                    <div ref={fanRef} className="relative mx-auto max-w-5xl" style={{ height: `${(32 * fanScale).toFixed(2)}rem` }}>
+                    <div ref={fanRef} className="relative mx-auto max-w-5xl" style={{ height: `${(31 * fanScale).toFixed(2)}rem` }}>
                         {groups.map((g, i) => (
                             <div
                                 key={g.type}
