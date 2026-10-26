@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import * as bookingStore from './bookingStore.js';
 import * as eventStore from './eventStore.js';
+import * as settingsStore from './settingsStore.js';
 import * as userStore from './userStore.js';
 import * as gcal from './googleCalendar.js';
 import jwt from 'jsonwebtoken';
@@ -210,7 +211,14 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
         // not a secret (the dashboard ships it too) — default it so the server works
         // without the env var
         const propertyId = process.env.GA4_PROPERTY_ID || '386315459';
-        const { startDate, endDate } = req.query;
+        const { endDate } = req.query;
+        // Analytics reset: never count anything before the reset date
+        const since = await settingsStore.getAnalyticsSince();
+        const startDate = since && since > req.query.startDate ? since : req.query.startDate;
+        if (since && endDate && since > endDate) {
+            // the whole range is before the reset — nothing to count
+            return res.json({ reports: Array.from({ length: 5 }, () => ({ rows: [] })), since });
+        }
 
         if (!propertyId) {
             return res.status(500).json({ error: "Server missing 'GA4_PROPERTY_ID' configuration." });
@@ -271,7 +279,7 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
         console.log("[Server] Data fetched successfully.");
         // The Node.js client returns an array [response, request, raw].
         // The response object contains { reports: [...] }
-        res.json(response);
+        res.json({ ...response, since });
 
     } catch (error) {
         console.error("[Server] Error fetching analytics:", error);
@@ -280,6 +288,25 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
             details: error.message
         });
     }
+});
+
+// Analytics reset (dashboard counts only from that date; GA data isn't deleted).
+app.get('/api/admin/analytics/reset', verifyToken, async (req, res) => {
+    try { res.json({ since: await settingsStore.getAnalyticsSince() }); }
+    catch (e) { res.status(500).json({ error: 'Failed to read reset date' }); }
+});
+app.post('/api/admin/analytics/reset', verifyToken, async (req, res) => {
+    try {
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+        res.json({ since: await settingsStore.setAnalyticsSince(today) });
+    } catch (e) {
+        console.error('analytics reset failed:', e);
+        res.status(500).json({ error: 'Failed to reset analytics' });
+    }
+});
+app.delete('/api/admin/analytics/reset', verifyToken, async (req, res) => {
+    try { res.json({ since: await settingsStore.setAnalyticsSince(null) }); }
+    catch (e) { res.status(500).json({ error: 'Failed to undo reset' }); }
 });
 
 // ------------------------------------------------------------------

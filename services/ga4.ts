@@ -250,6 +250,7 @@ export const fetchGA4Data = async (
     summary: AnalyticsSummary;
     topServicesID: ServicePerformance[];
     topServicesGlobal: ServicePerformance[];
+    since?: string | null; // analytics reset date (counting starts here), from the server
 }> => {
 
     // Check if Backend Server is available (Try fetching from it)
@@ -286,7 +287,7 @@ export const fetchGA4Data = async (
         // To reuse logic without massive copy-paste, I should extract the processing function.
         // For now, I will proceed with the assumption that I will update the SERVER to return the exact shape matches.
 
-        return processReports(reports);
+        return { ...processReports(reports), since: responseData.since || null };
 
     } catch (e) {
         console.warn("Backend fetch failed, falling back to Client-Side (Popup) mode...", e);
@@ -365,3 +366,18 @@ const fetchGA4DataClientSide = async (propertyId: string, startDate: string, end
     }
 };
 
+
+// Analytics reset — the dashboard then counts only from today (nothing is deleted in
+// Google Analytics; undoing brings the full history back).
+const resetCall = async (method: 'POST' | 'DELETE'): Promise<string | null> => {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch('/api/admin/analytics/reset', {
+        method,
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'include',
+    });
+    if (!res.ok) throw new Error(`HTTP_${res.status}`);
+    return (await res.json()).since ?? null;
+};
+export const resetAnalytics = () => resetCall('POST');
+export const undoAnalyticsReset = () => resetCall('DELETE');

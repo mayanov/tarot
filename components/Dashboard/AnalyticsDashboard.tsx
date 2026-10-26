@@ -4,7 +4,7 @@ import {
 } from 'recharts';
 import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound, Sparkles } from 'lucide-react';
 import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance } from '../../services/mockAnalytics';
-import { initGoogleAPI, loginToGoogle, fetchGA4Data } from '../../services/ga4';
+import { initGoogleAPI, loginToGoogle, fetchGA4Data, resetAnalytics, undoAnalyticsReset } from '../../services/ga4';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { format, parseISO } from 'date-fns';
@@ -67,7 +67,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         summary: AnalyticsSummary;
         topServicesID: ServicePerformance[];
         topServicesGlobal: ServicePerformance[];
+        since?: string | null;
     } | null>(null);
+    const [resetBusy, setResetBusy] = useState(false);
 
     // Helper: Apply Presets
     const applyPreset = (preset: DateRangePreset) => {
@@ -179,6 +181,22 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     useEffect(() => {
         loadData();
     }, [startDate, endDate, useRealData, isConnected]);
+
+    // Analytics reset: from now on the dashboard counts only from today. The data in
+    // Google Analytics isn't deleted, so "Undo reset" brings the history back.
+    const handleReset = async () => {
+        if (!window.confirm('Reset analytics? The dashboard will count only from today. Nothing is deleted — you can undo this.')) return;
+        setResetBusy(true);
+        try { await resetAnalytics(); loadData(true); }
+        catch { window.alert('Could not reset analytics. Please try again.'); }
+        finally { setResetBusy(false); }
+    };
+    const handleUndoReset = async () => {
+        setResetBusy(true);
+        try { await undoAnalyticsReset(); loadData(true); }
+        catch { window.alert('Could not undo the reset. Please try again.'); }
+        finally { setResetBusy(false); }
+    };
 
     // Loading State wrapper
     const isLoading = !data && !apiError;
@@ -661,6 +679,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                 <p className="text-text-subtle mt-1 text-sm">
                                     Performance metrics for <span className="text-text-light font-medium">{startDate}</span> to <span className="text-text-light font-medium">{endDate}</span>
                                 </p>
+                                {data?.since && (
+                                    <p className="mt-1.5 text-xs text-text-subtle">
+                                        Analytics reset — counting from <span className="text-text-light font-medium">{data.since}</span>.{' '}
+                                        <button onClick={handleUndoReset} disabled={resetBusy} className="text-lilac hover:underline disabled:opacity-50">Undo reset</button>
+                                    </p>
+                                )}
                             </div>
 
                             {/* Enhanced Controls Toolbar */}
@@ -741,6 +765,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                     )}
                                 </div>
 
+                                <button
+                                    onClick={handleReset}
+                                    disabled={resetBusy}
+                                    className="px-3 py-2 text-xs font-semibold text-text-subtle hover:text-text-light hover:bg-adm-hover rounded-lg transition-colors disabled:opacity-50"
+                                    title="Start counting from today (history stays in Google Analytics; can be undone)"
+                                >
+                                    Reset analytics
+                                </button>
                                 <button
                                     onClick={() => loadData()}
                                     className="p-2 bg-lilac/10 text-lilac hover:bg-lilac hover:text-white rounded-lg transition-colors flex items-center justify-center"
@@ -900,7 +932,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         ) : (
                                             <ServiceFunnel
                                                 services={(serviceTab === 'ID' ? data?.topServicesID : data?.topServicesGlobal) || []}
-                                                currency={serviceTab === 'Global' ? 'USD' : 'IDR'}
                                             />
                                         )}
                                     </div>
