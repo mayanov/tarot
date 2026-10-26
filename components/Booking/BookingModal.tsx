@@ -4,7 +4,7 @@ import 'react-day-picker/style.css';
 import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
-import { trackEvent } from '../../services/analytics';
+import { trackEvent, SERVICE_TRACK_NAME } from '../../services/analytics';
 import { stopLenis, startLenis } from '../UI/scroll';
 
 interface BookingModalProps {
@@ -110,7 +110,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
     : [
         { id: '3card', name: '3-Card Spread', meta: 'Email · within 24h', desc: 'A focused three-card reading for a clear question, delivered by email within 24 hours.', scheduled: false, price: '$12' },
         { id: '5card', name: '5-Card Deep', meta: 'Email · in-depth', desc: 'A deeper five-card spread with more detail and nuance, delivered by email.', scheduled: false, price: '$20' },
-        { id: 'live', name: 'Live Session', meta: 'Google Meet · 30 min', desc: 'A real-time 30-minute session over Google Meet — interactive and personal.', scheduled: true, price: '$45' },
       ];
 
   const reset = useCallback(() => {
@@ -142,12 +141,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       reset();
       const detail = (e as CustomEvent<{ serviceId?: string; returnToCard?: number }>).detail;
       returnToCard.current = typeof detail?.returnToCard === 'number' ? detail.returnToCard : null;
-      if (detail?.serviceId) {
-        const preset = services.find((s) => s.id === detail.serviceId);
-        if (preset) { setService(preset); setStep(preset.scheduled ? 1 : 2); }
-      }
+      const preset = detail?.serviceId ? services.find((s) => s.id === detail.serviceId) : undefined;
+      if (preset) { setService(preset); setStep(preset.scheduled ? 1 : 2); }
       setOpen(true);
-      trackEvent('begin_checkout', { item_name: 'Booking flow', market: isIndonesian ? 'ID' : 'Global' });
+      // opened from a pricelist card's "Pesan" → counted as a click for that service
+      trackEvent('begin_checkout', { item_name: (preset && SERVICE_TRACK_NAME[preset.id]) || 'Booking flow', market: isIndonesian ? 'ID' : 'Global' });
     };
     window.addEventListener('open-booking', onOpen);
     return () => window.removeEventListener('open-booking', onOpen);
@@ -186,7 +184,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
         question: '',
         market: isIndonesian ? 'ID' : 'Global',
       });
-      trackEvent('purchase', { item_name: service.name, market: isIndonesian ? 'ID' : 'Global' }, 'Schedule', { content_name: service.name });
+      const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
+      // GA4 only counts a purchase with a transaction id
+      trackEvent('purchase', { item_name: trackName, market: isIndonesian ? 'ID' : 'Global', transaction_id: `bk-${Date.now()}` }, 'Schedule', { content_name: trackName });
       setStep(4);
     } catch (err) {
       setError(err instanceof Error && err.message === 'SLOT_TAKEN'

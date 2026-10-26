@@ -255,17 +255,12 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
                         { name: 'activeUsers' }
                     ]
                 },
-                // 4: Event Tracking
+                // 4: Service engagement per service (item-scoped metrics, since itemName
+                // can't be combined with eventCount): card views, "Pesan" clicks, bookings
                 {
                     dateRanges: [{ startDate, endDate }],
                     dimensions: [{ name: 'itemName' }],
-                    metrics: [{ name: 'activeUsers' }],
-                    dimensionFilter: {
-                        filter: {
-                            fieldName: 'eventName',
-                            inListFilter: { values: ['initiate_checkout', 'begin_checkout', 'schedule', 'view_item'] }
-                        }
-                    }
+                    metrics: [{ name: 'itemsViewed' }, { name: 'itemsCheckedOut' }, { name: 'itemsPurchased' }]
                 }
             ]
         };

@@ -188,88 +188,52 @@ const processReports = (reports: any[]) => {
         activeNow: 1 // Realtime not fetched in this batch
     };
 
-    // --- Process Report 4: Service Clicks ---
+    // --- Process Report 4: Service engagement ---
+    // Rows are [itemName] → [itemsViewed, itemsCheckedOut, itemsPurchased]. A pricelist
+    // card shown in the pop-up is a view_item; "Pesan" (opening the booking form for
+    // that service, or the promo's WhatsApp button) is begin_checkout; a finished
+    // booking is purchase.
     const eventRows = reports[4].rows || [];
 
-    const servicesIDMap = new Map<string, number>();
-    const servicesGlobalMap = new Map<string, number>();
-
-    // Exact string match keys (must match 'item_name' sent in tracking events)
-    const ID_KEYS = [
-        "New Year Reading 2026", "Promo Beli 3 Dapat 5", "3 Question Chat",
-        "1 Question Chat", "30-Min Call", "60-Min Call", "Meetup Session"
+    // Current services, in pricelist order, with the starting price (for the
+    // revenue estimate = clicks × price).
+    const ID_SERVICES: [string, number][] = [
+        ['Operation Happy Birthday', 0], ['Edisi Spesial', 250000], ['Konsultasi via Chat', 140000],
+        ['Panggilan Suara & Video', 220000], ['Sesi Tatap Muka', 450000],
     ];
-    const GLOBAL_KEYS = [
-        "3-Card Reading", "5-Card Reading", "Live Call Session"
+    const GLOBAL_SERVICES: [string, number][] = [
+        ['Operation Happy Birthday (Global)', 0], ['3-Card Spread', 12], ['5-Card Deep', 20],
     ];
-
-    // Friendly Display Name Mappings (User asked for specific display names)
-    const DISPLAY_NAMES: Record<string, string> = {
-        "New Year Reading 2026": "New Year Reading",
-        "Promo Beli 3 Dapat 5": "Buy 3 Get 5",
-        "3 Question Chat": "3 Question Chat",
-        "1 Question Chat": "1 Question Chat",
-        "30-Min Call": "30 Mins Call",
-        "60-Min Call": "60 Mins Call",
-        "Meetup Session": "Meetup Session",
-        "3-Card Reading": "3 Cards Reading",
-        "5-Card Reading": "5 Cards Reading",
-        "Live Call Session": "Call"
+    // Item names used before the pricelist redesign, folded into today's services so
+    // older date ranges still count. (Removed services are left out.)
+    const LEGACY: Record<string, string> = {
+        'New Year Reading 2026': 'Edisi Spesial',
+        '1 Question Chat': 'Konsultasi via Chat', '3 Question Chat': 'Konsultasi via Chat',
+        '30-Min Call': 'Panggilan Suara & Video', '60-Min Call': 'Panggilan Suara & Video',
+        'Meetup Session': 'Sesi Tatap Muka',
+        '3-Card Reading': '3-Card Spread', '5-Card Reading': '5-Card Deep',
     };
 
-    // Initialize counts with 0
-    Object.values(DISPLAY_NAMES).forEach(name => {
-        if (Object.values(ID_KEYS).includes(Object.keys(DISPLAY_NAMES).find(key => DISPLAY_NAMES[key] === name)!)) servicesIDMap.set(name, 0);
-        // Simplified initialization logic below is better
-    });
-
-    // Re-Initialize properly (easier to just clear and re-set)
-    servicesIDMap.clear();
-    servicesGlobalMap.clear();
-    ID_KEYS.forEach(k => servicesIDMap.set(DISPLAY_NAMES[k], 0));
-    GLOBAL_KEYS.forEach(k => servicesGlobalMap.set(DISPLAY_NAMES[k], 0));
+    type Counts = { views: number; clicks: number; bookings: number };
+    const counts = new Map<string, Counts>();
+    [...ID_SERVICES, ...GLOBAL_SERVICES].forEach(([name]) => counts.set(name, { views: 0, clicks: 0, bookings: 0 }));
 
     eventRows.forEach((row: any) => {
-        // [itemName] - Updated layout as 'eventName' removed from server dimensions
-        const itemName = row.dimensionValues[0]?.value || '';
-        const count = parseInt(row.metricValues[0].value);
-
-        if (itemName && itemName !== '(not set)') {
-            if (ID_KEYS.includes(itemName)) {
-                const displayName = DISPLAY_NAMES[itemName];
-                servicesIDMap.set(displayName, (servicesIDMap.get(displayName) || 0) + count);
-            } else if (GLOBAL_KEYS.includes(itemName)) {
-                const displayName = DISPLAY_NAMES[itemName];
-                servicesGlobalMap.set(displayName, (servicesGlobalMap.get(displayName) || 0) + count);
-            }
-        }
+        const raw = row.dimensionValues[0]?.value || '';
+        const c = counts.get(LEGACY[raw] || raw);
+        if (!c) return; // '(not set)', 'Booking flow' (opened without a service), removed services
+        const [views, clicks, bookings] = row.metricValues.map((m: any) => parseInt(m.value) || 0);
+        c.views += views;
+        c.clicks += clicks;
+        c.bookings += bookings;
     });
 
-    // Price Mapping (for revenue potential)
-    const PRICES: Record<string, number> = {
-        "New Year Reading": 250000,
-        "Buy 3 Get 5": 315000,
-        "3 Question Chat": 315000,
-        "1 Question Chat": 140000,
-        "30 Mins Call": 220000,
-        "60 Mins Call": 360000,
-        "Meetup Session": 450000,
-        "3 Cards Reading": 12,
-        "5 Cards Reading": 20,
-        "Call": 45
-    };
-
-    const topServicesID: ServicePerformance[] = Array.from(servicesIDMap.entries()).map(([name, clicks]) => ({
-        name,
-        clicks,
-        revenuePotential: clicks * (PRICES[name] || 0)
-    })).sort((a, b) => b.clicks - a.clicks);
-
-    const topServicesGlobal: ServicePerformance[] = Array.from(servicesGlobalMap.entries()).map(([name, clicks]) => ({
-        name,
-        clicks,
-        revenuePotential: clicks * (PRICES[name] || 0)
-    })).sort((a, b) => b.clicks - a.clicks);
+    const toRows = (list: [string, number][]): ServicePerformance[] => list.map(([name, price]) => {
+        const c = counts.get(name)!;
+        return { name, ...c, revenuePotential: c.clicks * price };
+    });
+    const topServicesID = toRows(ID_SERVICES);
+    const topServicesGlobal = toRows(GLOBAL_SERVICES);
 
     return { dailyVisits, locations, devices, summary, topServicesID, topServicesGlobal };
 };
@@ -290,8 +254,9 @@ export const fetchGA4Data = async (
 
     // Check if Backend Server is available (Try fetching from it)
     try {
-        // In local dev, use localhost. In prod (Vercel), use relative path.
-        const baseUrl = import.meta.env.DEV ? 'http://localhost:3001' : '';
+        // Same-origin path everywhere: Vercel serves /api itself and the Vite dev
+        // server proxies /api to the local API (so the login cookie can be sent).
+        const baseUrl = '';
         const backendUrl = `${baseUrl}/api/analytics`;
 
         console.log("GA4: Attempting to fetch from Backend Server...", backendUrl);
@@ -370,14 +335,8 @@ const fetchGA4DataClientSide = async (propertyId: string, startDate: string, end
             // 4: Event Tracking
             {
                 dateRanges: [{ startDate, endDate }],
-                dimensions: [{ name: 'eventName' }, { name: 'itemName' }],
-                metrics: [{ name: 'eventCount' }],
-                dimensionFilter: {
-                    filter: {
-                        fieldName: 'eventName',
-                        inListFilter: { values: ['initiate_checkout', 'begin_checkout', 'schedule', 'view_item'] }
-                    }
-                }
+                dimensions: [{ name: 'itemName' }],
+                metrics: [{ name: 'itemsViewed' }, { name: 'itemsCheckedOut' }, { name: 'itemsPurchased' }]
             }
         ]
     };

@@ -86,3 +86,17 @@ export const trackEvent = (
         }
     }
 };
+// The item_name each service is tracked under (pricelist card opens, "Pesan"
+// clicks and finished bookings all use the same name, so the admin's Service
+// Engagement table can line them up). Keyed by the booking form's service id.
+export const SERVICE_TRACK_NAME: Record<string, string> = {
+    special: 'Edisi Spesial',
+    chat: 'Konsultasi via Chat',
+    call: 'Panggilan Suara & Video',
+    meetup: 'Sesi Tatap Muka',
+    '3card': '3-Card Spread',
+    '5card': '5-Card Deep',
+};
+// The birthday promo appears in both markets; the global one gets its own name.
+export const promoTrackName = (isIndonesian: boolean) =>
+    isIndonesian ? 'Operation Happy Birthday' : 'Operation Happy Birthday (Global)';

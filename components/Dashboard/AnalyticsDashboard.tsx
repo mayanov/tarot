@@ -902,8 +902,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                     <thead>
                                                         <tr className="text-xs text-text-subtle uppercase border-b border-adm-line">
                                                             <th className="py-3 font-semibold pb-4">Service Name</th>
-                                                            <th className="py-3 font-semibold pb-4 text-right">Click Count</th>
-                                                            <th className="py-3 font-semibold pb-4 text-right">Est. Revenue Potential</th>
+                                                            <th className="py-3 font-semibold pb-4 text-right" title="Pricelist card opened">Card Opened</th>
+                                                            <th className="py-3 font-semibold pb-4 text-right" title="Pesan clicked (booking form or WhatsApp opened)">Clicked Pesan</th>
+                                                            <th className="py-3 font-semibold pb-4 text-right" title="Booking form completed">Booked</th>
+                                                            <th className="py-3 font-semibold pb-4 text-right" title="Clicked Pesan × starting price">Est. Revenue Potential</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="text-sm">
@@ -913,7 +915,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                                     {service.name}
                                                                 </td>
                                                                 <td className="py-4 text-right font-mono text-text-subtle">
+                                                                    {service.views}
+                                                                </td>
+                                                                <td className="py-4 text-right font-mono text-text-subtle">
                                                                     {service.clicks}
+                                                                </td>
+                                                                <td className="py-4 text-right font-mono text-text-subtle">
+                                                                    {service.bookings}
                                                                 </td>
                                                                 <td className="py-4 text-right font-mono text-gold-accent">
                                                                     {serviceTab === 'Global' ? '$' : 'Rp '}

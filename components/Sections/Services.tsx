@@ -6,7 +6,7 @@ import { btnPrimaryDark, btnSecondaryDark } from '../UI/buttons';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
 import { stopLenis, startLenis } from '../UI/scroll';
-import { trackEvent } from '../../services/analytics';
+import { trackEvent, SERVICE_TRACK_NAME, promoTrackName } from '../../services/analytics';
 
 const REVEAL_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
@@ -231,6 +231,15 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         return () => mq.removeEventListener('change', on);
     }, []);
 
+    // Each card shown in the reveal pop-up (drawn, or switched to with the tabs/swipe)
+    // counts as a "view" of that service in the admin's Service Engagement table.
+    useEffect(() => {
+        if (selected === null || !groups[selected]) return;
+        const g = groups[selected];
+        const name = g.promo ? promoTrackName(isIndonesian) : SERVICE_TRACK_NAME[BOOKING_MAP[g.type]] || g.type;
+        trackEvent('view_item', { item_name: name, market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: name });
+    }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
+
     // open: show the drawn card (front), then flip it to details
     const draw = (i: number) => {
         setSwapDir(null);
@@ -442,7 +451,6 @@ const BOOKING_MAP: Record<string, string> = {
     'Sesi Tatap Muka': 'meetup',
     '3-Card Spread': '3card',
     '5-Card Deep': '5card',
-    'Live Session': 'live',
 };
 
 // `returnToCard` (a pricelist card index) lets the booking form's "back" reopen that card.
@@ -491,7 +499,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     // --- Handlers for Global (USD) ---
     const handleBookBasic = () => trackEvent('initiate_checkout', { item_name: '3-Card Reading', market: 'Global' }, 'InitiateCheckout', { content_name: '3-Card Reading', value: 12.00, currency: 'USD', content_category: 'Global Service' });
     const handleBookDeep = () => trackEvent('initiate_checkout', { item_name: '5-Card Reading', market: 'Global' }, 'InitiateCheckout', { content_name: '5-Card Reading', value: 20.00, currency: 'USD', content_category: 'Global Service' });
-    const handleBookLive = () => trackEvent('schedule', { item_name: 'Live Call Session', market: 'Global' }, 'Schedule', { content_name: 'Live Call Session', value: 45.00, currency: 'USD', content_category: 'Global Service' });
 
     // --- Handlers for Indonesia (IDR) ---
     const handleNewYear = () => trackEvent('begin_checkout', { item_name: 'New Year Reading 2026', market: 'ID' }, 'InitiateCheckout', { content_name: 'New Year Reading 2026', value: 250000, currency: 'IDR', content_category: 'ID Service' });
@@ -641,20 +648,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         desc: "The bigger picture — hidden influences and what's coming next, read in depth.",
                         features: <>5-card spread · high-res photo · priority 24h · <span className="text-cream font-medium">1 qty = 1 question</span></>,
                         book: [{ href: 'https://www.paypal.com/ncp/payment/V6U4QMAU642KA', onClick: handleBookDeep }],
-                    },
-                ],
-            },
-            {
-                id: '', theme: 2, numeral: 'III', type: 'Live Session', tags: ['Live', '30 min'],
-                blurb: 'A live 30-minute call on Google Meet.',
-                points: ['Ask as many questions as we can fit', 'Real-time back-and-forth', 'No script, natural flow'],
-                priceLabel: '$45',
-                offers: [
-                    {
-                        name: 'Live Session', sub: '30 min', price: '$45',
-                        desc: 'Talk it out live on Google Meet and dive as deep as you want, together.',
-                        features: <><span className="text-cream font-medium">Unlimited questions</span> · real-time feedback · natural flow</>,
-                        book: [{ href: 'https://www.picktime.com/mayanovtarotEn#book/date', onClick: handleBookLive }],
                     },
                 ],
             },

@@ -19,8 +19,10 @@ export interface UserDevice {
 
 export interface ServicePerformance {
     name: string;
-    clicks: number;
-    revenuePotential: number; // Mock metric to show value
+    views: number;    // pricelist card opened
+    clicks: number;   // "Pesan" clicked (booking form / WhatsApp opened)
+    bookings: number; // booking form completed
+    revenuePotential: number; // clicks × starting price
 }
 
 export interface AnalyticsSummary {
@@ -85,20 +87,19 @@ export const getMockAnalyticsData = (startStr?: string, endStr?: string) => {
         activeNow: Math.floor(Math.random() * 5) + 1,
     };
 
-    // Mock Service Clicks based on your actual services
+    // Mock service engagement (same services as the live pricelist)
     const topServicesID: ServicePerformance[] = [
-        { name: '3 Question Chat', clicks: 42, revenuePotential: 315000 * 42 },
-        { name: 'New Year Reading 2026', clicks: 28, revenuePotential: 250000 * 28 },
-        { name: 'Promo Beli 3 Dapat 5', clicks: 15, revenuePotential: 315000 * 15 },
-        { name: '30-Min Call', clicks: 8, revenuePotential: 220000 * 8 },
-        { name: '1 Question Chat', clicks: 35, revenuePotential: 140000 * 35 },
-        { name: 'Meetup Session', clicks: 3, revenuePotential: 450000 * 3 },
+        { name: 'Operation Happy Birthday', views: 64, clicks: 21, bookings: 0, revenuePotential: 0 },
+        { name: 'Edisi Spesial', views: 30, clicks: 6, bookings: 2, revenuePotential: 250000 * 6 },
+        { name: 'Konsultasi via Chat', views: 52, clicks: 14, bookings: 5, revenuePotential: 140000 * 14 },
+        { name: 'Panggilan Suara & Video', views: 41, clicks: 9, bookings: 3, revenuePotential: 220000 * 9 },
+        { name: 'Sesi Tatap Muka', views: 18, clicks: 3, bookings: 1, revenuePotential: 450000 * 3 },
     ];
 
     const topServicesGlobal: ServicePerformance[] = [
-        { name: '5-Card Deep', clicks: 12, revenuePotential: 20 * 12 },
-        { name: '3-Card Spread', clicks: 8, revenuePotential: 12 * 8 },
-        { name: 'Live Call Session', clicks: 4, revenuePotential: 45 * 4 },
+        { name: 'Operation Happy Birthday (Global)', views: 9, clicks: 2, bookings: 0, revenuePotential: 0 },
+        { name: '3-Card Spread', views: 12, clicks: 4, bookings: 1, revenuePotential: 12 * 4 },
+        { name: '5-Card Deep', views: 15, clicks: 5, bookings: 2, revenuePotential: 20 * 5 },
     ];
 
     return { dailyVisits, locations, devices, summary, topServicesID, topServicesGlobal };
