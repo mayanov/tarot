@@ -102,6 +102,17 @@ html.lenis body {
 }
 /* tarot card "drawn" into the full-screen reveal */
 @keyframes tarotFade { from { opacity: 0; } to { opacity: 1; } }
+/* pricelist deal: the card pinches flat and opens again (a flip seen edge-on) while
+   its face-down back disappears at the halfway point */
+@keyframes dealFlip {
+  0%   { transform: scaleX(1); }
+  50%  { transform: scaleX(0.02); }
+  100% { transform: scaleX(1); }
+}
+@keyframes dealCoverOff {
+  0%, 49.9% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
 @keyframes tarotDraw {
   from { opacity: 0; transform: translateY(34px) scale(0.84); }
   to   { opacity: 1; transform: translateY(0) scale(1); }

@@ -207,6 +207,26 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 // The spread. Desktop: cards fanned in an arc, hover lifts. Mobile: a 2x2 grid so all
 // cards are visible at once. Clicking any card "draws" it into a full-screen reveal
 // that flips to the details; clicking the dark backdrop (anywhere outside) closes it.
+// The face-down back of a card, used while the deck is stacked before it's dealt.
+const CardBack: React.FC = () => (
+    <div className="absolute inset-0 overflow-hidden rounded-[1.15rem] ring-1 ring-white/15 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
+        style={{ background: 'radial-gradient(130% 110% at 50% 0%, #3a2558 0%, #241638 55%, #150c24 100%)' }}>
+        <div aria-hidden className="absolute inset-0 opacity-60" style={{ backgroundImage: CAT_STARS[1] }} />
+        <div aria-hidden className="absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-[#C9B8E8]/25" />
+        <div aria-hidden className="absolute inset-[1.15rem] rounded-[0.6rem] ring-1 ring-[#C9B8E8]/10" />
+        <div className="absolute inset-0 grid place-items-center">
+            <div className="flex flex-col items-center gap-3 text-[#C9B8E8]/80">
+                <CelestialMark name="crescent" className="w-14" />
+                <span className="font-elegant italic text-[11px] tracking-[0.32em] uppercase text-[#C9B8E8]/55">Mayanov</span>
+            </div>
+        </div>
+    </div>
+);
+
+// Deal timing (ms): each card leaves the deck DEAL_GAP after the previous one, travels
+// for DEAL_MOVE, and flips face-up (DEAL_FLIP) as it lands.
+const DEAL_START = 120, DEAL_GAP = 130, DEAL_MOVE = 820, DEAL_FLIP = 420;
+
 const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, isIndonesian }) => {
     const [selected, setSelected] = useState<number | null>(null);
     const [revealed, setRevealed] = useState(false); // overlay card flipped to details
@@ -214,6 +234,10 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const [isMobile, setIsMobile] = useState(false);
     const fanRef = useRef<HTMLDivElement | null>(null);
     const [fanW, setFanW] = useState(1024);
+    // The spread starts as a face-down deck and is dealt out the first time it scrolls
+    // into view. `settled` = the deal has finished (hover and normal timing return).
+    const [dealt, setDealt] = useState(false);
+    const [settled, setSettled] = useState(false);
     // 1 on desktop; shrinks the fan on narrower screens (tablet ≈0.85, phone 0.5)
     const fanScale = Math.max(0.5, Math.min(1, fanW / 840));
     useEffect(() => {
@@ -223,6 +247,24 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         ro.observe(el);
         return () => ro.disconnect();
     }, [isMobile]);
+    useEffect(() => {
+        const el = fanRef.current;
+        if (!el) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setDealt(true); setSettled(true); return; }
+        const io = new IntersectionObserver(([e]) => {
+            if (!e.isIntersecting) return;
+            io.disconnect();
+            setDealt(true);
+        }, { threshold: 0.4 });
+        io.observe(el);
+        return () => io.disconnect();
+    }, []);
+    useEffect(() => {
+        if (!dealt || settled) return;
+        const total = DEAL_START + (groups.length - 1) * DEAL_GAP + DEAL_MOVE + DEAL_FLIP;
+        const t = window.setTimeout(() => setSettled(true), total);
+        return () => window.clearTimeout(t);
+    }, [dealt, settled, groups.length]);
     useEffect(() => {
         const mq = window.matchMedia('(max-width: 767px)');
         const on = () => setIsMobile(mq.matches);
@@ -307,9 +349,10 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
 
     const n = groups.length;
     const center = (n - 1) / 2;
+    const dealDelay = (i: number) => DEAL_START + i * DEAL_GAP;
     const fanStyle = (i: number): React.CSSProperties => {
         const o = i - center;
-        const isHov = hovered === i;
+        const isHov = settled && hovered === i;
         // On narrow screens the whole fan is scaled down (cards keep their desktop
         // proportions) and the spread tightens so every card stays on screen.
         const s = fanScale;
@@ -323,10 +366,20 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         const edge = Math.max(1, (n - 1) / 2); // |o| of the outermost card
         const rot = (o / edge) * 16;
         const ty = (isHov ? -30 : (o / edge) ** 2 * 58) * s;
+        if (!dealt) {
+            // the deck: all cards stacked in the middle, slightly fanned, the first card on top
+            return {
+                transform: `translate(-50%, -50%) translateY(${(14 * s).toFixed(1)}px) rotate(${(o * 1.6).toFixed(2)}deg) scale(${(s * 0.94).toFixed(4)})`,
+                zIndex: 30 + (n - i),
+                transition: 'none',
+            };
+        }
         return {
             transform: `translate(-50%, -50%) translateX(${(o * step).toFixed(1)}px) translateY(${ty.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${(s * (isHov ? 1.05 : 1)).toFixed(4)})`,
             zIndex: isHov ? 40 : 20 - Math.round(Math.abs(o)),
-            transition: 'transform 0.5s cubic-bezier(0.22,1,0.36,1)',
+            transition: settled
+                ? 'transform 0.5s cubic-bezier(0.22,1,0.36,1)'
+                : `transform ${DEAL_MOVE}ms cubic-bezier(0.2,0.9,0.25,1) ${dealDelay(i)}ms`,
         };
     };
 
@@ -344,7 +397,22 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                 onMouseEnter={() => setHovered(i)}
                                 onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
                             >
-                                <TarotCard g={g} i={i} flipped={false} onFlip={() => draw(i)} isIndonesian={isIndonesian} />
+                                {/* while dealing, the card pinches flat and opens face-up as it lands */}
+                                <div
+                                    className="relative"
+                                    style={dealt && !settled ? { animation: `dealFlip ${DEAL_FLIP}ms cubic-bezier(0.4,0,0.2,1) ${dealDelay(i) + DEAL_MOVE - 200}ms both` } : undefined}
+                                >
+                                    <TarotCard g={g} i={i} flipped={false} onFlip={() => draw(i)} isIndonesian={isIndonesian} />
+                                    {!settled && (
+                                        <div
+                                            aria-hidden
+                                            className="absolute inset-0 pointer-events-none"
+                                            style={dealt ? { animation: `dealCoverOff ${DEAL_FLIP}ms linear ${dealDelay(i) + DEAL_MOVE - 200}ms both` } : undefined}
+                                        >
+                                            <CardBack />
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -676,9 +744,8 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
 
             {/* ===== Pricelist — a fanned tarot spread; click a card to flip for details ===== */}
             <div id="pricelist" className="pb-6 md:pb-10">
-                <FadeIn dir="up">
-                    <TarotFan groups={groups} isIndonesian={isIndonesian} />
-                </FadeIn>
+                {/* no fade — the deck deals itself out when it scrolls into view */}
+                <TarotFan groups={groups} isIndonesian={isIndonesian} />
             </div>
 
             {/* ===== How it works — heading on top, steps flow horizontally so it stays
