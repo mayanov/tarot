@@ -206,18 +206,27 @@ app.delete('/api/users', verifyToken, async (req, res) => {
 });
 
 
+// Which website's traffic the dashboard shows: the real site, or the private
+// staging copy on Vercel. Anything else (localhost, Picktime pages that share the
+// tag) is left out.
+const SITE_HOSTS = {
+    live: ['tarotreadingbymayanov.com', 'www.tarotreadingbymayanov.com'],
+    staging: ['mayanov-tarot.vercel.app'],
+};
+
 app.get('/api/analytics', verifyToken, async (req, res) => {
     try {
         // not a secret (the dashboard ships it too) — default it so the server works
         // without the env var
         const propertyId = process.env.GA4_PROPERTY_ID || '386315459';
         const { endDate } = req.query;
+        const site = req.query.site === 'staging' ? 'staging' : 'live';
         // Analytics reset: never count anything before the reset date
         const since = await settingsStore.getAnalyticsSince();
         const startDate = since && since > req.query.startDate ? since : req.query.startDate;
         if (since && endDate && since > endDate) {
             // the whole range is before the reset — nothing to count
-            return res.json({ reports: Array.from({ length: 5 }, () => ({ rows: [] })), since });
+            return res.json({ reports: Array.from({ length: 5 }, () => ({ rows: [] })), since, site });
         }
 
         if (!propertyId) {
@@ -273,13 +282,18 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
             ]
         };
 
+        // Only count the chosen site (localhost and other test hosts are never counted).
+        // Every report gets the same hostName filter.
+        const hostFilter = { filter: { fieldName: 'hostName', inListFilter: { values: SITE_HOSTS[site] } } };
+        requestBody.requests.forEach((r) => { r.dimensionFilter = hostFilter; });
+
         // Run the Batch Report
         const [response] = await analyticsDataClient.batchRunReports(requestBody);
 
         console.log("[Server] Data fetched successfully.");
         // The Node.js client returns an array [response, request, raw].
         // The response object contains { reports: [...] }
-        res.json({ ...response, since });
+        res.json({ ...response, since, site });
 
     } catch (error) {
         console.error("[Server] Error fetching analytics:", error);

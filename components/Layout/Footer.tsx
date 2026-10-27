@@ -75,11 +75,11 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     <nav className="flex items-center gap-6" aria-label="Social">
                         <a
                             href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={icon}
-                            onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market }, 'ViewContent', { content_name: 'Instagram', content_category: market })}
+                            onClick={() => trackEvent('social_click', { platform: 'Instagram', market }, 'ViewContent', { content_name: 'Instagram', content_category: market })}
                         ><Instagram className="w-[18px] h-[18px]" strokeWidth={1.7} /></a>
                         <a
                             href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className={icon}
-                            onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market }, 'ViewContent', { content_name: 'TikTok', content_category: market })}
+                            onClick={() => trackEvent('social_click', { platform: 'TikTok', market }, 'ViewContent', { content_name: 'TikTok', content_category: market })}
                         ><FaTiktok size={16} /></a>
                         <a
                             href={WA_HELLO} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className={icon}

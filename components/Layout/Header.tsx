@@ -249,13 +249,13 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               <nav className="flex items-center gap-6" aria-label="Social">
                 <a
                   href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
-                  onClick={() => trackEvent('view_item', { item_name: 'Instagram Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
+                  onClick={() => trackEvent('social_click', { platform: 'Instagram', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
                   aria-label="Instagram" className="text-cream/65 hover:text-cream transition-all duration-500 hover:-translate-y-0.5">
                   <Instagram className="w-5 h-5" strokeWidth={1.7} />
                 </a>
                 <a
                   href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
-                  onClick={() => trackEvent('view_item', { item_name: 'TikTok Profile', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
+                  onClick={() => trackEvent('social_click', { platform: 'TikTok', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
                   aria-label="TikTok" className="text-cream/65 hover:text-cream transition-all duration-500 hover:-translate-y-0.5">
                   <FaTiktok size={18} />
                 </a>

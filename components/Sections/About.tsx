@@ -13,9 +13,10 @@ interface AboutProps {
 
 const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
   useEffect(() => {
+    // a section view, not a product — kept out of the booking funnel's item reports
     trackEvent(
-      'view_item',
-      { item_name: 'About Me', market: isIndonesian ? 'ID' : 'Global' },
+      'view_section',
+      { section: 'About Me', market: isIndonesian ? 'ID' : 'Global' },
       'ViewContent',
       { content_name: 'About Me', content_category: isIndonesian ? 'ID' : 'Global' }
     );

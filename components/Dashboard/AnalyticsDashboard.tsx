@@ -70,6 +70,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         since?: string | null;
     } | null>(null);
     const [resetBusy, setResetBusy] = useState(false);
+    // which website's traffic: the real site, or the private staging copy (Vercel)
+    const [site, setSite] = useState<'live' | 'staging'>('live');
 
     // Helper: Apply Presets
     const applyPreset = (preset: DateRangePreset) => {
@@ -159,7 +161,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
             try {
                 // Determine if we need client-side auth
                 // fetchGA4Data tries backend first. 
-                const realData = await fetchGA4Data(propertyId, startDate, endDate);
+                const realData = await fetchGA4Data(propertyId, startDate, endDate, site);
                 setData(realData);
                 setApiError(null);
             } catch (e: any) {
@@ -180,7 +182,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
     useEffect(() => {
         loadData();
-    }, [startDate, endDate, useRealData, isConnected]);
+    }, [startDate, endDate, useRealData, isConnected, site]);
 
     // Analytics reset: from now on the dashboard counts only from today. The data in
     // Google Analytics isn't deleted, so "Undo reset" brings the history back.
@@ -209,6 +211,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         try { return (localStorage.getItem('admin_theme') as 'light' | 'dark') || 'light'; } catch { return 'light'; }
     });
+    // Traffic chart colours (validated pair, own steps per theme): Indonesia in the
+    // brand purple, other countries in orange + dashed.
+    const chartColors = theme === 'dark' ? { id: '#A07EE0', global: '#d95926' } : { id: '#7C52B8', global: '#eb6834' };
+    const todayJakarta = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
     useEffect(() => { try { localStorage.setItem('admin_theme', theme); } catch { /* ignore */ } }, [theme]);
     // Scale the whole admin down a touch (rem-based text + padding shrink uniformly;
     // the pixel-based calendar grid and pointer math are unaffected).
@@ -678,6 +684,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                 </div>
                                 <p className="text-text-subtle mt-1 text-sm">
                                     Performance metrics for <span className="text-text-light font-medium">{startDate}</span> to <span className="text-text-light font-medium">{endDate}</span>
+                                    {' · '}<span className="text-text-light font-medium">{site === 'live' ? 'tarotreadingbymayanov.com' : 'mayanov-tarot.vercel.app (staging)'}</span>
                                 </p>
                                 {data?.since && (
                                     <p className="mt-1.5 text-xs text-text-subtle">
@@ -688,7 +695,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                             </div>
 
                             {/* Enhanced Controls Toolbar */}
-                            <div className="flex flex-col sm:flex-row gap-3 bg-surface-1 p-1.5 rounded-xl border border-adm-line-2 shadow-lg">
+                            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-end gap-3 bg-surface-1 p-1.5 rounded-xl border border-adm-line-2 shadow-lg">
                                 {/* Quick Filters */}
                                 <div className="flex bg-bg-dark/50 rounded-lg p-1">
                                     {(['7D', '30D', 'THIS_MONTH'] as DateRangePreset[]).map((preset) => (
@@ -717,7 +724,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             }`}
                                     >
                                         <Calendar size={14} />
-                                        <span>Custom Range</span>
+                                        <span className="whitespace-nowrap">Custom Range</span>
                                         <ChevronDown size={12} className={`transition-transformDuration-300 ${showCustomPicker ? 'rotate-180' : ''}`} />
                                     </button>
 
@@ -765,10 +772,22 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                     )}
                                 </div>
 
+                                {/* Site switch */}
+                                <div className="flex bg-bg-dark/50 rounded-lg p-1" title="Which website's visitors to show">
+                                    {([['live', 'Live site'], ['staging', 'Staging']] as const).map(([id, label]) => (
+                                        <button
+                                            key={id}
+                                            onClick={() => setSite(id)}
+                                            className={`px-3 py-1.5 text-xs font-semibold rounded-md whitespace-nowrap transition-all ${site === id ? 'bg-lilac text-white shadow' : 'text-text-subtle hover:text-text-light'}`}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
                                 <button
                                     onClick={handleReset}
                                     disabled={resetBusy}
-                                    className="px-3 py-2 text-xs font-semibold text-text-subtle hover:text-text-light hover:bg-adm-hover rounded-lg transition-colors disabled:opacity-50"
+                                    className="px-3 py-2 text-xs font-semibold whitespace-nowrap text-text-subtle hover:text-text-light hover:bg-adm-hover rounded-lg transition-colors disabled:opacity-50"
                                     title="Start counting from today (history stays in Google Analytics; can be undone)"
                                 >
                                     Reset analytics
@@ -830,10 +849,17 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                                     {/* 1. Visual Traffic Trend */}
                                     <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl relative min-h-[400px]">
-                                        <h3 className="text-xl font-serif mb-6 flex items-center gap-2">
-                                            <Calendar size={20} className="text-lilac" />
-                                            Visual Traffic Trend
-                                        </h3>
+                                        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                                            <h3 className="text-xl font-serif flex items-center gap-2">
+                                                <Calendar size={20} className="text-lilac" />
+                                                Visual Traffic Trend
+                                            </h3>
+                                            {/* legend — line style differs too, so it isn't colour alone */}
+                                            <div className="flex items-center gap-4 text-xs text-text-subtle">
+                                                <span className="flex items-center gap-2"><span className="w-5 h-[3px] rounded" style={{ backgroundColor: chartColors.id }} /> Indonesia</span>
+                                                <span className="flex items-center gap-2"><span className="w-5 border-t-[3px] border-dashed" style={{ borderColor: chartColors.global }} /> Other countries</span>
+                                            </div>
+                                        </div>
 
                                         {isLoading ? (
                                             <div className="absolute inset-0 flex items-center justify-center bg-surface-1/50 backdrop-blur-sm rounded-2xl z-10 border border-adm-line">
@@ -845,12 +871,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                     <AreaChart data={data?.dailyVisits} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                                         <defs>
                                                             <linearGradient id="colorID" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#7C52B8" stopOpacity={0.28} />
-                                                                <stop offset="95%" stopColor="#7C52B8" stopOpacity={0} />
+                                                                <stop offset="5%" stopColor={chartColors.id} stopOpacity={0.28} />
+                                                                <stop offset="95%" stopColor={chartColors.id} stopOpacity={0} />
                                                             </linearGradient>
                                                             <linearGradient id="colorGlobal" x1="0" y1="0" x2="0" y2="1">
-                                                                <stop offset="5%" stopColor="#7A7FD1" stopOpacity={0.28} />
-                                                                <stop offset="95%" stopColor="#7A7FD1" stopOpacity={0} />
+                                                                <stop offset="5%" stopColor={chartColors.global} stopOpacity={0.18} />
+                                                                <stop offset="95%" stopColor={chartColors.global} stopOpacity={0} />
                                                             </linearGradient>
                                                         </defs>
                                                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.18)" vertical={false} />
@@ -874,8 +900,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                             type="monotone"
                                                             dataKey="visitsID"
                                                             name="Indonesia"
-                                                            stroke="#7C52B8"
-                                                            strokeWidth={3}
+                                                            stroke={chartColors.id}
+                                                            strokeWidth={2}
                                                             fillOpacity={1}
                                                             fill="url(#colorID)"
                                                             animationDuration={1500}
@@ -883,9 +909,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                         <Area
                                                             type="monotone"
                                                             dataKey="visitsGlobal"
-                                                            name="Global (Others)"
-                                                            stroke="#7A7FD1"
-                                                            strokeWidth={3}
+                                                            name="Other countries"
+                                                            stroke={chartColors.global}
+                                                            strokeWidth={2}
+                                                            strokeDasharray="5 4"
                                                             fillOpacity={1}
                                                             fill="url(#colorGlobal)"
                                                             animationDuration={1500}
@@ -893,6 +920,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                     </AreaChart>
                                                 </ResponsiveContainer>
                                             </div>
+                                        )}
+                                        {endDate === todayJakarta && (
+                                            <p className="mt-4 text-xs text-text-subtle">
+                                                Today isn't over yet, so its numbers are still coming in and the last point looks lower. Google Analytics can also take a few hours to count recent visits.
+                                            </p>
                                         )}
                                     </div>
 

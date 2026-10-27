@@ -45,18 +45,30 @@
   <!-- Tailwind is compiled at build time (tailwind.config.js + PostCSS); styles
        are bundled via index.css, imported from index.tsx. -->
 
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KKX2C4PCVX"></script>
+  <!-- Analytics only run on real sites: local development (localhost) never reports
+       to Google Analytics or Facebook, so testing isn't counted as visits. With no
+       gtag/fbq defined, services/analytics.ts simply skips every event. -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'G-KKX2C4PCVX');
+    window.__analyticsOn = !/^(localhost|127\.0\.0\.1|\[::1\]|.+\.local)$/.test(location.hostname);
+  </script>
+
+  <!-- Google Analytics -->
+  <script>
+    if (window.__analyticsOn) {
+      var ga = document.createElement('script');
+      ga.async = true;
+      ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-KKX2C4PCVX';
+      document.head.appendChild(ga);
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { dataLayer.push(arguments); };
+      gtag('js', new Date());
+      gtag('config', 'G-KKX2C4PCVX');
+    }
   </script>
 
   <!-- Facebook Pixel -->
   <script>
-    !function (f, b, e, v, n, t, s) {
+    if (window.__analyticsOn) !function (f, b, e, v, n, t, s) {
       if (f.fbq) return; n = f.fbq = function () {
         n.callMethod ?
           n.callMethod.apply(n, arguments) : n.queue.push(arguments)
@@ -67,8 +79,10 @@
       s.parentNode.insertBefore(t, s)
     }(window, document, 'script',
       'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '4126133574309418');
-    fbq('track', 'PageView');
+    if (window.__analyticsOn) {
+      fbq('init', '4126133574309418');
+      fbq('track', 'PageView');
+    }
   </script>
   <script type="importmap">
 {

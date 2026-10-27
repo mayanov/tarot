@@ -237,7 +237,8 @@ const processReports = (reports: any[]) => {
 export const fetchGA4Data = async (
     propertyId: string,
     startDate: string,
-    endDate: string
+    endDate: string,
+    site: 'live' | 'staging' = 'live' // which website's traffic (see SITE_HOSTS on the server)
 ): Promise<{
     dailyVisits: DailyVisit[];
     locations: UserLocation[];
@@ -257,7 +258,7 @@ export const fetchGA4Data = async (
 
         console.log("GA4: Attempting to fetch from Backend Server...", backendUrl);
         const token = localStorage.getItem('authToken');
-        const res = await fetch(`${backendUrl}?startDate=${startDate}&endDate=${endDate}&propertyId=${propertyId}`, {
+        const res = await fetch(`${backendUrl}?startDate=${startDate}&endDate=${endDate}&propertyId=${propertyId}&site=${site}`, {
             headers: {
                 'Content-Type': 'application/json',
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {})
