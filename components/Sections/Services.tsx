@@ -758,18 +758,10 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             {/* HEADER — transparent over the sky */}
             <div className="mx-auto px-8 pt-20 md:pt-28 pb-16 md:pb-20">
                 <FadeIn>
-                    <div className="grid lg:grid-cols-12 gap-y-6 lg:gap-x-16 items-end">
-                        <div className="lg:col-span-7">
-                            <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
-                                {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
-                            </h2>
-                        </div>
-                        <p className="lg:col-span-4 lg:col-start-9 text-[0.95rem] text-ink/60 font-light leading-relaxed lg:pb-2">
-                            {isIndonesian
-                                ? 'Pilih metode yang paling nyaman — analisa tajam, solutif, tanpa basa-basi.'
-                                : 'Clear options, no hidden fees. Just choose the depth you need.'}
-                        </p>
-                    </div>
+                    {/* centred over the spread, no subtitle — the cards say the rest */}
+                    <h2 className="text-center font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+                        {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
+                    </h2>
                 </FadeIn>
             </div>
 
