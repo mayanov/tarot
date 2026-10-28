@@ -129,16 +129,15 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
     // questions are set as large serif lines, filtered by an inline sentence, and the
     // section closes on a direct WhatsApp question instead of the last item.
     <section id="faq" className="relative text-ink pt-16 md:pt-24 pb-24 md:pb-36">
-      <div className="mx-auto px-6 md:px-8 max-w-5xl">
+      <div className="mx-auto px-6 md:px-8 max-w-4xl">
         <FadeIn dir="blur" duration={1.15}>
           <div className="text-center">
             <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
               {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
             </h2>
 
-            {/* category filter, written as a sentence */}
+            {/* category filter — a quiet row of words, the active one in purple italic */}
             <p className="mt-6 md:mt-8 text-[0.95rem] md:text-base text-ink/50 font-light">
-              <span className="mr-1">{isIndonesian ? 'Tampilkan:' : 'Show:'}</span>
               {categories.map((cat, ci) => {
                 const active = showAll ? cat === allLabel : cat === activeCat;
                 return (
@@ -159,7 +158,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
         </FadeIn>
 
         {/* the index */}
-        <ol className="mt-12 md:mt-16">
+        <ol className="mt-10 md:mt-12">
           {filtered.map((faq, index) => {
             const open = openKey === faq.question;
             return (
@@ -168,24 +167,22 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   <button
                     onClick={() => toggleFAQ(faq.question)}
                     aria-expanded={open}
-                    className="group w-full grid grid-cols-[2.25rem_1fr_auto] md:grid-cols-[3.5rem_1fr_auto] items-center gap-x-3 md:gap-x-6 py-6 md:py-8 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-moon/40 rounded-sm"
+                    className="group w-full grid grid-cols-[2rem_1fr_auto] md:grid-cols-[2.75rem_1fr_auto] items-baseline gap-x-3 md:gap-x-5 py-4 md:py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-moon/40 rounded-sm"
                   >
-                    <span aria-hidden className={`self-start pt-2 md:pt-3 font-elegant italic text-sm md:text-base tabular-nums transition-colors duration-300 ${open ? 'text-moon' : 'text-ink/35'}`}>
+                    <span aria-hidden className={`font-elegant italic text-sm tabular-nums transition-colors duration-300 ${open ? 'text-moon' : 'text-ink/35'}`}>
                       {String(index + 1).padStart(2, '0')}
                     </span>
-                    <span className={`font-elegant font-medium text-[1.4rem] sm:text-[1.7rem] md:text-[2.1rem] leading-[1.15] tracking-[-0.015em] transition-[color,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'text-moon' : 'text-ink group-hover:translate-x-2'}`}>
+                    <span className={`font-elegant font-medium text-[1.1rem] md:text-[1.3rem] leading-snug tracking-[-0.01em] transition-[color,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'text-moon' : 'text-ink group-hover:translate-x-1.5 group-hover:text-moon'}`}>
                       {faq.question}
                     </span>
-                    {/* + turns into × when open; fills purple on hover */}
-                    <span aria-hidden className={`grid place-items-center w-9 h-9 md:w-11 md:h-11 rounded-full border transition-colors duration-300 ${open ? 'bg-moon border-moon text-white' : 'border-ink/20 text-ink/60 group-hover:bg-moon group-hover:border-moon group-hover:text-white'}`}>
-                      <Plus className={`w-4 h-4 md:w-5 md:h-5 transition-transform duration-500 ${open ? 'rotate-45' : ''}`} strokeWidth={1.75} />
-                    </span>
+                    {/* a bare + that turns into × when open — no container */}
+                    <Plus aria-hidden className={`self-center w-5 h-5 transition-[transform,color] duration-500 ${open ? 'rotate-45 text-moon' : 'text-ink/40 group-hover:text-moon'}`} strokeWidth={1.5} />
                   </button>
 
                   <div className={`grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                     <div className="overflow-hidden">
                       {/* the answer lines up under the question text, in a narrower column */}
-                      <p className="pb-8 md:pb-10 pl-[3rem] md:pl-[5rem] pr-12 md:pr-20 max-w-3xl text-ink/65 text-base md:text-lg leading-[1.75] whitespace-pre-line font-light">
+                      <p className="pb-6 md:pb-7 pl-[2.75rem] md:pl-[4rem] pr-10 max-w-3xl text-ink/65 text-[0.95rem] md:text-base leading-[1.75] whitespace-pre-line font-light">
                         {faq.answer}
                       </p>
                     </div>
