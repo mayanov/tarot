@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
 import { btnPrimaryDark } from '../UI/buttons';
@@ -152,7 +151,6 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
               className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-sm`}
             >
               {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </a>
           </div>
         </Rise>

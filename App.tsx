@@ -470,22 +470,55 @@ function App() {
           </button>
         )}
 
-        {/* WhatsApp Floating Button */}
-        {isIndonesian && (
-          <a
-            href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => trackEvent('contact', { method: 'WhatsApp', market: 'ID' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: 'ID' })}
-            className="p-3 rounded-full bg-[#25D366] text-white shadow-[0_0_15px_rgba(37,211,102,0.4)] hover:bg-[#20bd5a] hover:scale-110 transition-all duration-300 flex items-center justify-center"
-            title="Chat on WhatsApp"
-          >
-            <FaWhatsapp size={24} />
-          </a>
-        )}
+        {/* WhatsApp — on both versions, in WhatsApp green. A soft ring ripples out
+            every few seconds; hover slides out a label; once per visit the label
+            peeks out by itself a few seconds after the page settles. */}
+        <WhatsAppFab isIndonesian={isIndonesian} />
       </div>
     </div>
   );
 }
+
+const WhatsAppFab: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
+  const [peek, setPeek] = React.useState(false);
+  React.useEffect(() => {
+    let shown = false;
+    try { shown = sessionStorage.getItem('wa_peeked') === '1'; } catch { /* ignore */ }
+    if (shown) return;
+    const open = window.setTimeout(() => {
+      setPeek(true);
+      try { sessionStorage.setItem('wa_peeked', '1'); } catch { /* ignore */ }
+    }, 7000);
+    const close = window.setTimeout(() => setPeek(false), 11500);
+    return () => { clearTimeout(open); clearTimeout(close); };
+  }, []);
+  const text = isIndonesian
+    ? 'Halo Mayanov, saya ingin bertanya mengenai tarot reading'
+    : "Hi Mayanov, I'd like to ask about a tarot reading";
+  const label = isIndonesian ? 'Tanya via WhatsApp' : 'Chat on WhatsApp';
+  const market = isIndonesian ? 'ID' : 'Global';
+  return (
+    <a
+      href={`https://wa.me/6287786280310?text=${encodeURIComponent(text)}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => trackEvent('contact', { method: 'WhatsApp', market }, 'Contact', { content_name: 'WhatsApp Chat', content_category: market })}
+      aria-label={label}
+      className="group relative flex items-center justify-end"
+    >
+      {/* the label that slides out to the left */}
+      <span
+        className={`mr-3 whitespace-nowrap rounded-lg bg-white text-ink text-sm font-medium px-3.5 py-2 shadow-[0_10px_28px_-12px_rgba(20,12,40,0.45)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${peek ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-3 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0'}`}
+      >
+        {label}
+      </span>
+      <span className="relative grid place-items-center w-14 h-14 rounded-full bg-[#25D366] text-white shadow-[0_12px_30px_-10px_rgba(37,211,102,0.75)] transition-transform duration-300 group-hover:scale-105">
+        {/* ripple ring */}
+        <span aria-hidden className="absolute inset-0 rounded-full border-2 border-[#25D366] motion-safe:animate-[waRipple_3.2s_ease-out_infinite]" />
+        <span className="relative transition-transform duration-500 group-hover:rotate-[-10deg]"><FaWhatsapp size={26} /></span>
+      </span>
+    </a>
+  );
+};
 
 export default App;

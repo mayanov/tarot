@@ -1,7 +1,6 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
-import SoftAura from '../UI/SoftAura';
 import Testimonials from './Testimonials';
 
 interface WhyChooseProps {
@@ -38,7 +37,6 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
     <section id="why-choose" className="relative isolate overflow-hidden">
       {/* LIGHT band — white with dark text (no seam lines) */}
       <div className="bg-paper relative isolate overflow-hidden text-ink">
-        <SoftAura />
         <div className="relative z-10 mx-auto px-8 pt-20 md:pt-28">
           {/* Lead — centered heading + paragraph */}
           <FadeIn>

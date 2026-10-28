@@ -112,14 +112,17 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 </button>
               );
             })()}
-            <a
-              href="https://wa.link/5peyhb"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${btnPrimaryLight} inline-flex px-7 py-3 text-sm`}
-            >
-              {isIndonesian ? "Yuk Collab" : "Collaborate with me"}
-            </a>
+            {/* collab invite — Indonesian version only */}
+            {isIndonesian && (
+              <a
+                href="https://wa.link/5peyhb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${btnPrimaryLight} inline-flex px-7 py-3 text-sm`}
+              >
+                Yuk Collab
+              </a>
+            )}
           </div>
       </div>
 
