@@ -9,6 +9,7 @@ import Loader from './components/Layout/Loader';
 import BookingModal from './components/Booking/BookingModal';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
 import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
+import MoonPhaseDivider from './components/UI/MoonPhaseDivider';
 import { ArrowUp, RefreshCw } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 
@@ -418,7 +419,8 @@ function App() {
           <Interlude isIndonesian={isIndonesian} />
           <WhyChoose isIndonesian={isIndonesian} />
           <Events isIndonesian={isIndonesian} />
-          {/* FAQ — its own lilac sheet rising over Events (see FAQ.tsx) */}
+          {/* a quiet break between Events and the FAQ — a hairline with moon phases */}
+          <MoonPhaseDivider className="pt-6 md:pt-10" />
           <FAQ isIndonesian={isIndonesian} />
         </React.Suspense>
       </main>
