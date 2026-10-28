@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
+import Disclaimer from './Disclaimer';
 import { btnPrimaryDark, btnSecondaryDark } from '../UI/buttons';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
@@ -777,6 +778,9 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 {/* no fade — the deck deals itself out when it scrolls into view */}
                 <TarotFan groups={groups} isIndonesian={isIndonesian} />
             </div>
+
+            {/* booking notes — highlighted, right under the cards so they're read before booking */}
+            <Disclaimer isIndonesian={isIndonesian} />
 
         </section>
     );

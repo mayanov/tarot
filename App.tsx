@@ -17,7 +17,6 @@ const Services = React.lazy(() => import('./components/Sections/Services'));
 const Interlude = React.lazy(() => import('./components/Sections/Interlude'));
 const Events = React.lazy(() => import('./components/Sections/Events'));
 const FAQ = React.lazy(() => import('./components/Sections/FAQ'));
-const Disclaimer = React.lazy(() => import('./components/Sections/Disclaimer'));
 const AnalyticsDashboard = React.lazy(() => import('./components/Dashboard/AnalyticsDashboard'));
 const AdminLogin = React.lazy(() => import('./components/Admin/AdminLogin'));
 const NotFound = React.lazy(() => import('./components/Layout/NotFound'));
@@ -419,11 +418,9 @@ function App() {
           <Interlude isIndonesian={isIndonesian} />
           <WhyChoose isIndonesian={isIndonesian} />
           <Events isIndonesian={isIndonesian} />
-          {/* FAQ + Disclaimer share ONE white ground and ONE soft wash so there's no
-              seam between them — the two sections themselves are transparent. */}
+          {/* FAQ on its own white ground (the booking notes now sit under the pricelist) */}
           <div className="relative isolate overflow-hidden">
             <FAQ isIndonesian={isIndonesian} />
-            <Disclaimer isIndonesian={isIndonesian} />
           </div>
         </React.Suspense>
       </main>

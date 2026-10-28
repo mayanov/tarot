@@ -45,50 +45,49 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
         : 'By booking a session, you agree to the notes above. Applies to all services · 18+.';
 
     return (
-        // No card — flows straight on from the FAQ on the same white background. Same
-        // editorial split as the FAQ: on desktop the intro holds the left column (and
-        // stays put while you read) and the notes run down the right as ruled rows.
-        <section id="disclaimer" className="relative text-ink pt-10 md:pt-16 pb-24 md:pb-36">
-            <div className="mx-auto px-8 relative z-10">
-                <div className="relative pt-4 md:pt-6 grid lg:grid-cols-12 gap-y-12 lg:gap-x-20 lg:items-start">
-                    {/* LEFT — gentle, human framing (no "disclaimer", no legalese) */}
-                    <div className="lg:col-span-4 lg:sticky lg:top-32">
-                        <FadeIn>
+        // Sits right under the pricelist (rendered by Services), so the notes are read
+        // before booking. A tinted, bordered panel makes it stand out from the page: a
+        // short intro + the agreement on top, the five notes in a compact grid below.
+        <section id="disclaimer" className="mx-auto px-4 md:px-8 pt-10 md:pt-14 pb-20 md:pb-28">
+            <FadeIn>
+                <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[1.75rem] md:rounded-[2.25rem] border border-moon/25 bg-moon/[0.06] px-6 py-9 md:px-12 md:py-12">
+                    {/* faint mark in the corner, so the panel reads as its own card */}
+                    <CelestialMark name="sparkle" className="pointer-events-none absolute -right-6 -top-6 w-36 text-moon/[0.07]" />
+
+                    <div className="relative grid lg:grid-cols-12 gap-y-6 lg:gap-x-12 lg:items-end">
+                        <div className="lg:col-span-7">
                             <p className="flex items-center gap-2 text-moon text-sm font-medium tracking-wide">
                                 <CelestialMark name="sparkle" className="w-3.5 h-3.5 shrink-0" />
-                                {isIndonesian ? 'Sebelum kita mulai' : 'Before we begin'}
+                                {isIndonesian ? 'Sebelum kamu booking' : 'Before you book'}
                             </p>
-                            <h2 className="mt-4 font-elegant font-semibold text-ink text-[2.1rem] sm:text-[2.7rem] lg:text-[3.3rem] leading-[1.04] tracking-[-0.02em]">
+                            <h2 className="mt-3 font-elegant font-semibold text-ink text-[1.9rem] sm:text-[2.3rem] lg:text-[2.6rem] leading-[1.05] tracking-[-0.02em]">
                                 {isIndonesian ? 'Beberapa catatan jujur' : 'A few honest notes'}
                             </h2>
-                            {/* the agreement is the subtitle */}
-                            <p className="mt-6 text-ink/60 font-light leading-relaxed text-base md:text-lg max-w-sm">
-                                {agreement}
-                            </p>
-                        </FadeIn>
+                        </div>
+                        {/* the agreement — the line that matters, set apart */}
+                        <p className="lg:col-span-5 flex gap-3 rounded-2xl bg-paper/80 border border-moon/20 px-4 py-3.5 text-ink/80 text-sm md:text-[0.95rem] leading-relaxed">
+                            <span aria-hidden className="mt-[0.45em] w-1.5 h-1.5 rotate-45 shrink-0 bg-moon" />
+                            <span>{agreement}</span>
+                        </p>
                     </div>
 
-                    {/* RIGHT — the notes as ruled rows: name on the left, the why beside it */}
-                    <ol className="lg:col-span-8 lg:col-start-5 border-t border-ink/[0.07]">
+                    <ol className="relative mt-8 md:mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 lg:gap-x-10 gap-y-6 md:gap-y-8 border-t border-moon/15 pt-8 md:pt-10">
                         {items.map((it, index) => (
-                            <li key={index} className="group border-b border-ink/[0.07]">
-                              <FadeIn delay={Math.min(index, 4) * 70} dir="up" className="py-8 md:py-10 sm:grid sm:grid-cols-[minmax(0,14rem)_1fr] md:grid-cols-[minmax(0,16rem)_1fr] sm:gap-x-12 md:gap-x-16 sm:items-baseline">
-                                    <h3 className="flex items-baseline gap-3 font-elegant font-semibold text-ink text-xl md:text-[1.3rem] leading-snug transition-colors duration-500 group-hover:text-moon">
-                                        <span aria-hidden className="font-elegant italic font-medium text-moon/70 text-base tabular-nums shrink-0">
-                                            {String(index + 1).padStart(2, '0')}
-                                        </span>
-                                        {it.label}
-                                    </h3>
-                                    <p className="mt-3 sm:mt-0 pl-9 sm:pl-0 text-ink/60 font-light text-sm md:text-[0.95rem] leading-[1.75] max-w-md">
-                                        {it.text}
-                                    </p>
-                              </FadeIn>
+                            <li key={index}>
+                                <h3 className="flex items-baseline gap-2.5 font-elegant font-semibold text-ink text-lg md:text-[1.15rem] leading-snug">
+                                    <span aria-hidden className="font-elegant italic font-medium text-moon text-sm tabular-nums shrink-0">
+                                        {String(index + 1).padStart(2, '0')}
+                                    </span>
+                                    {it.label}
+                                </h3>
+                                <p className="mt-1.5 pl-7 text-ink/60 font-light text-sm leading-[1.7]">
+                                    {it.text}
+                                </p>
                             </li>
                         ))}
                     </ol>
-
                 </div>
-            </div>
+            </FadeIn>
         </section>
     );
 };
