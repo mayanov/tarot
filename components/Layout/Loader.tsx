@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Background from './Background';
 import { stopLenis, startLenis } from '../UI/scroll';
+import { Phase, PHASES as DIVIDER_PHASES } from '../UI/MoonPhaseDivider';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -15,11 +16,13 @@ const REVEAL_TOTAL_MS = 1550;         // loader fully gone
 const WORDMARK_PX = 20;               // the wordmark's size while loading
 
 // Loading is REAL: progress comes from the work the page actually waits on (fonts, the
-// moon image, the location check, and the page itself), shown as
-// the lunar cycle filling up — five small moons (new → full) that brighten in turn —
-// plus a live percentage. Only at 100% do they merge into the full moon, which then
-// flies up and wanes into the crescent above the hero title.
-const PHASES = [0, 26, 52, 78, 104];  // shadow offset per phase: new → crescent → half → gibbous → full
+// moon image, the location check, and the page itself). It's shown as the site's
+// moon-phase divider being drawn: hairlines grow outward from the centre while seven
+// outlined moons (crescent, half, gibbous, FULL, gibbous, half, crescent) wax into
+// their shapes, the outer pair first and the full moon last — plus a live
+// percentage. At 100% the row glides into the centre and becomes the full moon, which
+// then flies up and wanes into the crescent above the hero title.
+const ROW_GAP_REM = 2.1;     // distance between moons in the row
 const TASKS = ['fonts', 'moon', 'app', 'page'] as const;
 const MIN_CLIMB_MS = 1600;   // even on a fast connection, the bar takes this long to fill (no flash)
 const SETTLE_MS = 850;       // the merged full moon holds a beat before the hand-off
@@ -226,26 +229,42 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
 
       <div className="relative flex flex-col items-center">
         <div className="relative w-32 h-32 md:w-36 md:h-36">
-          {/* THE PHASES — a row of small moons across the middle that light up in turn
-              (a progress bar), then glide into the centre and dissolve into the full moon */}
-          {PHASES.map((offset, i) => {
-            const slot = i - (PHASES.length - 1) / 2; // -2 … 2
-            const fill = Math.max(0, Math.min(1, (pct - i * 20) / 20)); // how far this phase has filled
-            const on = fill >= 1;
+          {/* THE DIVIDER — hairlines drawn outward with progress, and the row of moons
+              waxing pair by pair (outer pair first, full moon last); at 100% the
+              row glides into the centre and dissolves into the full moon */}
+          {(['left', 'right'] as const).map((side) => (
+            <span
+              key={side}
+              className="absolute top-1/2 h-px"
+              style={{
+                [side === 'left' ? 'right' : 'left']: `calc(50% + ${(ROW_GAP_REM * 3.5).toFixed(2)}rem)`,
+                width: merged || flying ? 0 : `${(Math.min(pct, 100) / 100) * 24}vw`,
+                background: `linear-gradient(to ${side}, rgba(201,184,232,0.45), rgba(201,184,232,0))`,
+                opacity: showing ? 1 : 0,
+                transition: merged || flying ? 'width 600ms ease, opacity 600ms ease' : 'opacity 600ms ease',
+              } as React.CSSProperties}
+            />
+          ))}
+          {DIVIDER_PHASES.map((ph, i) => {
+            const slot = i - (DIVIDER_PHASES.length - 1) / 2; // -3 … 3
+            const ring = 3 - Math.abs(slot);                  // 0 = outer pair … 3 = full moon
+            const fill = Math.max(0, Math.min(1, (pct - ring * 25) / 25)); // this pair's share of the progress
+            const center = slot === 0;
             return (
               <div
                 key={i}
-                className="absolute left-1/2 top-1/2 w-7 h-7 md:w-8 md:h-8 -ml-3.5 -mt-3.5 md:-ml-4 md:-mt-4 rounded-full overflow-hidden"
+                className="absolute left-1/2 top-1/2 text-[#C9B8E8]"
                 style={{
-                  transform: merged || flying ? 'translateX(0) scale(1.6)' : `translateX(${slot * 2.9}rem) scale(${(0.86 + fill * 0.14).toFixed(3)})`,
-                  opacity: merged || flying ? 0 : !showing ? 0 : 0.2 + fill * 0.8,
-                  boxShadow: on ? '0 0 16px 2px rgba(255,255,255,0.28)' : 'none',
+                  transform: `translate(-50%, -50%) translateX(${merged || flying ? 0 : slot * ROW_GAP_REM}rem) scale(${merged || flying ? 1.4 : 0.9 + fill * 0.1})`,
+                  opacity: merged || flying ? 0 : !showing ? 0 : 0.35 + fill * 0.65,
+                  filter: fill >= 1 ? 'drop-shadow(0 0 6px rgba(201,184,232,0.55))' : 'none',
                   transition: merged || flying
-                    ? `transform 900ms ${EASE} ${Math.abs(slot) * 40}ms, opacity 700ms ease ${180 + Math.abs(slot) * 40}ms`
-                    : 'box-shadow 600ms ease',
+                    ? `transform 800ms ${EASE} ${Math.abs(slot) * 35}ms, opacity 600ms ease ${200 + Math.abs(slot) * 35}ms`
+                    : 'filter 500ms ease, opacity 300ms ease',
                 }}
               >
-                <Face offset={offset} />
+                {/* each moon waxes from new to its own phase as its share fills */}
+                <Phase p={ph.p * fill} waning={ph.waning} size={center ? 26 : 17} />
               </div>
             );
           })}

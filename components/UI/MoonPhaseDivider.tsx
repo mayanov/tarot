@@ -6,7 +6,7 @@ import FadeIn from './FadeIn';
 // Pure SVG in the brand purple; decorative only.
 
 // lit fraction 0 = new, 0.5 = half, 1 = full; `waning` lights the left side instead
-const Phase: React.FC<{ p: number; waning?: boolean; size: number }> = ({ p, waning = false, size }) => {
+export const Phase: React.FC<{ p: number; waning?: boolean; size: number }> = ({ p, waning = false, size }) => {
   const r = 7, c = 8;
   const rx = Math.abs(1 - 2 * p) * r;
   // right half-circle, closed by the terminator ellipse (bulging out for gibbous)
@@ -21,7 +21,7 @@ const Phase: React.FC<{ p: number; waning?: boolean; size: number }> = ({ p, wan
   );
 };
 
-const PHASES: { p: number; waning?: boolean }[] = [
+export const PHASES: { p: number; waning?: boolean }[] = [
   { p: 0.25 }, { p: 0.5 }, { p: 0.75 }, { p: 1 }, { p: 0.75, waning: true }, { p: 0.5, waning: true }, { p: 0.25, waning: true },
 ];
 
