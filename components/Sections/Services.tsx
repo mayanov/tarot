@@ -71,6 +71,11 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
   const accent = CAT_ACCENT[k % CAT_ACCENT.length];
   // `compact` squeezes the big card's back for short phone screens so nothing needs scrolling
   const tight = big && compact;
+  // the card back's details panel: how the service works (default) or what's included
+  const [panel, setPanel] = useState<'steps' | 'points'>('steps');
+  const hasSteps = g.steps?.length > 0;
+  const hasPoints = g.points?.length > 0;
+  const showing = hasSteps && (panel === 'steps' || !hasPoints) ? 'steps' : 'points';
   return (
     <div
         role="button"
@@ -141,20 +146,53 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                 ))}
                             </ul>
 
-                            {/* what the service includes — short points in a soft panel tinted with the card's colour */}
-                            {big && g.points?.length > 0 && (
+                            {/* details — two tabs so both fit without scrolling: how this service
+                                works, step by step (shown first), and what it includes */}
+                            {big && (hasSteps || hasPoints) && (
                                 <div className={`rounded-[0.7rem] ${tight ? 'mt-3.5 px-3 py-2.5' : 'mt-4 px-4 py-3'}`} style={{ backgroundColor: `${accent}0d` }}>
-                                    <span className={`block ${tight ? 'text-[9px]' : 'text-[10px]'} font-medium tracking-[0.18em] uppercase`} style={{ color: accent }}>
-                                        {isIndonesian ? 'Yang kamu dapat' : 'What you get'}
-                                    </span>
-                                    <ul className={tight ? 'mt-1.5 space-y-1' : 'mt-2 space-y-1.5'}>
-                                        {g.points.map((pt: string, pi: number) => (
-                                            <li key={pi} className={`flex items-start gap-2.5 ${tight ? 'text-[12.5px] gap-2' : 'text-[14px]'} leading-snug text-ink/75`}>
-                                                <span aria-hidden className="mt-[0.4em] w-[5px] h-[5px] rotate-45 shrink-0" style={{ backgroundColor: accent }} />
-                                                <span>{pt}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    <div className={`flex ${tight ? 'gap-3' : 'gap-4'}`} role="tablist">
+                                        {([['steps', isIndonesian ? 'Cara kerjanya' : 'How it works', hasSteps], ['points', isIndonesian ? 'Yang kamu dapat' : 'What you get', hasPoints]] as const)
+                                            .filter(([, , has]) => has)
+                                            .map(([id, label]) => (
+                                                <button
+                                                    key={id}
+                                                    type="button"
+                                                    role="tab"
+                                                    aria-selected={showing === id}
+                                                    onClick={(e) => { e.stopPropagation(); setPanel(id); }}
+                                                    onKeyDown={(e) => e.stopPropagation()}
+                                                    className={`pb-1 border-b ${tight ? 'text-[9px]' : 'text-[10px]'} font-medium tracking-[0.18em] uppercase transition-opacity ${showing === id ? 'opacity-100' : 'opacity-45 hover:opacity-80 border-transparent'}`}
+                                                    style={{ color: accent, borderColor: showing === id ? accent : 'transparent' }}
+                                                >
+                                                    {label}
+                                                </button>
+                                            ))}
+                                    </div>
+                                    {showing === 'steps' ? (
+                                        <ol className={tight ? 'mt-2 space-y-1.5' : 'mt-2.5 space-y-2'}>
+                                            {g.steps.map((st: string, si: number) => (
+                                                <li key={si} className={`flex items-start ${tight ? 'gap-2 text-[12.5px]' : 'gap-2.5 text-[14px]'} leading-snug text-ink/75`}>
+                                                    <span
+                                                        aria-hidden
+                                                        className={`shrink-0 grid place-items-center rounded-full font-semibold tabular-nums text-cream mt-[1px] ${tight ? 'w-4 h-4 text-[9px]' : 'w-[18px] h-[18px] text-[10px]'}`}
+                                                        style={{ backgroundColor: accent }}
+                                                    >
+                                                        {si + 1}
+                                                    </span>
+                                                    <span>{st}</span>
+                                                </li>
+                                            ))}
+                                        </ol>
+                                    ) : (
+                                        <ul className={tight ? 'mt-2 space-y-1' : 'mt-2.5 space-y-1.5'}>
+                                            {g.points.map((pt: string, pi: number) => (
+                                                <li key={pi} className={`flex items-start gap-2.5 ${tight ? 'text-[12.5px] gap-2' : 'text-[14px]'} leading-snug text-ink/75`}>
+                                                    <span aria-hidden className="mt-[0.4em] w-[5px] h-[5px] rotate-45 shrink-0" style={{ backgroundColor: accent }} />
+                                                    <span>{pt}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -580,22 +618,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     const handleCall60Picktime = () => trackEvent('schedule', { item_name: '60-Min Call', market: 'ID' }, 'Schedule', { content_name: '60-Min Call (Picktime)', value: 360000, currency: 'IDR', content_category: 'ID Service' });
     const handleMeetup = () => trackEvent('schedule', { item_name: 'Meetup Session', market: 'ID' }, 'Schedule', { content_name: 'Meetup Session', value: 450000, currency: 'IDR', content_category: 'ID Service' });
 
-    const steps = isIndonesian
-        ? [
-            { title: 'Pilih Layanan', desc: 'Pilih paket yang paling sesuai dengan kebutuhanmu saat ini.' },
-            { title: 'Booking & Bayar', desc: 'Amankan slotmu lewat platform booking pilihanmu.' },
-            { title: 'Ceritakan Masalahmu', desc: 'Bagikan konteks singkat & pertanyaan yang ingin ditanyakan.' },
-            { title: 'Sesi Pembacaan', desc: 'Kartu dibuka & dibahas sesuai layanan yang kamu pilih.' },
-            { title: 'Langkah Konkret', desc: 'Pulang dengan kejelasan & arah yang bisa langsung dijalankan.' },
-        ]
-        : [
-            { title: 'Pick a Reading', desc: 'Choose the option that fits where you are right now.' },
-            { title: 'Book & Pay', desc: 'Secure your slot through your preferred platform.' },
-            { title: 'Share Your Question', desc: 'Tell me the context and what you want to explore.' },
-            { title: 'The Reading', desc: 'We open the cards and unpack them together.' },
-            { title: 'Walk Away Clear', desc: 'Leave with concrete next steps and direction.' },
-        ];
-
     // Editorial accordion pricelist — each service type is a row that expands to its options.
     const groups = isIndonesian
         ? [
@@ -606,6 +628,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 blurb: 'Dalam rangka merayakan HUT Mayanov, jangan ketinggalan promo Pay As U Like!',
                 priceLabel: 'Bayar sesukamu',
                 points: ['1 pertanyaan, topik bebas', 'Dijawab lewat voice note', 'Langsung via WhatsApp'],
+                steps: ['Klik “Ambil Promo Ini” — chat WhatsApp terbuka dengan pesan siap kirim', 'Kirim 1 pertanyaanmu dan bayar sesukamu', 'Jawabanmu dikirim lewat voice note di WhatsApp'],
                 offers: [{ name: '1 Pertanyaan', price: 'Bayar sesukamu' }],
                 cta: {
                     label: 'Ambil Promo Ini',
@@ -617,6 +640,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 id: 'service-special', theme: 0, numeral: 'I', type: 'Edisi Spesial', tags: ['PDF', 'Musiman'], seasonal: true,
                 blurb: 'Bacaan tematik musiman, dikirim sebagai PDF.',
                 points: ['Gambaran umum sesuai momennya', 'Karier & keuangan, hingga percintaan', 'Saran strategis yang bisa dijalankan', 'PDF via WhatsApp, 2 hari kerja'],
+                steps: ['Klik “Pesan Sesi”, isi nama, tanggal lahir & nomor WhatsApp', 'Bayar lewat QRIS atau transfer, lalu kirim buktinya via WhatsApp', 'Bacaanmu dikirim sebagai PDF via WhatsApp, maks. 2 hari kerja'],
                 priceLabel: 'Rp 250K',
                 offers: [
                     {
@@ -631,6 +655,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 id: 'service-chat', theme: 1, numeral: 'II', type: 'Konsultasi via Chat', tags: ['Chat', 'WhatsApp'],
                 blurb: 'Tanya-jawab tertulis via WhatsApp, per pertanyaan.',
                 points: ['Analisa tertulis yang mendalam', 'Cocok untuk pertanyaan spesifik', 'Tanpa harus ngobrol langsung', 'Sisa pertanyaan bisa ditabung'],
+                steps: ['Pilih paket 1 atau 3 pertanyaan, lalu isi data dirimu', 'Bayar lewat QRIS atau transfer, lalu kirim buktinya via WhatsApp', 'Kirim pertanyaanmu di WhatsApp', 'Jawaban & analisa tertulis dikirim via WhatsApp'],
                 priceLabel: 'Rp 140rb–315rb',
                 offers: [
                     {
@@ -647,6 +672,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 id: 'service-call', theme: 2, numeral: 'III', type: 'Panggilan Suara & Video', tags: ['Video', 'Real-time'],
                 blurb: 'Ngobrol langsung via call atau video.',
                 points: ['Via WhatsApp Call atau Google Meet', 'Bebas bertanya selama sesi', 'Curhat lebih leluasa', 'Bedah masalah sampai ke akarnya'],
+                steps: ['Pilih durasi (30 atau 60 menit), tanggal & jam — Senin–Jumat', 'Isi data dirimu, bayar, lalu kirim bukti via WhatsApp', 'Di jam yang dipilih, kita ngobrol via WhatsApp Call atau Google Meet'],
                 priceLabel: 'Rp 220rb–360rb',
                 offers: [
                     {
@@ -663,6 +689,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 id: 'service-meetup', theme: 3, numeral: 'IV', type: 'Sesi Tatap Muka', tags: ['Jaksel', '1 Jam'],
                 blurb: 'Sesi tatap muka di Jakarta Selatan.',
                 points: ['Energi lebih terasa', 'Analisa lebih personal', 'Minimal 1 jam', 'Bisa diperpanjang per jam'],
+                steps: ['Pilih durasi, tanggal & jam — hanya Jumat & Minggu', 'Isi data dirimu, bayar, lalu kirim bukti via WhatsApp', 'Kita ketemu langsung di Jakarta Selatan (lihat Rekomendasi Tempat)'],
                 mapUrl: 'https://maps.app.goo.gl/LE2YwZiM2exhqunh8',
                 priceLabel: 'Rp 450K',
                 offers: [
@@ -684,6 +711,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 blurb: "To celebrate Mayanov's birthday, don't miss our Pay As U Like promo!",
                 priceLabel: 'Pay as you like',
                 points: ['1 question, any topic', 'Answered by voice note', 'Straight on WhatsApp'],
+                steps: ['Tap “Claim This Promo” — WhatsApp opens with a ready-to-send message', 'Send your one question and pay what you like', 'Your answer arrives as a voice note on WhatsApp'],
                 offers: [{ name: '1 Question', price: 'Pay as you like' }],
                 cta: {
                     label: 'Claim This Promo',
@@ -695,6 +723,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 id: '', theme: 0, numeral: 'I', type: '3-Card Spread', tags: ['Quick', '24h'],
                 blurb: 'A quick check-in on one question.',
                 points: ['Three-card spread', 'Photo of your spread', 'Written reading within 24h'],
+                steps: ['Tap “Book a Reading” and leave your name, date of birth & WhatsApp', 'I’ll reach out on WhatsApp to confirm and take your question', 'Get a photo of your spread and a written reading within 24h'],
                 priceLabel: '$12',
                 offers: [
                     {
@@ -709,6 +738,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 id: '', theme: 1, numeral: 'II', type: '5-Card Deep', tags: ['In-depth', 'Popular'],
                 blurb: 'An in-depth look at one question.',
                 points: ['Bigger picture & hidden influences', "What's coming next", 'High-res photo of your cards', 'Priority delivery within 24h'],
+                steps: ['Tap “Book a Reading” and leave your name, date of birth & WhatsApp', 'I’ll reach out on WhatsApp to confirm and take your question', 'Get a high-res photo of your cards and an in-depth reading within 24h'],
                 priceLabel: '$20',
                 offers: [
                     {
@@ -748,42 +778,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 <TarotFan groups={groups} isIndonesian={isIndonesian} />
             </div>
 
-            {/* ===== How it works — heading on top, steps flow horizontally so it stays
-                 compact instead of a tall vertical list ===== */}
-            <div className="mx-auto px-8 py-16 md:py-24">
-                <FadeIn>
-                    <div id="process" className="scroll-mt-24">
-                        <div className="max-w-2xl mx-auto text-center">
-                            <h3 className="font-elegant font-medium text-ink text-[2.1rem] md:text-[2.9rem] leading-[1.03] tracking-[-0.02em]">
-                                {isIndonesian ? 'Gimana cara kerjanya?' : 'How it works'}
-                            </h3>
-                        </div>
-
-                        {/* steps — 2 per row on mobile, a single row on desktop */}
-                        <ol className="mt-10 md:mt-16 grid grid-cols-2 lg:grid-cols-5 gap-x-5 lg:gap-x-6 gap-y-9">
-                            {steps.map((step, i) => {
-                                const isLast = i === steps.length - 1;
-                                return (
-                                <li key={i} className={`group animate-fade-up ${isLast ? 'col-span-2 lg:col-span-1' : ''}`} style={{ animationDelay: `${i * 80}ms` }}>
-                                    {/* number + title side by side, so each step stays short — a bare
-                                        italic numeral (no badge) sitting right beside the title */}
-                                    <div className={`flex items-baseline gap-1.5 md:gap-2 ${isLast ? 'justify-center lg:justify-start' : ''}`}>
-                                        <span
-                                            aria-hidden
-                                            className="shrink-0 font-elegant italic font-medium text-moon/80 text-base md:text-lg leading-none tabular-nums transition-colors duration-500 group-hover:text-moon"
-                                        >
-                                            {String(i + 1).padStart(2, '0')}
-                                        </span>
-                                        <h4 className="text-base md:text-lg font-serif font-semibold leading-tight text-ink tracking-tight">{step.title}</h4>
-                                    </div>
-                                    <p className={`mt-1.5 md:mt-2 text-sm md:text-[0.95rem] leading-relaxed font-light text-ink/60 ${isLast ? 'text-center lg:text-left' : ''}`}>{step.desc}</p>
-                                </li>
-                                );
-                            })}
-                        </ol>
-                    </div>
-                </FadeIn>
-            </div>
         </section>
     );
 };
