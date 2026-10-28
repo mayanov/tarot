@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchEvents, FALLBACK_EVENTS, EventItem } from '../../services/events';
 import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
-import { ImageReveal } from '../UI/Reveal';
+import EventGallery from './EventGallery';
 import { ChevronDown, X } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 import { btnPrimaryLight, btnSecondaryLight } from '../UI/buttons';
@@ -44,37 +44,11 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="events"
-      className="relative overflow-hidden isolate"
+      // overflow-x-clip (not overflow-hidden) so the gallery's sticky pin still works
+      className="relative overflow-x-clip isolate"
     >
-      {/* heading + photo gallery — on a solid purple block */}
-      <div className="bg-[#2A2258] mx-auto px-8 pt-20 md:pt-28 pb-16 md:pb-20 relative z-10 text-cream">
-          {/* PHOTO GALLERY — a purple-backed band of moments that opens the section.
-              Each photo has a single unveil (ImageReveal), which waits for the photo to
-              load — no extra fade layers stacking delay on top of it. */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-              {EVENT_PHOTOS.map((src, i) => (
-                  <button
-                    key={src}
-                    type="button"
-                    onClick={() => setLightbox(src)}
-                    className="group relative block w-full overflow-hidden rounded-[1.5rem] aspect-[3/4] bg-white/5"
-                    aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
-                  >
-                    <ImageReveal
-                      src={src}
-                      alt={isIndonesian ? `Sesi tarot Mayanov di event ${i + 1}` : `Mayanov tarot session at event ${i + 1}`}
-                      className="absolute inset-0"
-                      imgClassName="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                      delay={i * 90}
-                    />
-                    {/* gentle violet duotone so the photos tone with the palette; clears on hover */}
-                    <span className="pointer-events-none absolute inset-0 bg-plum mix-blend-color opacity-40 group-hover:opacity-0 transition-opacity duration-500" />
-                    <span className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/15 group-hover:ring-cream/50 transition-all" />
-                    <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
-              ))}
-            </div>
-      </div>
+      {/* photo band — a pinned sideways gallery on desktop, a swipeable row on phones */}
+      <EventGallery photos={EVENT_PHOTOS} isIndonesian={isIndonesian} onOpen={setLightbox} />
 
       {/* events history + CTAs — on the paper ground below the purple block */}
       <div className="mx-auto px-8 pt-10 md:pt-14 pb-10 md:pb-12 relative z-10 text-ink">
