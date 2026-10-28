@@ -209,7 +209,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                 rel="noopener noreferrer"
                                 onClick={(e) => { e.stopPropagation(); g.cta.onClick && g.cta.onClick(); }}
                                 style={{ backgroundColor: accent }}
-                                className={`w-full inline-flex items-center justify-center rounded-full text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
+                                className={`w-full inline-flex items-center justify-center rounded-lg text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
                             >
                                 {g.cta.label}
                             </a>
@@ -218,7 +218,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); onBook && onBook(); }}
                                 style={{ backgroundColor: accent }}
-                                className={`w-full inline-flex items-center justify-center rounded-full text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
+                                className={`w-full inline-flex items-center justify-center rounded-lg text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
                             >
                                 {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                             </button>
@@ -230,7 +230,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
                                 style={{ ['--acc' as any]: accent }}
-                                className={`w-full inline-flex items-center justify-center rounded-full border border-[var(--acc)] text-[var(--acc)] font-medium hover:bg-[var(--acc)] hover:text-cream transition-colors duration-300 ${tight ? 'py-2 text-[12px]' : big ? 'py-2.5 text-[13px]' : 'py-2 text-[12px]'}`}
+                                className={`w-full inline-flex items-center justify-center rounded-lg border border-[var(--acc)] text-[var(--acc)] font-medium hover:bg-[var(--acc)] hover:text-cream transition-colors duration-300 ${tight ? 'py-2 text-[12px]' : big ? 'py-2.5 text-[13px]' : 'py-2 text-[12px]'}`}
                             >
                                 {isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}
                             </a>
@@ -515,7 +515,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                 type="button"
                                 onClick={() => switchTo(j)}
                                 aria-current={j === selected}
-                                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors duration-300 ${j === selected ? 'bg-cream text-ink' : 'bg-white/10 text-cream/85 hover:bg-white/20'}`}
+                                className={`shrink-0 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-[12px] font-medium transition-colors duration-300 ${j === selected ? 'bg-cream text-ink' : 'bg-white/10 text-cream/85 hover:bg-white/20'}`}
                             >
                                 {g.type}
                             </button>

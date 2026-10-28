@@ -368,7 +368,7 @@ function App() {
           </p>
           <button
             onClick={performLocationCheck}
-            className="px-6 py-3 rounded-full bg-terracotta text-paper font-medium hover:bg-terracotta-dark transition flex items-center gap-2 mx-auto"
+            className="px-6 py-3 rounded-lg bg-terracotta text-paper font-medium hover:bg-terracotta-dark transition flex items-center gap-2 mx-auto"
           >
             <RefreshCw className="w-4 h-4" /> Try Again
           </button>

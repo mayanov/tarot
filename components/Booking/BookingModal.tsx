@@ -471,7 +471,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 <button
                   onClick={() => setStep(2)}
                   disabled={!date || !time || (needsPackage && !pkg)}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-moon text-cream text-sm font-semibold hover:bg-plum shadow-[0_12px_26px_-14px_rgba(107,63,160,0.5)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-moon text-cream text-sm font-semibold hover:bg-plum shadow-[0_12px_26px_-14px_rgba(107,63,160,0.5)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
                 >
                   {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
                 </button>
@@ -548,7 +548,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 <button
                   onClick={() => setStep(3)}
                   disabled={!detailsValid}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-moon text-cream text-sm font-semibold hover:bg-plum shadow-[0_12px_26px_-14px_rgba(107,63,160,0.5)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-moon text-cream text-sm font-semibold hover:bg-plum shadow-[0_12px_26px_-14px_rgba(107,63,160,0.5)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
                 >
                   {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
                 </button>
@@ -637,7 +637,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                 <button
                   onClick={submit}
                   disabled={submitting}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-moon text-cream text-sm font-semibold hover:bg-plum shadow-[0_12px_26px_-14px_rgba(107,63,160,0.5)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-moon text-cream text-sm font-semibold hover:bg-plum shadow-[0_12px_26px_-14px_rgba(107,63,160,0.5)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
                 >
                   {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', 'Confirm booking')}
                 </button>
@@ -698,7 +698,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   href={waLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#25D366] text-white text-sm font-semibold hover:brightness-95 shadow-[0_12px_26px_-12px_rgba(37,211,102,0.9)] transition"
+                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-lg bg-[#25D366] text-white text-sm font-semibold hover:brightness-95 shadow-[0_12px_26px_-12px_rgba(37,211,102,0.9)] transition"
                 >
                   <FaWhatsapp className="w-5 h-5" /> {t('Kirim Bukti Pembayaran', 'Send Payment Proof')}
                 </a>

@@ -12,7 +12,8 @@
 
 // Note: the display (inline-flex / hidden sm:inline-flex) is set per button, so
 // the variant stays out of the way of responsive hiding (e.g. the nav pill).
-const BASE = 'items-center justify-center rounded-full font-medium transition-colors duration-300';
+// slightly rounded, matching the corners used across the site (not pill-shaped)
+const BASE = 'items-center justify-center rounded-lg font-medium transition-colors duration-300';
 
 export const btnPrimaryDark = `${BASE} bg-cream text-ink hover:bg-moon hover:text-cream`;
 export const btnPrimaryLight = `${BASE} bg-moon text-cream hover:bg-plum hover:text-cream`;

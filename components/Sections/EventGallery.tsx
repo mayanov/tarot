@@ -5,9 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 // at slightly different heights and overlapping a little. Photos carry a soft vintage
 // tone that clears on hover, when the print also straightens and lifts forward. On
 // scroll-in they drop into place one after another.
-// The band itself is a reading table under lamplight: a purple-to-indigo depth with
-// shadowed edges, a soft lilac glow pooled behind the prints, a large faint astrology
-// wheel like a pattern on the cloth, and a fine star dust.
+// They rest on the page's own paper (no coloured band), with soft real shadows.
 
 type Props = { photos: string[]; isIndonesian: boolean; onOpen: (src: string) => void };
 
@@ -21,16 +19,6 @@ const PRINTS = [
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
 
-// a fixed sprinkle of faint stars for the band (seeded, so it never changes)
-const STARS = (() => {
-  let t = 777;
-  const r = () => { t = (t * 16807) % 2147483647; return t / 2147483647; };
-  return Array.from({ length: 60 }, () => {
-    const x = (r() * 100).toFixed(2), y = (r() * 100).toFixed(2);
-    const rad = (0.5 + r() * 1).toFixed(2), o = (0.2 + r() * 0.45).toFixed(2);
-    return `radial-gradient(${rad}px ${rad}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, rgba(255,255,255,0) 60%)`;
-  }).join(',');
-})();
 
 const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -50,29 +38,9 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
   }, []);
 
   return (
-    <div
-      className="relative isolate overflow-hidden text-cream px-6 md:px-8 pt-20 md:pt-28 pb-20 md:pb-28"
-      style={{ background: 'linear-gradient(180deg, #2A2258 0%, #231c4d 55%, #19143a 100%)' }}
-    >
-      {/* lamplight pooled behind the prints */}
-      <div aria-hidden className="absolute inset-0 -z-10" style={{ background: 'radial-gradient(55% 60% at 50% 52%, rgba(201,184,232,0.28) 0%, rgba(201,184,232,0.09) 45%, transparent 72%)' }} />
-      {/* the astrology wheel on the cloth */}
-      <svg aria-hidden viewBox="0 0 400 400" className="absolute left-1/2 top-1/2 -z-10 w-[130vw] md:w-[68rem] -translate-x-1/2 -translate-y-1/2 text-[#C9B8E8] opacity-[0.16]" fill="none" stroke="currentColor">
-        <circle cx="200" cy="200" r="196" strokeWidth="0.6" />
-        <circle cx="200" cy="200" r="168" strokeWidth="0.6" />
-        <circle cx="200" cy="200" r="92" strokeWidth="0.5" />
-        {Array.from({ length: 12 }, (_, k) => {
-          const a = (k * Math.PI) / 6;
-          return <line key={k} x1={200 + Math.cos(a) * 92} y1={200 + Math.sin(a) * 92} x2={200 + Math.cos(a) * 196} y2={200 + Math.sin(a) * 196} strokeWidth="0.5" />;
-        })}
-        {Array.from({ length: 72 }, (_, k) => {
-          const a = (k * Math.PI) / 36;
-          return <line key={`t${k}`} x1={200 + Math.cos(a) * 190} y1={200 + Math.sin(a) * 190} x2={200 + Math.cos(a) * 196} y2={200 + Math.sin(a) * 196} strokeWidth="0.4" />;
-        })}
-      </svg>
-      <div aria-hidden className="absolute inset-0 -z-10 opacity-60" style={{ backgroundImage: STARS }} />
-      {/* shadowed edges */}
-      <div aria-hidden className="absolute inset-0 -z-10" style={{ background: 'radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(10,6,28,0.45) 100%)' }} />
+    // on the page's own paper — no band — so the prints rest on the same surface
+    // as Event & collaboration below
+    <div className="relative px-6 md:px-8 pt-20 md:pt-28 pb-6 md:pb-10">
       <div ref={ref} className="mx-auto max-w-6xl grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-0">
         {photos.map((src, i) => {
           const pr = PRINTS[i % PRINTS.length];
@@ -95,7 +63,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 onClick={() => onOpen(src)}
                 aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
                 // hover cancels the print's tilt (--r), lifts it and deepens the shadow
-                className="group relative bg-paper block w-full p-2.5 md:p-3 pb-0 rounded-[3px] shadow-[0_18px_34px_-16px_rgba(8,5,22,0.75)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_34px_60px_-20px_rgba(8,5,22,0.85)] hover:[transform:rotate(var(--r))_translateY(-12px)_scale(1.05)]"
+                className="group relative bg-white block w-full p-2.5 md:p-3 pb-0 rounded-[3px] ring-1 ring-ink/[0.06] shadow-[0_14px_30px_-14px_rgba(42,24,57,0.35)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_28px_50px_-18px_rgba(42,24,57,0.45)] hover:[transform:rotate(var(--r))_translateY(-12px)_scale(1.05)]"
                 style={{ ['--r' as any]: `${-pr.rot}deg`, transitionTimingFunction: EASE }}
               >
                 <span className="relative block aspect-[4/5] overflow-hidden bg-ink/10">
