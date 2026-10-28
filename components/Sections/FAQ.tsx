@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { Plus, ArrowUpRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
-import CelestialMark from '../UI/CelestialMark';
 
 interface FAQProps {
   isIndonesian?: boolean;
@@ -123,85 +122,97 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
 
   const toggleFAQ = (key: string) => setOpenKey((cur) => (cur === key ? null : key));
 
-  return (
-    // Its own lilac sheet with rounded top corners, rising over the section above
-    // (the same move the About sheet makes over the hero), so it doesn't blend into
-    // the white Events section.
-    <section
-      id="faq"
-      className="relative isolate overflow-hidden -mt-10 md:-mt-14 rounded-t-[2.75rem] lg:rounded-t-[4.5rem] pt-20 md:pt-28 pb-24 md:pb-36 text-ink shadow-[0_-24px_60px_-28px_rgba(42,24,57,0.28)]"
-      style={{ backgroundColor: '#EFE8F7' }}
-    >
-      {/* a large, faint crescent behind the title */}
-      <CelestialMark name="crescent" className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-6 md:top-8 -z-10 w-56 md:w-72 text-moon/[0.07]" />
-      <div className="mx-auto px-8 relative z-10">
-        {/* one centred column: title, then the category filter, then the questions */}
-        <div className="mx-auto max-w-3xl">
-          <div className="text-center">
-            <FadeIn dir="blur" duration={1.15}>
-              <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
-                {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
-              </h2>
+  const wa = `https://wa.me/6287786280310?text=${encodeURIComponent(isIndonesian ? 'Halo kak, aku mau tanya soal sesi tarot.' : "Hi! I have a question about a tarot reading.")}`;
 
-              {/* category filter — editorial text tabs with an animated underline */}
-              <div className="mt-8 flex flex-wrap justify-center gap-2 text-sm">
-                {categories.map((cat) => {
-                  const active = showAll ? cat === allLabel : cat === activeCat;
-                  return (
+  return (
+    // A typographic index on the page's own paper (no panel, no divider): the
+    // questions are set as large serif lines, filtered by an inline sentence, and the
+    // section closes on a direct WhatsApp question instead of the last item.
+    <section id="faq" className="relative text-ink pt-16 md:pt-24 pb-24 md:pb-36">
+      <div className="mx-auto px-6 md:px-8 max-w-5xl">
+        <FadeIn dir="blur" duration={1.15}>
+          <div className="text-center">
+            <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+              {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
+            </h2>
+
+            {/* category filter, written as a sentence */}
+            <p className="mt-6 md:mt-8 text-[0.95rem] md:text-base text-ink/50 font-light">
+              <span className="mr-1">{isIndonesian ? 'Tampilkan:' : 'Show:'}</span>
+              {categories.map((cat, ci) => {
+                const active = showAll ? cat === allLabel : cat === activeCat;
+                return (
+                  <React.Fragment key={cat}>
+                    {ci > 0 && <span aria-hidden className="mx-1.5 text-ink/25">·</span>}
                     <button
-                      key={cat}
                       onClick={() => setActiveCat(cat)}
                       aria-pressed={active}
-                      className={`rounded-full px-4 py-1.5 tracking-wide transition-colors duration-300 ${active ? 'bg-moon text-white font-semibold' : 'bg-white/60 text-ink/75 hover:bg-white hover:text-ink'}`}
+                      className={`font-elegant text-[1.1rem] md:text-[1.2rem] transition-colors duration-300 underline-offset-[6px] decoration-1 ${active ? 'italic text-moon underline decoration-moon' : 'text-ink/70 hover:text-moon'}`}
                     >
                       {cat}
                     </button>
-                  );
-                })}
-              </div>
-            </FadeIn>
-          </div>
-
-          {/* questions — text stays left-aligned inside the centred column so the
-              answers are easy to read */}
-          <div className="mt-10 md:mt-12">
-            <div className="border-t border-moon/15">
-              {filtered.map((faq, index) => {
-                const open = openKey === faq.question;
-                return (
-                  <FadeIn key={faq.question} delay={Math.min(index, 6) * 55} dir="up" distance={0.7}>
-                    <div className="border-b border-moon/15">
-                      <button
-                        onClick={() => toggleFAQ(faq.question)}
-                        className="group w-full flex items-center justify-between gap-5 py-5 md:py-6 text-left focus:outline-none"
-                        aria-expanded={open}
-                      >
-                        <span className="flex items-baseline gap-4">
-                          <span aria-hidden className="w-6 shrink-0 font-elegant italic text-moon/70 text-sm md:text-base tabular-nums">
-                            {String(index + 1).padStart(2, '0')}
-                          </span>
-                          <span className={`font-elegant font-medium text-lg md:text-xl leading-snug tracking-tight transition-colors duration-500 ${open ? 'text-moon' : 'text-ink group-hover:text-moon'}`}>
-                            {faq.question}
-                          </span>
-                        </span>
-                        <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-500 ${open ? 'text-moon rotate-180' : 'text-ink/40'}`} />
-                      </button>
-
-                      <div className={`grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                        <div className="overflow-hidden">
-                          {/* the answer, set in from the number with a thin purple rule */}
-                          <p className="mb-6 ml-10 pl-4 pr-6 border-l-2 border-moon/40 text-ink/70 text-[0.95rem] md:text-base leading-relaxed whitespace-pre-line font-light">
-                            {faq.answer}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </FadeIn>
+                  </React.Fragment>
                 );
               })}
-            </div>
+            </p>
           </div>
-        </div>
+        </FadeIn>
+
+        {/* the index */}
+        <ol className="mt-12 md:mt-16">
+          {filtered.map((faq, index) => {
+            const open = openKey === faq.question;
+            return (
+              <li key={faq.question} className="border-t border-ink/10 last:border-b">
+                <FadeIn delay={Math.min(index, 6) * 55} dir="up" distance={0.6}>
+                  <button
+                    onClick={() => toggleFAQ(faq.question)}
+                    aria-expanded={open}
+                    className="group w-full grid grid-cols-[2.25rem_1fr_auto] md:grid-cols-[3.5rem_1fr_auto] items-center gap-x-3 md:gap-x-6 py-6 md:py-8 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-moon/40 rounded-sm"
+                  >
+                    <span aria-hidden className={`self-start pt-2 md:pt-3 font-elegant italic text-sm md:text-base tabular-nums transition-colors duration-300 ${open ? 'text-moon' : 'text-ink/35'}`}>
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className={`font-elegant font-medium text-[1.4rem] sm:text-[1.7rem] md:text-[2.1rem] leading-[1.15] tracking-[-0.015em] transition-[color,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'text-moon' : 'text-ink group-hover:translate-x-2'}`}>
+                      {faq.question}
+                    </span>
+                    {/* + turns into × when open; fills purple on hover */}
+                    <span aria-hidden className={`grid place-items-center w-9 h-9 md:w-11 md:h-11 rounded-full border transition-colors duration-300 ${open ? 'bg-moon border-moon text-white' : 'border-ink/20 text-ink/60 group-hover:bg-moon group-hover:border-moon group-hover:text-white'}`}>
+                      <Plus className={`w-4 h-4 md:w-5 md:h-5 transition-transform duration-500 ${open ? 'rotate-45' : ''}`} strokeWidth={1.75} />
+                    </span>
+                  </button>
+
+                  <div className={`grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                    <div className="overflow-hidden">
+                      {/* the answer lines up under the question text, in a narrower column */}
+                      <p className="pb-8 md:pb-10 pl-[3rem] md:pl-[5rem] pr-12 md:pr-20 max-w-3xl text-ink/65 text-base md:text-lg leading-[1.75] whitespace-pre-line font-light">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </div>
+                </FadeIn>
+              </li>
+            );
+          })}
+        </ol>
+
+        {/* closing — ask directly */}
+        <FadeIn dir="up">
+          <div className="mt-16 md:mt-20 text-center">
+            <p className="font-elegant italic text-ink/60 text-xl md:text-2xl">
+              {isIndonesian ? 'Masih penasaran?' : 'Still curious?'}
+            </p>
+            <a
+              href={wa}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group mt-3 inline-flex items-center gap-3 font-elegant font-semibold text-ink text-[1.8rem] md:text-[2.6rem] leading-tight tracking-[-0.02em] hover:text-moon transition-colors duration-300"
+            >
+              {isIndonesian ? 'Tanya langsung via WhatsApp' : 'Ask me on WhatsApp'}
+              <ArrowUpRight className="w-7 h-7 md:w-9 md:h-9 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1" strokeWidth={1.5} />
+            </a>
+          </div>
+        </FadeIn>
       </div>
     </section>
   );
