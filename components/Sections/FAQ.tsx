@@ -128,16 +128,16 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
       className="pt-8 md:pt-12 pb-24 md:pb-36 relative text-ink"
     >
       <div className="mx-auto px-8 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-y-10 lg:gap-x-16 lg:items-start">
-          {/* LEFT — intro + category filter */}
-          <div className="lg:col-span-4">
+        {/* one centred column: title, then the category filter, then the questions */}
+        <div className="mx-auto max-w-3xl">
+          <div className="text-center">
             <FadeIn dir="blur" duration={1.15}>
               <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                 {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
               </h2>
 
               {/* category filter — editorial text tabs with an animated underline */}
-              <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+              <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm">
                 {categories.map((cat) => {
                   const active = showAll ? cat === allLabel : cat === activeCat;
                   return (
@@ -156,9 +156,9 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
             </FadeIn>
           </div>
 
-          {/* RIGHT — accordion (min-height reserves the full-list height so the
-              section doesn't shrink when a category is filtered) */}
-          <div className="lg:col-span-8">
+          {/* questions — text stays left-aligned inside the centred column so the
+              answers are easy to read */}
+          <div className="mt-10 md:mt-12">
             <div className="border-t border-ink/[0.08]">
               {filtered.map((faq, index) => {
                 const open = openKey === faq.question;

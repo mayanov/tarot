@@ -426,7 +426,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         <div>
             {(
                 <div className="px-4 md:px-8">
-                    <div ref={fanRef} className="relative mx-auto max-w-5xl" style={{ height: `${(31 * fanScale).toFixed(2)}rem` }}>
+                    <div ref={fanRef} className="relative mx-auto max-w-5xl" style={{ height: `${(27 * fanScale).toFixed(2)}rem` }}>
                         {groups.map((g, i) => (
                             <div
                                 key={g.type}
@@ -457,7 +457,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                     </div>
                 </div>
             )}
-            <p className="mt-4 md:mt-2 text-center text-ink/45 text-xs tracking-wide">
+            <p className="mt-12 md:mt-14 text-center text-ink/45 text-xs tracking-wide">
                 {isIndonesian ? 'Ketuk kartu untuk menariknya' : 'Tap a card to draw it'}
             </p>
 
@@ -756,7 +756,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
         <section id="services" className="bg-paper relative isolate overflow-hidden text-ink">
             <SoftAura />
             {/* HEADER — transparent over the sky */}
-            <div className="mx-auto px-8 pt-20 md:pt-28 pb-16 md:pb-20">
+            <div className="mx-auto px-8 pt-20 md:pt-28 pb-2 md:pb-4">
                 <FadeIn>
                     {/* centred over the spread, no subtitle — the cards say the rest */}
                     <h2 className="text-center font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
