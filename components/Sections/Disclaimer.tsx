@@ -52,17 +52,18 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
         // two hard rules as stamped labels, the notes as running text in two columns.
         <section id="disclaimer" className="mx-auto px-4 md:px-8 pt-8 md:pt-12 pb-20 md:pb-28">
             <FadeIn>
-                <div className="relative isolate overflow-hidden mx-auto max-w-5xl rounded-lg border border-moon/35 bg-moon/[0.045] px-6 py-8 md:px-12 md:py-11">
-                    <CelestialMark name="sparkle" className="pointer-events-none absolute -right-7 -top-7 -z-10 w-40 md:w-52 text-moon/[0.08]" />
+                <div className="relative isolate overflow-hidden mx-auto max-w-5xl rounded-lg border-[1.5px] border-moon/60 bg-moon/[0.07] px-6 py-8 md:px-12 md:py-11">
+                    <CelestialMark name="sparkle" className="pointer-events-none absolute -right-7 -top-7 -z-10 w-40 md:w-52 text-moon/[0.11]" />
 
-                    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pb-5 border-b border-moon/20">
-                        <h2 className="flex items-center gap-2.5 font-elegant font-semibold text-ink text-[1.7rem] md:text-[2.1rem] leading-tight tracking-[-0.01em]">
-                            <CelestialMark name="sparkle" className="w-4 md:w-5 text-moon" />
+                    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pb-6 border-b border-moon/30">
+                        {/* the title carries the weight: large, in the brand purple */}
+                        <h2 className="flex items-center gap-3 font-elegant font-bold text-moon text-[2.2rem] sm:text-[2.6rem] md:text-[3.1rem] leading-none tracking-[-0.02em]">
+                            <CelestialMark name="sparkle" className="w-6 md:w-8 text-moon" />
                             Disclaimer
                         </h2>
                         <div className="flex gap-2">
                             {['Non-refundable', '18+'].map((tag) => (
-                                <span key={tag} className="rounded-[3px] border border-moon/60 bg-paper px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-moon">
+                                <span key={tag} className="rounded-[3px] bg-moon px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
                                     {tag}
                                 </span>
                             ))}
@@ -77,7 +78,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         ))}
                     </div>
 
-                    <p className="mt-2 pt-5 border-t border-moon/20 font-elegant italic text-moon text-[1rem] md:text-[1.05rem]">
+                    <p className="mt-2 pt-5 border-t border-moon/30 font-elegant italic font-medium text-moon text-[1rem] md:text-[1.05rem]">
                         {agreement}
                     </p>
                 </div>
