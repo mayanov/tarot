@@ -2,19 +2,21 @@ import React, { useEffect, useRef, useState } from 'react';
 
 // The photo band above "Event & collaboration": the photos as polaroid prints laid
 // loosely on the purple band, like prints on a table — each tilted at its own angle,
-// at slightly different heights and overlapping a little, held by a strip of
-// translucent tape. Photos carry a soft vintage tone that clears on hover, when the
-// print also straightens and lifts forward. On scroll-in they drop into place one
-// after another. A faint star dust on the band adds depth.
+// at slightly different heights and overlapping a little. Photos carry a soft vintage
+// tone that clears on hover, when the print also straightens and lifts forward. On
+// scroll-in they drop into place one after another.
+// The band itself is a reading table under lamplight: a purple-to-indigo depth with
+// shadowed edges, a soft lilac glow pooled behind the prints, a large faint astrology
+// wheel like a pattern on the cloth, and a fine star dust.
 
 type Props = { photos: string[]; isIndonesian: boolean; onOpen: (src: string) => void };
 
-// per print: tilt, vertical offset (desktop), tape angle + side, caption
+// per print: tilt, vertical offset, caption
 const PRINTS = [
-  { rot: -4, y: 0, tape: -8, tapeX: '38%', id: 'di balik meja', en: 'at the table' },
-  { rot: 3, y: 2.5, tape: 6, tapeX: '52%', id: 'sesi bersama', en: 'reading together' },
-  { rot: -2, y: -1, tape: -4, tapeX: '45%', id: 'malam event', en: 'event night' },
-  { rot: 4, y: 2, tape: 9, tapeX: '40%', id: 'kartu terbuka', en: 'cards on the table' },
+  { rot: -4, y: 0, id: 'di balik meja', en: 'at the table' },
+  { rot: 3, y: 2.5, id: 'sesi bersama', en: 'reading together' },
+  { rot: -2, y: -1, id: 'malam event', en: 'event night' },
+  { rot: 4, y: 2, id: 'kartu terbuka', en: 'cards on the table' },
 ];
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
@@ -48,8 +50,29 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
   }, []);
 
   return (
-    <div className="relative isolate overflow-hidden bg-[#2A2258] text-cream px-6 md:px-8 pt-20 md:pt-28 pb-20 md:pb-28">
+    <div
+      className="relative isolate overflow-hidden text-cream px-6 md:px-8 pt-20 md:pt-28 pb-20 md:pb-28"
+      style={{ background: 'linear-gradient(180deg, #2A2258 0%, #231c4d 55%, #19143a 100%)' }}
+    >
+      {/* lamplight pooled behind the prints */}
+      <div aria-hidden className="absolute inset-0 -z-10" style={{ background: 'radial-gradient(55% 60% at 50% 52%, rgba(201,184,232,0.28) 0%, rgba(201,184,232,0.09) 45%, transparent 72%)' }} />
+      {/* the astrology wheel on the cloth */}
+      <svg aria-hidden viewBox="0 0 400 400" className="absolute left-1/2 top-1/2 -z-10 w-[130vw] md:w-[68rem] -translate-x-1/2 -translate-y-1/2 text-[#C9B8E8] opacity-[0.16]" fill="none" stroke="currentColor">
+        <circle cx="200" cy="200" r="196" strokeWidth="0.6" />
+        <circle cx="200" cy="200" r="168" strokeWidth="0.6" />
+        <circle cx="200" cy="200" r="92" strokeWidth="0.5" />
+        {Array.from({ length: 12 }, (_, k) => {
+          const a = (k * Math.PI) / 6;
+          return <line key={k} x1={200 + Math.cos(a) * 92} y1={200 + Math.sin(a) * 92} x2={200 + Math.cos(a) * 196} y2={200 + Math.sin(a) * 196} strokeWidth="0.5" />;
+        })}
+        {Array.from({ length: 72 }, (_, k) => {
+          const a = (k * Math.PI) / 36;
+          return <line key={`t${k}`} x1={200 + Math.cos(a) * 190} y1={200 + Math.sin(a) * 190} x2={200 + Math.cos(a) * 196} y2={200 + Math.sin(a) * 196} strokeWidth="0.4" />;
+        })}
+      </svg>
       <div aria-hidden className="absolute inset-0 -z-10 opacity-60" style={{ backgroundImage: STARS }} />
+      {/* shadowed edges */}
+      <div aria-hidden className="absolute inset-0 -z-10" style={{ background: 'radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(10,6,28,0.45) 100%)' }} />
       <div ref={ref} className="mx-auto max-w-6xl grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-0">
         {photos.map((src, i) => {
           const pr = PRINTS[i % PRINTS.length];
@@ -75,12 +98,6 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 className="group relative bg-paper block w-full p-2.5 md:p-3 pb-0 rounded-[3px] shadow-[0_18px_34px_-16px_rgba(8,5,22,0.75)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_34px_60px_-20px_rgba(8,5,22,0.85)] hover:[transform:rotate(var(--r))_translateY(-12px)_scale(1.05)]"
                 style={{ ['--r' as any]: `${-pr.rot}deg`, transitionTimingFunction: EASE }}
               >
-                {/* a strip of translucent tape holding the print */}
-                <span
-                  aria-hidden
-                  className="absolute -top-3 z-10 h-6 w-20 md:w-24 -translate-x-1/2 rounded-[2px] bg-[#E6DCF5]/55 backdrop-blur-[1px] shadow-[0_1px_2px_rgba(0,0,0,0.12)]"
-                  style={{ left: pr.tapeX, transform: `translateX(-50%) rotate(${pr.tape}deg)` }}
-                />
                 <span className="relative block aspect-[4/5] overflow-hidden bg-ink/10">
                   <img
                     src={src}
