@@ -44,10 +44,9 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="events"
-      // overflow-x-clip (not overflow-hidden) so the gallery's sticky pin still works
-      className="relative overflow-x-clip isolate"
+      className="relative overflow-hidden isolate"
     >
-      {/* photo band — a pinned sideways gallery on desktop, a swipeable row on phones */}
+      {/* photo band — a staggered row of four (2×2 on phones) */}
       <EventGallery photos={EVENT_PHOTOS} isIndonesian={isIndonesian} onOpen={setLightbox} />
 
       {/* events history + CTAs — on the paper ground below the purple block */}
