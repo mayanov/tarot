@@ -3,7 +3,7 @@ import { ArrowRight, Instagram } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId } from '../UI/scroll';
-import { btnPrimaryDark } from '../UI/buttons';
+import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 
 interface HeaderProps {
   isIndonesian?: boolean;
@@ -184,32 +184,23 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         </div>
       </header>
 
-      {/* Full-screen editorial menu overlay */}
+      {/* Full-screen editorial menu overlay — on the site's paper texture */}
       <div
-        className={`fixed inset-0 z-[110] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${menuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
-        style={{ background: 'linear-gradient(180deg, #202A5C 0%, #0E1A3D 100%)' }}
+        className={`bg-paper fixed inset-0 z-[110] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${menuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
         aria-hidden={!menuOpen}
       >
-        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(55% 55% at 82% 110%, rgba(107,63,160,0.11) 0%, transparent 62%)' }} />
-        {/* celestial atmosphere — the menu is a night-sky moment (matches hero/footer) */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-70"
-          style={{ backgroundImage: 'radial-gradient(1.5px 1.5px at 15% 22%, rgba(255,255,255,0.5), transparent), radial-gradient(1px 1px at 72% 14%, rgba(255,255,255,0.4), transparent), radial-gradient(1.5px 1.5px at 86% 58%, rgba(255,255,255,0.45), transparent), radial-gradient(1px 1px at 28% 72%, rgba(255,255,255,0.35), transparent), radial-gradient(1px 1px at 54% 88%, rgba(255,255,255,0.4), transparent), radial-gradient(1.5px 1.5px at 93% 32%, rgba(255,255,255,0.4), transparent), radial-gradient(1px 1px at 9% 56%, rgba(255,255,255,0.3), transparent), radial-gradient(1px 1px at 40% 40%, rgba(255,255,255,0.3), transparent)' }}
-        />
-
         <div className="relative h-full mx-auto px-8 flex flex-col">
           {/* Top row — brand + close */}
           <div className="flex items-center justify-between py-4 md:py-5 shrink-0">
-            <Wordmark onDark />
+            <Wordmark onDark={false} />
             <button
               onClick={() => setMenuOpen(false)}
               aria-label={isIndonesian ? 'Tutup menu' : 'Close menu'}
-              className="group inline-flex items-center justify-center -mr-2 p-2 text-cream"
+              className="group inline-flex items-center justify-center -mr-2 p-2 text-ink"
             >
               <span className="relative block w-5 h-5">
-                <span className="absolute top-1/2 left-0 h-px w-5 bg-cream -translate-y-1/2 rotate-45 transition-transform duration-500 group-hover:rotate-[135deg]" />
-                <span className="absolute top-1/2 left-0 h-px w-5 bg-cream -translate-y-1/2 -rotate-45 transition-transform duration-500 group-hover:rotate-[45deg]" />
+                <span className="absolute top-1/2 left-0 h-px w-5 bg-ink -translate-y-1/2 rotate-45 transition-transform duration-500 group-hover:rotate-[135deg]" />
+                <span className="absolute top-1/2 left-0 h-px w-5 bg-ink -translate-y-1/2 -rotate-45 transition-transform duration-500 group-hover:rotate-[45deg]" />
               </span>
             </button>
           </div>
@@ -227,7 +218,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                     onClick={() => scrollToSection(link.id)}
                     className="group/link w-full flex items-center py-3 sm:py-2.5 text-left"
                   >
-                    <span className="font-elegant font-medium text-cream text-[2rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-colors duration-500 group-hover/link:text-[#C9B8E8]">
+                    <span className="font-elegant font-medium text-ink text-[2rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-colors duration-500 group-hover/link:text-moon">
                       {link.name}
                     </span>
                   </button>
@@ -237,39 +228,39 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           </nav>
 
           {/* Bottom — language toggle + socials + book */}
-          <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-white/[0.08] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '480ms' }}>
+          <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-ink/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '480ms' }}>
             {onSwitchRegion ? (
               <div className="self-start sm:self-auto">
-                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
+                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />
               </div>
             ) : <span />}
 
             <div className="flex flex-wrap items-center gap-6 sm:gap-7 self-start sm:self-auto">
-              {/* socials — plain cream icons, no containers */}
+              {/* socials — plain ink icons, no containers */}
               <nav className="flex items-center gap-6" aria-label="Social">
                 <a
                   href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
                   onClick={() => trackEvent('social_click', { platform: 'Instagram', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
-                  aria-label="Instagram" className="text-cream/65 hover:text-cream transition-all duration-500 hover:-translate-y-0.5">
+                  aria-label="Instagram" className="text-ink/60 hover:text-moon transition-all duration-500 hover:-translate-y-0.5">
                   <Instagram className="w-5 h-5" strokeWidth={1.7} />
                 </a>
                 <a
                   href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
                   onClick={() => trackEvent('social_click', { platform: 'TikTok', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
-                  aria-label="TikTok" className="text-cream/65 hover:text-cream transition-all duration-500 hover:-translate-y-0.5">
+                  aria-label="TikTok" className="text-ink/60 hover:text-moon transition-all duration-500 hover:-translate-y-0.5">
                   <FaTiktok size={18} />
                 </a>
                 <a
                   href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
                   onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
-                  aria-label="WhatsApp" className="text-cream/65 hover:text-cream transition-all duration-500 hover:-translate-y-0.5">
+                  aria-label="WhatsApp" className="text-ink/60 hover:text-moon transition-all duration-500 hover:-translate-y-0.5">
                   <FaWhatsapp size={20} />
                 </a>
               </nav>
 
               <button
                 onClick={goToServices}
-                className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-sm`}
+                className={`${btnPrimaryLight} inline-flex group gap-3 px-8 py-3.5 text-sm`}
               >
                 {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
