@@ -13,6 +13,10 @@ interface LoaderProps {
 // against these, so keep them in sync with Hero.tsx.
 export const REVEAL_FLIGHT_MS = 1150; // moon flies up and wanes into the hero crescent
 const REVEAL_TOTAL_MS = 1550;         // loader fully gone
+// Scrolling stays locked until the hero's entrance (and the About sheet rising under
+// it) has finished, so an early scroll can't catch the page mid-animation. The last
+// hero line lands ~REVEAL_FLIGHT_MS + 1.2s after the hand-off; About ~+1.35s.
+const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
 const WORDMARK_PX = 20;               // the wordmark's size while loading
 
 // Loading is REAL: progress comes from the work the page actually waits on (fonts, the
@@ -48,6 +52,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const [leaving, setLeaving] = useState(false);
   const [flight, setFlight] = useState<string | null>(null); // moon's transform toward the hero crescent
   const [gone, setGone] = useState(false);
+  const [unlocked, setUnlocked] = useState(false); // page may scroll again
 
   // THE WORDMARK is drawn at the hero title's real size and position (so it stays
   // crisp) and scaled DOWN into its slot under the moon. On hand-off it simply drops
@@ -82,9 +87,14 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   // The page must not scroll while loading. Native overflow:hidden isn't enough: the
   // smooth-scroll library (Lenis) starts right after this and drives the scroll itself.
   // So: pause Lenis, block wheel / touch / keyboard scrolling, keep the page pinned at
-  // the top — and release it all the moment the hand-off begins.
+  // the top — and release it all once the hero has finished its entrance.
   useEffect(() => {
-    if (leaving) return;
+    if (!leaving) return;
+    const t = window.setTimeout(() => setUnlocked(true), reduce ? 0 : SCROLL_UNLOCK_MS);
+    return () => clearTimeout(t);
+  }, [leaving, reduce]);
+  useEffect(() => {
+    if (unlocked) return;
     const html = document.documentElement;
     const prevBody = document.body.style.overflow;
     const prevHtml = html.style.overflow;
@@ -107,7 +117,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
       html.style.overflow = prevHtml;
       startLenis();
     };
-  }, [leaving]);
+  }, [unlocked]);
 
   // ---- the real loading tasks ----
   const mark = (task: string) => setDone((d) => (d[task] ? d : { ...d, [task]: true }));

@@ -406,7 +406,7 @@ function App() {
         </div>
       )}
 
-      <main className="relative z-10 bg-paper" style={{ marginBottom: footerH }}>
+      <main className="relative z-10 bg-paper rounded-b-[2rem] lg:rounded-b-[3rem]" style={{ marginBottom: footerH }}>
         <Hero isIndonesian={isIndonesian} />
         <About isIndonesian={isIndonesian} />
         <TarotIntro isIndonesian={isIndonesian} />
@@ -470,28 +470,16 @@ function App() {
           </button>
         )}
 
-        {/* WhatsApp — on both versions, in WhatsApp green. A soft ring ripples out
-            every few seconds; hover slides out a label; once per visit the label
-            peeks out by itself a few seconds after the page settles. */}
+        {/* WhatsApp — on both versions, in the brand purple; hover shows a label */}
         <WhatsAppFab isIndonesian={isIndonesian} />
       </div>
     </div>
   );
 }
 
+// Floating WhatsApp button in the site's palette (brand purple, cream icon). Calm:
+// no looping animation — a label slides out only on hover.
 const WhatsAppFab: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
-  const [peek, setPeek] = React.useState(false);
-  React.useEffect(() => {
-    let shown = false;
-    try { shown = sessionStorage.getItem('wa_peeked') === '1'; } catch { /* ignore */ }
-    if (shown) return;
-    const open = window.setTimeout(() => {
-      setPeek(true);
-      try { sessionStorage.setItem('wa_peeked', '1'); } catch { /* ignore */ }
-    }, 7000);
-    const close = window.setTimeout(() => setPeek(false), 11500);
-    return () => { clearTimeout(open); clearTimeout(close); };
-  }, []);
   const text = isIndonesian
     ? 'Halo Mayanov, saya ingin bertanya mengenai tarot reading'
     : "Hi Mayanov, I'd like to ask about a tarot reading";
@@ -506,16 +494,11 @@ const WhatsAppFab: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
       aria-label={label}
       className="group relative flex items-center justify-end"
     >
-      {/* the label that slides out to the left */}
-      <span
-        className={`mr-3 whitespace-nowrap rounded-lg bg-white text-ink text-sm font-medium px-3.5 py-2 shadow-[0_10px_28px_-12px_rgba(20,12,40,0.45)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${peek ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-3 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0'}`}
-      >
+      <span className="mr-3 whitespace-nowrap rounded-lg bg-paper text-ink text-sm font-medium px-3.5 py-2 shadow-[0_10px_28px_-12px_rgba(20,12,40,0.45)] opacity-0 translate-x-3 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-x-0">
         {label}
       </span>
-      <span className="relative grid place-items-center w-14 h-14 rounded-full bg-[#25D366] text-white shadow-[0_12px_30px_-10px_rgba(37,211,102,0.75)] transition-transform duration-300 group-hover:scale-105">
-        {/* ripple ring */}
-        <span aria-hidden className="absolute inset-0 rounded-full border-2 border-[#25D366] motion-safe:animate-[waRipple_3.2s_ease-out_infinite]" />
-        <span className="relative transition-transform duration-500 group-hover:rotate-[-10deg]"><FaWhatsapp size={26} /></span>
+      <span className="relative grid place-items-center w-14 h-14 rounded-full bg-moon text-cream ring-1 ring-cream/20 shadow-[0_12px_30px_-10px_rgba(57,35,78,0.7)] transition-colors duration-300 group-hover:bg-plum">
+        <FaWhatsapp size={24} />
       </span>
     </a>
   );
