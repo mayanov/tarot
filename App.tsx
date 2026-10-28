@@ -418,10 +418,8 @@ function App() {
           <Interlude isIndonesian={isIndonesian} />
           <WhyChoose isIndonesian={isIndonesian} />
           <Events isIndonesian={isIndonesian} />
-          {/* FAQ on its own white ground (the booking notes now sit under the pricelist) */}
-          <div className="relative isolate overflow-hidden">
-            <FAQ isIndonesian={isIndonesian} />
-          </div>
+          {/* FAQ — its own lilac sheet rising over Events (see FAQ.tsx) */}
+          <FAQ isIndonesian={isIndonesian} />
         </React.Suspense>
       </main>
 

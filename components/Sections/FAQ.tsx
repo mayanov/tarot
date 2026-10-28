@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
+import CelestialMark from '../UI/CelestialMark';
 
 interface FAQProps {
   isIndonesian?: boolean;
@@ -123,10 +124,16 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   const toggleFAQ = (key: string) => setOpenKey((cur) => (cur === key ? null : key));
 
   return (
+    // Its own lilac sheet with rounded top corners, rising over the section above
+    // (the same move the About sheet makes over the hero), so it doesn't blend into
+    // the white Events section.
     <section
       id="faq"
-      className="pt-8 md:pt-12 pb-24 md:pb-36 relative text-ink"
+      className="relative isolate overflow-hidden -mt-10 md:-mt-14 rounded-t-[2.75rem] lg:rounded-t-[4.5rem] pt-20 md:pt-28 pb-24 md:pb-36 text-ink shadow-[0_-24px_60px_-28px_rgba(42,24,57,0.28)]"
+      style={{ backgroundColor: '#EFE8F7' }}
     >
+      {/* a large, faint crescent behind the title */}
+      <CelestialMark name="crescent" className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-6 md:top-8 -z-10 w-56 md:w-72 text-moon/[0.07]" />
       <div className="mx-auto px-8 relative z-10">
         {/* one centred column: title, then the category filter, then the questions */}
         <div className="mx-auto max-w-3xl">
@@ -137,7 +144,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               </h2>
 
               {/* category filter — editorial text tabs with an animated underline */}
-              <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm">
+              <div className="mt-8 flex flex-wrap justify-center gap-2 text-sm">
                 {categories.map((cat) => {
                   const active = showAll ? cat === allLabel : cat === activeCat;
                   return (
@@ -145,10 +152,9 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                       key={cat}
                       onClick={() => setActiveCat(cat)}
                       aria-pressed={active}
-                      className={`group/cat relative pb-1.5 tracking-wide transition-colors duration-500 ${active ? 'text-moon font-bold' : 'text-ink font-normal'}`}
+                      className={`rounded-full px-4 py-1.5 tracking-wide transition-colors duration-300 ${active ? 'bg-moon text-white font-semibold' : 'bg-white/60 text-ink/75 hover:bg-white hover:text-ink'}`}
                     >
                       {cat}
-                      <span className={`absolute left-0 -bottom-px h-px bg-moon transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${active ? 'w-full' : 'w-0 group-hover/cat:w-full group-hover/cat:bg-ink/20'}`} />
                     </button>
                   );
                 })}
@@ -159,26 +165,32 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           {/* questions — text stays left-aligned inside the centred column so the
               answers are easy to read */}
           <div className="mt-10 md:mt-12">
-            <div className="border-t border-ink/[0.08]">
+            <div className="border-t border-moon/15">
               {filtered.map((faq, index) => {
                 const open = openKey === faq.question;
                 return (
                   <FadeIn key={faq.question} delay={Math.min(index, 6) * 55} dir="up" distance={0.7}>
-                    <div className="border-b border-ink/[0.08]">
+                    <div className="border-b border-moon/15">
                       <button
                         onClick={() => toggleFAQ(faq.question)}
                         className="group w-full flex items-center justify-between gap-5 py-5 md:py-6 text-left focus:outline-none"
                         aria-expanded={open}
                       >
-                        <span className={`font-elegant font-medium text-lg md:text-xl leading-snug tracking-tight transition-colors duration-500 ${open ? 'text-moon' : 'text-ink group-hover:text-moon'}`}>
-                          {faq.question}
+                        <span className="flex items-baseline gap-4">
+                          <span aria-hidden className="w-6 shrink-0 font-elegant italic text-moon/70 text-sm md:text-base tabular-nums">
+                            {String(index + 1).padStart(2, '0')}
+                          </span>
+                          <span className={`font-elegant font-medium text-lg md:text-xl leading-snug tracking-tight transition-colors duration-500 ${open ? 'text-moon' : 'text-ink group-hover:text-moon'}`}>
+                            {faq.question}
+                          </span>
                         </span>
                         <ChevronDown className={`w-5 h-5 shrink-0 transition-all duration-500 ${open ? 'text-moon rotate-180' : 'text-ink/40'}`} />
                       </button>
 
                       <div className={`grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                         <div className="overflow-hidden">
-                          <p className="pb-5 pr-10 text-ink/70 text-[0.95rem] md:text-base leading-relaxed whitespace-pre-line font-light">
+                          {/* the answer, set in from the number with a thin purple rule */}
+                          <p className="mb-6 ml-10 pl-4 pr-6 border-l-2 border-moon/40 text-ink/70 text-[0.95rem] md:text-base leading-relaxed whitespace-pre-line font-light">
                             {faq.answer}
                           </p>
                         </div>

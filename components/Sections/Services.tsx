@@ -756,7 +756,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
         <section id="services" className="bg-paper relative isolate overflow-hidden text-ink">
             <SoftAura />
             {/* HEADER — transparent over the sky */}
-            <div className="mx-auto px-8 pt-20 md:pt-28 pb-2 md:pb-4">
+            <div className="mx-auto px-8 pt-14 md:pt-20 pb-6 md:pb-10">
                 <FadeIn>
                     {/* centred over the spread, no subtitle — the cards say the rest */}
                     <h2 className="text-center font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">

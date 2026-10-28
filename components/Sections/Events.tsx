@@ -77,7 +77,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       </div>
 
       {/* events history + CTAs — on the paper ground below the purple block */}
-      <div className="mx-auto px-8 pt-10 md:pt-14 pb-10 md:pb-12 relative z-10 text-ink">
+      <div className="mx-auto px-8 pt-10 md:pt-14 pb-24 md:pb-32 relative z-10 text-ink">
           {/* HEADER — now leads its own explanation on the paper ground, so the
               title and the event list read as one unit instead of the title being
               marooned up in the purple band */}
