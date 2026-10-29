@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
@@ -321,14 +321,44 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         trackEvent('view_item', { item_name: name, market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: name });
     }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // open: show the drawn card (front), then flip it to details
+    // open: every card flies from its spot in the fan into the focused spread (the
+    // drawn one to the front), then the drawn card flips to its details
+    const fanSlotRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const boxRef = useRef<HTMLDivElement | null>(null);
+    const fanAtOpen = useRef<{ cx: number; cy: number; w: number; rot: number }[] | null>(null);
+    const [flightStart, setFlightStart] = useState<Record<number, string> | null>(null); // per card: transform at take-off
+    const flownRef = useRef(false); // this opening used the flight (vs. reopening from the booking form)
+    const FLIGHT_MS = 700;
     const draw = (i: number) => {
         setSwapDir(null);
+        fanAtOpen.current = groups.map((_, j) => {
+            const el = fanSlotRefs.current[j];
+            if (!el) return { cx: 0, cy: 0, w: 0, rot: 0 };
+            const r = el.getBoundingClientRect();
+            return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, w: el.offsetWidth * fanScale, rot: fanRot(j) };
+        });
+        flownRef.current = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         setSelected(i);
         setRevealed(false);
-        requestAnimationFrame(() => requestAnimationFrame(() => setRevealed(true)));
+        window.setTimeout(() => setRevealed(true), flownRef.current ? FLIGHT_MS - 80 : 0);
     };
-    const close = () => setSelected(null);
+    // measure the focused spread's box before paint, park every card at its fan spot,
+    // then release them on the next frames so they glide into place
+    useLayoutEffect(() => {
+        if (selected === null || !fanAtOpen.current || !flownRef.current) return;
+        const box = boxRef.current?.getBoundingClientRect();
+        if (!box) return;
+        const bx = box.left + box.width / 2, by = box.top + box.height / 2;
+        const starts: Record<number, string> = {};
+        fanAtOpen.current.forEach((f, j) => {
+            if (!f.w) return;
+            starts[j] = `translate(${(f.cx - bx).toFixed(1)}px, ${(f.cy - by).toFixed(1)}px) rotate(${f.rot.toFixed(2)}deg) scale(${(f.w / box.width).toFixed(4)})`;
+        });
+        fanAtOpen.current = null;
+        setFlightStart(starts);
+        requestAnimationFrame(() => requestAnimationFrame(() => setFlightStart(null)));
+    }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
+    const close = () => { flownRef.current = false; setSelected(null); };
     const bookGroup = (g: any) => { const from = selected ?? undefined; close(); openBooking(BOOKING_MAP[g.type], from); };
 
     // coming back from the booking form → reopen the card they booked from, on its details
@@ -389,6 +419,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const n = groups.length;
     const center = (n - 1) / 2;
     const dealDelay = (i: number) => DEAL_START + i * DEAL_GAP;
+    const fanRot = (i: number) => ((i - center) / Math.max(1, (n - 1) / 2)) * 16; // same tilt as fanStyle
     const fanStyle = (i: number): React.CSSProperties => {
         const o = i - center;
         const isHov = settled && hovered === i;
@@ -416,9 +447,12 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         return {
             transform: `translate(-50%, -50%) translateX(${(o * step).toFixed(1)}px) translateY(${ty.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${(s * (isHov ? 1.05 : 1)).toFixed(4)})`,
             zIndex: isHov ? 40 : 20 - Math.round(Math.abs(o)),
+            // while a card is open the whole fan fades out, so the blurred backdrop
+            // doesn't show ghost cards behind the focused spread
+            opacity: isOpen ? 0 : 1,
             transition: settled
-                ? 'transform 0.5s cubic-bezier(0.22,1,0.36,1)'
-                : `transform ${DEAL_MOVE}ms cubic-bezier(0.2,0.9,0.25,1) ${dealDelay(i)}ms`,
+                ? 'transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease'
+                : `transform ${DEAL_MOVE}ms cubic-bezier(0.2,0.9,0.25,1) ${dealDelay(i)}ms, opacity 0.35s ease`,
         };
     };
 
@@ -431,6 +465,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                             <div
                                 key={g.type}
                                 id={g.id || undefined}
+                                ref={(el) => { fanSlotRefs.current[i] = el; }}
                                 className="absolute left-1/2 top-1/2 w-[13.5rem] scroll-mt-28"
                                 style={fanStyle(i)}
                                 onMouseEnter={() => setHovered(i)}
@@ -467,6 +502,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                 <div data-lenis-prevent className={`fixed inset-0 z-[300] overscroll-none touch-none flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden gap-4 px-5 py-5`} onClick={close} role="dialog" aria-modal="true">
                     <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} />
                     <div
+                        ref={boxRef}
                         className="relative aspect-[5/8]"
                         style={{ height: isMobile ? 'min(calc(100dvh - 9.5rem), 128vw)' : 'min(82vh, 38rem)' }}
                         onTouchStart={onTouchStart}
@@ -478,29 +514,46 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                             const d = j - selected;
                             const side = Math.sign(d);
                             const depth = Math.abs(d);
+                            const flying = !!flightStart;
                             return (
-                                <button
+                                // flight layer: starts exactly on the card's spot in the fan
+                                <div
                                     key={g.type}
-                                    type="button"
-                                    aria-label={isIndonesian ? `Lihat ${g.type}` : `See ${g.type}`}
-                                    onClick={(e) => { e.stopPropagation(); switchTo(j); }}
-                                    className="absolute inset-0 rounded-[1.15rem] transition-[transform,opacity,filter] duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] brightness-[0.8] hover:brightness-100 focus:outline-none focus-visible:brightness-100"
+                                    className="absolute inset-0"
                                     style={{
-                                        transform: `translateX(${side * (38 + (depth - 1) * 9)}%) translateY(${depth * 3}%) rotate(${side * (7 + (depth - 1) * 4)}deg) scale(${0.86 - (depth - 1) * 0.05})`,
                                         zIndex: 10 - depth,
+                                        transform: flying ? flightStart![j] : 'none',
+                                        transition: flying ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
                                     }}
                                 >
-                                    <span aria-hidden className="pointer-events-none block h-full w-full">
-                                        <TarotCard g={g} i={j} flipped={false} onFlip={() => {}} isIndonesian={isIndonesian} big compact={isMobile} />
-                                    </span>
-                                </button>
+                                    <button
+                                        type="button"
+                                        aria-label={isIndonesian ? `Lihat ${g.type}` : `See ${g.type}`}
+                                        onClick={(e) => { e.stopPropagation(); switchTo(j); }}
+                                        className="absolute inset-0 rounded-[1.15rem] transition-[transform,opacity,filter] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] brightness-[0.8] hover:brightness-100 focus:outline-none focus-visible:brightness-100"
+                                        style={{
+                                            transform: flying ? 'none' : `translateX(${side * (38 + (depth - 1) * 9)}%) translateY(${depth * 3}%) rotate(${side * (7 + (depth - 1) * 4)}deg) scale(${0.86 - (depth - 1) * 0.05})`,
+                                            transitionDuration: flying ? '0ms' : `${FLIGHT_MS}ms`,
+                                        }}
+                                    >
+                                        <span aria-hidden className="pointer-events-none block h-full w-full">
+                                            <TarotCard g={g} i={j} flipped={false} onFlip={() => {}} isIndonesian={isIndonesian} big compact={isMobile} />
+                                        </span>
+                                    </button>
+                                </div>
                             );
                         })}
 
                         <div
                             key={selected}
                             className="relative z-20 h-full w-full"
-                            style={{ animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)' }}
+                            style={{
+                                // switching services: a swipe; opened from the fan: the flight;
+                                // reopened from the booking form: the plain draw-in
+                                animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : flownRef.current ? undefined : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)',
+                                transform: flightStart && !swapDir ? flightStart[selected] : undefined,
+                                transition: flightStart ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
+                            }}
                             onClick={(e) => e.stopPropagation()}
                         >
                             <TarotCard g={groups[selected]} i={selected} flipped={revealed} onFlip={() => setRevealed((r) => !r)} onBook={() => bookGroup(groups[selected])} isIndonesian={isIndonesian} big compact={isMobile} />
