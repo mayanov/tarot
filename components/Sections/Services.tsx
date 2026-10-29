@@ -331,6 +331,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const FLIGHT_MS = 700;
     const draw = (i: number) => {
         setSwapDir(null);
+        setHandoff(null);
         fanAtOpen.current = groups.map((_, j) => {
             const el = fanSlotRefs.current[j];
             if (!el) return { cx: 0, cy: 0, w: 0, rot: 0 };
@@ -358,8 +359,20 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         setFlightStart(starts);
         requestAnimationFrame(() => requestAnimationFrame(() => setFlightStart(null)));
     }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
-    const close = () => { flownRef.current = false; setSelected(null); };
-    const bookGroup = (g: any) => { const from = selected ?? undefined; close(); openBooking(BOOKING_MAP[g.type], from); };
+    // hand-off to / from the booking form: 'out' = the spread sinks away before the form
+    // rises, 'in' = the spread rises back as the form sinks; the backdrop stays put
+    const [handoff, setHandoff] = useState<'out' | 'in' | null>(null);
+    const HANDOFF_MS = 280; // matches the booking form's
+    const handoffTimer = useRef<number | undefined>(undefined);
+    const close = () => { window.clearTimeout(handoffTimer.current); flownRef.current = false; setHandoff(null); setSelected(null); };
+    const bookGroup = (g: any) => {
+        if (handoff === 'out') return;
+        const from = selected ?? undefined;
+        setHandoff('out');
+        // close and open in the same tick so both commit together (no frame without a backdrop)
+        handoffTimer.current = window.setTimeout(() => { close(); openBooking(BOOKING_MAP[g.type], from); }, HANDOFF_MS);
+    };
+    const stageAnim = handoff === 'out' ? `stageOut ${HANDOFF_MS}ms cubic-bezier(0.4,0,1,1) forwards` : handoff === 'in' ? 'stageIn 0.45s cubic-bezier(0.22,1,0.36,1)' : undefined;
 
     // coming back from the booking form → reopen the card they booked from, on its details
     useEffect(() => {
@@ -367,6 +380,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             const index = (e as CustomEvent<{ index: number }>).detail?.index;
             if (typeof index !== 'number' || index < 0 || index >= groups.length) return;
             setSwapDir(null);
+            setHandoff('in');
             setSelected(index);
             setRevealed(true);
         };
@@ -499,12 +513,12 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             {/* full-screen "drawn card" reveal — portaled to <body> so it sits above the
                 nav and blurs the WHOLE page; click anywhere outside to close */}
             {selected !== null && typeof document !== 'undefined' && createPortal(
-                <div data-lenis-prevent className={`fixed inset-0 z-[300] overscroll-none touch-none flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden gap-4 px-5 py-5`} onClick={close} role="dialog" aria-modal="true">
-                    <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} />
+                <div data-lenis-prevent className={`fixed inset-0 z-[300] overscroll-none touch-none flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden gap-4 px-5 py-5 ${handoff === 'out' ? 'pointer-events-none' : ''}`} onClick={close} role="dialog" aria-modal="true">
+                    <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: handoff ? 'none' : 'tarotFade 0.3s ease' }} />
                     <div
                         ref={boxRef}
                         className="relative aspect-[5/8]"
-                        style={{ height: isMobile ? 'min(calc(100dvh - 9.5rem), 128vw)' : 'min(82vh, 38rem)' }}
+                        style={{ height: isMobile ? 'min(calc(100dvh - 9.5rem), 128vw)' : 'min(82vh, 38rem)', animation: stageAnim }}
                         onTouchStart={onTouchStart}
                         onTouchEnd={onTouchEnd}
                     >
@@ -553,8 +567,8 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                             className="relative z-20 h-full w-full"
                             style={{
                                 // switching services: a swipe; opened from the fan: the flight;
-                                // reopened from the booking form: the plain draw-in
-                                animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : flownRef.current ? undefined : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)',
+                                // back from the booking form: the whole spread rises (stageAnim)
+                                animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : flownRef.current || handoff ? undefined : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)',
                                 transform: flightStart && !swapDir ? flightStart[selected] : undefined,
                                 transition: flightStart ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
                             }}
@@ -565,7 +579,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                     </div>
 
                     {/* service tabs — jump straight to another service by name */}
-                    <div className={`relative z-30 flex gap-2 max-w-xl flex-wrap justify-center`} onClick={(e) => e.stopPropagation()}>
+                    <div className={`relative z-30 flex gap-2 max-w-xl flex-wrap justify-center`} style={{ animation: stageAnim }} onClick={(e) => e.stopPropagation()}>
                         {groups.map((g, j) => (
                             <button
                                 key={g.type}

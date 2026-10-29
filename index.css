@@ -102,6 +102,15 @@ html.lenis body {
 }
 /* tarot card "drawn" into the full-screen reveal */
 @keyframes tarotFade { from { opacity: 0; } to { opacity: 1; } }
+/* hand-off between the card reveal and the booking form: one sinks back, the other
+   rises from the same spot, over a backdrop that stays put */
+@keyframes stageIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes stageOut {
+  to { opacity: 0; transform: translateY(28px) scale(0.96); }
+}
 /* pricelist deal: the card pinches flat and opens again (a flip seen edge-on) while
    its face-down back disappears at the halfway point */
 @keyframes dealFlip {

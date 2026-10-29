@@ -97,8 +97,15 @@ const SERVICE_LOOK: Record<string, { accent: string; mark: 'constellation' | 'st
 const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => {
+// length of the hand-off back to a pricelist card (matches HANDOFF_MS in Services)
+const HANDOFF_MS = 280;
+
+const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const [open, setOpen] = useState(false);
+  // opened from / going back to a pricelist card: the shared backdrop stays put and
+  // only the panel moves (see the stageIn / stageOut keyframes)
+  const [seamless, setSeamless] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [step, setStep] = useState(0); // 0 service · 1 date/time · 2 details · 3 done
   const [service, setService] = useState<ServiceOption | null>(null);
   const [date, setDate] = useState<Date | undefined>();
@@ -157,11 +164,17 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   const goBack = () => {
     const target = step === 3 ? 2 : step === 2 ? (scheduled ? 1 : 0) : 0;
     if (target === 0 && returnToCard.current !== null) {
+      if (leaving) return;
       const index = returnToCard.current;
       returnToCard.current = null;
-      setOpen(false);
-      // after this modal has closed (and released the page scroll), reopen the card
-      window.setTimeout(() => window.dispatchEvent(new CustomEvent('reopen-pricelist-card', { detail: { index } })), 60);
+      // the panel sinks away, then the card rises in its place in the same frame the
+      // modal unmounts, so the blurred backdrop never drops out in between
+      setLeaving(true);
+      window.setTimeout(() => {
+        setOpen(false);
+        setLeaving(false);
+        window.dispatchEvent(new CustomEvent('reopen-pricelist-card', { detail: { index } }));
+      }, HANDOFF_MS);
       return;
     }
     setStep(target);
@@ -185,6 +198,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
       reset();
       const detail = (e as CustomEvent<{ serviceId?: string; returnToCard?: number }>).detail;
       returnToCard.current = typeof detail?.returnToCard === 'number' ? detail.returnToCard : null;
+      setSeamless(returnToCard.current !== null);
+      setLeaving(false);
       const preset = detail?.serviceId ? services.find((s) => s.id === detail.serviceId) : undefined;
       if (preset) { setService(preset); setStep(preset.scheduled ? 1 : 2); }
       setOpen(true);
@@ -197,9 +212,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   }, [isIndonesian]);
 
   // Lock scroll while open — stop Lenis too, or it keeps scrolling the page behind.
+  // Only the cleanup unlocks: on a hand-off to a pricelist card the card's lock is set
+  // in the same commit, and a separate "unlock when closed" run could undo it.
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
-    if (open) stopLenis(); else startLenis();
+    if (!open) return;
+    document.body.style.overflow = 'hidden';
+    stopLenis();
     return () => { document.body.style.overflow = ''; startLenis(); };
   }, [open]);
 
@@ -368,9 +386,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
       {/* backdrop — same as the pricelist card reveal */}
-      <div className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} onClick={close} />
+      <div className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: seamless ? 'none' : 'tarotFade 0.3s ease' }} onClick={close} />
 
-      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-2xl sm:rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
+      <div
+        className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-2xl sm:rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${leaving ? 'pointer-events-none' : ''} ${step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}
+        style={leaving ? { animation: `stageOut ${HANDOFF_MS}ms cubic-bezier(0.4,0,1,1) forwards` } : seamless ? { animation: 'stageIn 0.45s cubic-bezier(0.22,1,0.36,1)' } : undefined}
+      >
 
         {/* scroll only the content (data-lenis-prevent lets this scroll natively) */}
         <div className="relative max-h-[92vh] overflow-y-auto overscroll-contain" data-lenis-prevent>
