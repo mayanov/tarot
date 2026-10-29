@@ -44,7 +44,8 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="events"
-      className="relative overflow-hidden isolate"
+      // clip sideways only, so a polaroid lifting on hover isn't cut off at the top
+      className="relative overflow-x-clip isolate"
     >
       {/* photo band — a staggered row of four (2×2 on phones) */}
       <EventGallery photos={EVENT_PHOTOS} isIndonesian={isIndonesian} onOpen={setLightbox} />
