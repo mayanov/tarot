@@ -62,8 +62,8 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 type="button"
                 onClick={() => onOpen(src)}
                 aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
-                // hover cancels the print's tilt (--r), lifts it and deepens the shadow
-                className="group relative bg-white block w-full p-2.5 md:p-3 pb-0 rounded-[3px] ring-1 ring-ink/[0.06] shadow-[0_14px_30px_-14px_rgba(42,24,57,0.35)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_28px_50px_-18px_rgba(42,24,57,0.45)] hover:[transform:rotate(var(--r))_translateY(-12px)_scale(1.05)]"
+                // hover cancels the print's tilt (--r) and lifts it (no zoom); deeper shadow
+                className="group relative bg-plum block w-full p-2.5 md:p-3 pb-0 rounded-[3px] ring-1 ring-white/10 shadow-[0_14px_30px_-14px_rgba(42,24,57,0.55)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_28px_50px_-18px_rgba(42,24,57,0.45)] hover:[transform:rotate(var(--r))_translateY(-10px)]"
                 style={{ ['--r' as any]: `${-pr.rot}deg`, transitionTimingFunction: EASE }}
               >
                 <span className="relative block aspect-[4/5] overflow-hidden bg-ink/10">
@@ -73,14 +73,14 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                     loading="lazy"
                     decoding="async"
                     // soft vintage tone that clears on hover
-                    className="absolute inset-0 w-full h-full object-cover [filter:sepia(0.22)_saturate(0.85)_contrast(1.05)] group-hover:[filter:none] transition-[filter,transform] duration-700 group-hover:scale-[1.03]"
+                    className="absolute inset-0 w-full h-full object-cover [filter:sepia(0.22)_saturate(0.85)_contrast(1.05)] group-hover:[filter:none] transition-[filter] duration-700"
                   />
                   {/* a gentle inner vignette, like a printed photo */}
                   <span aria-hidden className="pointer-events-none absolute inset-0 shadow-[inset_0_0_40px_rgba(30,18,50,0.25)]" />
                 </span>
                 <span className="flex items-baseline justify-between gap-2 px-1 py-3 md:py-4">
-                  <span className="font-elegant italic text-ink/75 text-[0.95rem] md:text-[1.05rem]">{isIndonesian ? pr.id : pr.en}</span>
-                  <span className="font-elegant italic text-moon/70 text-xs tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="font-elegant italic text-[#E6DCF5] text-[0.95rem] md:text-[1.05rem]">{isIndonesian ? pr.id : pr.en}</span>
+                  <span className="font-elegant italic text-[#C9B8E8]/70 text-xs tabular-nums">{String(i + 1).padStart(2, '0')}</span>
                 </span>
               </button>
             </div>
