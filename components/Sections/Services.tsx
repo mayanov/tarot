@@ -526,11 +526,15 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                         transition: flying ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
                                     }}
                                 >
-                                    <button
-                                        type="button"
+                                    {/* a div acting as a button: the card inside has its own buttons,
+                                        and buttons can't be nested */}
+                                    <div
+                                        role="button"
+                                        tabIndex={0}
                                         aria-label={isIndonesian ? `Lihat ${g.type}` : `See ${g.type}`}
                                         onClick={(e) => { e.stopPropagation(); switchTo(j); }}
-                                        className="absolute inset-0 rounded-[1.15rem] transition-[transform,opacity,filter] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] brightness-[0.8] hover:brightness-100 focus:outline-none focus-visible:brightness-100"
+                                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); switchTo(j); } }}
+                                        className="absolute inset-0 cursor-pointer rounded-[1.15rem] transition-[transform,opacity,filter] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] brightness-[0.8] hover:brightness-100 focus:outline-none focus-visible:brightness-100"
                                         style={{
                                             transform: flying ? 'none' : `translateX(${side * (38 + (depth - 1) * 9)}%) translateY(${depth * 3}%) rotate(${side * (7 + (depth - 1) * 4)}deg) scale(${0.86 - (depth - 1) * 0.05})`,
                                             transitionDuration: flying ? '0ms' : `${FLIGHT_MS}ms`,
@@ -539,7 +543,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                         <span aria-hidden className="pointer-events-none block h-full w-full">
                                             <TarotCard g={g} i={j} flipped={false} onFlip={() => {}} isIndonesian={isIndonesian} big compact={isMobile} />
                                         </span>
-                                    </button>
+                                    </div>
                                 </div>
                             );
                         })}

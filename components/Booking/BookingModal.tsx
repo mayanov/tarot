@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
-import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock } from 'lucide-react';
+import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock, Copy } from 'lucide-react';
+import CelestialMark from '../UI/CelestialMark';
 import { FaWhatsapp } from 'react-icons/fa';
 import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
 import { trackEvent, SERVICE_TRACK_NAME } from '../../services/analytics';
@@ -45,11 +46,11 @@ const addMinutes = (hhmm: string, mins: number) => {
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 };
 
-// 'YYYY-MM-DD' → 'dd Mon YYYY' (e.g. 29 Aug 1994)
-const fmtLongDate = (iso: string) => {
+// 'YYYY-MM-DD' → 'dd Mon YYYY' in the visitor's language (29 Agu 1994 / 29 Aug 1994)
+const fmtLongDate = (iso: string, lang: 'id' | 'en' = 'en') => {
   if (!iso) return '';
   const [y, m, d] = iso.split('-').map(Number);
-  const mon = new Date(y, (m || 1) - 1, d || 1).toLocaleDateString('en-US', { month: 'short' });
+  const mon = new Date(y, (m || 1) - 1, d || 1).toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US', { month: 'short' });
   return `${String(d).padStart(2, '0')} ${mon} ${y}`;
 };
 
@@ -82,6 +83,20 @@ const PAYMENT = {
   waNumber: '6287786280310', // business WhatsApp (same as the footer / floating button)
 };
 
+// Each service wears its pricelist card's colour and mark, so the picker ties back to
+// the cards the visitor just saw.
+const SERVICE_LOOK: Record<string, { accent: string; mark: 'constellation' | 'star' | 'sparkle' | 'crescent' | 'sun' }> = {
+  special: { accent: '#22396F', mark: 'constellation' },
+  chat: { accent: '#39234E', mark: 'star' },
+  call: { accent: '#CB3B5F', mark: 'sparkle' },
+  meetup: { accent: '#F76949', mark: 'crescent' },
+  '3card': { accent: '#22396F', mark: 'constellation' },
+  '5card': { accent: '#39234E', mark: 'star' },
+};
+
+const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
 const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0); // 0 service · 1 date/time · 2 details · 3 done
@@ -97,13 +112,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [showPay, setShowPay] = useState(false); // reveal payment details on the success step
+  const [payTab, setPayTab] = useState<'qris' | 'bank'>('qris');
+  const [copied, setCopied] = useState(false);
+  const [qrMissing, setQrMissing] = useState(false); // QRIS image not uploaded yet
+  // date of birth as three fields (day / month / year); `dob` (YYYY-MM-DD) is derived
+  const [dobDay, setDobDay] = useState('');
+  const [dobMonth, setDobMonth] = useState('');
+  const [dobYear, setDobYear] = useState('');
 
   const t = (id: string, en: string) => (isIndonesian ? id : en);
 
   const services: ServiceOption[] = isIndonesian
     ? [
         { id: 'chat', name: 'Konsultasi via Chat', meta: 'WhatsApp · per pertanyaan', desc: 'Tanya-jawab santai lewat WhatsApp, dijawab dalam bentuk teks. Fleksibel untuk pertanyaan spesifik.', scheduled: false, packages: ['1 Pertanyaan · Rp 140K', '3 Pertanyaan · Rp 315K'] },
-        { id: 'call', name: 'Call / Video Call', meta: 'Real-time · pilih durasi', desc: 'Ngobrol langsung via suara atau video. Lebih interaktif, tanya sepuasnya selama durasi.', scheduled: true, packages: ['30 Menit · Rp 220K', '60 Menit · Rp 360K'] },
+        { id: 'call', name: 'Panggilan Suara & Video', meta: 'Real-time · pilih durasi', desc: 'Ngobrol langsung via suara atau video. Lebih interaktif, tanya sepuasnya selama durasi.', scheduled: true, packages: ['30 Menit · Rp 220K', '60 Menit · Rp 360K'] },
         { id: 'meetup', name: 'Sesi Tatap Muka', meta: 'Jakarta Selatan', desc: 'Ketemu langsung di Jakarta Selatan — pengalaman paling personal dan mendalam.', scheduled: true, packages: ['1 Jam · Rp 450K', '2 Jam · Rp 810K', '3 Jam · Rp 1,17JT'] },
         { id: 'special', name: 'Edisi Spesial', meta: 'Bacaan tematik (PDF)', desc: 'Bacaan tematik khusus (mis. New Year Reading), dikirim rapi dalam bentuk PDF.', scheduled: false, price: 'Rp 250K' },
       ]
@@ -114,10 +136,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
   const reset = useCallback(() => {
     setStep(0); setService(null); setDate(undefined); setTime(null); setPkg(null);
-    setName(''); setDob(''); setWhatsapp(''); setEmail(''); setError(''); setSubmitting(false); setShowPay(false);
+    setName(''); setDob(''); setDobDay(''); setDobMonth(''); setDobYear(''); setWhatsapp(''); setEmail(''); setError(''); setSubmitting(false); setShowPay(false); setPayTab('qris'); setCopied(false);
   }, []);
 
   const close = useCallback(() => { setOpen(false); }, []);
+
+  // keep `dob` in sync with the three fields (only a real, past date counts)
+  useEffect(() => {
+    const d = parseInt(dobDay, 10), m = parseInt(dobMonth, 10), y = parseInt(dobYear, 10);
+    const ok = d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && dobYear.length === 4;
+    if (!ok) { setDob(''); return; }
+    const dt = new Date(y, m - 1, d);
+    if (dt.getDate() !== d || dt > new Date()) { setDob(''); return; }
+    setDob(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+  }, [dobDay, dobMonth, dobYear]);
 
   // When the form was opened from a pricelist card, "back" past the first step returns
   // to that card (reopened on its details) instead of the generic service picker.
@@ -221,8 +253,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
   const emailValid = email.trim() === '' || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
   const detailsValid = name.trim().length > 1 && dob.trim() !== '' && whatsappValid && emailValid && (!needsPackage || !!pkg);
   const scheduled = service?.scheduled ?? true;
-  const totalSteps = scheduled ? 4 : 3;
-  const displayStep = scheduled ? step + 1 : (step === 0 ? 1 : step);
 
   // Time slots: on the current day, the earliest bookable slot is 2 hours out.
   const isTodaySelected = !!date && toISODate(date) === toISODate(new Date());
@@ -244,7 +274,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
     : durationFromText(service?.meta);
   const timeRange = (start: string) => (durationMin ? `${start}–${addMinutes(start, durationMin)}` : start);
 
-  const summaryLine = `${service?.name || ''}${pkg ? ` · ${pkg}` : ''}${scheduled && date ? ` · ${toISODate(date)} · ${time ? timeRange(time) : ''}` : ''}`;
   const totalPrice = pkg ? priceFromText(pkg) : (service?.price || '');
 
   // WhatsApp deep link for the success step — prefilled with the booking so the
@@ -255,261 +284,271 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
     : `Hi Mayanov, I've just booked:\n• ${waServiceLine}\n• Name: ${name}\n• Total: ${totalPrice}\n\nHere's my payment proof 🙏`;
   const waLink = `https://wa.me/${PAYMENT.waNumber}?text=${encodeURIComponent(waMessage)}`;
 
-  // Payment methods card (Indonesian market). `compact` stacks QRIS above bank
-  // so it fits in a narrow side-by-side column on the confirmation step.
-  const paymentPanel = (compact: boolean) => !isIndonesian ? null : (
-    <div className="text-left rounded-xl bg-paper border border-ink/10 overflow-hidden h-full flex flex-col">
-      <div className="px-4 py-3 bg-ink/[0.05] border-b border-ink/10">
-        <span className="text-xs uppercase tracking-[0.16em] text-ink font-semibold">{t('Cara pembayaran', 'How to pay')}</span>
+  // ---- shared bits of the layout ----
+  const label = 'block text-[13px] font-medium text-ink/75 mb-1.5';
+  const field = 'w-full rounded-lg bg-white border border-ink/15 px-3.5 py-2.5 text-[15px] text-ink placeholder-ink/30 focus:border-moon focus:ring-2 focus:ring-moon/15 focus:outline-none transition-all';
+  const chip = (active: boolean) => `flex flex-col text-center rounded-lg border px-2 py-2.5 transition-colors ${active ? 'border-moon bg-moon/[0.07] text-moon' : 'border-ink/15 bg-white text-ink/75 hover:border-moon/40'}`;
+  const primaryBtn = 'inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-moon text-cream text-sm font-semibold hover:bg-plum transition-colors disabled:opacity-40 disabled:pointer-events-none';
+
+  // the bottom bar: running total on the left (once known), the next action on the right
+  const bottomBar = (action: React.ReactNode) => (
+    <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-6 px-5 md:px-6 py-3.5 bg-paper/95 backdrop-blur-sm border-t border-ink/10 flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        {totalPrice && (
+          <>
+            <span className="block text-[11px] text-ink/50 leading-none">Total</span>
+            <span className="block mt-1 font-serif font-semibold text-lg text-ink leading-none tabular-nums">{totalPrice}</span>
+          </>
+        )}
       </div>
-      <div className={compact ? 'p-5 flex-1 flex flex-col items-center justify-center gap-4 text-center' : 'p-5 grid sm:grid-cols-2 gap-5'}>
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Scan QRIS', 'Scan QRIS')}</span>
-          <div className={`${compact ? 'w-32 h-32' : 'w-40 h-40'} rounded-xl border border-ink/10 bg-paper grid place-items-center overflow-hidden relative`}>
-            <span className="text-[11px] text-ink/50 text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
-            <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={(e) => { e.currentTarget.remove(); }} />
-          </div>
-        </div>
-        <div className={`flex items-center gap-3 w-full ${compact ? '' : 'hidden'}`}>
-          <div className="h-px flex-1 bg-ink/10" />
-          <span className="text-[0.65rem] uppercase tracking-widest text-ink/50">{t('atau', 'or')}</span>
-          <div className="h-px flex-1 bg-ink/10" />
-        </div>
-        <div className={`flex flex-col gap-1.5 ${compact ? 'items-center' : 'justify-center'}`}>
-          <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Transfer Bank', 'Bank transfer')}</span>
-          <div className="font-serif font-semibold text-base text-ink leading-tight">{PAYMENT.bankName}</div>
-          <div className="text-sm text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
-          <div className="text-xs text-ink/70">a.n. {PAYMENT.accountHolder}</div>
-        </div>
-      </div>
+      {action}
     </div>
   );
+
+  // one "label · value" line in a summary list
+  const row = (k: string, v: React.ReactNode) => (
+    <div className="flex items-start justify-between gap-4 py-2.5">
+      <span className="text-sm text-ink/55">{k}</span>
+      <span className="text-sm text-ink font-medium text-right break-words">{v}</span>
+    </div>
+  );
+
+  const copyAccount = () => {
+    navigator.clipboard?.writeText(PAYMENT.accountNumber).catch(() => { /* ignore */ });
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  };
+
+  // Payment (Indonesian market): QRIS | Transfer Bank as two tabs
+  const paymentPanel = () => !isIndonesian ? null : (
+    <div>
+      <div className="flex rounded-lg bg-ink/[0.05] p-1 text-sm font-medium">
+        {([['qris', 'QRIS'], ['bank', t('Transfer Bank', 'Bank transfer')]] as const).map(([id, lbl]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setPayTab(id)}
+            className={`flex-1 rounded-md py-1.5 transition-colors ${payTab === id ? 'bg-white text-ink shadow-sm' : 'text-ink/55 hover:text-ink'}`}
+          >
+            {lbl}
+          </button>
+        ))}
+      </div>
+      {payTab === 'qris' ? (
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <div className="w-44 h-44 rounded-lg border border-ink/10 bg-white grid place-items-center overflow-hidden relative">
+            <span className="text-[11px] text-ink/45 text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
+            {/* hidden via state (not by removing the node), so switching tabs can't trip React */}
+            {!qrMissing && <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={() => setQrMissing(true)} />}
+          </div>
+          <span className="text-xs text-ink/55">{t('Scan dengan aplikasi bank atau e-wallet', 'Scan with any banking or e-wallet app')}</span>
+        </div>
+      ) : (
+        <div className="mt-4 flex items-center justify-between gap-4 rounded-lg border border-ink/10 bg-white px-4 py-3.5">
+          <div className="min-w-0">
+            <div className="text-xs text-ink/55">{PAYMENT.bankName} · a.n. {PAYMENT.accountHolder}</div>
+            <div className="mt-1 font-serif font-semibold text-lg text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
+          </div>
+          <button type="button" onClick={copyAccount} className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink hover:border-moon hover:text-moon transition-colors">
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? t('Tersalin', 'Copied') : t('Salin', 'Copy')}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  // service picker: the starting price for a row ("mulai Rp 140K")
+  const fromPrice = (s: ServiceOption) => (s.packages?.length ? priceFromText(s.packages[0]) : s.price || '');
+
+  // stepper: "Langkah 2 dari 4 · Jadwal" + a thin progress line
+  const seq = scheduled ? [0, 1, 2, 3] : [0, 2, 3];
+  const cur = seq.indexOf(step);
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
       {/* backdrop — same as the pricelist card reveal */}
       <div className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} onClick={close} />
 
-      {/* panel — clean white, sharp corners */}
-      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${(step === 3 && isIndonesian) || step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
+      <div className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-2xl sm:rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}>
 
-        {/* scroll only the content, not the decorations (data-lenis-prevent lets this
-            scroll natively instead of the page's smooth-scroll hijacking the wheel) */}
+        {/* scroll only the content (data-lenis-prevent lets this scroll natively) */}
         <div className="relative max-h-[92vh] overflow-y-auto overscroll-contain" data-lenis-prevent>
         {/* header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-5 md:px-6 py-4 bg-plum border-b border-white/10">
-          <div className="flex items-center gap-3">
-            {(step === 1 || step === 2 || step === 3) && (
-              <button
-                onClick={goBack}
-                aria-label="Back"
-                className="shrink-0 text-cream/75 hover:text-cream transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-            )}
-            <div className="font-serif font-semibold text-cream text-[1.1rem] md:text-[1.2rem] leading-tight">
-              {step === 0 ? stepLabels[step] : (service?.name ?? (step < 4 ? stepLabels[step] : t('Booking Sesi', 'Book a Session')))}
+        <div className="sticky top-0 z-10 bg-plum">
+          <div className="flex items-center justify-between gap-4 px-5 md:px-6 py-4">
+            <div className="flex items-center gap-3 min-w-0">
+              {(step === 1 || step === 2 || step === 3) && (
+                <button onClick={goBack} aria-label="Back" className="shrink-0 text-cream/75 hover:text-cream transition-colors">
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+              )}
+              <div className="font-serif font-semibold text-cream text-[1.1rem] md:text-[1.2rem] leading-tight truncate">
+                {step === 0 ? t('Pilih layanan', 'Choose a service') : (service?.name ?? t('Booking Sesi', 'Book a Session'))}
+              </div>
             </div>
+            <button onClick={close} aria-label="Close" className="shrink-0 text-cream/75 hover:text-cream transition-colors">
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button onClick={close} aria-label="Close" className="shrink-0 text-cream/75 hover:text-cream transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+          {/* stepper — which step, how many, and a thin line that fills */}
+          {step < 4 && (
+            <div className="px-5 md:px-6 pb-3">
+              <div className="text-[12px] text-cream/70">
+                {t('Langkah', 'Step')} {cur + 1} {t('dari', 'of')} {seq.length} · <span className="text-cream">{stepLabels[step]}</span>
+              </div>
+              <div className="mt-2 h-[3px] rounded-full bg-cream/15 overflow-hidden">
+                <div className="h-full rounded-full bg-[#C9B8E8] transition-[width] duration-500" style={{ width: `${((cur + 1) / seq.length) * 100}%` }} />
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* progress — a quiet row of dots, not a numbered wizard */}
-        {step < 4 && (() => {
-          const seq = scheduled ? [0, 1, 2, 3] : [0, 2, 3];
-          const cur = seq.indexOf(step);
-          return (
-            <div className="flex items-center justify-center gap-2 px-5 md:px-6 pt-5">
-              {seq.map((s, i) => (
-                <span
-                  key={s}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${
-                    i === cur ? 'w-7 bg-moon' : i < cur ? 'w-1.5 bg-moon/70' : 'w-1.5 bg-ink/15'
-                  }`}
-                />
-              ))}
-            </div>
-          );
-        })()}
-
         <div className="relative px-5 md:px-6 py-5">
-          {/* STEP 0 — service */}
+          {/* STEP 0 — service: rows with the card's mark + starting price */}
           {step === 0 && (
-            <div className="space-y-3">
-              {services.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => { pickService(s); setPkg(null); setTime(null); setDate(undefined); setStep(s.scheduled ? 1 : 2); }}
-                  className="group w-full flex items-center justify-between gap-4 text-left rounded-xl border border-ink/10 bg-white hover:border-moon/50 hover:shadow-[0_14px_34px_-18px_rgba(107,63,160,0.4)] hover:-translate-y-0.5 transition-all px-4 py-3.5"
-                >
-                  <span className="min-w-0">
-                    <span className="block font-serif font-semibold text-ink">{s.name}</span>
-                    <span className="block mt-1 text-[11px] tracking-[0.04em] text-moon/75 font-medium">{s.meta}</span>
-                    <span className="block text-xs text-ink/70 leading-snug mt-1.5">{s.desc}</span>
-                  </span>
-                  <ChevronRight className="w-5 h-5 text-ink/40 group-hover:text-ink group-hover:translate-x-0.5 transition-all shrink-0" />
-                </button>
-              ))}
+            <div className="-mx-2 divide-y divide-ink/10">
+              {services.map((s) => {
+                const look = SERVICE_LOOK[s.id];
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => { pickService(s); setPkg(null); setTime(null); setDate(undefined); setStep(s.scheduled ? 1 : 2); }}
+                    className="group w-full flex items-center gap-4 text-left rounded-lg px-2 py-3.5 hover:bg-ink/[0.03] transition-colors"
+                  >
+                    <span className="shrink-0 grid place-items-center w-11 h-11 rounded-full text-cream" style={{ backgroundColor: look?.accent || '#39234E' }}>
+                      <CelestialMark name={look?.mark || 'star'} className="w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-serif font-semibold text-[1.05rem] text-ink leading-tight">{s.name}</span>
+                      <span className="block mt-1 text-[13px] text-ink/55 leading-snug">{s.meta}</span>
+                    </span>
+                    <span className="shrink-0 text-right">
+                      <span className="block text-[11px] text-ink/45 leading-none">{s.packages?.length ? t('mulai', 'from') : ' '}</span>
+                      <span className="block mt-1 font-serif font-semibold text-ink leading-none">{fromPrice(s)}</span>
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-ink/35 group-hover:text-ink group-hover:translate-x-0.5 transition-all shrink-0" />
+                  </button>
+                );
+              })}
             </div>
           )}
 
-          {/* STEP 1 — date & time */}
+          {/* STEP 1 — date → duration → time */}
           {step === 1 && (
             <div>
+              {error && <div className="mb-4 text-sm text-ink bg-ink/[0.05] rounded-lg px-4 py-3">{error}</div>}
 
-              {error && <div className="mb-4 text-sm text-ink bg-ink/[0.06] border border-ink/30 rounded-xl px-4 py-3">{error}</div>}
-
-              {/* order: date → duration → time (which start times fit depends on the duration) */}
-              {true && (
-              <>
               {(service?.id === 'meetup' || service?.id === 'call') && (
-                <p className="mb-3 flex items-center gap-2 text-xs text-ink/70 rounded-xl border border-ink/10 bg-ink/[0.02] px-3 py-2">
-                  <CalendarDays className="w-3.5 h-3.5 shrink-0 text-ink/50" />
+                <p className="mb-4 flex items-center gap-2 text-[13px] text-ink/60">
+                  <CalendarDays className="w-4 h-4 shrink-0 text-moon" />
                   {service.id === 'meetup'
                     ? t('Sesi tatap muka hanya tersedia hari Jumat & Minggu.', 'In-person sessions are available on Fridays & Sundays only.')
                     : t('Sesi call tersedia hari Senin–Jumat.', 'Call sessions are available Monday–Friday.')}
                 </p>
               )}
-              <div className="md:grid md:grid-cols-2 md:gap-4 md:items-stretch">
-              {/* calendar */}
-              <div className="booking-cal rounded-xl bg-paper border border-ink/10 shadow-sm text-ink p-2 sm:p-3 flex items-center justify-center md:h-full">
-                <DayPicker
-                  mode="single"
-                  selected={date}
-                  onSelect={(d) => { setDate(d); setTime(null); }}
-                  disabled={service && DISABLED_DOWS[service.id]
-                    ? [{ before: new Date() }, { dayOfWeek: DISABLED_DOWS[service.id] }]
-                    : { before: new Date() }}
-                  weekStartsOn={1}
-                />
-              </div>
-
-              {/* time */}
-              <div className="mt-5 md:mt-0 md:h-full">
-              {/* 2. duration / package — after the date, before the time slot */}
-              {service?.packages && (
-                <div className="mb-5" style={{ opacity: date ? 1 : 0.45, transition: 'opacity 300ms ease' }}>
-                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-2">
-                    {t('Pilih durasi', 'Choose duration')}
-                  </span>
-                  <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
-                    {service.packages.map((p) => {
-                      const [pName, ...pRest] = p.split(' · ');
-                      const pPrice = pRest.join(' · ');
-                      const active = pkg === p;
-                      return (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => { setPkg(p); setTime(null); }}
-                          className={`flex flex-col text-center rounded-xl border px-2 py-2.5 transition-colors ${active ? 'border-moon bg-moon/[0.08] text-moon' : 'border-ink/10 bg-white text-ink/70 hover:border-moon/40'}`}
-                        >
-                          <span className="text-xs font-medium leading-snug">{pName}</span>
-                          {pPrice && <span className={`mt-1 text-[0.7rem] leading-snug ${active ? 'text-ink/70' : 'text-ink/50'}`}>{pPrice}</span>}
-                        </button>
-                      );
-                    })}
+              <div className="md:grid md:grid-cols-2 md:gap-6 md:items-start">
+                {/* 1. date */}
+                <div>
+                  <span className={label}>{t('Tanggal', 'Date')}</span>
+                  <div className="booking-cal rounded-lg bg-white border border-ink/10 text-ink p-2 sm:p-3 flex items-center justify-center">
+                    <DayPicker
+                      mode="single"
+                      selected={date}
+                      onSelect={(d) => { setDate(d); setTime(null); }}
+                      disabled={service && DISABLED_DOWS[service.id]
+                        ? [{ before: new Date() }, { dayOfWeek: DISABLED_DOWS[service.id] }]
+                        : { before: new Date() }}
+                      weekStartsOn={1}
+                    />
                   </div>
                 </div>
-              )}
 
-                  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-ink/50 mb-3">
-                    <Clock className="w-3.5 h-3.5" /> {t('Pilih jam', 'Choose a time')}
-                  </div>
+                <div className="mt-5 md:mt-0">
+                  {/* 2. duration — after the date, before the time */}
+                  {service?.packages && (
+                    <div className="mb-5" style={{ opacity: date ? 1 : 0.45, transition: 'opacity 300ms ease' }}>
+                      <span className={label}>{t('Durasi', 'Duration')}</span>
+                      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
+                        {service.packages.map((p) => {
+                          const [pName, ...pRest] = p.split(' · ');
+                          return (
+                            <button key={p} type="button" onClick={() => { setPkg(p); setTime(null); }} className={chip(pkg === p)}>
+                              <span className="text-[13px] font-medium leading-snug">{pName}</span>
+                              <span className="mt-0.5 text-[12px] leading-snug text-ink/50">{pRest.join(' · ')}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. time */}
+                  <span className={`${label} flex items-center gap-1.5`}><Clock className="w-3.5 h-3.5" /> {t('Jam', 'Time')}</span>
                   {!date ? (
-                    <p className="text-sm text-ink/70 bg-ink/[0.04] border border-ink/10 rounded-xl px-4 py-3">
-                      {t('Pilih tanggal dulu untuk melihat jam.', 'Pick a date to see available times.')}
-                    </p>
+                    <p className="text-sm text-ink/55 py-2">{t('Pilih tanggal dulu untuk melihat jam.', 'Pick a date to see available times.')}</p>
                   ) : needsPackage && !pkg ? (
-                    <p className="text-sm text-ink/70 bg-ink/[0.04] border border-ink/10 rounded-xl px-4 py-3">
-                      {t('Pilih durasi dulu untuk melihat jam.', 'Choose a duration to see available times.')}
-                    </p>
+                    <p className="text-sm text-ink/55 py-2">{t('Pilih durasi dulu untuk melihat jam.', 'Choose a duration to see available times.')}</p>
                   ) : time ? (
-                    // Selected slot(s) merged into the full booked range.
-                    <div className="flex items-center justify-between gap-3 rounded-xl border-2 border-moon bg-moon/[0.08] px-4 py-3.5">
-                      <span className="flex items-center gap-2 text-lg font-serif font-bold text-moon tabular-nums">
-                        <Clock className="w-4 h-4 text-moon" /> {time} – {addMinutes(time, durationMin || 30)}
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-moon bg-moon/[0.07] px-4 py-3">
+                      <span className="flex items-center gap-2 font-serif font-semibold text-lg text-moon tabular-nums">
+                        {time} – {addMinutes(time, durationMin || 30)}
                       </span>
-                      <button type="button" onClick={() => setTime(null)} className="text-xs uppercase tracking-wider text-ink/70 hover:text-ink underline underline-offset-2">{t('Ubah', 'Change')}</button>
+                      <button type="button" onClick={() => setTime(null)} className="text-xs text-ink/60 hover:text-ink underline underline-offset-2">{t('Ubah', 'Change')}</button>
                     </div>
                   ) : visibleSlots.length === 0 ? (
-                    <p className="text-sm text-ink/70 bg-ink/[0.04] border border-ink/10 rounded-xl px-4 py-3">
-                      {t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}
-                    </p>
+                    <p className="text-sm text-ink/55 py-2">{t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}</p>
                   ) : (
-                  <div className="grid grid-cols-3 gap-2">
-                    {visibleSlots.map((slot) => {
-                      // Block this start if the session would run past closing time or overlaps a taken slot.
-                      const span = slotSpan(slot, durationMin || 30);
-                      const isTaken = addMinutes(slot, durationMin || 30) > CLOSING_TIME || span.some((s) => taken.includes(s));
-                      const active = time === slot;
-                      return (
-                        <button
-                          key={slot}
-                          disabled={isTaken}
-                          onClick={() => setTime(slot)}
-                          className={`py-2.5 rounded-xl text-sm font-medium border transition-all tabular-nums ${
-                            isTaken
-                              ? 'border-ink/10 text-ink/30 line-through bg-ink/[0.03] cursor-not-allowed'
-                              : active
-                                ? 'bg-moon text-cream border-moon shadow-[0_8px_18px_-9px_rgba(107,63,160,0.5)]'
-                                : 'border-ink/10 bg-white text-ink hover:border-moon hover:text-moon'
-                          }`}
-                        >
-                          {slot}
-                        </button>
-                      );
-                    })}
-                  </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {visibleSlots.map((slot) => {
+                        // Block this start if the session would run past closing time or overlaps a taken slot.
+                        const span = slotSpan(slot, durationMin || 30);
+                        const isTaken = addMinutes(slot, durationMin || 30) > CLOSING_TIME || span.some((x) => taken.includes(x));
+                        return (
+                          <button
+                            key={slot}
+                            disabled={isTaken}
+                            onClick={() => setTime(slot)}
+                            className={`py-2 rounded-lg text-sm font-medium border transition-colors tabular-nums ${isTaken ? 'border-transparent text-ink/25 line-through cursor-not-allowed' : 'border-ink/15 bg-white text-ink hover:border-moon hover:text-moon'}`}
+                          >
+                            {slot}
+                          </button>
+                        );
+                      })}
+                    </div>
                   )}
+                </div>
               </div>
-              </div>
-              </>
-              )}
 
-              <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-paper/92 backdrop-blur-sm border-t border-ink/10 flex items-center justify-end gap-3">
-                <button
-                  onClick={() => setStep(2)}
-                  disabled={!date || !time || (needsPackage && !pkg)}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-moon text-cream text-sm font-semibold hover:bg-plum shadow-[0_12px_26px_-14px_rgba(107,63,160,0.5)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
-                >
+              {bottomBar(
+                <button onClick={() => setStep(2)} disabled={!date || !time || (needsPackage && !pkg)} className={primaryBtn}>
                   {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
                 </button>
-              </div>
+              )}
             </div>
           )}
 
           {/* STEP 2 — details */}
           {step === 2 && (
             <div>
-              {scheduled && (
-                <p className="text-sm text-ink/70 mb-5 flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4 text-ink" />
-                  {summaryLine}
+              {scheduled && date && (
+                <p className="mb-5 flex items-center gap-2 text-[13px] text-ink/60">
+                  <CalendarDays className="w-4 h-4 text-moon" />
+                  {fmtLongDate(toISODate(date), isIndonesian ? 'id' : 'en')} · {time && timeRange(time)}{pkg ? ` · ${pkg.split(' · ')[0]}` : ''}
                 </p>
               )}
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {service?.packages && !scheduled && (
                   <div>
-                    <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-2">{t('Pilih paket', 'Choose a package')}</span>
-                    <div className="grid grid-cols-3 gap-2">
+                    <span className={label}>{t('Paket', 'Package')}</span>
+                    <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
                       {service.packages.map((p) => {
                         const [pName, ...pRest] = p.split(' · ');
-                        const pPrice = pRest.join(' · ');
-                        const active = pkg === p;
                         return (
-                          <button
-                            key={p}
-                            type="button"
-                            onClick={() => setPkg(p)}
-                            className={`flex flex-col text-center rounded-xl border px-2 py-2.5 transition-colors ${active ? 'border-moon bg-moon/[0.08] text-moon' : 'border-ink/10 bg-white text-ink/70 hover:border-moon/40'}`}
-                          >
-                            <span className="text-xs font-medium leading-snug">{pName}</span>
-                            {pPrice && <span className={`mt-1 text-[0.7rem] leading-snug ${active ? 'text-ink/70' : 'text-ink/50'}`}>{pPrice}</span>}
+                          <button key={p} type="button" onClick={() => setPkg(p)} className={chip(pkg === p)}>
+                            <span className="text-[13px] font-medium leading-snug">{pName}</span>
+                            <span className="mt-0.5 text-[12px] leading-snug text-ink/50">{pRest.join(' · ')}</span>
                           </button>
                         );
                       })}
@@ -517,196 +556,115 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
                   </div>
                 )}
                 <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-1.5">{t('Nama', 'Name')}</span>
-                  <input value={name} onChange={(e) => setName(e.target.value)} type="text"
-                    className="w-full rounded-xl bg-white border border-ink/10 px-3.5 py-2 text-sm text-ink placeholder-ink/30 focus:border-moon focus:ring-2 focus:ring-moon/15 focus:outline-none transition-all"
-                    placeholder={t('Nama kamu', 'Your name')} />
+                  <span className={label}>{t('Nama', 'Name')}</span>
+                  <input value={name} onChange={(e) => setName(e.target.value)} type="text" className={field} placeholder={t('Nama kamu', 'Your name')} />
                 </label>
+                <div>
+                  <span className={label}>{t('Tanggal lahir', 'Date of birth')}</span>
+                  {/* day / month / year — the month by name, so the order is never ambiguous */}
+                  <div className="grid grid-cols-[4.5rem_1fr_5.5rem] gap-2">
+                    <input value={dobDay} onChange={(e) => setDobDay(e.target.value.replace(/\D/g, '').slice(0, 2))} inputMode="numeric" aria-label={t('Tanggal', 'Day')} placeholder={t('Tgl', 'Day')} className={`${field} text-center`} />
+                    <select value={dobMonth} onChange={(e) => setDobMonth(e.target.value)} aria-label={t('Bulan', 'Month')} className={`${field} ${dobMonth ? '' : 'text-ink/35'}`}>
+                      <option value="">{t('Bulan', 'Month')}</option>
+                      {(isIndonesian ? MONTHS_ID : MONTHS_EN).map((m, i) => <option key={m} value={String(i + 1)} className="text-ink">{m}</option>)}
+                    </select>
+                    <input value={dobYear} onChange={(e) => setDobYear(e.target.value.replace(/\D/g, '').slice(0, 4))} inputMode="numeric" aria-label={t('Tahun', 'Year')} placeholder={t('Tahun', 'Year')} className={`${field} text-center`} />
+                  </div>
+                  {dobDay && dobMonth && dobYear.length === 4 && !dob && (
+                    <span className="block mt-1.5 text-xs text-ink/70">{t('Tanggal lahir tidak valid.', 'That date isn’t valid.')}</span>
+                  )}
+                </div>
                 <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-1.5">{t('Tanggal Lahir', 'Date of Birth')}</span>
-                  <input value={dob} onChange={(e) => setDob(e.target.value)} type="date" max={toISODate(new Date())}
-                    className="w-full rounded-xl bg-white border border-ink/10 px-3.5 py-2 text-sm text-ink placeholder-ink/30 focus:border-moon focus:ring-2 focus:ring-moon/15 focus:outline-none transition-all" />
-                </label>
-                <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-1.5">WhatsApp</span>
-                  <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value.replace(/[^\d+\s-]/g, ''))} type="tel" inputMode="tel"
-                    className="w-full rounded-xl bg-white border border-ink/10 px-3.5 py-2 text-sm text-ink placeholder-ink/30 focus:border-moon focus:ring-2 focus:ring-moon/15 focus:outline-none transition-all"
-                    placeholder={t('cth. 0812 3456 7890', 'e.g. +62 812 3456 7890')} />
+                  <span className={label}>WhatsApp</span>
+                  <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value.replace(/[^\d+\s-]/g, ''))} type="tel" inputMode="tel" className={field} placeholder={t('cth. 0812 3456 7890', 'e.g. +62 812 3456 7890')} />
                   {whatsapp.trim() !== '' && !whatsappValid && (
-                    <span className="block mt-1.5 text-xs text-ink">{t('Masukkan nomor telepon yang valid (min. 8 angka).', 'Enter a valid phone number (at least 8 digits).')}</span>
+                    <span className="block mt-1.5 text-xs text-ink/70">{t('Masukkan nomor telepon yang valid (min. 8 angka).', 'Enter a valid phone number (at least 8 digits).')}</span>
                   )}
                 </label>
                 <label className="block">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-1.5">Email <span className="text-ink/40 normal-case tracking-normal">({t('opsional', 'optional')})</span></span>
-                  <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email"
-                    className="w-full rounded-xl bg-white border border-ink/10 px-3.5 py-2 text-sm text-ink placeholder-ink/30 focus:border-moon focus:ring-2 focus:ring-moon/15 focus:outline-none transition-all"
-                    placeholder={t('nama@email.com', 'you@email.com')} />
+                  <span className={label}>Email <span className="text-ink/40 font-normal">({t('opsional', 'optional')})</span></span>
+                  <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" className={field} placeholder={t('nama@email.com', 'you@email.com')} />
                   {!emailValid && (
-                    <span className="block mt-1.5 text-xs text-ink">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
+                    <span className="block mt-1.5 text-xs text-ink/70">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
                   )}
                 </label>
               </div>
 
-              <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-paper/92 backdrop-blur-sm border-t border-ink/10 flex items-center justify-end gap-3">
-                <button
-                  onClick={() => setStep(3)}
-                  disabled={!detailsValid}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-moon text-cream text-sm font-semibold hover:bg-plum shadow-[0_12px_26px_-14px_rgba(107,63,160,0.5)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
-                >
+              {bottomBar(
+                <button onClick={() => setStep(3)} disabled={!detailsValid} className={primaryBtn}>
                   {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
                 </button>
-              </div>
+              )}
             </div>
           )}
 
-          {/* STEP 3 — review & confirm */}
+          {/* STEP 3 — review: one summary list, payment tabs, one line of terms */}
           {step === 3 && (
             <div>
-              {error && <div className="mb-4 text-sm text-ink bg-ink/[0.06] border border-ink/30 rounded-xl px-4 py-3">{error}</div>}
+              {error && <div className="mb-4 text-sm text-ink bg-ink/[0.05] rounded-lg px-4 py-3">{error}</div>}
 
-              <div className="space-y-5">
-              <div className={`grid gap-5 items-stretch ${isIndonesian ? 'md:grid-cols-2' : ''}`}>
-              <div className="rounded-xl bg-paper border border-ink/10 overflow-hidden flex flex-col">
-                <div className="px-4 py-3 bg-ink/[0.05] border-b border-ink/10">
-                  <span className="text-xs uppercase tracking-[0.16em] text-ink font-semibold">{t('Ringkasan', 'Summary')}</span>
-                </div>
-                <div className="divide-y divide-ink/10 flex-1">
-                <div className="flex items-start justify-between gap-4 px-4 py-3">
-                  <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Layanan', 'Service')}</span>
-                  <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
-                </div>
-                {pkg && (
-                  <div className="flex items-start justify-between gap-4 px-4 py-3">
-                    <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package')}</span>
-                    <span className="text-sm text-ink font-medium text-right">{pkg}</span>
-                  </div>
-                )}
-                {scheduled && date && (
-                  <div className="flex items-start justify-between gap-4 px-4 py-3">
-                    <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Jadwal', 'Schedule')}</span>
-                    <span className="text-sm text-ink font-medium text-right">{toISODate(date)} · {time && timeRange(time)}</span>
-                  </div>
-                )}
-                <div className="flex items-start justify-between gap-4 px-4 py-3">
-                  <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Nama', 'Name')}</span>
-                  <span className="text-sm text-ink font-medium text-right">{name}</span>
-                </div>
-                <div className="flex items-start justify-between gap-4 px-4 py-3">
-                  <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Tanggal Lahir', 'Date of Birth')}</span>
-                  <span className="text-sm text-ink font-medium text-right">{fmtLongDate(dob)}</span>
-                </div>
-                <div className="flex items-start justify-between gap-4 px-4 py-3">
-                  <span className="text-xs uppercase tracking-[0.16em] text-ink/50">WhatsApp</span>
-                  <span className="text-sm text-ink font-medium text-right break-all">{whatsapp}</span>
-                </div>
-                {email.trim() && (
-                  <div className="flex items-start justify-between gap-4 px-4 py-3">
-                    <span className="text-xs uppercase tracking-[0.16em] text-ink/50">Email</span>
-                    <span className="text-sm text-ink font-medium text-right break-all">{email}</span>
-                  </div>
-                )}
-                </div>
-                <div className="flex items-center justify-between gap-4 px-4 py-3.5 bg-ink/[0.05] border-t border-ink/10">
-                  <span className="text-xs uppercase tracking-[0.16em] text-ink font-semibold">{t('Total', 'Total')}</span>
-                  <span className="text-base text-ink font-serif font-bold text-right">{totalPrice || '—'}</span>
-                </div>
-              </div>
-
-              {paymentPanel(true)}
+              <h3 className="font-serif font-semibold text-ink text-lg">{t('Ringkasan', 'Summary')}</h3>
+              <div className="mt-2 divide-y divide-ink/10 border-y border-ink/10">
+                {row(t('Layanan', 'Service'), service?.name)}
+                {pkg && row(scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package'), pkg.split(' · ')[0])}
+                {scheduled && date && row(t('Jadwal', 'Schedule'), `${fmtLongDate(toISODate(date), isIndonesian ? 'id' : 'en')} · ${time ? timeRange(time) : ''}`)}
+                {row(t('Nama', 'Name'), name)}
+                {row(t('Tanggal lahir', 'Date of birth'), fmtLongDate(dob, isIndonesian ? 'id' : 'en'))}
+                {row('WhatsApp', whatsapp)}
+                {email.trim() && row('Email', email)}
               </div>
 
               {isIndonesian && (
-                <div className="rounded-xl bg-paper border border-ink/10 p-5">
-                  <div className="text-xs uppercase tracking-[0.16em] text-ink font-semibold mb-4">{t('Cara & Ketentuan', 'How it works')}</div>
-                  <ol className="grid gap-4 sm:grid-cols-2">
-                    {[
-                      t('Setelah konfirmasi, kirim bukti pembayaran melalui WhatsApp.', 'After confirming, send your payment proof via WhatsApp.'),
-                      t('Tanpa pembayaran, booking akan otomatis dibatalkan.', 'Without payment, your booking will be auto-cancelled.'),
-                    ].map((txt, i, arr) => {
-                      const warn = i === arr.length - 1;
-                      return (
-                        <li key={i} className="flex gap-2.5 text-xs text-ink/70 leading-relaxed">
-                          <span className={`shrink-0 grid place-items-center w-5 h-5 rounded-xl text-[0.6rem] font-bold ${warn ? 'bg-ink/[0.08] text-ink' : 'bg-ink/[0.08] text-ink'}`}>{i + 1}</span>
-                          <span className={warn ? 'text-ink font-medium' : ''}>{txt}</span>
-                        </li>
-                      );
-                    })}
-                  </ol>
+                <div className="mt-6">
+                  <h3 className="font-serif font-semibold text-ink text-lg mb-3">{t('Pembayaran', 'Payment')}</h3>
+                  {paymentPanel()}
+                  <p className="mt-4 text-[13px] text-ink/60 leading-relaxed">
+                    {t('Setelah konfirmasi, kirim bukti pembayaran via WhatsApp. Tanpa pembayaran, booking otomatis dibatalkan.', 'After confirming, send your payment proof via WhatsApp. Without payment, the booking is cancelled automatically.')}
+                  </p>
                 </div>
               )}
-              </div>
 
-              <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-5 px-5 md:px-6 py-3.5 bg-paper/92 backdrop-blur-sm border-t border-ink/10 flex items-center justify-end gap-3">
-                <button
-                  onClick={submit}
-                  disabled={submitting}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-moon text-cream text-sm font-semibold hover:bg-plum shadow-[0_12px_26px_-14px_rgba(107,63,160,0.5)] transition-colors disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
-                >
+              {bottomBar(
+                <button onClick={submit} disabled={submitting} className={primaryBtn}>
                   {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', 'Confirm booking')}
                 </button>
-              </div>
+              )}
             </div>
           )}
 
           {/* STEP 4 — done */}
           {step === 4 && (
-            <div className="text-center py-6">
-              <div className="mx-auto w-16 h-16 rounded-full bg-moon/10 ring-4 ring-moon/15 grid place-items-center text-moon mb-5">
-                <Check className="w-8 h-8" />
+            <div className="text-center py-4">
+              <div className="mx-auto w-14 h-14 rounded-full bg-moon/10 grid place-items-center text-moon mb-4">
+                <Check className="w-7 h-7" />
               </div>
               <h3 className="font-serif font-semibold text-2xl text-ink">{t('Booking diterima!', 'You’re booked!')}</h3>
-              <p className="mt-3 text-ink/70 leading-relaxed max-w-sm mx-auto">
+              <p className="mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
                 {t('Terima kasih, ', 'Thank you, ')}{name || t('kamu', 'friend')}. {t('Aku akan menghubungimu via WhatsApp', 'I’ll reach out on WhatsApp')} ({whatsapp}) {t('untuk konfirmasi.', 'to confirm.')}
               </p>
-              {/* booking details — labelled rows for easy reading */}
-              <div className="mt-6 text-left rounded-xl bg-paper border border-ink/10 divide-y divide-ink/10 overflow-hidden">
-                <div className="flex items-start justify-between gap-4 px-4 py-3">
-                  <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Layanan', 'Service')}</span>
-                  <span className="text-sm text-ink font-medium text-right">{service?.name}</span>
-                </div>
-                {pkg && (
-                  <div className="flex items-start justify-between gap-4 px-4 py-3">
-                    <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package')}</span>
-                    <span className="text-sm text-ink font-medium text-right">{pkg.split(' · ')[0]}</span>
-                  </div>
-                )}
-                {scheduled && date && (
-                  <>
-                    <div className="flex items-start justify-between gap-4 px-4 py-3">
-                      <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Tanggal', 'Date')}</span>
-                      <span className="text-sm text-ink font-medium text-right">{toISODate(date)}</span>
-                    </div>
-                    <div className="flex items-start justify-between gap-4 px-4 py-3">
-                      <span className="text-xs uppercase tracking-[0.16em] text-ink/50">{t('Waktu', 'Time')}</span>
-                      <span className="text-sm text-ink font-medium text-right">{time ? timeRange(time) : ''}</span>
-                    </div>
-                  </>
-                )}
-                <div className="flex items-center justify-between gap-4 px-4 py-3.5 bg-ink/[0.05]">
-                  <span className="text-xs uppercase tracking-[0.16em] text-ink font-semibold">{t('Total', 'Total')}</span>
-                  <span className="text-base text-ink font-serif font-bold text-right">{totalPrice || '—'}</span>
+
+              <div className="mt-5 text-left divide-y divide-ink/10 border-y border-ink/10">
+                {row(t('Layanan', 'Service'), service?.name)}
+                {pkg && row(scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package'), pkg.split(' · ')[0])}
+                {scheduled && date && row(t('Jadwal', 'Schedule'), `${fmtLongDate(toISODate(date), isIndonesian ? 'id' : 'en')} · ${time ? timeRange(time) : ''}`)}
+                <div className="flex items-center justify-between gap-4 py-3">
+                  <span className="text-sm font-medium text-ink">Total</span>
+                  <span className="font-serif font-semibold text-lg text-ink">{totalPrice || '—'}</span>
                 </div>
               </div>
 
-              <p className="mt-5 text-sm text-ink/70 max-w-sm mx-auto leading-relaxed">
-                {t('Kirim bukti pembayaran melalui WhatsApp. Tanpa pembayaran, booking akan otomatis dibatalkan.', 'Send your payment proof via WhatsApp. Without payment, your booking will be auto-cancelled.')}
+              {isIndonesian && showPay && <div className="mt-5 text-left">{paymentPanel()}</div>}
+
+              <p className="mt-5 text-[13px] text-ink/60 max-w-sm mx-auto leading-relaxed">
+                {t('Kirim bukti pembayaran via WhatsApp. Tanpa pembayaran, booking otomatis dibatalkan.', 'Send your payment proof via WhatsApp. Without payment, the booking is cancelled automatically.')}
               </p>
 
-              {isIndonesian && showPay && (
-                <div className="mt-4 text-left">{paymentPanel(true)}</div>
-              )}
-
-              <div className="mt-6 flex flex-col items-center gap-3">
-                <a
-                  href={waLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-lg bg-[#25D366] text-white text-sm font-semibold hover:brightness-95 shadow-[0_12px_26px_-12px_rgba(37,211,102,0.9)] transition"
-                >
-                  <FaWhatsapp className="w-5 h-5" /> {t('Kirim Bukti Pembayaran', 'Send Payment Proof')}
+              <div className="mt-5 flex flex-col items-center gap-3">
+                <a href={waLink} target="_blank" rel="noopener noreferrer" className={`${primaryBtn} px-8 py-3`}>
+                  <span className="inline-flex items-center gap-2"><FaWhatsapp size={18} /> {t('Kirim Bukti Pembayaran', 'Send Payment Proof')}</span>
                 </a>
                 {isIndonesian && (
-                  <button onClick={() => setShowPay((v) => !v)} className="text-sm font-medium text-ink hover:text-ink underline underline-offset-4 transition-colors">
+                  <button onClick={() => setShowPay((v) => !v)} className="text-sm font-medium text-ink/70 hover:text-ink underline underline-offset-4 transition-colors">
                     {showPay ? t('Sembunyikan detail pembayaran', 'Hide payment details') : t('Lihat detail pembayaran', 'View payment details')}
                   </button>
                 )}
