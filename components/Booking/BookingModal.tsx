@@ -363,34 +363,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               {error && <div className="mb-4 text-sm text-ink bg-ink/[0.06] border border-ink/30 rounded-xl px-4 py-3">{error}</div>}
 
-              {/* duration / package — choose before the time slot */}
-              {service?.packages && (
-                <div className="mb-5">
-                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-2">
-                    {t('Pilih durasi', 'Choose duration')}
-                  </span>
-                  <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
-                    {service.packages.map((p) => {
-                      const [pName, ...pRest] = p.split(' · ');
-                      const pPrice = pRest.join(' · ');
-                      const active = pkg === p;
-                      return (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => { setPkg(p); setTime(null); }}
-                          className={`flex flex-col text-center rounded-xl border px-2 py-2.5 transition-colors ${active ? 'border-moon bg-moon/[0.08] text-moon' : 'border-ink/10 bg-white text-ink/70 hover:border-moon/40'}`}
-                        >
-                          <span className="text-xs font-medium leading-snug">{pName}</span>
-                          {pPrice && <span className={`mt-1 text-[0.7rem] leading-snug ${active ? 'text-ink/70' : 'text-ink/50'}`}>{pPrice}</span>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* calendar + time — shown straight away (duration picker sits above) */}
+              {/* order: date → duration → time (which start times fit depends on the duration) */}
               {true && (
               <>
               {(service?.id === 'meetup' || service?.id === 'call') && (
@@ -417,12 +390,43 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
 
               {/* time */}
               <div className="mt-5 md:mt-0 md:h-full">
+              {/* 2. duration / package — after the date, before the time slot */}
+              {service?.packages && (
+                <div className="mb-5" style={{ opacity: date ? 1 : 0.45, transition: 'opacity 300ms ease' }}>
+                  <span className="block text-xs uppercase tracking-[0.16em] text-ink/50 mb-2">
+                    {t('Pilih durasi', 'Choose duration')}
+                  </span>
+                  <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
+                    {service.packages.map((p) => {
+                      const [pName, ...pRest] = p.split(' · ');
+                      const pPrice = pRest.join(' · ');
+                      const active = pkg === p;
+                      return (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => { setPkg(p); setTime(null); }}
+                          className={`flex flex-col text-center rounded-xl border px-2 py-2.5 transition-colors ${active ? 'border-moon bg-moon/[0.08] text-moon' : 'border-ink/10 bg-white text-ink/70 hover:border-moon/40'}`}
+                        >
+                          <span className="text-xs font-medium leading-snug">{pName}</span>
+                          {pPrice && <span className={`mt-1 text-[0.7rem] leading-snug ${active ? 'text-ink/70' : 'text-ink/50'}`}>{pPrice}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
                   <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-ink/50 mb-3">
                     <Clock className="w-3.5 h-3.5" /> {t('Pilih jam', 'Choose a time')}
                   </div>
                   {!date ? (
                     <p className="text-sm text-ink/70 bg-ink/[0.04] border border-ink/10 rounded-xl px-4 py-3">
                       {t('Pilih tanggal dulu untuk melihat jam.', 'Pick a date to see available times.')}
+                    </p>
+                  ) : needsPackage && !pkg ? (
+                    <p className="text-sm text-ink/70 bg-ink/[0.04] border border-ink/10 rounded-xl px-4 py-3">
+                      {t('Pilih durasi dulu untuk melihat jam.', 'Choose a duration to see available times.')}
                     </p>
                   ) : time ? (
                     // Selected slot(s) merged into the full booked range.
