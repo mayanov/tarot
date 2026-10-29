@@ -49,9 +49,11 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
               key={src}
               // desktop: the prints overlap a little (negative margins) and sit at
               // different heights; the drop-in lands with a small bounce
-              className="relative hover:z-20 md:-mx-3"
+              // stacking: the middle prints sit on top by default (--z); the hovered print
+              // always comes to the front (a class, so it can override the default)
+              className="relative z-[var(--z)] hover:z-30 md:-mx-3"
               style={{
-                zIndex: 10 - Math.abs(i - 1.5) * 2,
+                ['--z' as any]: 10 - Math.abs(i - 1.5) * 2,
                 marginTop: `${pr.y}rem`,
                 transform: shown ? `rotate(${pr.rot}deg)` : `translateY(-48px) rotate(${pr.rot * 2.5}deg) scale(1.06)`,
                 opacity: shown ? 1 : 0,
