@@ -359,7 +359,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isIndonesian = false }) => 
           {/* STEP 1 — date & time */}
           {step === 1 && (
             <div>
-              <p className="text-sm text-ink/70 mb-5">{service?.name}</p>
 
               {error && <div className="mb-4 text-sm text-ink bg-ink/[0.06] border border-ink/30 rounded-xl px-4 py-3">{error}</div>}
 
