@@ -40,6 +40,20 @@ export function getLenis(): Lenis | null {
 export function stopLenis() { lenis?.stop(); }
 export function startLenis() { lenis?.start(); }
 
+// Page lock for overlays, counted so two overlays that overlap during a hand-off
+// (the pricelist card reveal and the booking form) don't unlock each other.
+let pageLocks = 0;
+export function lockPage() {
+    if (pageLocks++ > 0) return;
+    stopLenis();
+    document.body.style.overflow = 'hidden';
+}
+export function unlockPage() {
+    if (pageLocks === 0 || --pageLocks > 0) return;
+    startLenis();
+    document.body.style.overflow = '';
+}
+
 // Smoothly scroll to an absolute Y (falls back to native if Lenis is absent).
 export function smoothScrollTo(top: number) {
     if (lenis) lenis.scrollTo(top, { duration: 1.1 });
