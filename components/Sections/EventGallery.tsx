@@ -32,7 +32,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
       if (!e.isIntersecting) return;
       io.disconnect();
       setShown(true);
-    }, { threshold: 0.2 });
+    }, { threshold: 0.05, rootMargin: "0px 0px -6% 0px" });
     io.observe(el);
     return () => io.disconnect();
   }, []);
@@ -40,7 +40,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
   return (
     // on the page's own paper — no band — so the prints rest on the same surface
     // as Event & collaboration below
-    <div className="relative px-6 md:px-8 pt-20 md:pt-28 pb-6 md:pb-10">
+    <div className="relative px-6 md:px-8 pt-2 md:pt-4 pb-6 md:pb-10">
       <div ref={ref} className="mx-auto max-w-6xl grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-0">
         {photos.map((src, i) => {
           const pr = PRINTS[i % PRINTS.length];
