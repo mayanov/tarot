@@ -61,6 +61,11 @@ const fromPrice = (g: any): string => {
     return prices.reduce((a: string, b: string) => (priceValue(b) < priceValue(a) ? b : a));
 };
 
+// The card face is sized in container units (cqw) against the fan card's 216px width,
+// so a bigger card — the focused one — is an exact enlargement of the fan card, and the
+// flights between the two don't change the text size or spacing mid-way.
+const cq = (px: number) => `${(px / 2.16).toFixed(3)}cqw`;
+
 // A single tarot card: front = the card face (motif + name + cheapest price), back =
 // the booking options. `big` scales it up for the full-screen "drawn card" reveal.
 // `fill` makes the card take its parent's exact size instead of keeping the 5:8 shape (used on phones).
@@ -93,27 +98,27 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
         >
             {/* ===== FRONT — the card face ===== */}
             <div
-                className="absolute inset-0 [backface-visibility:hidden] overflow-hidden rounded-[1.15rem] ring-1 ring-white/15 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
+                className="absolute inset-0 [backface-visibility:hidden] [container-type:inline-size] overflow-hidden rounded-[1.15rem] ring-1 ring-white/15 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
                 style={{ background: CAT_BG[k % CAT_BG.length] }}
             >
                 <div aria-hidden className="absolute inset-0 opacity-70" style={{ backgroundImage: CAT_STARS[k % CAT_STARS.length] }} />
                 {/* ornamental inner frame */}
-                <div aria-hidden className="absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-white/[0.16]" />
+                <div aria-hidden className="absolute ring-1 ring-white/[0.16]" style={{ inset: cq(10.4), borderRadius: cq(13.6) }} />
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-10 h-40 opacity-0 transition-opacity duration-500 group-hover/card:opacity-100" style={{ background: 'radial-gradient(60% 100% at 50% 0%, rgba(201,184,232,0.28), transparent 72%)' }} />
 
-                <div className="relative h-full flex flex-col items-center justify-between py-7 px-5 text-cream text-center">
-                    <span className={`font-elegant italic text-cream/55 tracking-wide ${big ? 'text-base' : 'text-sm'}`}>{numeral}</span>
+                <div className="relative h-full flex flex-col items-center justify-between text-cream text-center" style={{ padding: `${cq(28)} ${cq(20)}` }}>
+                    <span className="font-elegant italic text-cream/55 tracking-wide leading-[1.43]" style={{ fontSize: cq(14) }}>{numeral}</span>
                     {/* fixed slots — the icon box and a two-line title box are the same height on
                         every card, so icons, titles and prices line up across the whole spread */}
-                    <div className={`flex flex-col items-center ${big ? 'gap-5' : 'gap-4'}`}>
-                        <div className={`grid place-items-center ${big ? 'h-20' : 'h-16'}`}>
-                            <CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className={`${big ? 'w-20' : 'w-16'} text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]`} />
+                    <div className="flex flex-col items-center" style={{ gap: cq(16) }}>
+                        <div className="grid place-items-center" style={{ height: cq(64) }}>
+                            <span className="block" style={{ width: cq(64) }}><CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className="block w-full text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]" /></span>
                         </div>
-                        <h3 className={`min-h-[2.24em] flex items-center justify-center font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch] ${big ? 'text-[1.75rem]' : 'text-[1.4rem]'}`}>{g.type}</h3>
+                        <h3 className="min-h-[2.24em] flex items-center justify-center font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch]" style={{ fontSize: cq(22.4) }}>{g.type}</h3>
                     </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <span className="text-cream/45 text-[10.5px] tracking-[0.18em] uppercase">{g.promo ? 'Promo' : isIndonesian ? 'Mulai dari' : 'From'}</span>
-                        <span className={`font-serif font-semibold whitespace-nowrap ${big ? 'text-2xl' : g.promo ? 'text-[1.05rem]' : 'text-lg'}`}>{g.promo ? g.priceLabel : fromPrice(g)}</span>
+                    <div className="flex flex-col items-center" style={{ gap: cq(4) }}>
+                        <span className="text-cream/45 tracking-[0.18em] uppercase leading-[1.5]" style={{ fontSize: cq(10.5) }}>{g.promo ? 'Promo' : isIndonesian ? 'Mulai dari' : 'From'}</span>
+                        <span className="font-serif font-semibold whitespace-nowrap leading-[1.55]" style={{ fontSize: cq(g.promo ? 16.8 : 18) }}>{g.promo ? g.priceLabel : fromPrice(g)}</span>
                     </div>
                 </div>
             </div>
