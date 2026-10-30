@@ -65,13 +65,13 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       <div className="relative mx-auto px-8 lg:min-h-[72vh] flex items-center">
         <FadeIn dir="left" className="w-full lg:w-[53%] lg:pr-14 py-20 md:py-28">
           {/* hook title */}
-          <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
+          <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>
               {isIndonesian ? 'Perkenalkan, saya Mayanov' : 'Meet Mayanov'}
             </MaskReveal>
           </h2>
 
-          <div className="mt-7 md:mt-9 space-y-5">
+          <div className="print-body mt-7 md:mt-9 space-y-5">
             <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-ink first-letter:text-[3.4rem] first-letter:leading-[0.72]">
               {isIndonesian
                 ? 'Saya sudah membaca kartu Tarot sejak 2009 — lebih dari 15 tahun menjadikannya ruang untuk refleksi diri. Pada dasarnya, Tarot bekerja dengan membaca energi: gambaran dari situasi dan perasaan yang sedang kamu bawa saat ini.'
@@ -95,25 +95,25 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             {/* (the ink texture sits on an inner box with room round the glyph — a mask clips to
                 its box, and this line box is far shorter than the mark) */}
             <span aria-hidden className="block font-serif text-moon/45 text-[4rem] leading-[0.4] h-7 select-none"><span className="print-ink mix-blend-multiply inline-block py-[0.5em] -my-[0.5em]">”</span></span>
-            <blockquote className="font-elegant text-ink text-[1.5rem] md:text-[1.9rem] leading-[1.24] tracking-[-0.02em]">
+            <blockquote className="print-text font-elegant text-ink text-[1.5rem] md:text-[1.9rem] leading-[1.24] tracking-[-0.02em]">
               {isIndonesian
                 ? 'Tujuan saya simpel: memberikan kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                 : 'My goal is simple: to give you the clarity to make decisions with confidence.'}
             </blockquote>
-            <figcaption className="mt-5 flex items-center gap-2.5 font-elegant italic text-[1.05rem] tracking-[0.01em] text-moon">
+            <figcaption className="print-body mt-5 flex items-center gap-2.5 font-elegant italic text-[1.05rem] tracking-[0.01em] text-moon">
               <span aria-hidden className="h-px w-6 bg-moon/60" /> Mayanov
             </figcaption>
           </figure>
 
           {/* quiet credentials — a calm 3-up proof row (big serif numbers that count up), not a KPI bar */}
-          <div className="mt-10 md:mt-12 pt-8 border-t border-ink/10 grid grid-cols-3 gap-x-5 sm:gap-x-8">
+          <div className="print-body mt-10 md:mt-12 pt-8 border-t border-ink/10 grid grid-cols-3 gap-x-5 sm:gap-x-8">
             {[
               { n: isIndonesian ? '7.700+' : '7,700+', l: isIndonesian ? 'sesi tarot' : 'readings' },
               { n: isIndonesian ? '1.500+' : '1,500+', l: isIndonesian ? 'orang terbantu' : 'people guided' },
               { n: '5.0', l: isIndonesian ? 'rating Google' : 'on Google' },
             ].map((s, i) => (
               <div key={i} className={i > 0 ? 'pl-5 sm:pl-8 border-l border-ink/10' : undefined}>
-                <div className="font-elegant font-semibold text-moon text-[1.9rem] md:text-[2.4rem] leading-none tracking-[-0.02em]"><CountUp value={s.n} duration={1400 + i * 200} /></div>
+                <div className="print-text font-elegant font-semibold text-moon text-[1.9rem] md:text-[2.4rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em]"><CountUp value={s.n} duration={1400 + i * 200} /></div>
                 <div className="mt-2.5 text-ink/50 font-normal text-[13px] md:text-sm leading-snug">{s.l}</div>
               </div>
             ))}

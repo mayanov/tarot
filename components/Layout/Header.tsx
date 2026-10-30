@@ -373,11 +373,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                       >
                         {/* index number, like the FAQ list — on hover (desktop) it lifts away
                             and a small star takes its place, while the name steps forward */}
-                        <span className={`relative w-6 sm:w-8 shrink-0 font-elegant italic text-[0.8rem] sm:text-sm tabular-nums ${active ? 'text-moon' : 'text-ink/35'}`}>
+                        <span className={`print-body relative w-6 sm:w-8 shrink-0 font-elegant italic text-[0.8rem] sm:text-sm tabular-nums ${active ? 'text-moon' : 'text-ink/35'}`}>
                           <span className="inline-block transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:-translate-y-2 lg:group-hover/link:opacity-0">{String(i + 1).padStart(2, '0')}</span>
                           <CelestialMark name="sparkle" className="print-ink absolute left-0 top-1/2 w-3.5 text-moon opacity-0 translate-y-0 transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:opacity-100 lg:group-hover/link:-translate-y-1/2" />
                         </span>
-                        <span className={`font-elegant font-medium text-[clamp(1.3rem,4.3dvh,2rem)] sm:text-[3rem] md:text-[3.8rem] lg:text-[clamp(2.4rem,4.2vw,3.8rem)] leading-[1.1] tracking-[-0.025em] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:translate-x-3 ${active ? 'italic' : ''}`}>{link.name}</span>
+                        <span className={`print-text pb-[0.14em] -mb-[0.14em] pr-[0.12em] -mr-[0.12em] font-elegant font-medium text-[clamp(1.3rem,4.3dvh,2rem)] sm:text-[3rem] md:text-[3.8rem] lg:text-[clamp(2.4rem,4.2vw,3.8rem)] leading-[1.1] tracking-[-0.025em] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:translate-x-3 ${active ? 'italic' : ''}`}>{link.name}</span>
                       </span>
                     </span>
                   </button>
@@ -388,7 +388,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
             {/* phones / tablets: the services as a row of chips under the index */}
             <div className={`lg:hidden mt-[2.5dvh] sm:mt-7 ${rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).className}`} style={rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).style}>
-              <p className="font-elegant italic text-sm text-ink/45 mb-2">{isIndonesian ? 'Langsung pesan' : 'Book directly'}</p>
+              <p className="print-body font-elegant italic text-sm text-ink/45 mb-2">{isIndonesian ? 'Langsung pesan' : 'Book directly'}</p>
               <div className="flex flex-wrap gap-2">
                 {menuServices.map((sv) => (
                   <button key={sv.id} type="button" onClick={() => showService(sv.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-ink/15 px-3 py-1.5 text-[13px] text-ink hover:border-moon hover:text-moon transition-colors">
@@ -405,14 +405,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           {/* (its rows come in one after another, like the index; the hover dimming sits on
               the buttons, since the rows' entrance animation holds their opacity) */}
           <aside className="hidden lg:block">
-            <p className={`font-elegant italic text-sm text-ink/45 ${rowAnim(LINE_IN_AT + 180, 60).className}`} style={rowAnim(LINE_IN_AT + 180, 60).style}>{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
+            <p className={`print-body font-elegant italic text-sm text-ink/45 ${rowAnim(LINE_IN_AT + 180, 60).className}`} style={rowAnim(LINE_IN_AT + 180, 60).style}>{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
             <ul className="mt-3 group/svs">
               {menuServices.map((sv, j) => (
                 <li key={sv.id} className={`border-t border-ink/10 last:border-b ${rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).className}`} style={rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).style}>
                   <button type="button" onClick={() => showService(sv.id)} className="group/sv w-full flex items-baseline gap-3 py-3.5 text-left transition-[opacity,padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/svs:opacity-40 hover:!opacity-100 hover:pl-2">
                     <CelestialMark name={sv.mark} className="print-ink w-3.5 shrink-0 self-center text-ink/35 transition-colors duration-300 group-hover/sv:text-moon" />
-                    <span className="flex-1 min-w-0 font-elegant font-medium text-ink text-[1.45rem] leading-tight tracking-[-0.01em] transition-colors duration-300 group-hover/sv:text-moon">{sv.name}</span>
-                    <span className="shrink-0 font-elegant italic text-ink/50 text-[0.95rem] whitespace-nowrap">{isIndonesian ? 'mulai' : 'from'} {sv.price}</span>
+                    <span className="print-text flex-1 min-w-0 font-elegant font-medium text-ink text-[1.45rem] leading-tight tracking-[-0.01em] transition-colors duration-300 group-hover/sv:text-moon">{sv.name}</span>
+                    <span className="print-body shrink-0 font-elegant italic text-ink/50 text-[0.95rem] whitespace-nowrap">{isIndonesian ? 'mulai' : 'from'} {sv.price}</span>
                   </button>
                 </li>
               ))}

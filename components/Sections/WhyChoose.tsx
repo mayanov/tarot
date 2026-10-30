@@ -40,10 +40,10 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
         <div className="relative z-10 mx-auto px-8 pt-20 md:pt-28">
           {/* Lead — centered heading + paragraph */}
           <FadeIn>
-            <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl mx-auto text-center">
+            <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl mx-auto text-center">
               <MaskReveal>{isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}</MaskReveal>
             </h2>
-            <p className="mt-6 text-[0.95rem] text-ink/60 font-light leading-relaxed max-w-2xl mx-auto text-center">
+            <p className="print-body mt-6 text-[0.95rem] text-ink/60 font-light leading-relaxed max-w-2xl mx-auto text-center">
               {isIndonesian
                 ? 'Sesi tarot yang tidak kaku atau menyeramkan — ruang aman untuk bercerita, dengan kesimpulan jelas dan langkah yang bisa kamu ambil.'
                 : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}
@@ -56,7 +56,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
           <div className="mt-14 md:mt-20 mx-auto max-w-4xl lg:max-w-6xl grid grid-cols-2 lg:grid-cols-3 gap-x-5 md:gap-x-16 lg:gap-x-14 gap-y-8 md:gap-y-14">
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
-                <div className="group/row text-center">
+                <div className="print-text group/row text-center">
                   {/* quiet kicker label */}
                   <span className="block font-elegant italic lowercase text-moon/70 text-[0.9rem] md:text-[1.05rem] transition-colors duration-500 group-hover/row:text-moon">
                     {reason.label}

@@ -228,7 +228,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
       {/* intro — a warm, human framing (no star-rating stat) */}
       <FadeIn>
         <div className="mx-auto px-8 max-w-2xl text-center">
-          <h2 className="font-elegant font-semibold text-ink text-[2rem] sm:text-[2.6rem] lg:text-[3rem] leading-[1.06] tracking-[-0.02em]">
+          <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2rem] sm:text-[2.6rem] lg:text-[3rem] leading-[1.06] tracking-[-0.02em]">
             {isIndonesian ? 'Dalam kata mereka' : 'In their own words'}
           </h2>
         </div>
@@ -264,7 +264,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                 <p className="print-text font-elegant text-ink text-[1.3rem] md:text-[1.9rem] leading-[1.42] tracking-[-0.005em]">
                   {r.text}
                 </p>
-                <footer className="mt-8 md:mt-10 font-elegant italic text-ink/75 text-base md:text-lg">
+                <footer className="print-body mt-8 md:mt-10 font-elegant italic text-ink/75 text-base md:text-lg">
                   <span className="not-italic text-moon mr-2">&mdash;</span>{r.author}
                   <span className="not-italic text-ink/40 text-[0.78rem] ml-2 tracking-wide align-middle">· {r.location}</span>
                 </footer>

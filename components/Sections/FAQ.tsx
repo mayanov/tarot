@@ -132,7 +132,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
       <div className="mx-auto px-6 md:px-8 max-w-4xl">
         <FadeIn dir="blur" duration={1.15}>
           <div className="text-center">
-            <h2 className="font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+            <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
               {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
             </h2>
 
@@ -172,7 +172,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                     <span aria-hidden className={`font-elegant italic text-sm tabular-nums transition-colors duration-300 ${open ? 'text-moon' : 'text-ink/35'}`}>
                       {String(index + 1).padStart(2, '0')}
                     </span>
-                    <span className={`font-elegant font-medium text-[1.1rem] md:text-[1.3rem] leading-snug tracking-[-0.01em] transition-[color,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'text-moon' : 'text-ink group-hover:translate-x-1.5 group-hover:text-moon'}`}>
+                    <span className={`print-text font-elegant font-medium text-[1.1rem] md:text-[1.3rem] leading-snug tracking-[-0.01em] transition-[color,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'text-moon' : 'text-ink group-hover:translate-x-1.5 group-hover:text-moon'}`}>
                       {faq.question}
                     </span>
                     {/* a bare + that turns into × when open — no container */}
@@ -182,7 +182,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   <div className={`grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                     <div className="overflow-hidden">
                       {/* the answer lines up under the question text, in a narrower column */}
-                      <p className="pb-6 md:pb-7 pl-[2.75rem] md:pl-[4rem] pr-10 max-w-3xl text-ink/65 text-[0.95rem] md:text-base leading-[1.75] whitespace-pre-line font-light">
+                      <p className="print-body pb-6 md:pb-7 pl-[2.75rem] md:pl-[4rem] pr-10 max-w-3xl text-ink/65 text-[0.95rem] md:text-base leading-[1.75] whitespace-pre-line font-light">
                         {faq.answer}
                       </p>
                     </div>
@@ -196,7 +196,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
         {/* closing — ask directly */}
         <FadeIn dir="up">
           <div className="mt-16 md:mt-20 text-center">
-            <p className="font-elegant italic text-ink/60 text-xl md:text-2xl">
+            <p className="print-text font-elegant italic text-ink/60 text-xl md:text-2xl">
               {isIndonesian ? 'Masih penasaran?' : 'Still curious?'}
             </p>
             <a

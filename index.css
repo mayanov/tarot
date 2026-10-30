@@ -504,15 +504,21 @@ html.lenis body {
    mix-blend-multiply so the fibres show through the ink as well.
    .print-ink  — ornaments (quote marks, celestial marks, card numerals, the
                  moon-phase divider): a visibly worn print.
-   .print-text — large display text (the testimonial quotes): a much lighter
-                 wear, finer grain, so it stays easy to read. Not for body copy.
+   .print-text — headings and large display text (quotes, the FAQ questions, the
+                 menu index): a much lighter wear, finer grain, so it reads easily.
+   .print-body — body copy and small labels: barely there, only noticeable up
+                 close, so the whole sheet reads as one print.
+   Never on buttons/controls. A mask clips to its box, so tight-leading headings
+   take pb-[0.14em] -mb-[0.14em] to keep their descenders.
 --------------------------------------------------------------------------- */
 :root {
   --ink-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.8 0 0 0 1.62'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --ink-grain-faint: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.05' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -0.6 0 0 0 1.15'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --ink-grain-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.1 0 0 0 1.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .print-ink,
-.print-text {
+.print-text,
+.print-body {
   -webkit-mask-image: var(--ink-grain);
           mask-image: var(--ink-grain);
   -webkit-mask-size: 180px 180px;
@@ -521,4 +527,8 @@ html.lenis body {
 .print-text {
   -webkit-mask-image: var(--ink-grain-soft);
           mask-image: var(--ink-grain-soft);
+}
+.print-body {
+  -webkit-mask-image: var(--ink-grain-faint);
+          mask-image: var(--ink-grain-faint);
 }
