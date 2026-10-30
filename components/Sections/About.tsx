@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import CountUp from '../UI/CountUp';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
+import { Phase } from '../UI/MoonPhaseDivider';
+import { moonNow } from '../Layout/MenuMoon';
 import { trackEvent } from '../../services/analytics';
 import { REVEAL_FLIGHT_MS } from '../Layout/Loader';
 
@@ -12,6 +14,145 @@ interface AboutProps {
   isIndonesian?: boolean;
 }
 
+
+// a fixed scatter of tiny stars for the card back (same idea as the Services backs)
+const BACK_STARS = Array.from({ length: 40 }, (_, i) => {
+  const f = (k: number) => { const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return v - Math.floor(v); };
+  const rad = (0.5 + f(3)).toFixed(2), o = (0.3 + f(4) * 0.5).toFixed(2);
+  return `radial-gradient(${rad}px ${rad}px at ${(f(1) * 100).toFixed(1)}% ${(f(2) * 100).toFixed(1)}%, rgba(255,255,255,${o}) 0%, rgba(255,255,255,0) 60%)`;
+}).join(',');
+
+const EASE = 'cubic-bezier(0.16,1,0.3,1)';
+const CORNERS = ['left-1.5 top-1.5', 'right-1.5 top-1.5', 'left-1.5 bottom-1.5', 'right-1.5 bottom-1.5'];
+
+// The portrait, printed as a tarot card: a cream card face (tonight's moon at its head,
+// framed photo, title) laid over the deck's own card back. Dealt into place when it
+// scrolls into view; on desktop it tips toward the pointer with a soft sheen.
+const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
+  const figRef = useRef<HTMLElement>(null);
+  const faceRef = useRef<HTMLDivElement>(null);
+  const [dealt, setDealt] = useState(false);
+  const [hover, setHover] = useState(false);
+  const moon = useMemo(() => moonNow(), []);
+  const reduced = useMemo(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
+  const canTilt = useMemo(() => !reduced && typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches, [reduced]);
+
+  useEffect(() => {
+    if (reduced) { setDealt(true); return; }
+    const el = figRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setDealt(true); io.disconnect(); } }, { threshold: 0.2 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [reduced]);
+
+  const onMove = (e: React.PointerEvent) => {
+    const face = faceRef.current, fig = figRef.current;
+    if (!canTilt || !face || !fig) return;
+    const r = fig.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+    face.style.setProperty('--ry', `${(x * 12).toFixed(2)}deg`);
+    face.style.setProperty('--rx', `${(-y * 9).toFixed(2)}deg`);
+    face.style.setProperty('--mx', `${((x + 0.5) * 100).toFixed(1)}%`);
+    face.style.setProperty('--my', `${((y + 0.5) * 100).toFixed(1)}%`);
+    if (!hover) setHover(true);
+  };
+  const onLeave = () => {
+    const face = faceRef.current;
+    if (face) ['--rx', '--ry'].forEach((v) => face.style.setProperty(v, '0deg'));
+    setHover(false);
+  };
+
+  const backTransform = !dealt
+    ? 'translate(-4%, 10%) rotate(-3deg)'
+    : hover ? 'translate(-21%, 3%) rotate(-12deg)' : 'translate(-17%, 3%) rotate(-9deg)';
+  const faceTransform = !dealt
+    ? 'perspective(1000px) translate(-4%, 10%) rotate(-3deg)'
+    : `perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) rotate(${hover ? 0 : 2.5}deg)`;
+
+  return (
+    <figure
+      ref={figRef}
+      onPointerMove={onMove}
+      onPointerLeave={onLeave}
+      className="relative mx-auto translate-x-[9%] lg:translate-x-0 w-[min(66vw,18.5rem)] lg:w-full lg:max-w-[22rem] pt-16 pb-2 lg:py-24 lg:order-2"
+    >
+      <div className="relative" style={{ opacity: dealt ? 1 : 0, transition: `opacity 600ms ${EASE}` }}>
+        {/* the card back, peeking out behind */}
+        <div aria-hidden
+          className="absolute inset-0 overflow-hidden rounded-[1.15rem] ring-1 ring-white/10 [box-shadow:0_30px_60px_-30px_rgba(12,8,30,0.6)]"
+          style={{
+            background: 'radial-gradient(130% 110% at 50% 0%, #3a2558 0%, #241638 55%, #150c24 100%)',
+            transform: backTransform,
+            transition: `transform ${hover ? 700 : 1100}ms ${EASE}`,
+          }}>
+          <div className="absolute inset-0 opacity-70" style={{ backgroundImage: BACK_STARS }} />
+          <div className="absolute inset-[0.6rem] rounded-[0.8rem] ring-1 ring-[#C9B8E8]/25" />
+          <div className="absolute inset-[1.05rem] rounded-[0.55rem] ring-1 ring-[#C9B8E8]/10" />
+          <CelestialMark name="crescent" className="print-ink absolute left-[5%] top-1/2 -translate-y-1/2 w-7 text-[#C9B8E8]/70" />
+        </div>
+
+        {/* the face */}
+        <div
+          ref={faceRef}
+          className="relative rounded-[1.15rem] p-3 md:p-3.5 ring-1 ring-ink/10 [box-shadow:0_34px_70px_-30px_rgba(24,14,40,0.55),0_2px_6px_-2px_rgba(24,14,40,0.15)]"
+          style={{
+            backgroundColor: '#F6F0E5',
+            backgroundImage: `url('${import.meta.env.BASE_URL}paper.webp')`,
+            backgroundSize: '600px 600px',
+            backgroundBlendMode: 'multiply',
+            transform: faceTransform,
+            // tracks the pointer quickly; otherwise eases (and is dealt a beat after the back)
+            transition: hover ? 'transform 250ms ease-out' : `transform 1100ms ${EASE} 120ms`,
+          }}
+        >
+          <div className="relative rounded-[0.8rem] ring-1 ring-ink/15 px-2.5 md:px-3 pb-3 pt-2">
+            {/* a tiny sparkle in each corner of the inner frame */}
+            {CORNERS.map((c) => (
+              <CelestialMark key={c} name="sparkle" className={`print-ink absolute ${c} w-2 text-moon/45`} />
+            ))}
+            {/* head: tonight's moon between two rules */}
+            <div aria-hidden className="print-ink flex items-center justify-center gap-2.5 pb-2 text-moon/70">
+              <span className="h-px w-7 bg-gradient-to-r from-transparent to-current opacity-60" />
+              <Phase p={moon.p} waning={moon.waning} size={13} />
+              <span className="h-px w-7 bg-gradient-to-l from-transparent to-current opacity-60" />
+            </div>
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[0.45rem]">
+              <ImageReveal
+                src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
+                alt="Mayanov"
+                // peeks in at the bottom of the screen on landing — unveil as soon as any of it shows
+                threshold={0}
+                className="absolute inset-0"
+                imgClassName="w-full h-full object-cover object-[45%_28%]"
+                loading="eager"
+              />
+              {/* flat plum tint (no directional gradient) to cohere with the palette */}
+              <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
+              <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[0.45rem] ring-1 ring-inset ring-ink/10" />
+            </div>
+            <figcaption className="pt-3 flex flex-col items-center gap-1 text-center">
+              <span className="print-text font-elegant font-semibold uppercase tracking-[0.28em] text-[0.8rem] md:text-[0.85rem] text-ink/80 pl-[0.28em]">
+                {isIndonesian ? 'Sang Pembaca' : 'The Reader'}
+              </span>
+              <span className="print-body font-elegant italic text-[0.8rem] text-ink/45">
+                {isIndonesian ? 'Mayanov · sejak 2009' : 'Mayanov · since 2009'}
+              </span>
+            </figcaption>
+          </div>
+          {/* sheen that follows the pointer */}
+          <div aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-[1.15rem] mix-blend-soft-light"
+            style={{
+              background: 'radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,0.55), rgba(255,255,255,0) 50%)',
+              opacity: hover ? 1 : 0,
+              transition: 'opacity 400ms ease-out',
+            }} />
+        </div>
+      </div>
+    </figure>
+  );
+};
 
 const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
   useEffect(() => {
@@ -48,54 +189,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       <SoftAura />
       {/* portrait and text side by side on desktop (portrait first on phones) */}
       <div className="relative mx-auto px-8 lg:min-h-[72vh] flex flex-col lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16 xl:gap-24 lg:items-center">
-        {/* portrait — printed as a tarot card rather than bled to the edge: a cream card
-            face (numeral, framed photo, title) laid over the deck's own card back, both a
-            little askew like cards set down on the table; straightens on hover */}
-        <figure className="group/card relative mx-auto translate-x-[9%] lg:translate-x-0 w-[min(66vw,18.5rem)] lg:w-full lg:max-w-[22rem] pt-16 pb-2 lg:py-24 lg:order-2">
-          <div className="relative">
-            {/* the card back, peeking out behind */}
-            <div aria-hidden
-              className="absolute inset-0 rounded-[1.15rem] -rotate-[9deg] -translate-x-[17%] translate-y-[3%] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] lg:group-hover/card:-rotate-[12deg] lg:group-hover/card:-translate-x-[21%] ring-1 ring-white/10 [box-shadow:0_30px_60px_-30px_rgba(12,8,30,0.6)]"
-              style={{ background: 'radial-gradient(130% 110% at 50% 0%, #3a2558 0%, #241638 55%, #150c24 100%)' }}>
-              <div className="absolute inset-[0.6rem] rounded-[0.8rem] ring-1 ring-[#C9B8E8]/25" />
-              <div className="absolute inset-[1.05rem] rounded-[0.55rem] ring-1 ring-[#C9B8E8]/10" />
-              <CelestialMark name="crescent" className="print-ink absolute left-[5%] top-1/2 -translate-y-1/2 w-7 text-[#C9B8E8]/70" />
-            </div>
-
-            {/* the face */}
-            <div className="relative rotate-[2.5deg] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] lg:group-hover/card:rotate-0 rounded-[1.15rem] bg-[#F7F2EA] p-3 md:p-3.5 ring-1 ring-ink/10 [box-shadow:0_34px_70px_-30px_rgba(24,14,40,0.55),0_2px_6px_-2px_rgba(24,14,40,0.15)]">
-              <div className="rounded-[0.8rem] ring-1 ring-ink/15 px-2.5 md:px-3 pb-3 pt-2">
-                <div className="print-ink flex items-center justify-center gap-2.5 pb-2 text-moon/70">
-                  <span className="h-px w-6 bg-current opacity-50" />
-                  <span className="font-elegant italic text-[1.15rem] leading-none tracking-[0.15em] text-ink/60">0</span>
-                  <span className="h-px w-6 bg-current opacity-50" />
-                </div>
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[0.45rem]">
-                  <ImageReveal
-                    src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
-                    alt="Mayanov"
-                    // peeks in at the bottom of the screen on landing — unveil as soon as any of it shows
-                    threshold={0}
-                    className="absolute inset-0"
-                    imgClassName="w-full h-full object-cover object-[45%_28%]"
-                    loading="eager"
-                  />
-                  {/* flat plum tint (no directional gradient) to cohere with the palette */}
-                  <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
-                  <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[0.45rem] ring-1 ring-inset ring-ink/10" />
-                </div>
-                <figcaption className="pt-3 flex flex-col items-center gap-1 text-center">
-                  <span className="print-text font-elegant font-semibold uppercase tracking-[0.28em] text-[0.8rem] md:text-[0.85rem] text-ink/80 pl-[0.28em]">
-                    {isIndonesian ? 'Sang Pembaca' : 'The Reader'}
-                  </span>
-                  <span className="print-body font-elegant italic text-[0.8rem] text-ink/45">
-                    {isIndonesian ? 'Mayanov · sejak 2009' : 'Mayanov · since 2009'}
-                  </span>
-                </figcaption>
-              </div>
-            </div>
-          </div>
-        </figure>
+        <PortraitCard isIndonesian={isIndonesian} />
 
         <FadeIn dir="left" className="w-full pt-14 pb-20 md:pb-28 lg:py-28">
           {/* hook title */}
