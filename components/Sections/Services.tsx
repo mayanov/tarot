@@ -376,10 +376,13 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const [unflip, setUnflip] = useState(false); // turning back round after the form
     const shut = () => { flownRef.current = false; setBooking(false); setSelected(null); };
     // closing runs the opening backwards: the drawn card turns face-up, then every card
-    // flies back to its spot in the fan while the backdrop fades; the fan itself shows
-    // again (instantly) the moment they land
+    // flies back to its spot in the fan while the backdrop fades. The big cards are laid
+    // out larger than the fan's (bigger type, more padding), so once they're on their
+    // spots the fan comes back underneath them and they fade off it (`handover`) rather
+    // than being swapped in one frame.
     const [landing, setLanding] = useState<Record<number, string> | null>(null); // per card: transform on its fan spot
     const [closing, setClosing] = useState(false);
+    const [handover, setHandover] = useState(false);
     const closingRef = useRef(false);
     const revealedRef = useRef(revealed);
     revealedRef.current = revealed;
@@ -394,10 +397,13 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             const targets = fanTransforms(measureFan());
             if (targets) setLanding(targets);
             window.setTimeout(() => {
-                shut();
-                setLanding(null);
-                // one frame with the fan's fade switched off, so it's simply there
-                requestAnimationFrame(() => requestAnimationFrame(() => { closingRef.current = false; setClosing(false); }));
+                setHandover(true);
+                window.setTimeout(() => {
+                    shut();
+                    setLanding(null);
+                    // a frame with the fan's fade still switched off before it's back to normal
+                    requestAnimationFrame(() => requestAnimationFrame(() => { closingRef.current = false; setClosing(false); setHandover(false); }));
+                }, HANDOVER_MS);
             }, targets ? FLIGHT_MS : 0);
         }, turnFirst ? CLOSE_TURN_MS : 0);
     };
@@ -509,7 +515,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             zIndex: isHov ? 40 : 20 - Math.round(Math.abs(o)),
             // while a card is open the whole fan fades out, so the blurred backdrop
             // doesn't show ghost cards behind the focused spread
-            opacity: isOpen ? 0 : 1,
+            opacity: isOpen && !handover ? 0 : 1, // back (instantly, under the landed cards) at the handover
             transition: settled
                 ? `transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity ${closing ? 0 : 0.35}s ease`
                 : `transform ${DEAL_MOVE}ms cubic-bezier(0.2,0.9,0.25,1) ${dealDelay(i)}ms, opacity 0.35s ease`,
@@ -564,7 +570,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                     <div
                         ref={boxRef}
                         className="relative aspect-[5/8]"
-                        style={{ height: isMobile ? 'min(calc(100dvh - 9.5rem), 128vw)' : 'min(82vh, 38rem)' }}
+                        style={{ height: isMobile ? 'min(calc(100dvh - 9.5rem), 128vw)' : 'min(82vh, 38rem)', opacity: handover ? 0 : 1, transition: `opacity ${HANDOVER_MS}ms ease` }}
                         onTouchStart={onTouchStart}
                         onTouchEnd={onTouchEnd}
                     >
@@ -693,6 +699,7 @@ const CARD_TURN_DEG = 90;
 // and the flight's easing (speeding up into the fan, the opening's ease-out reversed)
 const CLOSE_TURN_MS = 380;
 const LAND_EASE = 'cubic-bezier(0.55,0,0.45,1)';
+const HANDOVER_MS = 240;
 
 // The order button for a category — opens the on-site booking flow.
 const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndonesian }) => {
