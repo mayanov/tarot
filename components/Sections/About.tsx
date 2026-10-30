@@ -15,18 +15,11 @@ interface AboutProps {
 }
 
 
-// a fixed scatter of tiny stars for the card back (same idea as the Services backs)
-const BACK_STARS = Array.from({ length: 40 }, (_, i) => {
-  const f = (k: number) => { const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return v - Math.floor(v); };
-  const rad = (0.5 + f(3)).toFixed(2), o = (0.3 + f(4) * 0.5).toFixed(2);
-  return `radial-gradient(${rad}px ${rad}px at ${(f(1) * 100).toFixed(1)}% ${(f(2) * 100).toFixed(1)}%, rgba(255,255,255,${o}) 0%, rgba(255,255,255,0) 60%)`;
-}).join(',');
-
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const CORNERS = ['left-1.5 top-1.5', 'right-1.5 top-1.5', 'left-1.5 bottom-1.5', 'right-1.5 bottom-1.5'];
 
 // The portrait, printed as a tarot card: a cream card face (tonight's moon at its head,
-// framed photo, title) laid over the deck's own card back. Dealt into place when it
+// framed photo, title), set down a little askew. Dealt into place when it
 // scrolls into view; on desktop it tips toward the pointer with a soft sheen.
 const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
   const figRef = useRef<HTMLElement>(null);
@@ -63,11 +56,8 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
     setHover(false);
   };
 
-  const backTransform = !dealt
-    ? 'translate(-4%, 10%) rotate(-3deg)'
-    : hover ? 'translate(-21%, 3%) rotate(-12deg)' : 'translate(-17%, 3%) rotate(-9deg)';
   const faceTransform = !dealt
-    ? 'perspective(1000px) translate(-4%, 10%) rotate(-3deg)'
+    ? 'perspective(1000px) translateY(8%) rotate(-1deg)'
     : `perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) rotate(${hover ? 0 : 2.5}deg)`;
 
   return (
@@ -75,23 +65,9 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
       ref={figRef}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
-      className="relative mx-auto translate-x-[9%] lg:translate-x-0 w-[min(66vw,18.5rem)] lg:w-full lg:max-w-[22rem] pt-16 pb-2 lg:py-24 lg:order-2"
+      className="relative mx-auto w-[min(70vw,18.5rem)] lg:w-full lg:max-w-[22rem] pt-16 pb-2 lg:py-24 lg:order-2"
     >
       <div className="relative" style={{ opacity: dealt ? 1 : 0, transition: `opacity 600ms ${EASE}` }}>
-        {/* the card back, peeking out behind */}
-        <div aria-hidden
-          className="absolute inset-0 overflow-hidden rounded-[1.15rem] ring-1 ring-white/10 [box-shadow:0_30px_60px_-30px_rgba(12,8,30,0.6)]"
-          style={{
-            background: 'radial-gradient(130% 110% at 50% 0%, #3a2558 0%, #241638 55%, #150c24 100%)',
-            transform: backTransform,
-            transition: `transform ${hover ? 700 : 1100}ms ${EASE}`,
-          }}>
-          <div className="absolute inset-0 opacity-70" style={{ backgroundImage: BACK_STARS }} />
-          <div className="absolute inset-[0.6rem] rounded-[0.8rem] ring-1 ring-[#C9B8E8]/25" />
-          <div className="absolute inset-[1.05rem] rounded-[0.55rem] ring-1 ring-[#C9B8E8]/10" />
-          <CelestialMark name="crescent" className="print-ink absolute left-[5%] top-1/2 -translate-y-1/2 w-7 text-[#C9B8E8]/70" />
-        </div>
-
         {/* the face */}
         <div
           ref={faceRef}
@@ -102,8 +78,8 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
             backgroundSize: '600px 600px',
             backgroundBlendMode: 'multiply',
             transform: faceTransform,
-            // tracks the pointer quickly; otherwise eases (and is dealt a beat after the back)
-            transition: hover ? 'transform 250ms ease-out' : `transform 1100ms ${EASE} 120ms`,
+            // tracks the pointer quickly; otherwise eases
+            transition: hover ? 'transform 250ms ease-out' : `transform 1100ms ${EASE}`,
           }}
         >
           <div className="relative rounded-[0.8rem] ring-1 ring-ink/15 px-2.5 md:px-3 pb-3 pt-2">
