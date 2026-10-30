@@ -106,15 +106,16 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           </figure>
 
           {/* quiet credentials — a calm 3-up proof row (big serif numbers that count up), not a KPI bar */}
-          <div className="print-body mt-10 md:mt-12 pt-8 border-t border-ink/10 grid grid-cols-3 gap-x-5 sm:gap-x-8">
+          <div className="mt-10 md:mt-12 pt-8 border-t border-ink/10 grid grid-cols-3 gap-x-5 sm:gap-x-8">
             {[
               { n: isIndonesian ? '7.700+' : '7,700+', l: isIndonesian ? 'sesi tarot' : 'readings' },
               { n: isIndonesian ? '1.500+' : '1,500+', l: isIndonesian ? 'orang terbantu' : 'people guided' },
               { n: '5.0', l: isIndonesian ? 'rating Google' : 'on Google' },
             ].map((s, i) => (
               <div key={i} className={i > 0 ? 'pl-5 sm:pl-8 border-l border-ink/10' : undefined}>
-                <div className="print-text font-elegant font-semibold text-moon text-[1.9rem] md:text-[2.4rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em]"><CountUp value={s.n} duration={1400 + i * 200} /></div>
-                <div className="mt-2.5 text-ink/50 font-normal text-[13px] md:text-sm leading-snug">{s.l}</div>
+                {/* (only the faint grain here — two masks stacked washed the purple out) */}
+                <div className="print-body font-elegant font-semibold text-moon text-[1.9rem] md:text-[2.4rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em]"><CountUp value={s.n} duration={1400 + i * 200} /></div>
+                <div className="print-body mt-2.5 text-ink/50 font-normal text-[13px] md:text-sm leading-snug">{s.l}</div>
               </div>
             ))}
           </div>
