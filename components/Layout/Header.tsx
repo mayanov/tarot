@@ -364,8 +364,9 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                     aria-current={active ? 'true' : undefined}
                     className="group/link w-full flex items-center py-[1.1dvh] sm:py-2.5 text-left"
                   >
-                    {/* the mask (with room below for descenders) and the line sliding in it */}
-                    <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
+                    {/* the mask (with room below for descenders, and to the right for the name's
+                        hover step and italic overhang) and the line sliding in it */}
+                    <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em] lg:pr-8 lg:-mr-8">
                       <span
                         className={`flex items-baseline gap-3 sm:gap-5 transition-colors duration-500 group-hover/link:text-moon ${active ? 'text-moon' : 'text-ink'} ${closing ? 'animate-[lineOut_0.3s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[lineIn_0.85s_cubic-bezier(0.22,1,0.36,1)_both]' : 'translate-y-[115%]'}`}
                         style={{ animationDelay: `${closing ? (navLinks.length - 1 - i) * 30 : LINE_IN_AT + i * LINE_STEP}ms` }}
@@ -376,7 +377,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                           <span className="inline-block transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:-translate-y-2 lg:group-hover/link:opacity-0">{String(i + 1).padStart(2, '0')}</span>
                           <CelestialMark name="sparkle" className="absolute left-0 top-1/2 w-3.5 text-moon opacity-0 translate-y-0 transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:opacity-100 lg:group-hover/link:-translate-y-1/2" />
                         </span>
-                        <span className={`font-elegant font-medium text-[clamp(1.3rem,4.3dvh,2rem)] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:translate-x-3 ${active ? 'italic' : ''}`}>{link.name}</span>
+                        <span className={`font-elegant font-medium text-[clamp(1.3rem,4.3dvh,2rem)] sm:text-[3rem] md:text-[3.8rem] lg:text-[clamp(2.4rem,4.2vw,3.8rem)] leading-[1.1] tracking-[-0.025em] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:translate-x-3 ${active ? 'italic' : ''}`}>{link.name}</span>
                       </span>
                     </span>
                   </button>
