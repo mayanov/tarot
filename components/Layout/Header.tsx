@@ -55,18 +55,30 @@ interface NavItem {
 // first (OUT_MS), then the paper wipes back up.
 const WIPE_MS = 700;
 const WIPE_EASE = 'cubic-bezier(0.76,0,0.24,1)';
-const OUT_MS = 300;
+const OUT_MS = 380;
+// the links: each line slides up into place from behind its own baseline (a mask),
+// one after another, starting while the paper is still coming down
+const LINE_IN_AT = 260;
+const LINE_STEP = 60;
 
 const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [closing, setClosing] = useState(false); // links leaving, paper still down
   const closingRef = useRef(false);
+  const closeTimer = useRef<number | undefined>(undefined);
   const closeMenu = () => {
     if (closingRef.current) return;
     closingRef.current = true;
     setClosing(true);
-    window.setTimeout(() => { setMenuOpen(false); setClosing(false); closingRef.current = false; }, OUT_MS);
+    closeTimer.current = window.setTimeout(() => { setMenuOpen(false); setClosing(false); closingRef.current = false; }, OUT_MS);
+  };
+  // opening again mid-close cancels the close (the links come straight back)
+  const openMenu = () => {
+    window.clearTimeout(closeTimer.current);
+    closingRef.current = false;
+    setClosing(false);
+    setMenuOpen(true);
   };
 
   useEffect(() => {
@@ -185,7 +197,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               </button>
 
               <button
-                onClick={() => setMenuOpen(true)}
+                onClick={openMenu}
                 aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
                 aria-expanded={menuOpen}
                 className="group inline-flex items-center justify-center p-1.5 text-cream [filter:drop-shadow(0_1px_8px_rgba(0,0,0,0.55))]"
@@ -213,8 +225,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         aria-hidden={!menuOpen}
       >
         <div className="relative h-full mx-auto px-8 flex flex-col">
-          {/* Top row — brand + close */}
-          <div className="flex items-center justify-between py-4 md:py-5 shrink-0">
+          {/* Top row — brand + close (in with the paper's leading edge, out with the links) */}
+          <div
+            className={`flex items-center justify-between py-4 md:py-5 shrink-0 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`}
+            style={{ animationDelay: closing ? '120ms' : '160ms' }}
+          >
             <Wordmark onDark={false} />
             <button
               onClick={closeMenu}
@@ -234,15 +249,20 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               {navLinks.map((link, i) => (
                 <li
                   key={link.name}
-                  className={`${closing ? 'animate-[navOut_0.22s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'} transition-opacity duration-500 lg:group-hover/nav:opacity-35 lg:hover:!opacity-100`}
-                  style={{ animationDelay: `${closing ? (navLinks.length - 1 - i) * 25 : i * 65 + 320}ms` }}
+                  className="transition-opacity duration-500 lg:group-hover/nav:opacity-35 lg:hover:!opacity-100"
                 >
                   <button
                     onClick={() => scrollToSection(link.id)}
                     className="group/link w-full flex items-center py-3 sm:py-2.5 text-left"
                   >
-                    <span className="font-elegant font-medium text-ink text-[2rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-colors duration-500 group-hover/link:text-moon">
-                      {link.name}
+                    {/* the mask (with room below for descenders) and the line sliding in it */}
+                    <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
+                      <span
+                        className={`block font-elegant font-medium text-ink text-[2rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-colors duration-500 group-hover/link:text-moon ${closing ? 'animate-[lineOut_0.3s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[lineIn_0.85s_cubic-bezier(0.22,1,0.36,1)_both]' : 'translate-y-[115%]'}`}
+                        style={{ animationDelay: `${closing ? (navLinks.length - 1 - i) * 30 : LINE_IN_AT + i * LINE_STEP}ms` }}
+                      >
+                        {link.name}
+                      </span>
                     </span>
                   </button>
                 </li>
@@ -251,7 +271,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           </nav>
 
           {/* Bottom — language toggle + socials + book */}
-          <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-ink/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 ${closing ? 'animate-[navOut_0.22s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: closing ? '0ms' : '680ms' }}>
+          <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-ink/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: closing ? '0ms' : `${LINE_IN_AT + navLinks.length * LINE_STEP + 80}ms` }}>
             {onSwitchRegion ? (
               <div className="self-start sm:self-auto">
                 <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />

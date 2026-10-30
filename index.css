@@ -135,6 +135,14 @@ html.lenis body {
 @keyframes navOut {
   to { opacity: 0; transform: translateY(14px); }
 }
+/* menu links: each line slides up from behind its baseline, and back down on close */
+@keyframes lineIn {
+  from { transform: translateY(115%); }
+  to   { transform: none; }
+}
+@keyframes lineOut {
+  to { transform: translateY(115%); }
+}
 
 /* ---- Kinetic marquee ---- */
 @keyframes marquee {
