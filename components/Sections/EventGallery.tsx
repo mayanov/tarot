@@ -9,12 +9,13 @@ import React, { useEffect, useRef, useState } from 'react';
 
 type Props = { photos: string[]; isIndonesian: boolean; onOpen: (src: string) => void };
 
-// per print: tilt, vertical offset, caption
+// per print: tilt, vertical offset, caption, and its own frame colour — the same
+// colours as the pricelist cards (navy, rose, plum, coral)
 const PRINTS = [
-  { rot: -4, y: 0, id: 'di balik meja', en: 'at the table' },
-  { rot: 3, y: 2.5, id: 'sesi bersama', en: 'reading together' },
-  { rot: -2, y: -1, id: 'malam event', en: 'event night' },
-  { rot: 4, y: 2, id: 'kartu terbuka', en: 'cards on the table' },
+  { rot: -4, y: 0, bg: '#22396F', id: 'di balik meja', en: 'at the table' },
+  { rot: 3, y: 2.5, bg: '#CB3B5F', id: 'sesi bersama', en: 'reading together' },
+  { rot: -2, y: -1, bg: '#39234E', id: 'malam event', en: 'event night' },
+  { rot: 4, y: 2, bg: '#F76949', id: 'kartu terbuka', en: 'cards on the table' },
 ];
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
@@ -65,8 +66,8 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 onClick={() => onOpen(src)}
                 aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
                 // hover cancels the print's tilt (--r) and lifts it (no zoom); deeper shadow
-                className="group relative bg-plum block w-full p-2.5 md:p-3 pb-0 rounded-[3px] ring-1 ring-white/10 shadow-[0_14px_30px_-14px_rgba(42,24,57,0.55)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_28px_50px_-18px_rgba(42,24,57,0.45)] hover:[transform:rotate(var(--r))_translateY(-10px)]"
-                style={{ ['--r' as any]: `${-pr.rot}deg`, transitionTimingFunction: EASE }}
+                className="group relative block w-full p-2.5 md:p-3 pb-0 rounded-[3px] ring-1 ring-white/10 shadow-[0_14px_30px_-14px_rgba(42,24,57,0.55)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_28px_50px_-18px_rgba(42,24,57,0.45)] hover:[transform:rotate(var(--r))_translateY(-10px)]"
+                style={{ ['--r' as any]: `${-pr.rot}deg`, transitionTimingFunction: EASE, backgroundColor: pr.bg }}
               >
                 <span className="relative block aspect-[4/5] overflow-hidden bg-ink/10">
                   <img
@@ -81,8 +82,8 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                   <span aria-hidden className="pointer-events-none absolute inset-0 shadow-[inset_0_0_40px_rgba(30,18,50,0.25)]" />
                 </span>
                 <span className="flex items-baseline justify-between gap-2 px-1 py-3 md:py-4">
-                  <span className="font-elegant italic text-[#E6DCF5] text-[0.95rem] md:text-[1.05rem]">{isIndonesian ? pr.id : pr.en}</span>
-                  <span className="font-elegant italic text-[#C9B8E8]/70 text-xs tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="font-elegant italic text-cream/95 text-[0.95rem] md:text-[1.05rem]">{isIndonesian ? pr.id : pr.en}</span>
+                  <span className="font-elegant italic text-cream/65 text-xs tabular-nums">{String(i + 1).padStart(2, '0')}</span>
                 </span>
               </button>
             </div>
