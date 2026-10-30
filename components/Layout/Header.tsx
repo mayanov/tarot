@@ -62,18 +62,18 @@ const OUT_MS = 380;
 const LINE_IN_AT = 260;
 const LINE_STEP = 60;
 
-// The services in the menu — the same mark, colour and starting price as their
-// pricelist card; picking one opens the booking form on it.
-type MenuService = { id: string; name: string; price: string; mark: 'constellation' | 'star' | 'sparkle' | 'crescent'; color: string };
+// The services in the menu — the same mark and starting price as their pricelist
+// card (a short name for the phone chips); picking one opens the booking form on it.
+type MenuService = { id: string; name: string; short: string; price: string; mark: 'constellation' | 'star' | 'sparkle' | 'crescent' };
 const MENU_SERVICES_ID: MenuService[] = [
-  { id: 'special', name: 'Edisi Spesial', price: 'Rp 250K', mark: 'constellation', color: '#22396F' },
-  { id: 'chat', name: 'Konsultasi via Chat', price: 'Rp 140K', mark: 'star', color: '#39234E' },
-  { id: 'call', name: 'Panggilan Suara & Video', price: 'Rp 220K', mark: 'sparkle', color: '#CB3B5F' },
-  { id: 'meetup', name: 'Sesi Tatap Muka', price: 'Rp 450K', mark: 'crescent', color: '#F76949' },
+  { id: 'special', name: 'Edisi Spesial', short: 'Edisi Spesial', price: 'Rp 250K', mark: 'constellation' },
+  { id: 'chat', name: 'Konsultasi via Chat', short: 'Chat', price: 'Rp 140K', mark: 'star' },
+  { id: 'call', name: 'Panggilan Suara & Video', short: 'Call / Video', price: 'Rp 220K', mark: 'sparkle' },
+  { id: 'meetup', name: 'Sesi Tatap Muka', short: 'Tatap Muka', price: 'Rp 450K', mark: 'crescent' },
 ];
 const MENU_SERVICES_EN: MenuService[] = [
-  { id: '3card', name: '3-Card Spread', price: '$12', mark: 'constellation', color: '#22396F' },
-  { id: '5card', name: '5-Card Deep', price: '$20', mark: 'star', color: '#39234E' },
+  { id: '3card', name: '3-Card Spread', short: '3-Card', price: '$12', mark: 'constellation' },
+  { id: '5card', name: '5-Card Deep', short: '5-Card', price: '$20', mark: 'star' },
 ];
 const WA_LINK = 'https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading';
 
@@ -286,6 +286,12 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             style={{ animationDelay: closing ? '120ms' : '160ms' }}
           >
             <Wordmark onDark={false} />
+            {/* phones: the language switch sits up here, keeping the bottom row to one line */}
+            {onSwitchRegion && (
+              <div className="sm:hidden ml-auto mr-5">
+                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />
+              </div>
+            )}
             <button
               onClick={closeMenu}
               aria-label={isIndonesian ? 'Tutup menu' : 'Close menu'}
@@ -299,7 +305,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           </div>
 
           {/* Main — the section index (left) and, on wide screens, the services (right) */}
-          <div key={menuOpen ? 'open' : 'closed'} className="flex-1 min-h-0 overflow-y-auto lg:grid lg:grid-cols-[1fr_minmax(20rem,24rem)] lg:gap-16 xl:gap-24 lg:items-center pt-6 pb-8 sm:py-8">
+          <div key={menuOpen ? 'open' : 'closed'} className="flex-1 min-h-0 overflow-y-auto lg:grid lg:grid-cols-[1fr_minmax(20rem,24rem)] lg:gap-16 xl:gap-24 lg:items-center pt-[2.5dvh] pb-[2dvh] sm:py-8">
           <nav className="flex flex-col justify-start lg:justify-center">
             <ul className="group/nav">
               {navLinks.map((link, i) => {
@@ -312,7 +318,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                   <button
                     onClick={() => scrollToSection(link.id)}
                     aria-current={active ? 'true' : undefined}
-                    className="group/link w-full flex items-center py-2.5 text-left"
+                    className="group/link w-full flex items-center py-[1.1dvh] sm:py-2.5 text-left"
                   >
                     {/* the mask (with room below for descenders) and the line sliding in it */}
                     <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
@@ -322,7 +328,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                       >
                         {/* index number, like the FAQ list */}
                         <span className={`w-6 sm:w-8 shrink-0 font-elegant italic text-[0.8rem] sm:text-sm tabular-nums ${active ? 'text-moon' : 'text-ink/35'}`}>{String(i + 1).padStart(2, '0')}</span>
-                        <span className={`font-elegant font-medium text-[2rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] ${active ? 'italic' : ''}`}>{link.name}</span>
+                        <span className={`font-elegant font-medium text-[clamp(1.3rem,4.3dvh,2rem)] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] ${active ? 'italic' : ''}`}>{link.name}</span>
                       </span>
                     </span>
                   </button>
@@ -332,39 +338,37 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             </ul>
 
             {/* phones / tablets: the services as a row of chips under the index */}
-            <div className={`lg:hidden mt-7 ${rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).className}`} style={rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).style}>
-              <p className="text-[12px] text-ink/50 mb-2.5">{isIndonesian ? 'Langsung pesan' : 'Book directly'}</p>
+            <div className={`lg:hidden mt-[2.5dvh] sm:mt-7 ${rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).className}`} style={rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).style}>
+              <p className="font-elegant italic text-sm text-ink/45 mb-2">{isIndonesian ? 'Langsung pesan' : 'Book directly'}</p>
               <div className="flex flex-wrap gap-2">
                 {menuServices.map((sv) => (
-                  <button key={sv.id} type="button" onClick={() => bookService(sv.id)} className="inline-flex items-center gap-2 rounded-lg border border-ink/15 pl-2 pr-3 py-1.5 text-[13px] text-ink hover:border-moon hover:text-moon transition-colors">
-                    <span className="grid place-items-center w-5 h-5 rounded-full text-cream" style={{ backgroundColor: sv.color }}><CelestialMark name={sv.mark} className="w-3" /></span>
-                    {sv.name}
+                  <button key={sv.id} type="button" onClick={() => bookService(sv.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-ink/15 px-3 py-1.5 text-[13px] text-ink hover:border-moon hover:text-moon transition-colors">
+                    <CelestialMark name={sv.mark} className="w-3 text-moon" />
+                    {sv.short}
                   </button>
                 ))}
               </div>
             </div>
           </nav>
 
-          {/* wide screens: book a service directly, plus the practical bits */}
+          {/* wide screens: book a service directly, plus the practical bits — set in the
+              index's own type (serif names, italic small print, hairlines), no badges */}
           <aside className={`hidden lg:block ${rowAnim(LINE_IN_AT + 180, 60).className}`} style={rowAnim(LINE_IN_AT + 180, 60).style}>
-            <p className="font-elegant italic text-ink/55 text-lg">{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
-            <ul className="mt-4 border-t border-ink/10">
+            <p className="font-elegant italic text-sm text-ink/45">{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
+            <ul className="mt-3 group/svs">
               {menuServices.map((sv) => (
-                <li key={sv.id} className="border-b border-ink/10">
-                  <button type="button" onClick={() => bookService(sv.id)} className="group/sv w-full flex items-center gap-4 py-4 text-left">
-                    <span className="grid place-items-center w-9 h-9 shrink-0 rounded-full text-cream" style={{ backgroundColor: sv.color }}><CelestialMark name={sv.mark} className="w-4" /></span>
-                    <span className="flex-1 min-w-0 font-elegant font-medium text-ink text-[1.15rem] leading-tight transition-colors duration-300 group-hover/sv:text-moon">{sv.name}</span>
-                    <span className="text-right shrink-0">
-                      <span className="block text-[11px] text-ink/45">{isIndonesian ? 'mulai' : 'from'}</span>
-                      <span className="block font-serif font-semibold text-ink">{sv.price}</span>
-                    </span>
+                <li key={sv.id} className="border-t border-ink/10 last:border-b transition-opacity duration-500 group-hover/svs:opacity-40 hover:!opacity-100">
+                  <button type="button" onClick={() => bookService(sv.id)} className="group/sv w-full flex items-baseline gap-3 py-3.5 text-left">
+                    <CelestialMark name={sv.mark} className="w-3.5 shrink-0 self-center text-ink/35 transition-colors duration-300 group-hover/sv:text-moon" />
+                    <span className="flex-1 min-w-0 font-elegant font-medium text-ink text-[1.45rem] leading-tight tracking-[-0.01em] transition-colors duration-300 group-hover/sv:text-moon">{sv.name}</span>
+                    <span className="shrink-0 font-elegant italic text-ink/50 text-[0.95rem] whitespace-nowrap">{isIndonesian ? 'mulai' : 'from'} {sv.price}</span>
                   </button>
                 </li>
               ))}
             </ul>
-            <p className="mt-5 text-[13px] leading-relaxed text-ink/55">
+            <p className="mt-5 font-elegant italic text-[0.95rem] leading-relaxed text-ink/50">
               {isIndonesian ? 'Sesi tatap muka hanya hari Jumat & Minggu, di Jakarta Selatan.' : 'Email readings arrive within 24 hours.'}{' '}
-              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="text-moon underline underline-offset-4 decoration-moon/40 hover:decoration-moon">
+              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="not-italic text-moon underline underline-offset-4 decoration-moon/40 hover:decoration-moon">
                 {isIndonesian ? 'Tanya dulu via WhatsApp' : 'Questions? Ask on WhatsApp'}
               </a>
             </p>
@@ -372,14 +376,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           </div>
 
           {/* Bottom — language toggle + socials + book */}
-          <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-ink/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: closing ? '0ms' : `${LINE_IN_AT + navLinks.length * LINE_STEP + 80}ms` }}>
+          <div className={`shrink-0 pt-4 pb-5 md:py-6 border-t border-ink/10 flex flex-row items-center justify-between gap-5 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: closing ? '0ms' : `${LINE_IN_AT + navLinks.length * LINE_STEP + 80}ms` }}>
             {onSwitchRegion ? (
-              <div className="self-start sm:self-auto">
+              <div className="hidden sm:block">
                 <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />
               </div>
-            ) : <span />}
+            ) : <span className="hidden sm:block" />}
 
-            <div className="flex flex-wrap items-center gap-6 sm:gap-7 self-start sm:self-auto">
+            <div className="flex flex-1 sm:flex-none items-center justify-between sm:justify-end gap-6 sm:gap-7">
               {/* socials — plain ink icons, no containers */}
               <nav className="flex items-center gap-6" aria-label="Social">
                 <a
@@ -404,7 +408,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
               <button
                 onClick={goToServices}
-                className={`${btnPrimaryLight} inline-flex group gap-3 px-8 py-3.5 text-sm`}
+                className={`${btnPrimaryLight} inline-flex group gap-3 px-6 sm:px-8 py-3 sm:py-3.5 text-sm`}
               >
                 {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
               </button>
