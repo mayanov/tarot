@@ -4,6 +4,7 @@ import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import CountUp from '../UI/CountUp';
 import SoftAura from '../UI/SoftAura';
+import CelestialMark from '../UI/CelestialMark';
 import { trackEvent } from '../../services/analytics';
 import { REVEAL_FLIGHT_MS } from '../Layout/Loader';
 
@@ -45,25 +46,36 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       }}
       className="bg-paper relative z-10 isolate overflow-hidden text-ink lg:min-h-[72vh] -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
       <SoftAura />
-      {/* portrait — top on mobile, bleeds to the right viewport edge on desktop; soft
-          organic radius on the edges that face the content (arch-like, wellness feel) */}
-      <div className="relative lg:absolute lg:top-0 lg:right-0 lg:bottom-0 lg:w-[47%] min-h-[62vh] lg:min-h-0 overflow-hidden rounded-b-[2.75rem] lg:rounded-b-none lg:rounded-l-[4.5rem]">
-        <ImageReveal
-          src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
-          alt="Mayanov"
-          // peeks in at the bottom of the screen on landing — unveil as soon as any of it shows
-          threshold={0}
-          className="absolute inset-0"
-          imgClassName="w-full h-full object-cover object-top"
-          loading="eager"
-        />
-        {/* flat plum tint (no directional gradient) to cohere with the palette */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
-      </div>
+      {/* portrait and text side by side on desktop (portrait first on phones) */}
+      <div className="relative mx-auto px-8 lg:min-h-[72vh] flex flex-col lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16 xl:gap-24 lg:items-center">
+        {/* portrait — set into the paper like a print rather than bled to the edge: an
+            arch-topped photo with a hairline arch offset behind it (the frame line, a
+            small inked star at its apex) and an italic caption */}
+        <figure className="relative mx-auto w-[min(72vw,21rem)] lg:w-full lg:max-w-[26rem] pt-16 lg:py-24 lg:order-2">
+          <div className="relative">
+            <div aria-hidden className="absolute inset-0 translate-x-3 translate-y-3 md:translate-x-4 md:translate-y-4 rounded-t-full border border-ink/15" />
+            <CelestialMark name="sparkle" className="print-ink absolute left-[calc(50%+0.75rem)] md:left-[calc(50%+1rem)] -top-3 md:-top-4 w-3.5 -translate-x-1/2 text-moon/70" />
+            <div className="relative aspect-[4/5] overflow-hidden rounded-t-full">
+              <ImageReveal
+                src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
+                alt="Mayanov"
+                // peeks in at the bottom of the screen on landing — unveil as soon as any of it shows
+                threshold={0}
+                className="absolute inset-0"
+                imgClassName="w-full h-full object-cover object-[45%_28%]"
+                loading="eager"
+              />
+              {/* flat plum tint (no directional gradient) to cohere with the palette */}
+              <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
+            </div>
+          </div>
+          <figcaption className="print-body mt-6 md:mt-7 flex items-center gap-2.5 font-elegant italic text-[0.95rem] text-ink/50">
+            <span aria-hidden className="h-px w-5 bg-ink/25" />
+            {isIndonesian ? 'Mayanov, di tengah sesi baca' : 'Mayanov, mid-reading'}
+          </figcaption>
+        </figure>
 
-      {/* text — inside the page container, held to the left so the portrait can bleed right */}
-      <div className="relative mx-auto px-8 lg:min-h-[72vh] flex items-center">
-        <FadeIn dir="left" className="w-full lg:w-[53%] lg:pr-14 py-20 md:py-28">
+        <FadeIn dir="left" className="w-full pt-14 pb-20 md:pb-28 lg:py-28">
           {/* hook title */}
           <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>
