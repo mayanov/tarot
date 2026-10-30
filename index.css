@@ -128,8 +128,12 @@ html.lenis body {
 }
 /* ---- Nav menu items slide in from the left ---- */
 @keyframes navSlide {
-  0%   { opacity: 0; transform: translateX(-14px); }
-  100% { opacity: 1; transform: translateX(0); }
+  0%   { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+/* the menu closing: the links drop out before the paper lifts */
+@keyframes navOut {
+  to { opacity: 0; transform: translateY(14px); }
 }
 
 /* ---- Kinetic marquee ---- */

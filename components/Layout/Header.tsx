@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Instagram } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
@@ -50,9 +50,24 @@ interface NavItem {
   children?: { name: string; id: string }[];
 }
 
+// Menu motion: opening, the paper wipes down over the site (WIPE_MS) and the links rise
+// in one by one as it settles; closing plays it backwards — the links drop out, last
+// first (OUT_MS), then the paper wipes back up.
+const WIPE_MS = 700;
+const WIPE_EASE = 'cubic-bezier(0.76,0,0.24,1)';
+const OUT_MS = 300;
+
 const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [closing, setClosing] = useState(false); // links leaving, paper still down
+  const closingRef = useRef(false);
+  const closeMenu = () => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+    setClosing(true);
+    window.setTimeout(() => { setMenuOpen(false); setClosing(false); closingRef.current = false; }, OUT_MS);
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -61,16 +76,17 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Lock scroll while the menu overlay is open; close on Escape.
+  // Lock scroll while the menu overlay is open (released as soon as it starts closing,
+  // so a picked section can scroll into place under the lifting paper); close on Escape.
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : 'unset';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+    document.body.style.overflow = menuOpen && !closing ? 'hidden' : 'unset';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && menuOpen) closeMenu(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [menuOpen]);
+  }, [menuOpen, closing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const scrollToSection = (id: string) => {
-    setMenuOpen(false);
+    if (menuOpen) closeMenu();
     const found = smoothScrollToId(id, 80);
     if (!found) window.location.href = `/#${id}`;
   };
@@ -82,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     const title = document.querySelector<HTMLElement>('#services h2');
     const cards = document.getElementById('pricelist');
     if (window.matchMedia('(min-width: 768px)').matches && title && cards) {
-      setMenuOpen(false);
+      if (menuOpen) closeMenu();
       const top = title.getBoundingClientRect().top + window.scrollY;
       const bottom = cards.getBoundingClientRect().bottom + window.scrollY;
       const gap = Math.max(96, (window.innerHeight - (bottom - top)) / 2);
@@ -186,7 +202,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
       {/* Full-screen editorial menu overlay — on the site's paper texture */}
       <div
-        className={`bg-paper fixed inset-0 z-[110] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${menuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
+        className={`bg-paper fixed inset-0 z-[110] ${menuOpen && !closing ? '' : 'pointer-events-none'}`}
+        style={{
+          // a wipe from the top edge: the paper is drawn down over the site and lifted
+          // back up; hidden (visibility) only once it has lifted
+          clipPath: menuOpen ? 'inset(0 0 0 0)' : 'inset(0 0 100% 0)',
+          visibility: menuOpen ? 'visible' : 'hidden',
+          transition: `clip-path ${WIPE_MS}ms ${WIPE_EASE}, visibility 0s linear ${menuOpen ? 0 : WIPE_MS}ms`,
+        }}
         aria-hidden={!menuOpen}
       >
         <div className="relative h-full mx-auto px-8 flex flex-col">
@@ -194,7 +217,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           <div className="flex items-center justify-between py-4 md:py-5 shrink-0">
             <Wordmark onDark={false} />
             <button
-              onClick={() => setMenuOpen(false)}
+              onClick={closeMenu}
               aria-label={isIndonesian ? 'Tutup menu' : 'Close menu'}
               className="group inline-flex items-center justify-center -mr-2 p-2 text-ink"
             >
@@ -211,8 +234,8 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               {navLinks.map((link, i) => (
                 <li
                   key={link.name}
-                  className={`${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'} transition-opacity duration-500 lg:group-hover/nav:opacity-35 lg:hover:!opacity-100`}
-                  style={{ animationDelay: `${i * 65 + 120}ms` }}
+                  className={`${closing ? 'animate-[navOut_0.22s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'} transition-opacity duration-500 lg:group-hover/nav:opacity-35 lg:hover:!opacity-100`}
+                  style={{ animationDelay: `${closing ? (navLinks.length - 1 - i) * 25 : i * 65 + 320}ms` }}
                 >
                   <button
                     onClick={() => scrollToSection(link.id)}
@@ -228,7 +251,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           </nav>
 
           {/* Bottom — language toggle + socials + book */}
-          <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-ink/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 ${menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: '480ms' }}>
+          <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-ink/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 ${closing ? 'animate-[navOut_0.22s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: closing ? '0ms' : '680ms' }}>
             {onSwitchRegion ? (
               <div className="self-start sm:self-auto">
                 <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />
