@@ -134,8 +134,30 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     pendingScroll.current = null;
     scroll();
   }, [closing]);
+  // keyboard: focus moves into the menu as it opens (onto the panel itself, so no ring
+  // shows on a close button nobody pressed), Tab stays
+  // inside it while open, and focus goes back to the menu button once it has closed
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && menuOpen) closeMenu(); };
+    if (!menuOpen) return;
+    const t = window.setTimeout(() => overlayRef.current?.focus({ preventScroll: true }), LINE_IN_AT);
+    return () => {
+      window.clearTimeout(t);
+      if (overlayRef.current?.contains(document.activeElement)) menuBtnRef.current?.focus({ preventScroll: true });
+    };
+  }, [menuOpen]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!menuOpen) return;
+      if (e.key === 'Escape') { closeMenu(); return; }
+      if (e.key !== 'Tab' || !overlayRef.current) return;
+      const items = [...overlayRef.current.querySelectorAll<HTMLElement>('button, a[href]')].filter((el) => el.offsetParent !== null);
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === overlayRef.current)) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [menuOpen]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -252,6 +274,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               </button>
 
               <button
+                ref={menuBtnRef}
                 onClick={openMenu}
                 aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
                 aria-expanded={menuOpen}
@@ -269,7 +292,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
       {/* Full-screen editorial menu overlay — on the site's paper texture */}
       <div
-        className={`bg-paper fixed inset-0 z-[110] ${menuOpen && !closing ? '' : 'pointer-events-none'}`}
+        className={`bg-paper fixed inset-0 z-[110] outline-none ${menuOpen && !closing ? '' : 'pointer-events-none'}`}
         style={{
           // a wipe from the top edge: the paper is drawn down over the site and lifted
           // back up; hidden (visibility) only once it has lifted
@@ -277,7 +300,13 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           visibility: menuOpen ? 'visible' : 'hidden',
           transition: `clip-path ${WIPE_MS}ms ${WIPE_EASE}, visibility 0s linear ${menuOpen ? 0 : WIPE_MS}ms`,
         }}
+        ref={overlayRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
         aria-hidden={!menuOpen}
+        inert={!menuOpen}
+        tabIndex={-1}
       >
         <div className="relative h-full mx-auto px-8 flex flex-col">
           {/* Top row — brand + close (in with the paper's leading edge, out with the links) */}
@@ -326,9 +355,15 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                         className={`flex items-baseline gap-3 sm:gap-5 transition-colors duration-500 group-hover/link:text-moon ${active ? 'text-moon' : 'text-ink'} ${closing ? 'animate-[lineOut_0.3s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[lineIn_0.85s_cubic-bezier(0.22,1,0.36,1)_both]' : 'translate-y-[115%]'}`}
                         style={{ animationDelay: `${closing ? (navLinks.length - 1 - i) * 30 : LINE_IN_AT + i * LINE_STEP}ms` }}
                       >
-                        {/* index number, like the FAQ list */}
-                        <span className={`w-6 sm:w-8 shrink-0 font-elegant italic text-[0.8rem] sm:text-sm tabular-nums ${active ? 'text-moon' : 'text-ink/35'}`}>{String(i + 1).padStart(2, '0')}</span>
-                        <span className={`font-elegant font-medium text-[clamp(1.3rem,4.3dvh,2rem)] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] ${active ? 'italic' : ''}`}>{link.name}</span>
+                        {/* index number, like the FAQ list — on hover (desktop) it lifts away
+                            and a small star takes its place, while the name steps forward */}
+                        <span className={`relative w-6 sm:w-8 shrink-0 font-elegant italic text-[0.8rem] sm:text-sm tabular-nums ${active ? 'text-moon' : 'text-ink/35'}`}>
+                          <span className="inline-block transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:-translate-y-2 lg:group-hover/link:opacity-0">{String(i + 1).padStart(2, '0')}</span>
+                          <CelestialMark name="sparkle" className="absolute left-0 top-1/2 w-3.5 text-moon opacity-0 translate-y-0 transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:opacity-100 lg:group-hover/link:-translate-y-1/2" />
+                        </span>
+                        <span className={`font-elegant font-medium text-[clamp(1.3rem,4.3dvh,2rem)] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:translate-x-3 ${active ? 'italic' : ''}`}>{link.name}</span>
+                        {/* where the visitor was when they opened the menu */}
+                        {active && <span className="hidden sm:inline whitespace-nowrap font-elegant italic text-sm text-ink/40 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:translate-x-3">— {isIndonesian ? 'kamu di sini' : 'you are here'}</span>}
                       </span>
                     </span>
                   </button>
@@ -353,12 +388,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
           {/* wide screens: book a service directly, plus the practical bits — set in the
               index's own type (serif names, italic small print, hairlines), no badges */}
-          <aside className={`hidden lg:block ${rowAnim(LINE_IN_AT + 180, 60).className}`} style={rowAnim(LINE_IN_AT + 180, 60).style}>
-            <p className="font-elegant italic text-sm text-ink/45">{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
+          {/* (its rows come in one after another, like the index; the hover dimming sits on
+              the buttons, since the rows' entrance animation holds their opacity) */}
+          <aside className="hidden lg:block">
+            <p className={`font-elegant italic text-sm text-ink/45 ${rowAnim(LINE_IN_AT + 180, 60).className}`} style={rowAnim(LINE_IN_AT + 180, 60).style}>{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
             <ul className="mt-3 group/svs">
-              {menuServices.map((sv) => (
-                <li key={sv.id} className="border-t border-ink/10 last:border-b transition-opacity duration-500 group-hover/svs:opacity-40 hover:!opacity-100">
-                  <button type="button" onClick={() => bookService(sv.id)} className="group/sv w-full flex items-baseline gap-3 py-3.5 text-left">
+              {menuServices.map((sv, j) => (
+                <li key={sv.id} className={`border-t border-ink/10 last:border-b ${rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).className}`} style={rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).style}>
+                  <button type="button" onClick={() => bookService(sv.id)} className="group/sv w-full flex items-baseline gap-3 py-3.5 text-left transition-[opacity,padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/svs:opacity-40 hover:!opacity-100 hover:pl-2">
                     <CelestialMark name={sv.mark} className="w-3.5 shrink-0 self-center text-ink/35 transition-colors duration-300 group-hover/sv:text-moon" />
                     <span className="flex-1 min-w-0 font-elegant font-medium text-ink text-[1.45rem] leading-tight tracking-[-0.01em] transition-colors duration-300 group-hover/sv:text-moon">{sv.name}</span>
                     <span className="shrink-0 font-elegant italic text-ink/50 text-[0.95rem] whitespace-nowrap">{isIndonesian ? 'mulai' : 'from'} {sv.price}</span>
@@ -366,7 +403,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 </li>
               ))}
             </ul>
-            <p className="mt-5 font-elegant italic text-[0.95rem] leading-relaxed text-ink/50">
+            <p className={`mt-5 font-elegant italic text-[0.95rem] leading-relaxed text-ink/50 ${rowAnim(LINE_IN_AT + 240 + menuServices.length * LINE_STEP, 60).className}`} style={rowAnim(LINE_IN_AT + 240 + menuServices.length * LINE_STEP, 60).style}>
               {isIndonesian ? 'Sesi tatap muka hanya hari Jumat & Minggu, di Jakarta Selatan.' : 'Email readings arrive within 24 hours.'}{' '}
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="not-italic text-moon underline underline-offset-4 decoration-moon/40 hover:decoration-moon">
                 {isIndonesian ? 'Tanya dulu via WhatsApp' : 'Questions? Ask on WhatsApp'}
