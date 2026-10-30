@@ -333,6 +333,9 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const fanAtOpen = useRef<{ cx: number; cy: number; w: number; rot: number }[] | null>(null);
     const [flightStart, setFlightStart] = useState<Record<number, string> | null>(null); // per card: transform at take-off
     const flownRef = useRef(false); // this opening used the flight (vs. reopening from the booking form)
+    const fromMenuRef = useRef(false); // opened from the site menu: the fan may be off screen
+    const groupsRef = useRef(groups);
+    groupsRef.current = groups;
     const FLIGHT_MS = 700;
     // where each card sits in the fan right now (centre, on-screen width, tilt)
     const measureFan = () => groups.map((_, j) => {
@@ -359,6 +362,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         setUnflip(false);
         fanAtOpen.current = measureFan();
         flownRef.current = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        fromMenuRef.current = false;
         setSelected(i);
         setRevealed(false);
         window.setTimeout(() => setRevealed(true), flownRef.current ? FLIGHT_MS - 80 : 0);
@@ -398,6 +402,21 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         setClosing(true);
         const turnFirst = revealedRef.current;
         setRevealed(false);
+        if (fromMenuRef.current) {
+            // opened from the menu, so there's no fan spot on screen to fly back to: the card
+            // turns face-up, then fades out as the blur lifts off the page
+            window.setTimeout(() => {
+                setLanding({});
+                setHandover(true);
+                window.setTimeout(() => {
+                    fromMenuRef.current = false;
+                    shut();
+                    setLanding(null);
+                    requestAnimationFrame(() => requestAnimationFrame(() => { closingRef.current = false; setClosing(false); setHandover(false); }));
+                }, FLIGHT_MS);
+            }, turnFirst ? CLOSE_TURN_MS : 0);
+            return;
+        }
         window.setTimeout(() => {
             const targets = fanTransforms(measureFan());
             if (targets) setLanding(targets);
@@ -434,12 +453,29 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             setSelected(index);
             setRevealed(true);
         };
-        const onClose = shut;
+        const onClose = () => { fromMenuRef.current = false; shut(); };
+        // a service picked in the site menu: its card is drawn in (no flight — the fan may be
+        // anywhere) and turns to its details
+        const onOpen = (e: Event) => {
+            const id = (e as CustomEvent<{ serviceId?: string }>).detail?.serviceId;
+            const index = groupsRef.current.findIndex((g) => BOOKING_MAP[g.type] === id);
+            if (index < 0 || closingRef.current) return;
+            setSwapDir(null);
+            setBooking(false);
+            setUnflip(false);
+            flownRef.current = false;
+            fromMenuRef.current = true;
+            setSelected(index);
+            setRevealed(false);
+            window.setTimeout(() => setRevealed(true), 450);
+        };
         window.addEventListener('reopen-pricelist-card', onReopen);
         window.addEventListener('close-pricelist-card', onClose);
+        window.addEventListener('open-pricelist-card', onOpen);
         return () => {
             window.removeEventListener('reopen-pricelist-card', onReopen);
             window.removeEventListener('close-pricelist-card', onClose);
+            window.removeEventListener('open-pricelist-card', onOpen);
         };
     }, [groups.length]);
 

@@ -5,7 +5,7 @@ import { trackEvent } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/scroll';
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 import CelestialMark from '../UI/CelestialMark';
-import { MoonWatermark, MoonCaption, moonNow } from './MenuMoon';
+import { MoonWatermark, moonNow } from './MenuMoon';
 
 interface HeaderProps {
   isIndonesian?: boolean;
@@ -76,7 +76,6 @@ const MENU_SERVICES_EN: MenuService[] = [
   { id: '3card', name: '3-Card Spread', short: '3-Card', price: '$12', mark: 'constellation' },
   { id: '5card', name: '5-Card Deep', short: '5-Card', price: '$20', mark: 'star' },
 ];
-const WA_LINK = 'https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading';
 
 const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -186,14 +185,15 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     scrollToSection('services');
   };
 
-  // a service from the menu: the booking form opens over the menu as it closes
-  const bookService = (id: string) => {
+  // a service from the menu: its pricelist card is drawn over the menu as it closes,
+  // turning to its details (booking is one step further, from the card)
+  const showService = (id: string) => {
     closeMenu();
-    window.dispatchEvent(new CustomEvent('open-booking', { detail: { serviceId: id } }));
+    window.dispatchEvent(new CustomEvent('open-pricelist-card', { detail: { serviceId: id } }));
   };
   const menuServices = isIndonesian ? MENU_SERVICES_ID : MENU_SERVICES_EN;
   // tonight's moon, worked out again each time the menu opens
-  const moon = useMemo(() => moonNow(isIndonesian), [isIndonesian, menuOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  const moon = useMemo(() => moonNow(), [menuOpen]); // eslint-disable-line react-hooks/exhaustive-deps
   // the rows that fade/rise in (and out) with the links
   const rowAnim = (inAt: number, outAt = 0) => ({
     className: closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0',
@@ -377,8 +377,6 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                           <CelestialMark name="sparkle" className="absolute left-0 top-1/2 w-3.5 text-moon opacity-0 translate-y-0 transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:opacity-100 lg:group-hover/link:-translate-y-1/2" />
                         </span>
                         <span className={`font-elegant font-medium text-[clamp(1.3rem,4.3dvh,2rem)] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:translate-x-3 ${active ? 'italic' : ''}`}>{link.name}</span>
-                        {/* where the visitor was when they opened the menu */}
-                        {active && <span className="hidden sm:inline whitespace-nowrap font-elegant italic text-sm text-ink/40 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover/link:translate-x-3">— {isIndonesian ? 'kamu di sini' : 'you are here'}</span>}
                       </span>
                     </span>
                   </button>
@@ -392,13 +390,12 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               <p className="font-elegant italic text-sm text-ink/45 mb-2">{isIndonesian ? 'Langsung pesan' : 'Book directly'}</p>
               <div className="flex flex-wrap gap-2">
                 {menuServices.map((sv) => (
-                  <button key={sv.id} type="button" onClick={() => bookService(sv.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-ink/15 px-3 py-1.5 text-[13px] text-ink hover:border-moon hover:text-moon transition-colors">
+                  <button key={sv.id} type="button" onClick={() => showService(sv.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-ink/15 px-3 py-1.5 text-[13px] text-ink hover:border-moon hover:text-moon transition-colors">
                     <CelestialMark name={sv.mark} className="w-3 text-moon" />
                     {sv.short}
                   </button>
                 ))}
               </div>
-              <MoonCaption moon={moon} isIndonesian={isIndonesian} className="flex mt-[2.5dvh] sm:mt-6 text-[0.8rem] sm:text-sm" />
             </div>
           </nav>
 
@@ -411,7 +408,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <ul className="mt-3 group/svs">
               {menuServices.map((sv, j) => (
                 <li key={sv.id} className={`border-t border-ink/10 last:border-b ${rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).className}`} style={rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).style}>
-                  <button type="button" onClick={() => bookService(sv.id)} className="group/sv w-full flex items-baseline gap-3 py-3.5 text-left transition-[opacity,padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/svs:opacity-40 hover:!opacity-100 hover:pl-2">
+                  <button type="button" onClick={() => showService(sv.id)} className="group/sv w-full flex items-baseline gap-3 py-3.5 text-left transition-[opacity,padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/svs:opacity-40 hover:!opacity-100 hover:pl-2">
                     <CelestialMark name={sv.mark} className="w-3.5 shrink-0 self-center text-ink/35 transition-colors duration-300 group-hover/sv:text-moon" />
                     <span className="flex-1 min-w-0 font-elegant font-medium text-ink text-[1.45rem] leading-tight tracking-[-0.01em] transition-colors duration-300 group-hover/sv:text-moon">{sv.name}</span>
                     <span className="shrink-0 font-elegant italic text-ink/50 text-[0.95rem] whitespace-nowrap">{isIndonesian ? 'mulai' : 'from'} {sv.price}</span>
@@ -419,12 +416,6 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 </li>
               ))}
             </ul>
-            <p className={`mt-5 font-elegant italic text-[0.95rem] leading-relaxed text-ink/50 ${rowAnim(LINE_IN_AT + 240 + menuServices.length * LINE_STEP, 60).className}`} style={rowAnim(LINE_IN_AT + 240 + menuServices.length * LINE_STEP, 60).style}>
-              {isIndonesian ? 'Sesi tatap muka hanya hari Jumat & Minggu, di Jakarta Selatan.' : 'Email readings arrive within 24 hours.'}{' '}
-              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="not-italic text-moon underline underline-offset-4 decoration-moon/40 hover:decoration-moon">
-                {isIndonesian ? 'Tanya dulu via WhatsApp' : 'Questions? Ask on WhatsApp'}
-              </a>
-            </p>
           </aside>
           </div>
 
@@ -435,7 +426,6 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />
               </div>
             ) : <span className="hidden sm:block" />}
-            <MoonCaption moon={moon} isIndonesian={isIndonesian} className="hidden lg:flex mr-auto ml-10" />
 
             <div className="flex flex-1 sm:flex-none items-center justify-between sm:justify-end gap-6 sm:gap-7">
               {/* socials — plain ink icons, no containers */}
