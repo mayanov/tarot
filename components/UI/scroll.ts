@@ -56,7 +56,7 @@ export function unlockPage() {
 
 // Smoothly scroll to an absolute Y (falls back to native if Lenis is absent).
 export function smoothScrollTo(top: number) {
-    if (lenis) lenis.scrollTo(top, { duration: 1.1 });
+    if (lenis) lenis.scrollTo(top, { duration: 1.1, force: true }); // force: also while an overlay has Lenis stopped
     else window.scrollTo({ top, behavior: 'smooth' });
 }
 
@@ -136,7 +136,7 @@ export function smoothScrollToId(id: string, offset = 80) {
     const el = document.getElementById(id);
     if (!el) return false;
     if (lenis) {
-        lenis.scrollTo(el, { offset: -offset, duration: 1.2 });
+        lenis.scrollTo(el, { offset: -offset, duration: 1.2, force: true });
     } else {
         const y = el.getBoundingClientRect().top + window.scrollY - offset;
         window.scrollTo({ top: y, behavior: 'smooth' });

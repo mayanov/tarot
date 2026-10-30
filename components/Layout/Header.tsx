@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Instagram } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
-import { smoothScrollTo, smoothScrollToId } from '../UI/scroll';
+import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/scroll';
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
+import CelestialMark from '../UI/CelestialMark';
 
 interface HeaderProps {
   isIndonesian?: boolean;
@@ -61,6 +62,21 @@ const OUT_MS = 380;
 const LINE_IN_AT = 260;
 const LINE_STEP = 60;
 
+// The services in the menu — the same mark, colour and starting price as their
+// pricelist card; picking one opens the booking form on it.
+type MenuService = { id: string; name: string; price: string; mark: 'constellation' | 'star' | 'sparkle' | 'crescent'; color: string };
+const MENU_SERVICES_ID: MenuService[] = [
+  { id: 'special', name: 'Edisi Spesial', price: 'Rp 250K', mark: 'constellation', color: '#22396F' },
+  { id: 'chat', name: 'Konsultasi via Chat', price: 'Rp 140K', mark: 'star', color: '#39234E' },
+  { id: 'call', name: 'Panggilan Suara & Video', price: 'Rp 220K', mark: 'sparkle', color: '#CB3B5F' },
+  { id: 'meetup', name: 'Sesi Tatap Muka', price: 'Rp 450K', mark: 'crescent', color: '#F76949' },
+];
+const MENU_SERVICES_EN: MenuService[] = [
+  { id: '3card', name: '3-Card Spread', price: '$12', mark: 'constellation', color: '#22396F' },
+  { id: '5card', name: '5-Card Deep', price: '$20', mark: 'star', color: '#39234E' },
+];
+const WA_LINK = 'https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading';
+
 const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -74,7 +90,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     closeTimer.current = window.setTimeout(() => { setMenuOpen(false); setClosing(false); closingRef.current = false; }, OUT_MS);
   };
   // opening again mid-close cancels the close (the links come straight back)
+  // the section on screen when the menu opens (marked in the index)
+  const [activeId, setActiveId] = useState<string | null>(null);
   const openMenu = () => {
+    const mid = window.innerHeight * 0.4;
+    setActiveId(navLinks.map((l) => l.id).filter((id) => {
+      const el = document.getElementById(id);
+      return el && el.getBoundingClientRect().top <= mid;
+    }).pop() ?? null);
     window.clearTimeout(closeTimer.current);
     closingRef.current = false;
     setClosing(false);
@@ -90,18 +113,37 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
   // Lock scroll while the menu overlay is open (released as soon as it starts closing,
   // so a picked section can scroll into place under the lifting paper); close on Escape.
+  // (the shared, counted lock, so booking a service from the menu — the form locks the
+  // page as the menu closes — doesn't get unlocked by the menu)
   useEffect(() => {
-    document.body.style.overflow = menuOpen && !closing ? 'hidden' : 'unset';
+    if (!menuOpen || closing) return;
+    lockPage();
+    return unlockPage;
+  }, [menuOpen, closing]);
+  // a section picked in the menu scrolls only once the lock above has been released:
+  // releasing restarts Lenis, which would cancel a scroll already under way
+  const pendingScroll = useRef<(() => void) | null>(null);
+  const afterUnlock = (scroll: () => void) => {
+    if (!menuOpen) { scroll(); return; }
+    pendingScroll.current = scroll;
+    closeMenu();
+  };
+  useEffect(() => {
+    if (!closing || !pendingScroll.current) return;
+    const scroll = pendingScroll.current;
+    pendingScroll.current = null;
+    scroll();
+  }, [closing]);
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && menuOpen) closeMenu(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [menuOpen, closing]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [menuOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const scrollToSection = (id: string) => {
-    if (menuOpen) closeMenu();
+  const scrollToSection = (id: string) => afterUnlock(() => {
     const found = smoothScrollToId(id, 80);
     if (!found) window.location.href = `/#${id}`;
-  };
+  });
 
   // "Pesan": take visitors to the service cards. On wider screens frame the
   // "Pilih layanan tarotmu" heading together with the whole card spread (centred when
@@ -110,15 +152,28 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     const title = document.querySelector<HTMLElement>('#services h2');
     const cards = document.getElementById('pricelist');
     if (window.matchMedia('(min-width: 768px)').matches && title && cards) {
-      if (menuOpen) closeMenu();
-      const top = title.getBoundingClientRect().top + window.scrollY;
-      const bottom = cards.getBoundingClientRect().bottom + window.scrollY;
-      const gap = Math.max(96, (window.innerHeight - (bottom - top)) / 2);
-      smoothScrollTo(Math.max(0, top - gap));
+      afterUnlock(() => {
+        const top = title.getBoundingClientRect().top + window.scrollY;
+        const bottom = cards.getBoundingClientRect().bottom + window.scrollY;
+        const gap = Math.max(96, (window.innerHeight - (bottom - top)) / 2);
+        smoothScrollTo(Math.max(0, top - gap));
+      });
       return;
     }
     scrollToSection('services');
   };
+
+  // a service from the menu: the booking form opens over the menu as it closes
+  const bookService = (id: string) => {
+    closeMenu();
+    window.dispatchEvent(new CustomEvent('open-booking', { detail: { serviceId: id } }));
+  };
+  const menuServices = isIndonesian ? MENU_SERVICES_ID : MENU_SERVICES_EN;
+  // the rows that fade/rise in (and out) with the links
+  const rowAnim = (inAt: number, outAt = 0) => ({
+    className: closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0',
+    style: { animationDelay: `${closing ? outAt : inAt}ms` },
+  });
 
   const handleLogoClick = () => {
     if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
@@ -243,32 +298,78 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             </button>
           </div>
 
-          {/* Main — the section links */}
-          <nav key={menuOpen ? 'open' : 'closed'} className="flex-1 min-h-0 overflow-y-auto flex flex-col justify-start lg:justify-center pt-6 pb-8 sm:py-8">
+          {/* Main — the section index (left) and, on wide screens, the services (right) */}
+          <div key={menuOpen ? 'open' : 'closed'} className="flex-1 min-h-0 overflow-y-auto lg:grid lg:grid-cols-[1fr_minmax(20rem,24rem)] lg:gap-16 xl:gap-24 lg:items-center pt-6 pb-8 sm:py-8">
+          <nav className="flex flex-col justify-start lg:justify-center">
             <ul className="group/nav">
-              {navLinks.map((link, i) => (
+              {navLinks.map((link, i) => {
+                const active = link.id === activeId;
+                return (
                 <li
                   key={link.name}
                   className="transition-opacity duration-500 lg:group-hover/nav:opacity-35 lg:hover:!opacity-100"
                 >
                   <button
                     onClick={() => scrollToSection(link.id)}
-                    className="group/link w-full flex items-center py-3 sm:py-2.5 text-left"
+                    aria-current={active ? 'true' : undefined}
+                    className="group/link w-full flex items-center py-2.5 text-left"
                   >
                     {/* the mask (with room below for descenders) and the line sliding in it */}
                     <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em]">
                       <span
-                        className={`block font-elegant font-medium text-ink text-[2rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] transition-colors duration-500 group-hover/link:text-moon ${closing ? 'animate-[lineOut_0.3s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[lineIn_0.85s_cubic-bezier(0.22,1,0.36,1)_both]' : 'translate-y-[115%]'}`}
+                        className={`flex items-baseline gap-3 sm:gap-5 transition-colors duration-500 group-hover/link:text-moon ${active ? 'text-moon' : 'text-ink'} ${closing ? 'animate-[lineOut_0.3s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[lineIn_0.85s_cubic-bezier(0.22,1,0.36,1)_both]' : 'translate-y-[115%]'}`}
                         style={{ animationDelay: `${closing ? (navLinks.length - 1 - i) * 30 : LINE_IN_AT + i * LINE_STEP}ms` }}
                       >
-                        {link.name}
+                        {/* index number, like the FAQ list */}
+                        <span className={`w-6 sm:w-8 shrink-0 font-elegant italic text-[0.8rem] sm:text-sm tabular-nums ${active ? 'text-moon' : 'text-ink/35'}`}>{String(i + 1).padStart(2, '0')}</span>
+                        <span className={`font-elegant font-medium text-[2rem] sm:text-[3rem] md:text-[3.8rem] leading-[1.1] tracking-[-0.025em] ${active ? 'italic' : ''}`}>{link.name}</span>
                       </span>
+                    </span>
+                  </button>
+                </li>
+                );
+              })}
+            </ul>
+
+            {/* phones / tablets: the services as a row of chips under the index */}
+            <div className={`lg:hidden mt-7 ${rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).className}`} style={rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).style}>
+              <p className="text-[12px] text-ink/50 mb-2.5">{isIndonesian ? 'Langsung pesan' : 'Book directly'}</p>
+              <div className="flex flex-wrap gap-2">
+                {menuServices.map((sv) => (
+                  <button key={sv.id} type="button" onClick={() => bookService(sv.id)} className="inline-flex items-center gap-2 rounded-lg border border-ink/15 pl-2 pr-3 py-1.5 text-[13px] text-ink hover:border-moon hover:text-moon transition-colors">
+                    <span className="grid place-items-center w-5 h-5 rounded-full text-cream" style={{ backgroundColor: sv.color }}><CelestialMark name={sv.mark} className="w-3" /></span>
+                    {sv.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </nav>
+
+          {/* wide screens: book a service directly, plus the practical bits */}
+          <aside className={`hidden lg:block ${rowAnim(LINE_IN_AT + 180, 60).className}`} style={rowAnim(LINE_IN_AT + 180, 60).style}>
+            <p className="font-elegant italic text-ink/55 text-lg">{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
+            <ul className="mt-4 border-t border-ink/10">
+              {menuServices.map((sv) => (
+                <li key={sv.id} className="border-b border-ink/10">
+                  <button type="button" onClick={() => bookService(sv.id)} className="group/sv w-full flex items-center gap-4 py-4 text-left">
+                    <span className="grid place-items-center w-9 h-9 shrink-0 rounded-full text-cream" style={{ backgroundColor: sv.color }}><CelestialMark name={sv.mark} className="w-4" /></span>
+                    <span className="flex-1 min-w-0 font-elegant font-medium text-ink text-[1.15rem] leading-tight transition-colors duration-300 group-hover/sv:text-moon">{sv.name}</span>
+                    <span className="text-right shrink-0">
+                      <span className="block text-[11px] text-ink/45">{isIndonesian ? 'mulai' : 'from'}</span>
+                      <span className="block font-serif font-semibold text-ink">{sv.price}</span>
                     </span>
                   </button>
                 </li>
               ))}
             </ul>
-          </nav>
+            <p className="mt-5 text-[13px] leading-relaxed text-ink/55">
+              {isIndonesian ? 'Sesi tatap muka hanya hari Jumat & Minggu, di Jakarta Selatan.' : 'Email readings arrive within 24 hours.'}{' '}
+              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="text-moon underline underline-offset-4 decoration-moon/40 hover:decoration-moon">
+                {isIndonesian ? 'Tanya dulu via WhatsApp' : 'Questions? Ask on WhatsApp'}
+              </a>
+            </p>
+          </aside>
+          </div>
 
           {/* Bottom — language toggle + socials + book */}
           <div className={`shrink-0 pt-5 pb-6 md:py-6 border-t border-ink/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: closing ? '0ms' : `${LINE_IN_AT + navLinks.length * LINE_STEP + 80}ms` }}>
