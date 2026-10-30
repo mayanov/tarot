@@ -28,7 +28,7 @@ export const PHASES: { p: number; waning?: boolean }[] = [
 const MoonPhaseDivider: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div aria-hidden className={`mx-auto px-8 ${className}`}>
     <FadeIn dir="none">
-      <div className="flex items-center gap-4 md:gap-6 text-moon">
+      <div className="print-ink mix-blend-multiply flex items-center gap-4 md:gap-6 text-moon">
         <span className="h-px flex-1 bg-gradient-to-r from-transparent to-moon/30" />
         <div className="flex items-center gap-2.5 md:gap-3.5">
           {PHASES.map((ph, i) => (

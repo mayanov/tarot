@@ -92,7 +92,9 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           {/* goal — a flush-left closing statement (aligned with the title), with
               a decorative quote mark above and a signature, so it stays designed */}
           <figure className="relative mt-10 md:mt-12">
-            <span aria-hidden className="block font-serif text-moon/30 text-[4rem] leading-[0.4] h-7 select-none">”</span>
+            {/* (the ink texture sits on an inner box with room round the glyph — a mask clips to
+                its box, and this line box is far shorter than the mark) */}
+            <span aria-hidden className="block font-serif text-moon/45 text-[4rem] leading-[0.4] h-7 select-none"><span className="print-ink mix-blend-multiply inline-block py-[0.5em] -my-[0.5em]">”</span></span>
             <blockquote className="font-elegant text-ink text-[1.5rem] md:text-[1.9rem] leading-[1.24] tracking-[-0.02em]">
               {isIndonesian
                 ? 'Tujuan saya simpel: memberikan kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'

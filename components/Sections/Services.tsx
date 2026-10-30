@@ -107,12 +107,12 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-10 h-40 opacity-0 transition-opacity duration-500 group-hover/card:opacity-100" style={{ background: 'radial-gradient(60% 100% at 50% 0%, rgba(201,184,232,0.28), transparent 72%)' }} />
 
                 <div className="relative h-full flex flex-col items-center justify-between text-cream text-center" style={{ padding: `${cq(28)} ${cq(20)}` }}>
-                    <span className="font-elegant italic text-cream/55 tracking-wide leading-[1.43]" style={{ fontSize: cq(14) }}>{numeral}</span>
+                    <span className="print-ink font-elegant italic text-cream/55 tracking-wide leading-[1.43]" style={{ fontSize: cq(14) }}>{numeral}</span>
                     {/* fixed slots — the icon box and a two-line title box are the same height on
                         every card, so icons, titles and prices line up across the whole spread */}
                     <div className="flex flex-col items-center" style={{ gap: cq(16) }}>
                         <div className="grid place-items-center" style={{ height: cq(64) }}>
-                            <span className="block" style={{ width: cq(64) }}><CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className="block w-full text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]" /></span>
+                            <span className="block" style={{ width: cq(64) }}><CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className="print-ink block w-full text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]" /></span>
                         </div>
                         <h3 className="min-h-[2.24em] flex items-center justify-center font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch]" style={{ fontSize: cq(22.4) }}>{g.type}</h3>
                     </div>
@@ -136,7 +136,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 
                         {/* crest — the card's mark at the top of the frame */}
                         <div className="relative flex justify-center" style={{ color: accent }}>
-                            <CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className={tight ? 'w-6' : big ? 'w-9' : 'w-7'} />
+                            <CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className={`print-ink ${tight ? 'w-6' : big ? 'w-9' : 'w-7'}`} />
                         </div>
                         {!tight && <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{numeral}</span>}
                         <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight ${tight ? 'text-[1.15rem]' : big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
@@ -260,8 +260,8 @@ const CardBack: React.FC = () => (
         <div aria-hidden className="absolute inset-[1.15rem] rounded-[0.6rem] ring-1 ring-[#C9B8E8]/10" />
         <div className="absolute inset-0 grid place-items-center">
             <div className="flex flex-col items-center gap-3 text-[#C9B8E8]/80">
-                <CelestialMark name="crescent" className="w-14" />
-                <span className="font-elegant italic text-[11px] tracking-[0.32em] uppercase text-[#C9B8E8]/55">Mayanov</span>
+                <CelestialMark name="crescent" className="print-ink w-14" />
+                <span className="print-ink font-elegant italic text-[11px] tracking-[0.32em] uppercase text-[#C9B8E8]/55">Mayanov</span>
             </div>
         </div>
     </div>
