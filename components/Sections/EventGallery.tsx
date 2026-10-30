@@ -9,13 +9,14 @@ import React, { useEffect, useRef, useState } from 'react';
 
 type Props = { photos: string[]; isIndonesian: boolean; onOpen: (src: string) => void };
 
-// per print: tilt, vertical offset, caption, and its own frame colour — the same
-// colours as the pricelist cards (navy, rose, plum, coral)
+// per print: tilt, vertical offset, caption, and its own frame colour — the
+// pricelist's navy, rose, plum and coral, muted to dusty tones so the four sit
+// quietly together and the photos stay the focus
 const PRINTS = [
-  { rot: -4, y: 0, bg: '#22396F', id: 'di balik meja', en: 'at the table' },
-  { rot: 3, y: 2.5, bg: '#CB3B5F', id: 'sesi bersama', en: 'reading together' },
-  { rot: -2, y: -1, bg: '#39234E', id: 'malam event', en: 'event night' },
-  { rot: 4, y: 2, bg: '#F76949', id: 'kartu terbuka', en: 'cards on the table' },
+  { rot: -4, y: 0, bg: '#3D4A66', id: 'di balik meja', en: 'at the table' },
+  { rot: 3, y: 2.5, bg: '#9A5A68', id: 'sesi bersama', en: 'reading together' },
+  { rot: -2, y: -1, bg: '#4E3D5C', id: 'malam event', en: 'event night' },
+  { rot: 4, y: 2, bg: '#A6684F', id: 'kartu terbuka', en: 'cards on the table' },
 ];
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
