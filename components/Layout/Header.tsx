@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Instagram } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/scroll';
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 import CelestialMark from '../UI/CelestialMark';
+import { MoonWatermark, MoonCaption, moonNow } from './MenuMoon';
 
 interface HeaderProps {
   isIndonesian?: boolean;
@@ -191,6 +192,8 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     window.dispatchEvent(new CustomEvent('open-booking', { detail: { serviceId: id } }));
   };
   const menuServices = isIndonesian ? MENU_SERVICES_ID : MENU_SERVICES_EN;
+  // tonight's moon, worked out again each time the menu opens
+  const moon = useMemo(() => moonNow(isIndonesian), [isIndonesian, menuOpen]); // eslint-disable-line react-hooks/exhaustive-deps
   // the rows that fade/rise in (and out) with the links
   const rowAnim = (inAt: number, outAt = 0) => ({
     className: closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0',
@@ -292,7 +295,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
       {/* Full-screen editorial menu overlay — on the site's paper texture */}
       <div
-        className={`bg-paper fixed inset-0 z-[110] outline-none ${menuOpen && !closing ? '' : 'pointer-events-none'}`}
+        className={`bg-paper fixed inset-0 z-[110] overflow-hidden outline-none ${menuOpen && !closing ? '' : 'pointer-events-none'}`}
         style={{
           // a wipe from the top edge: the paper is drawn down over the site and lifted
           // back up; hidden (visibility) only once it has lifted
@@ -308,6 +311,18 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         inert={!menuOpen}
         tabIndex={-1}
       >
+        {/* tonight's moon, printed faintly into the paper — behind the services on wide
+            screens, low in the corner on phones; it rises and turns into place as the
+            paper comes down */}
+        <div aria-hidden className="pointer-events-none absolute aspect-square w-[92vw] -right-[34vw] bottom-[12dvh] sm:w-[62vw] sm:-right-[14vw] lg:w-[min(38rem,76vh)] lg:right-[calc(14rem-min(38rem,76vh)/2)] lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2">
+          <div
+            className={`w-full h-full ${closing ? 'animate-[moonOut_0.35s_ease-in_both]' : menuOpen ? 'animate-[moonRise_1.8s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`}
+            style={{ animationDelay: closing ? '0ms' : '220ms' }}
+          >
+            <MoonWatermark moon={moon} className="w-full h-full text-ink" />
+          </div>
+        </div>
+
         <div className="relative h-full mx-auto px-8 flex flex-col">
           {/* Top row — brand + close (in with the paper's leading edge, out with the links) */}
           <div
@@ -383,6 +398,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                   </button>
                 ))}
               </div>
+              <MoonCaption moon={moon} isIndonesian={isIndonesian} className="flex mt-[2.5dvh] sm:mt-6 text-[0.8rem] sm:text-sm" />
             </div>
           </nav>
 
@@ -419,6 +435,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />
               </div>
             ) : <span className="hidden sm:block" />}
+            <MoonCaption moon={moon} isIndonesian={isIndonesian} className="hidden lg:flex mr-auto ml-10" />
 
             <div className="flex flex-1 sm:flex-none items-center justify-between sm:justify-end gap-6 sm:gap-7">
               {/* socials — plain ink icons, no containers */}
