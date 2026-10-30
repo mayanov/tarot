@@ -359,15 +359,18 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         setFlightStart(starts);
         requestAnimationFrame(() => requestAnimationFrame(() => setFlightStart(null)));
     }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
-    // booking from a card: the reveal stays open underneath, the spread steps back and
-    // dims, and the booking form slides up over it as a sheet. Its Back slides the sheet
-    // away and the spread comes forward again; closing the form closes both.
+    // booking from a card: the reveal stays open underneath while the card's paper
+    // details side grows into the booking form (the form draws that paper — see
+    // BookingModal); the other cards and the tabs fade away meanwhile. Back shrinks the
+    // form into the card again; closing the form closes both.
     const [booking, setBooking] = useState(false);
+    const selRef = useRef<HTMLDivElement | null>(null);
     const close = () => { flownRef.current = false; setBooking(false); setSelected(null); };
     const bookGroup = (g: any) => {
         if (selected === null) return;
+        const r = selRef.current?.getBoundingClientRect();
         setBooking(true);
-        openBooking(BOOKING_MAP[g.type], selected);
+        openBooking(BOOKING_MAP[g.type], selected, r && { left: r.left, top: r.top, width: r.width, height: r.height });
     };
 
     useEffect(() => {
@@ -523,12 +526,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                     <div
                         ref={boxRef}
                         className="relative aspect-[5/8]"
-                        style={{ height: isMobile ? 'min(calc(100dvh - 9.5rem), 128vw)' : 'min(82vh, 38rem)',
-                            // stepping back under the booking sheet
-                            transform: booking ? 'scale(0.94)' : undefined,
-                            filter: booking ? 'brightness(0.7)' : undefined,
-                            transition: 'transform 500ms cubic-bezier(0.22,1,0.36,1), filter 500ms ease',
-                        }}
+                        style={{ height: isMobile ? 'min(calc(100dvh - 9.5rem), 128vw)' : 'min(82vh, 38rem)' }}
                         onTouchStart={onTouchStart}
                         onTouchEnd={onTouchEnd}
                     >
@@ -547,7 +545,8 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                     style={{
                                         zIndex: 10 - depth,
                                         transform: flying ? flightStart![j] : 'none',
-                                        transition: flying ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
+                                        transition: flying ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1), opacity 300ms ease`,
+                                        opacity: booking ? 0 : 1, // away while the booking form is open
                                     }}
                                 >
                                     {/* a div acting as a button: the card inside has its own buttons,
@@ -574,13 +573,17 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
 
                         <div
                             key={selected}
+                            ref={selRef}
                             className="relative z-20 h-full w-full"
                             style={{
                                 // switching services: a swipe; opened from the fan: the flight;
                                 // reopened from the booking form: the plain draw-in
                                 animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : flownRef.current ? undefined : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)',
                                 transform: flightStart && !swapDir ? flightStart[selected] : undefined,
-                                transition: flightStart ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
+                                // booking: hidden once the form's paper has faded in over it (and
+                                // shown again at once when that paper is back on top of it)
+                                transition: flightStart ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1), opacity 0s linear ${booking ? MORPH_COVER_MS : 0}ms`,
+                                opacity: booking ? 0 : 1,
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
@@ -642,8 +645,11 @@ const BOOKING_MAP: Record<string, string> = {
 };
 
 // `returnToCard` (a pricelist card index) lets the booking form's "back" reopen that card.
-const openBooking = (serviceId?: string, returnToCard?: number) =>
-    window.dispatchEvent(new CustomEvent('open-booking', { detail: { ...(serviceId ? { serviceId } : {}), ...(returnToCard !== undefined ? { returnToCard } : {}) } }));
+// `cardRect` (the card's spot on screen) lets the form grow out of the card and back.
+const openBooking = (serviceId?: string, returnToCard?: number, cardRect?: object) =>
+    window.dispatchEvent(new CustomEvent('open-booking', { detail: { ...(serviceId ? { serviceId } : {}), ...(returnToCard !== undefined ? { returnToCard } : {}), ...(cardRect ? { cardRect } : {}) } }));
+// how long the form's paper takes to fade in over the card (matches COVER_MS in BookingModal)
+const MORPH_COVER_MS = 160;
 
 // The order button for a category — opens the on-site booking flow.
 const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndonesian }) => {
