@@ -499,15 +499,26 @@ html.lenis body {
 }
 
 /* ---------------------------------------------------------------------------
-   Printed ink — for ornaments (quote marks, celestial marks, card numerals, the
-   moon-phase divider): a fine grain mask wears the ink unevenly, so a mark reads
-   as pressed onto the stock rather than drawn on screen. On the paper, pair it
-   with mix-blend-multiply so the fibres show through the ink as well. Not for
-   running text — at small sizes the speckle just looks dirty.
+   Printed ink — a fine grain mask wears the ink unevenly, so a mark reads as
+   pressed onto the stock rather than drawn on screen. On the paper, pair it with
+   mix-blend-multiply so the fibres show through the ink as well.
+   .print-ink  — ornaments (quote marks, celestial marks, card numerals, the
+                 moon-phase divider): a visibly worn print.
+   .print-text — large display text (the testimonial quotes): a much lighter
+                 wear, finer grain, so it stays easy to read. Not for body copy.
 --------------------------------------------------------------------------- */
-.print-ink {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.4 0 0 0 1.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.4 0 0 0 1.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+:root {
+  --ink-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.8 0 0 0 1.62'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --ink-grain-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.1 0 0 0 1.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.print-ink,
+.print-text {
+  -webkit-mask-image: var(--ink-grain);
+          mask-image: var(--ink-grain);
   -webkit-mask-size: 180px 180px;
           mask-size: 180px 180px;
+}
+.print-text {
+  -webkit-mask-image: var(--ink-grain-soft);
+          mask-image: var(--ink-grain-soft);
 }

@@ -261,7 +261,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                 }}
                 className={`flex flex-col items-center text-center ${active ? '' : 'pointer-events-none'}`}
               >
-                <p className="font-elegant text-ink text-[1.3rem] md:text-[1.9rem] leading-[1.42] tracking-[-0.005em]">
+                <p className="print-text font-elegant text-ink text-[1.3rem] md:text-[1.9rem] leading-[1.42] tracking-[-0.005em]">
                   {r.text}
                 </p>
                 <footer className="mt-8 md:mt-10 font-elegant italic text-ink/75 text-base md:text-lg">
