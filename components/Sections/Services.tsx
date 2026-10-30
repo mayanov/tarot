@@ -329,16 +329,30 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const [flightStart, setFlightStart] = useState<Record<number, string> | null>(null); // per card: transform at take-off
     const flownRef = useRef(false); // this opening used the flight (vs. reopening from the booking form)
     const FLIGHT_MS = 700;
+    // where each card sits in the fan right now (centre, on-screen width, tilt)
+    const measureFan = () => groups.map((_, j) => {
+        const el = fanSlotRefs.current[j];
+        if (!el) return { cx: 0, cy: 0, w: 0, rot: 0 };
+        const r = el.getBoundingClientRect();
+        return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, w: el.offsetWidth * fanScale, rot: fanRot(j) };
+    });
+    // per card: the transform that puts it on its fan spot, from the focused spread's box
+    const fanTransforms = (fan: { cx: number; cy: number; w: number; rot: number }[]) => {
+        const box = boxRef.current?.getBoundingClientRect();
+        if (!box) return null;
+        const bx = box.left + box.width / 2, by = box.top + box.height / 2;
+        const out: Record<number, string> = {};
+        fan.forEach((f, j) => {
+            if (!f.w) return;
+            out[j] = `translate(${(f.cx - bx).toFixed(1)}px, ${(f.cy - by).toFixed(1)}px) rotate(${f.rot.toFixed(2)}deg) scale(${(f.w / box.width).toFixed(4)})`;
+        });
+        return out;
+    };
     const draw = (i: number) => {
         setSwapDir(null);
         setBooking(false);
         setUnflip(false);
-        fanAtOpen.current = groups.map((_, j) => {
-            const el = fanSlotRefs.current[j];
-            if (!el) return { cx: 0, cy: 0, w: 0, rot: 0 };
-            const r = el.getBoundingClientRect();
-            return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, w: el.offsetWidth * fanScale, rot: fanRot(j) };
-        });
+        fanAtOpen.current = measureFan();
         flownRef.current = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         setSelected(i);
         setRevealed(false);
@@ -348,15 +362,9 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     // then release them on the next frames so they glide into place
     useLayoutEffect(() => {
         if (selected === null || !fanAtOpen.current || !flownRef.current) return;
-        const box = boxRef.current?.getBoundingClientRect();
-        if (!box) return;
-        const bx = box.left + box.width / 2, by = box.top + box.height / 2;
-        const starts: Record<number, string> = {};
-        fanAtOpen.current.forEach((f, j) => {
-            if (!f.w) return;
-            starts[j] = `translate(${(f.cx - bx).toFixed(1)}px, ${(f.cy - by).toFixed(1)}px) rotate(${f.rot.toFixed(2)}deg) scale(${(f.w / box.width).toFixed(4)})`;
-        });
+        const starts = fanTransforms(fanAtOpen.current);
         fanAtOpen.current = null;
+        if (!starts) return;
         setFlightStart(starts);
         requestAnimationFrame(() => requestAnimationFrame(() => setFlightStart(null)));
     }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -366,7 +374,35 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     // the form away and the card back round; closing the form closes both.
     const [booking, setBooking] = useState(false);
     const [unflip, setUnflip] = useState(false); // turning back round after the form
-    const close = () => { flownRef.current = false; setBooking(false); setSelected(null); };
+    const shut = () => { flownRef.current = false; setBooking(false); setSelected(null); };
+    // closing runs the opening backwards: the drawn card turns face-up, then every card
+    // flies back to its spot in the fan while the backdrop fades; the fan itself shows
+    // again (instantly) the moment they land
+    const [landing, setLanding] = useState<Record<number, string> | null>(null); // per card: transform on its fan spot
+    const [closing, setClosing] = useState(false);
+    const closingRef = useRef(false);
+    const revealedRef = useRef(revealed);
+    revealedRef.current = revealed;
+    const close = () => {
+        if (closingRef.current) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { shut(); return; }
+        closingRef.current = true;
+        setClosing(true);
+        const turnFirst = revealedRef.current;
+        setRevealed(false);
+        window.setTimeout(() => {
+            const targets = fanTransforms(measureFan());
+            if (targets) setLanding(targets);
+            window.setTimeout(() => {
+                shut();
+                setLanding(null);
+                // one frame with the fan's fade switched off, so it's simply there
+                requestAnimationFrame(() => requestAnimationFrame(() => { closingRef.current = false; setClosing(false); }));
+            }, targets ? FLIGHT_MS : 0);
+        }, turnFirst ? CLOSE_TURN_MS : 0);
+    };
+    const closeRef = useRef(close);
+    closeRef.current = close;
     const bookGroup = (g: any) => {
         if (selected === null) return;
         setBooking(true);
@@ -387,7 +423,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             setSelected(index);
             setRevealed(true);
         };
-        const onClose = () => { flownRef.current = false; setBooking(false); setSelected(null); };
+        const onClose = shut;
         window.addEventListener('reopen-pricelist-card', onReopen);
         window.addEventListener('close-pricelist-card', onClose);
         return () => {
@@ -414,7 +450,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (bookingRef.current) return; // the booking form is on top
-            if (e.key === 'Escape') close();
+            if (e.key === 'Escape') closeRef.current();
             if (selectedRef.current === null) return;
             if (e.key === 'ArrowRight') switchRef.current(selectedRef.current + 1);
             if (e.key === 'ArrowLeft') switchRef.current(selectedRef.current - 1);
@@ -475,7 +511,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             // doesn't show ghost cards behind the focused spread
             opacity: isOpen ? 0 : 1,
             transition: settled
-                ? 'transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease'
+                ? `transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity ${closing ? 0 : 0.35}s ease`
                 : `transform ${DEAL_MOVE}ms cubic-bezier(0.2,0.9,0.25,1) ${dealDelay(i)}ms, opacity 0.35s ease`,
         };
     };
@@ -523,8 +559,8 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             {/* full-screen "drawn card" reveal — portaled to <body> so it sits above the
                 nav and blurs the WHOLE page; click anywhere outside to close */}
             {selected !== null && typeof document !== 'undefined' && createPortal(
-                <div data-lenis-prevent className={`fixed inset-0 z-[300] overscroll-none touch-none flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden gap-4 px-5 py-5 ${booking ? 'pointer-events-none' : ''}`} onClick={close} role="dialog" aria-modal="true">
-                    <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} />
+                <div data-lenis-prevent className={`fixed inset-0 z-[300] overscroll-none touch-none flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden gap-4 px-5 py-5 ${booking || closing ? 'pointer-events-none' : ''}`} onClick={close} role="dialog" aria-modal="true">
+                    <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease', opacity: landing ? 0 : 1, transition: `opacity ${FLIGHT_MS}ms ease` }} />
                     <div
                         ref={boxRef}
                         className="relative aspect-[5/8]"
@@ -538,7 +574,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                             const d = j - selected;
                             const side = Math.sign(d);
                             const depth = Math.abs(d);
-                            const flying = !!flightStart;
+                            const flying = !!flightStart || !!landing; // collapsed onto the fan spot
                             return (
                                 // flight layer: starts exactly on the card's spot in the fan
                                 <div
@@ -546,8 +582,8 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                     className="absolute inset-0"
                                     style={{
                                         zIndex: 10 - depth,
-                                        transform: flying ? flightStart![j] : 'none',
-                                        transition: flying ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1), opacity 300ms ease`,
+                                        transform: flightStart ? flightStart[j] : landing ? landing[j] : 'none',
+                                        transition: flightStart ? 'none' : `transform ${FLIGHT_MS}ms ${landing ? LAND_EASE : 'cubic-bezier(0.22,1,0.36,1)'}, opacity 300ms ease`,
                                         opacity: booking ? 0 : 1, // away while the booking form is open
                                     }}
                                 >
@@ -562,7 +598,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                         className="absolute inset-0 cursor-pointer rounded-[1.15rem] transition-[transform,opacity,filter] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] brightness-[0.8] hover:brightness-100 focus:outline-none focus-visible:brightness-100"
                                         style={{
                                             transform: flying ? 'none' : `translateX(${side * (38 + (depth - 1) * 9)}%) translateY(${depth * 3}%) rotate(${side * (7 + (depth - 1) * 4)}deg) scale(${0.86 - (depth - 1) * 0.05})`,
-                                            transitionDuration: flying ? '0ms' : `${FLIGHT_MS}ms`,
+                                            transitionDuration: flightStart ? '0ms' : `${FLIGHT_MS}ms`,
                                         }}
                                     >
                                         <span aria-hidden className="pointer-events-none block h-full w-full">
@@ -581,8 +617,9 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                 // reopened from the booking form: the plain draw-in
                                 animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : flownRef.current ? undefined : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)',
                                 // booking: turned edge-on (the form turns in after it); back: round again
-                                transform: flightStart && !swapDir ? flightStart[selected] : booking ? `perspective(1600px) rotateY(${CARD_TURN_DEG}deg)` : undefined,
+                                transform: flightStart && !swapDir ? flightStart[selected] : landing ? landing[selected] : booking ? `perspective(1600px) rotateY(${CARD_TURN_DEG}deg)` : undefined,
                                 transition: flightStart ? 'none'
+                                    : landing ? `transform ${FLIGHT_MS}ms ${LAND_EASE}`
                                     : booking ? `transform ${TURN_MS}ms cubic-bezier(0.55,0,1,0.45)`
                                     : unflip ? `transform ${TURN_MS + 60}ms cubic-bezier(0,0.55,0.45,1)`
                                     : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
@@ -594,7 +631,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                     </div>
 
                     {/* service tabs — jump straight to another service by name */}
-                    <div className={`relative z-30 flex gap-2 max-w-xl flex-wrap justify-center`} style={{ opacity: booking ? 0 : 1, transition: 'opacity 300ms ease' }} onClick={(e) => e.stopPropagation()}>
+                    <div className={`relative z-30 flex gap-2 max-w-xl flex-wrap justify-center`} style={{ opacity: booking || closing ? 0 : 1, transition: 'opacity 300ms ease' }} onClick={(e) => e.stopPropagation()}>
                         {groups.map((g, j) => (
                             <button
                                 key={g.type}
@@ -652,6 +689,10 @@ const openBooking = (serviceId?: string, returnToCard?: number) =>
 // the card <-> booking form turn: each half takes TURN_MS (matches BookingModal)
 const TURN_MS = 260;
 const CARD_TURN_DEG = 90;
+// closing the reveal: how long the drawn card turns face-up before the cards fly back,
+// and the flight's easing (speeding up into the fan, the opening's ease-out reversed)
+const CLOSE_TURN_MS = 380;
+const LAND_EASE = 'cubic-bezier(0.55,0,0.45,1)';
 
 // The order button for a category — opens the on-site booking flow.
 const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndonesian }) => {
