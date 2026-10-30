@@ -332,6 +332,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const draw = (i: number) => {
         setSwapDir(null);
         setBooking(false);
+        setUnflip(false);
         fanAtOpen.current = groups.map((_, j) => {
             const el = fanSlotRefs.current[j];
             if (!el) return { cx: 0, cy: 0, w: 0, rot: 0 };
@@ -359,18 +360,18 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         setFlightStart(starts);
         requestAnimationFrame(() => requestAnimationFrame(() => setFlightStart(null)));
     }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
-    // booking from a card: the reveal stays open underneath while the card's paper
-    // details side grows into the booking form (the form draws that paper — see
-    // BookingModal); the other cards and the tabs fade away meanwhile. Back shrinks the
-    // form into the card again; closing the form closes both.
+    // booking from a card: the reveal stays open underneath, the card turns edge-on and
+    // the booking form turns in from the other side, as if printed on the card's back
+    // (see BookingModal); the other cards and the tabs fade away meanwhile. Back turns
+    // the form away and the card back round; closing the form closes both.
     const [booking, setBooking] = useState(false);
-    const selRef = useRef<HTMLDivElement | null>(null);
+    const [unflip, setUnflip] = useState(false); // turning back round after the form
     const close = () => { flownRef.current = false; setBooking(false); setSelected(null); };
     const bookGroup = (g: any) => {
         if (selected === null) return;
-        const r = selRef.current?.getBoundingClientRect();
         setBooking(true);
-        openBooking(BOOKING_MAP[g.type], selected, r && { left: r.left, top: r.top, width: r.width, height: r.height });
+        setUnflip(false);
+        openBooking(BOOKING_MAP[g.type], selected);
     };
 
     useEffect(() => {
@@ -380,6 +381,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             const index = (e as CustomEvent<{ index: number }>).detail?.index;
             if (typeof index !== 'number' || index < 0 || index >= groups.length) return;
             setBooking(false);
+            setUnflip(true);
             if (selectedRef.current === index) return;
             setSwapDir(null);
             setSelected(index);
@@ -573,17 +575,17 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
 
                         <div
                             key={selected}
-                            ref={selRef}
                             className="relative z-20 h-full w-full"
                             style={{
                                 // switching services: a swipe; opened from the fan: the flight;
                                 // reopened from the booking form: the plain draw-in
                                 animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : flownRef.current ? undefined : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)',
-                                transform: flightStart && !swapDir ? flightStart[selected] : undefined,
-                                // booking: hidden once the form's paper has faded in over it (and
-                                // shown again at once when that paper is back on top of it)
-                                transition: flightStart ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1), opacity 0s linear ${booking ? MORPH_COVER_MS : 0}ms`,
-                                opacity: booking ? 0 : 1,
+                                // booking: turned edge-on (the form turns in after it); back: round again
+                                transform: flightStart && !swapDir ? flightStart[selected] : booking ? `perspective(1600px) rotateY(${CARD_TURN_DEG}deg)` : undefined,
+                                transition: flightStart ? 'none'
+                                    : booking ? `transform ${TURN_MS}ms cubic-bezier(0.55,0,1,0.45)`
+                                    : unflip ? `transform ${TURN_MS + 60}ms cubic-bezier(0,0.55,0.45,1)`
+                                    : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
@@ -645,11 +647,11 @@ const BOOKING_MAP: Record<string, string> = {
 };
 
 // `returnToCard` (a pricelist card index) lets the booking form's "back" reopen that card.
-// `cardRect` (the card's spot on screen) lets the form grow out of the card and back.
-const openBooking = (serviceId?: string, returnToCard?: number, cardRect?: object) =>
-    window.dispatchEvent(new CustomEvent('open-booking', { detail: { ...(serviceId ? { serviceId } : {}), ...(returnToCard !== undefined ? { returnToCard } : {}), ...(cardRect ? { cardRect } : {}) } }));
-// how long the form's paper takes to fade in over the card (matches COVER_MS in BookingModal)
-const MORPH_COVER_MS = 160;
+const openBooking = (serviceId?: string, returnToCard?: number) =>
+    window.dispatchEvent(new CustomEvent('open-booking', { detail: { ...(serviceId ? { serviceId } : {}), ...(returnToCard !== undefined ? { returnToCard } : {}) } }));
+// the card <-> booking form turn: each half takes TURN_MS (matches BookingModal)
+const TURN_MS = 260;
+const CARD_TURN_DEG = 90;
 
 // The order button for a category — opens the on-site booking flow.
 const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndonesian }) => {

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useLayoutEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock, Copy } from 'lucide-react';
@@ -97,27 +97,18 @@ const SERVICE_LOOK: Record<string, { accent: string; mark: 'constellation' | 'st
 const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-// Booking from a pricelist card: the card's paper details side grows into this form.
-// A blank sheet of paper fades in over the card (COVER), grows to the form's size and
-// place (MORPH), then the form's content fades in on it (REVEAL). Back runs it in reverse.
-const COVER_MS = 160; // matches MORPH_COVER_MS in Services
-const MORPH_MS = 480;
-const REVEAL_MS = 220;
-type Rect = { left: number; top: number; width: number; height: number };
-type MorphPhase = 'cover' | 'grow' | 'reveal' | 'hide' | 'shrink' | 'uncover';
+// Booking from a pricelist card: the card turns edge-on (in Services), then this form
+// turns in from the other side as if printed on the card's back; Back turns it away and
+// the card back round. Each half takes TURN_MS (matches Services).
+const TURN_MS = 260;
+const TURN_AWAY = 'perspective(1600px) rotateY(-90deg)';
 
 const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const [open, setOpen] = useState(false);
   // opened from a pricelist card (which stays open underneath): no backdrop of its own,
-  // and the form grows out of the card (`morph`, with the form's own rect once measured)
+  // and the form turns in after the card ('away' → 'in'), or away on Back ('out')
   const [seamless, setSeamless] = useState(false);
-  const [morph, setMorph] = useState<{ phase: MorphPhase; panel?: Rect } | null>(null);
-  const cardRect = useRef<Rect | null>(null);
-  const panelRef = useRef<HTMLDivElement | null>(null);
-  const measurePanel = (): Rect | undefined => {
-    const r = panelRef.current?.getBoundingClientRect();
-    return r && { left: r.left, top: r.top, width: r.width, height: r.height };
-  };
+  const [turn, setTurn] = useState<'away' | 'in' | 'out' | null>(null);
   const [step, setStep] = useState(0); // 0 service · 1 date/time · 2 details · 3 done
   const [service, setService] = useState<ServiceOption | null>(null);
   const [date, setDate] = useState<Date | undefined>();
@@ -165,18 +156,6 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     setOpen(false);
   }, []);
 
-  // growing out of the card: measure where the form will sit (it is laid out, just
-  // invisible), then run the phases
-  useLayoutEffect(() => {
-    if (!open || morph?.phase !== 'cover' || morph.panel) return;
-    const panel = measurePanel();
-    if (!panel) { setMorph(null); return; }
-    setMorph({ phase: 'cover', panel });
-    window.setTimeout(() => setMorph({ phase: 'grow', panel }), COVER_MS);
-    window.setTimeout(() => setMorph({ phase: 'reveal', panel }), COVER_MS + MORPH_MS);
-    window.setTimeout(() => setMorph(null), COVER_MS + MORPH_MS + REVEAL_MS);
-  }, [open, morph]);
-
   // keep `dob` in sync with the three fields (only a real, past date counts)
   useEffect(() => {
     const d = parseInt(dobDay, 10), m = parseInt(dobMonth, 10), y = parseInt(dobYear, 10);
@@ -193,18 +172,14 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const goBack = () => {
     const target = step === 3 ? 2 : step === 2 ? (scheduled ? 1 : 0) : 0;
     if (target === 0 && returnToCard.current !== null) {
-      if (morph) return;
+      if (turn) return;
       const index = returnToCard.current;
       returnToCard.current = null;
       const reopen = () => window.dispatchEvent(new CustomEvent('reopen-pricelist-card', { detail: { index } }));
-      const panel = measurePanel();
-      if (!cardRect.current || !panel) { reopen(); setOpen(false); return; }
-      // the form's content fades off its paper, the paper shrinks onto the card, and
-      // fades away to show the card (back on top, on its details) underneath
-      setMorph({ phase: 'hide', panel });
-      window.setTimeout(() => setMorph({ phase: 'shrink', panel }), COVER_MS);
-      window.setTimeout(() => { reopen(); setMorph({ phase: 'uncover', panel }); }, COVER_MS + MORPH_MS);
-      window.setTimeout(() => { setOpen(false); setMorph(null); }, COVER_MS * 2 + MORPH_MS);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { reopen(); setOpen(false); return; }
+      // the form turns edge-on, then the card turns back round underneath
+      setTurn('out');
+      window.setTimeout(() => { reopen(); setOpen(false); setTurn(null); }, TURN_MS);
       return;
     }
     setStep(target);
@@ -226,12 +201,16 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   useEffect(() => {
     const onOpen = (e: Event) => {
       reset();
-      const detail = (e as CustomEvent<{ serviceId?: string; returnToCard?: number; cardRect?: Rect }>).detail;
+      const detail = (e as CustomEvent<{ serviceId?: string; returnToCard?: number }>).detail;
       returnToCard.current = typeof detail?.returnToCard === 'number' ? detail.returnToCard : null;
       setSeamless(returnToCard.current !== null);
-      const morphs = !!detail?.cardRect && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      cardRect.current = morphs ? detail!.cardRect! : null;
-      setMorph(morphs ? { phase: 'cover' } : null);
+      // from a card: wait edge-on while the card turns away, then turn in
+      const turns = returnToCard.current !== null && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setTurn(turns ? 'away' : null);
+      if (turns) {
+        window.setTimeout(() => setTurn('in'), TURN_MS);
+        window.setTimeout(() => setTurn((t) => (t === 'in' ? null : t)), TURN_MS * 2 + 80);
+      }
       const preset = detail?.serviceId ? services.find((s) => s.id === detail.serviceId) : undefined;
       if (preset) { setService(preset); setStep(preset.scheduled ? 1 : 2); }
       setOpen(true);
@@ -420,35 +399,13 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
       {/* backdrop — same as the pricelist card reveal (none of its own over a card) */}
       <div className={`absolute inset-0 ${seamless ? '' : 'bg-ink/55 backdrop-blur-xl'}`} style={{ animation: 'tarotFade 0.3s ease' }} onClick={close} />
 
-      {/* the card's paper, growing into the form (or back into the card) */}
-      {morph?.panel && cardRect.current && (() => {
-        const atCard = morph.phase === 'cover' || morph.phase === 'shrink' || morph.phase === 'uncover';
-        const r = atCard ? cardRect.current : morph.panel;
-        const moving = morph.phase === 'grow' || morph.phase === 'shrink';
-        const ease = `${MORPH_MS}ms cubic-bezier(0.65,0,0.35,1)`;
-        return (
-          <div
-            aria-hidden
-            className="pointer-events-none fixed bg-paper shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)]"
-            style={{
-              left: r.left, top: r.top, width: r.width, height: r.height,
-              borderRadius: atCard ? '1.15rem' : '1rem',
-              transition: moving ? `left ${ease}, top ${ease}, width ${ease}, height ${ease}, border-radius ${ease}` : 'none',
-              animation: morph.phase === 'cover' ? `tarotFade ${COVER_MS}ms ease` : morph.phase === 'uncover' ? `tarotFadeOut ${COVER_MS}ms ease forwards` : undefined,
-            }}
-          />
-        );
-      })()}
-
       <div
-        ref={panelRef}
-        className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-2xl sm:rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${morph ? 'pointer-events-none' : ''} ${step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}
+        className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-2xl sm:rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${turn ? 'pointer-events-none' : ''} ${step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}
         style={
-          // while the paper is moving the form is laid out but invisible; then its content
-          // fades in on the paper (or off it, on Back). Over a card it never plays fade-up.
-          morph?.phase === 'reveal' ? { animation: `tarotFade ${REVEAL_MS}ms ease` }
-          : morph?.phase === 'hide' ? { animation: `tarotFadeOut ${COVER_MS}ms ease forwards` }
-          : morph ? { opacity: 0, animation: 'none' }
+          // over a card it never plays fade-up: it turns in / away instead
+          turn === 'away' ? { transform: TURN_AWAY, animation: 'none', transition: 'none' }
+          : turn === 'in' ? { transform: 'perspective(1600px) rotateY(0deg)', animation: 'none', transition: `transform ${TURN_MS + 60}ms cubic-bezier(0,0.55,0.45,1)` }
+          : turn === 'out' ? { transform: TURN_AWAY, animation: 'none', transition: `transform ${TURN_MS}ms cubic-bezier(0.55,0,1,0.45)` }
           : seamless ? { animation: 'none' } : undefined
         }
       >
