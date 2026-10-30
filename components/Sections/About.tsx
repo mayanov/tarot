@@ -4,8 +4,13 @@ import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import CountUp from '../UI/CountUp';
 import SoftAura from '../UI/SoftAura';
+import { ScrollMoon, MoonNow } from '../UI/PrintedMoon';
 import { trackEvent } from '../../services/analytics';
 import { REVEAL_FLIGHT_MS } from '../Layout/Loader';
+
+// the crescent printed into the paper beside the portrait — lit on its left, so the
+// sliver shows on the paper while the portrait covers the rest of the disc
+const CRESCENT: MoonNow = { p: 0.3, waning: true };
 
 interface AboutProps {
   isIndonesian?: boolean;
@@ -45,6 +50,12 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       }}
       className="bg-paper relative z-10 isolate overflow-hidden text-ink lg:min-h-[72vh] -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
       <SoftAura />
+      {/* a photo crescent printed into the paper, coming out from behind the portrait —
+          under its bottom edge on phones, its left edge on desktop (drawn before the
+          portrait so the portrait sits on top) */}
+      <div aria-hidden className="pointer-events-none absolute w-[19rem] -right-[4rem] top-[calc(62vh-9rem)] lg:w-[min(38rem,80vh)] lg:right-auto lg:left-[53%] lg:-translate-x-1/2 lg:top-auto lg:-bottom-[8rem]">
+        <ScrollMoon moon={CRESCENT} strength={1.7} className="w-full aspect-square" />
+      </div>
       {/* portrait — top on mobile, bleeds to the right viewport edge on desktop; soft
           organic radius on the edges that face the content (arch-like, wellness feel) */}
       <div className="relative lg:absolute lg:top-0 lg:right-0 lg:bottom-0 lg:w-[47%] min-h-[62vh] lg:min-h-0 overflow-hidden rounded-b-[2.75rem] lg:rounded-b-none lg:rounded-l-[4.5rem]">

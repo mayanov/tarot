@@ -5,7 +5,7 @@ import { trackEvent } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/scroll';
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 import CelestialMark from '../UI/CelestialMark';
-import { MoonWatermark, moonNow } from './MenuMoon';
+import { MoonWatermark, moonNow } from '../UI/PrintedMoon';
 
 interface HeaderProps {
   isIndonesian?: boolean;
