@@ -331,7 +331,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const FLIGHT_MS = 700;
     const draw = (i: number) => {
         setSwapDir(null);
-        setHandoff(null);
+        setBooking(false);
         fanAtOpen.current = groups.map((_, j) => {
             const el = fanSlotRefs.current[j];
             if (!el) return { cx: 0, cy: 0, w: 0, rot: 0 };
@@ -359,59 +359,37 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         setFlightStart(starts);
         requestAnimationFrame(() => requestAnimationFrame(() => setFlightStart(null)));
     }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
-    // hand-off to / from the booking form, which shows this card as a mini card in its
-    // header. 'out': the form opens on top at once and its ghost card shrinks from this
-    // card's spot into the mini, while the rest of the spread sinks and this backdrop
-    // fades under the form's. 'in': the card grows back out of the mini card's spot
-    // (face up, then it flips to its details) while the form fades away above.
-    const [handoff, setHandoff] = useState<'out' | 'in' | null>(null);
-    const HANDOFF_MS = 280; // matches the booking form's
-    const handoffTimer = useRef<number | undefined>(undefined);
-    const selRef = useRef<HTMLDivElement | null>(null);
-    const returnFrom = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
-    const [returnStart, setReturnStart] = useState<string | null>(null);
-    const close = () => { window.clearTimeout(handoffTimer.current); flownRef.current = false; setHandoff(null); setSelected(null); };
+    // booking from a card: the reveal stays open underneath, the spread steps back and
+    // dims, and the booking form slides up over it as a sheet. Its Back slides the sheet
+    // away and the spread comes forward again; closing the form closes both.
+    const [booking, setBooking] = useState(false);
+    const close = () => { flownRef.current = false; setBooking(false); setSelected(null); };
     const bookGroup = (g: any) => {
-        if (handoff === 'out' || selected === null) return;
-        const k = g.theme ?? selected;
-        const r = selRef.current?.getBoundingClientRect();
-        const card = r ? { bg: CAT_BG[k % CAT_BG.length], mark: CAT_MARKS[k % CAT_MARKS.length], rect: { left: r.left, top: r.top, width: r.width, height: r.height } } : undefined;
-        setHandoff('out');
-        openBooking(BOOKING_MAP[g.type], selected, card);
-        handoffTimer.current = window.setTimeout(close, HANDOFF_MS);
+        if (selected === null) return;
+        setBooking(true);
+        openBooking(BOOKING_MAP[g.type], selected);
     };
-    const stageAnim = handoff === 'out' ? `stageOut ${HANDOFF_MS}ms cubic-bezier(0.4,0,1,1) forwards` : handoff === 'in' ? 'stageIn 0.45s cubic-bezier(0.22,1,0.36,1)' : undefined;
 
-    // coming back from the booking form → reopen the card they booked from, on its details
     useEffect(() => {
+        // back from the booking form → the card they booked from comes forward again
+        // (reopened on its details if the reveal was closed in the meantime)
         const onReopen = (e: Event) => {
-            const detail = (e as CustomEvent<{ index: number; from?: { left: number; top: number; width: number; height: number } }>).detail;
-            const index = detail?.index;
+            const index = (e as CustomEvent<{ index: number }>).detail?.index;
             if (typeof index !== 'number' || index < 0 || index >= groups.length) return;
-            const fly = !!detail.from && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            returnFrom.current = fly ? detail.from! : null;
+            setBooking(false);
+            if (selectedRef.current === index) return;
             setSwapDir(null);
-            setHandoff('in');
             setSelected(index);
-            setRevealed(!fly);
+            setRevealed(true);
         };
+        const onClose = () => { flownRef.current = false; setBooking(false); setSelected(null); };
         window.addEventListener('reopen-pricelist-card', onReopen);
-        return () => window.removeEventListener('reopen-pricelist-card', onReopen);
+        window.addEventListener('close-pricelist-card', onClose);
+        return () => {
+            window.removeEventListener('reopen-pricelist-card', onReopen);
+            window.removeEventListener('close-pricelist-card', onClose);
+        };
     }, [groups.length]);
-    // park the returning card on the mini card's spot before paint, then let it grow
-    // into place and turn over to its details
-    useLayoutEffect(() => {
-        const from = returnFrom.current;
-        if (selected === null || !from) return;
-        returnFrom.current = null;
-        const box = boxRef.current?.getBoundingClientRect();
-        if (!box) { setRevealed(true); return; }
-        const dx = from.left + from.width / 2 - (box.left + box.width / 2);
-        const dy = from.top + from.height / 2 - (box.top + box.height / 2);
-        setReturnStart(`translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${(from.width / box.width).toFixed(4)})`);
-        requestAnimationFrame(() => requestAnimationFrame(() => setReturnStart(null)));
-        window.setTimeout(() => setRevealed(true), FLIGHT_MS - 80);
-    }, [selected]);
 
     // switch to another service while the reveal is open — it arrives already showing its details
     const [swapDir, setSwapDir] = useState<'left' | 'right' | null>(null);
@@ -424,10 +402,13 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
     const switchRef = useRef(switchTo);
     switchRef.current = switchTo;
     const selectedRef = useRef(selected);
+    const bookingRef = useRef(booking);
+    bookingRef.current = booking;
     selectedRef.current = selected;
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
+            if (bookingRef.current) return; // the booking form is on top
             if (e.key === 'Escape') close();
             if (selectedRef.current === null) return;
             if (e.key === 'ArrowRight') switchRef.current(selectedRef.current + 1);
@@ -537,12 +518,17 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
             {/* full-screen "drawn card" reveal — portaled to <body> so it sits above the
                 nav and blurs the WHOLE page; click anywhere outside to close */}
             {selected !== null && typeof document !== 'undefined' && createPortal(
-                <div data-lenis-prevent className={`fixed inset-0 z-[300] overscroll-none touch-none flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden gap-4 px-5 py-5 ${handoff === 'out' ? 'pointer-events-none' : ''}`} onClick={close} role="dialog" aria-modal="true">
-                    <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: handoff === 'out' ? `tarotFadeOut ${HANDOFF_MS}ms ease forwards` : `tarotFade ${handoff === 'in' ? HANDOFF_MS : 300}ms ease` }} />
+                <div data-lenis-prevent className={`fixed inset-0 z-[300] overscroll-none touch-none flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden gap-4 px-5 py-5 ${booking ? 'pointer-events-none' : ''}`} onClick={close} role="dialog" aria-modal="true">
+                    <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease' }} />
                     <div
                         ref={boxRef}
                         className="relative aspect-[5/8]"
-                        style={{ height: isMobile ? 'min(calc(100dvh - 9.5rem), 128vw)' : 'min(82vh, 38rem)', animation: handoff === 'out' ? stageAnim : undefined }}
+                        style={{ height: isMobile ? 'min(calc(100dvh - 9.5rem), 128vw)' : 'min(82vh, 38rem)',
+                            // stepping back under the booking sheet
+                            transform: booking ? 'scale(0.94)' : undefined,
+                            filter: booking ? 'brightness(0.7)' : undefined,
+                            transition: 'transform 500ms cubic-bezier(0.22,1,0.36,1), filter 500ms ease',
+                        }}
                         onTouchStart={onTouchStart}
                         onTouchEnd={onTouchEnd}
                     >
@@ -560,8 +546,6 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                     className="absolute inset-0"
                                     style={{
                                         zIndex: 10 - depth,
-                                        // back from the booking form: they fade in around the returning card
-                                        animation: handoff === 'in' ? 'tarotFade 0.5s ease' : undefined,
                                         transform: flying ? flightStart![j] : 'none',
                                         transition: flying ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
                                     }}
@@ -590,16 +574,13 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
 
                         <div
                             key={selected}
-                            ref={selRef}
                             className="relative z-20 h-full w-full"
                             style={{
                                 // switching services: a swipe; opened from the fan: the flight;
-                                // back from the booking form: it grows out of the form's mini card (returnStart)
-                                animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : flownRef.current || handoff ? undefined : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)',
-                                transform: flightStart && !swapDir ? flightStart[selected] : returnStart ?? undefined,
-                                transition: flightStart || returnStart ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
-                                // handing off to the booking form: its ghost card takes over from here
-                                opacity: handoff === 'out' ? 0 : undefined,
+                                // reopened from the booking form: the plain draw-in
+                                animation: swapDir ? `${swapDir === 'right' ? 'tarotSwapFromRight' : 'tarotSwapFromLeft'} 0.45s cubic-bezier(0.22,1,0.36,1)` : flownRef.current ? undefined : 'tarotDraw 0.5s cubic-bezier(0.22,1,0.36,1)',
+                                transform: flightStart && !swapDir ? flightStart[selected] : undefined,
+                                transition: flightStart ? 'none' : `transform ${FLIGHT_MS}ms cubic-bezier(0.22,1,0.36,1)`,
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
@@ -608,7 +589,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                     </div>
 
                     {/* service tabs — jump straight to another service by name */}
-                    <div className={`relative z-30 flex gap-2 max-w-xl flex-wrap justify-center`} style={{ animation: stageAnim }} onClick={(e) => e.stopPropagation()}>
+                    <div className={`relative z-30 flex gap-2 max-w-xl flex-wrap justify-center`} style={{ opacity: booking ? 0 : 1, transition: 'opacity 300ms ease' }} onClick={(e) => e.stopPropagation()}>
                         {groups.map((g, j) => (
                             <button
                                 key={g.type}
@@ -661,9 +642,8 @@ const BOOKING_MAP: Record<string, string> = {
 };
 
 // `returnToCard` (a pricelist card index) lets the booking form's "back" reopen that card.
-// `card` (the card's face and screen spot) lets the form show it as a mini card and fly it in.
-const openBooking = (serviceId?: string, returnToCard?: number, card?: object) =>
-    window.dispatchEvent(new CustomEvent('open-booking', { detail: { ...(serviceId ? { serviceId } : {}), ...(returnToCard !== undefined ? { returnToCard } : {}), ...(card ? { card } : {}) } }));
+const openBooking = (serviceId?: string, returnToCard?: number) =>
+    window.dispatchEvent(new CustomEvent('open-booking', { detail: { ...(serviceId ? { serviceId } : {}), ...(returnToCard !== undefined ? { returnToCard } : {}) } }));
 
 // The order button for a category — opens the on-site booking flow.
 const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndonesian }) => {

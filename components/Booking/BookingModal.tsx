@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useLayoutEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock, Copy } from 'lucide-react';
@@ -98,33 +98,14 @@ const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli
 const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 // length of the hand-off back to a pricelist card (matches HANDOFF_MS in Services)
-const HANDOFF_MS = 280;
-const GHOST_MS = 650;
-type Mark = 'constellation' | 'star' | 'sparkle' | 'crescent' | 'sun';
-type Rect = { left: number; top: number; width: number; height: number };
-// sent by a pricelist card's "Pesan": its face and where it sits on screen
-type CardLink = { bg: string; mark: Mark; rect: Rect };
+const HANDOFF_MS = 320;
 
 const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const [open, setOpen] = useState(false);
-  // opened from / going back to a pricelist card: the shared backdrop stays put and
-  // only the panel moves (see the stageIn / stageOut keyframes)
+  // opened from a pricelist card: the card stays open underneath and this form slides
+  // over it as a sheet (sheetIn / sheetOut); `leaving` = sliding back down on Back
   const [seamless, setSeamless] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  // the pricelist card it came from: shown as a mini card in the header, which the big
-  // card shrinks into on the way in (a "ghost" flies from the card's spot to the mini)
-  const [cardLook, setCardLook] = useState<{ bg: string; mark: Mark } | null>(null);
-  const [flyFrom, setFlyFrom] = useState<Rect | null>(null);
-  const [ghost, setGhost] = useState<{ from: Rect; to: Rect; landed: boolean } | null>(null);
-  const miniRef = useRef<HTMLSpanElement | null>(null);
-  useLayoutEffect(() => {
-    if (!open || !flyFrom || !miniRef.current) return;
-    const r = miniRef.current.getBoundingClientRect();
-    setGhost({ from: flyFrom, to: { left: r.left, top: r.top, width: r.width, height: r.height }, landed: false });
-    setFlyFrom(null);
-    requestAnimationFrame(() => requestAnimationFrame(() => setGhost((g) => g && { ...g, landed: true })));
-    window.setTimeout(() => setGhost(null), GHOST_MS + 50);
-  }, [open, flyFrom]);
   const [step, setStep] = useState(0); // 0 service · 1 date/time · 2 details · 3 done
   const [service, setService] = useState<ServiceOption | null>(null);
   const [date, setDate] = useState<Date | undefined>();
@@ -165,7 +146,12 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     setName(''); setDob(''); setDobDay(''); setDobMonth(''); setDobYear(''); setWhatsapp(''); setEmail(''); setError(''); setSubmitting(false); setShowPay(false); setPayTab('qris'); setCopied(false);
   }, []);
 
-  const close = useCallback(() => { setOpen(false); }, []);
+  // opened from a pricelist card (still open underneath): closing the form closes that too
+  const close = useCallback(() => {
+    if (returnToCard.current !== null) window.dispatchEvent(new CustomEvent('close-pricelist-card'));
+    returnToCard.current = null;
+    setOpen(false);
+  }, []);
 
   // keep `dob` in sync with the three fields (only a real, past date counts)
   useEffect(() => {
@@ -186,11 +172,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
       if (leaving) return;
       const index = returnToCard.current;
       returnToCard.current = null;
-      // the card reopens underneath and grows out of the mini card's spot while this
-      // form fades away on top of it
-      const r = miniRef.current?.getBoundingClientRect();
-      const from = r ? { left: r.left, top: r.top, width: r.width, height: r.height } : undefined;
-      window.dispatchEvent(new CustomEvent('reopen-pricelist-card', { detail: { index, from } }));
+      // the sheet slides down and the card underneath comes forward again
+      window.dispatchEvent(new CustomEvent('reopen-pricelist-card', { detail: { index } }));
       setLeaving(true);
       window.setTimeout(() => { setOpen(false); setLeaving(false); }, HANDOFF_MS);
       return;
@@ -214,12 +197,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   useEffect(() => {
     const onOpen = (e: Event) => {
       reset();
-      const detail = (e as CustomEvent<{ serviceId?: string; returnToCard?: number; card?: CardLink }>).detail;
+      const detail = (e as CustomEvent<{ serviceId?: string; returnToCard?: number }>).detail;
       returnToCard.current = typeof detail?.returnToCard === 'number' ? detail.returnToCard : null;
       setSeamless(returnToCard.current !== null);
       setLeaving(false);
-      setCardLook(detail?.card ? { bg: detail.card.bg, mark: detail.card.mark } : null);
-      setFlyFrom(detail?.card && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? detail.card.rect : null);
       const preset = detail?.serviceId ? services.find((s) => s.id === detail.serviceId) : undefined;
       if (preset) { setService(preset); setStep(preset.scheduled ? 1 : 2); }
       setOpen(true);
@@ -406,13 +387,14 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     // backdrops can cross-fade instead of one blinking out
     <div className={`fixed inset-0 ${seamless ? 'z-[310]' : 'z-[200]'} flex items-end sm:items-center justify-center`}>
       {/* backdrop — same as the pricelist card reveal */}
-      <div className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: leaving ? `tarotFadeOut ${HANDOFF_MS}ms ease forwards` : `tarotFade ${seamless ? HANDOFF_MS : 300}ms ease` }} onClick={close} />
+      {/* over a pricelist card the page is already blurred, so only a light tint: the
+          card stays visible, stepped back, behind the sheet */}
+      <div className={`absolute inset-0 ${seamless ? 'bg-ink/30' : 'bg-ink/55 backdrop-blur-xl'}`} style={{ animation: leaving ? `tarotFadeOut ${HANDOFF_MS}ms ease forwards` : 'tarotFade 0.3s ease' }} onClick={close} />
 
-      {/* on a hand-off the panel only fades: the card flying in or out carries the motion
-          (and the mini card's spot has to hold still to be measured) */}
+      {/* over a pricelist card the form slides up like a sheet, and back down on Back */}
       <div
         className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-2xl sm:rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${leaving ? 'pointer-events-none' : ''} ${step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}
-        style={leaving ? { animation: `tarotFadeOut ${HANDOFF_MS}ms ease forwards` } : seamless ? { animation: 'tarotFade 0.4s ease' } : undefined}
+        style={leaving ? { animation: `sheetOut ${HANDOFF_MS}ms cubic-bezier(0.5,0,0.75,0) forwards` } : seamless ? { animation: 'sheetIn 0.55s cubic-bezier(0.22,1,0.36,1)' } : undefined}
       >
 
         {/* scroll only the content (data-lenis-prevent lets this scroll natively) */}
@@ -425,16 +407,6 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 <button onClick={goBack} aria-label="Back" className="shrink-0 text-cream/75 hover:text-cream transition-colors">
                   <ArrowLeft className="w-5 h-5" />
                 </button>
-              )}
-              {cardLook && step !== 0 && (
-                <span
-                  ref={miniRef}
-                  aria-hidden
-                  className="relative shrink-0 grid place-items-center w-7 aspect-[5/8] rounded-[4px] ring-1 ring-white/25 shadow-[0_4px_10px_-4px_rgba(0,0,0,0.5)]"
-                  style={{ background: cardLook.bg, opacity: ghost || leaving ? 0 : 1 }}
-                >
-                  <CelestialMark name={cardLook.mark} className="w-[62%] text-cream/90" />
-                </span>
               )}
               <div className="font-serif font-semibold text-cream text-[1.1rem] md:text-[1.2rem] leading-tight truncate">
                 {step === 0 ? t('Pilih layanan', 'Choose a service') : (service?.name ?? t('Booking Sesi', 'Book a Session'))}
@@ -728,35 +700,6 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
         </div>
       </div>
 
-      {/* the ghost: starts on the pricelist card showing its details side, turns over to
-          its face and shrinks into the mini card in the header */}
-      {ghost && cardLook && (() => {
-        const r = ghost.landed ? ghost.to : ghost.from;
-        const ease = `${GHOST_MS}ms cubic-bezier(0.22,1,0.36,1)`;
-        return (
-          <div
-            aria-hidden
-            className="pointer-events-none fixed z-10 [perspective:1200px]"
-            style={{ left: r.left, top: r.top, width: r.width, height: r.height, transition: ghost.landed ? `left ${ease}, top ${ease}, width ${ease}, height ${ease}` : 'none' }}
-          >
-            <div
-              className="relative h-full w-full [transform-style:preserve-3d]"
-              style={{ transform: ghost.landed ? 'rotateY(0deg)' : 'rotateY(180deg)', transition: ghost.landed ? `transform ${ease}` : 'none' }}
-            >
-              <div
-                className="absolute inset-0 grid place-items-center [backface-visibility:hidden] ring-1 ring-white/25"
-                style={{ background: cardLook.bg, borderRadius: ghost.landed ? 4 : 18, transition: ghost.landed ? `border-radius ${ease}` : 'none' }}
-              >
-                <CelestialMark name={cardLook.mark} className="w-[62%] max-w-[5rem] text-cream/90" />
-              </div>
-              <div
-                className="absolute inset-0 bg-paper [backface-visibility:hidden] [transform:rotateY(180deg)]"
-                style={{ borderRadius: ghost.landed ? 4 : 18, transition: ghost.landed ? `border-radius ${ease}` : 'none' }}
-              />
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 };
