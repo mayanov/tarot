@@ -30,6 +30,17 @@ const FRONT: Streak[] = [
   [1080, 560, 560, 28, -3, 0.35],
 ];
 
+// a clear sky's washes: big round pools of colour, blended wet-in-wet (same colour
+// slots as BACK)
+const CLEAR: Streak[] = [
+  [800, -160, 1700, 330, 0, 0.75], // the deep zenith, wide so its edge never shows
+  [180, 230, 560, 330, 0, 0.7],
+  [1380, 150, 540, 270, 0, 0.6],
+  [820, 330, 660, 240, 0, 0.55],
+  [240, 580, 600, 250, 0, 0.6],
+  [1360, 560, 580, 270, 0, 0.55],
+];
+
 // pale backruns, where water crept back into a drying wash
 const BLOOMS: [number, number, number, number][] = [[560, 250, 140, 50], [1120, 210, 160, 46], [1460, 470, 140, 54]];
 
@@ -47,6 +58,7 @@ export type SkyPalette = {
   front: string[];    // one per FRONT streak
   bloom: string;      // the pale backruns
   glow: [string, string];
+  clear?: boolean;    // a clear sky: soft wet-in-wet colour pools, no cloud streaks
 };
 
 // the shared wash filter: soft body, wandering frilly edge, darker rim where it dried
@@ -59,6 +71,20 @@ const washFilter = (id: string, blur: number, seed: number, scale: number) => `
     <feGaussianBlur in="inner" stdDeviation="2.5" result="innerSoft"/>
     <feComposite in="bled" in2="innerSoft" operator="out" result="rim"/>
     <feColorMatrix in="rim" type="matrix" values="0.55 0 0 0 0  0 0.5 0 0 0  0 0 0.65 0 0  0 0 0 0.8 0" result="rimDark"/>
+    <feMerge><feMergeNode in="bled"/><feMergeNode in="rimDark"/></feMerge>
+  </filter>`;
+
+// wet-in-wet: colour that spread into damp paper — very soft, the edge only
+// gently wandering, with the faintest dried rim
+const softWashFilter = (id: string) => `
+  <filter id="${id}" x="-40%" y="-60%" width="180%" height="220%">
+    <feGaussianBlur stdDeviation="46" result="soft"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.004 0.007" numOctaves="3" seed="11" result="n"/>
+    <feDisplacementMap in="soft" in2="n" scale="70" xChannelSelector="R" yChannelSelector="G" result="bled"/>
+    <feMorphology in="bled" operator="erode" radius="6" result="inner"/>
+    <feGaussianBlur in="inner" stdDeviation="10" result="innerSoft"/>
+    <feComposite in="bled" in2="innerSoft" operator="out" result="rim"/>
+    <feColorMatrix in="rim" type="matrix" values="0.6 0 0 0 0  0 0.55 0 0 0  0 0 0.7 0 0  0 0 0 0.12 0" result="rimDark"/>
     <feMerge><feMergeNode in="bled"/><feMergeNode in="rimDark"/></feMerge>
   </filter>`;
 
@@ -77,7 +103,7 @@ const paintSvg = (p: SkyPalette) => svg(`
     </linearGradient>
     <radialGradient id="g1" cx="0.38" cy="0.82" r="0.6"><stop offset="0" stop-color="${p.glow[0]}"/><stop offset="0.7" stop-color="${p.glow[0]}" stop-opacity="0"/></radialGradient>
     <radialGradient id="g2" cx="0.78" cy="0.7" r="0.45"><stop offset="0" stop-color="${p.glow[1]}"/><stop offset="0.7" stop-color="${p.glow[1]}" stop-opacity="0"/></radialGradient>
-    ${washFilter('wash', 9, 7, 120)}
+    ${p.clear ? softWashFilter('wash') : washFilter('wash', 9, 7, 120)}
     ${washFilter('wash2', 5, 19, 90)}
     <filter id="bloom" x="-50%" y="-80%" width="200%" height="260%">
       <feGaussianBlur stdDeviation="9" result="soft"/>
@@ -99,13 +125,13 @@ const paintSvg = (p: SkyPalette) => svg(`
     </filter>
   </defs>
   <rect width="${W}" height="${H}" fill="url(#base)"/>
-  <g filter="url(#wash)">${streaks(BACK, p.back)}</g>
+  <g filter="url(#wash)">${streaks(p.clear ? CLEAR : BACK, p.back)}</g>
   <g opacity="0.4"><rect width="${W}" height="${H}" fill="url(#g1)"/><rect width="${W}" height="${H}" fill="url(#g2)"/></g>
-  <g filter="url(#wash2)">${streaks(FRONT, p.front)}</g>
+  ${p.clear ? '' : `<g filter="url(#wash2)">${streaks(FRONT, p.front)}</g>
   <g filter="url(#bloom)" fill="${p.bloom}" opacity="0.32">
     ${BLOOMS.map(([cx, cy, rx, ry]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`).join('')}
-  </g>
-  <rect width="${W}" height="${H}" filter="url(#grain)" opacity="0.5" style="mix-blend-mode:multiply"/>
+  </g>`}
+  <rect width="${W}" height="${H}" filter="url(#grain)" opacity="${p.clear ? 0.32 : 0.5}" style="mix-blend-mode:multiply"/>
   <rect width="${W}" height="${H}" filter="url(#paper)" opacity="0.42" style="mix-blend-mode:multiply"/>`);
 
 // Each palette is painted once per page load into a plain JPEG bitmap (at 1.5× the
@@ -209,8 +235,9 @@ export const MIDNIGHT: SkyPalette = {
   glow: ['rgba(255,190,220,0.6)', 'rgba(150,210,240,0.5)'],
 };
 
-// twilight: the hero and loader — a deep night with real chromatic range: blue up
-// the left, a violet heart, a rose bloom upper-right and teal pooling lower-right
+// twilight: the hero and loader — a clear night sky with real chromatic range, the
+// colours bled softly into each other: blue up the left, a violet heart, a rose
+// bloom upper-right and teal pooling lower-right
 export const TWILIGHT: SkyPalette = {
   ground: '#141235',
   base: ['#0b0924', '#121434', '#1c1d4c', '#2a2058', '#1a1236'],
@@ -218,6 +245,7 @@ export const TWILIGHT: SkyPalette = {
   front: ['#3e4aa0', '#a05a9a', '#7a5ab0', '#5a4aa0', '#2f7a8a'],
   bloom: '#c9b8e8',
   glow: ['rgba(150,100,200,0.7)', 'rgba(80,170,190,0.5)'],
+  clear: true,
 };
 
 // the calm-space band's timelapse runs NIGHT → PLUM → SUNRISE
