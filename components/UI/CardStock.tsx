@@ -2,8 +2,8 @@ import React from 'react';
 
 /**
  * Lays real card stock over a card face, so it reads as a printed tarot card that has
- * been handled rather than a flat screen shape: the linen-embossed finish of playing
- * cards (fine crossed threads, lit from the top left), ink that sits a little unevenly
+ * been handled rather than a flat screen shape: the felt-pressed finish of good card
+ * (a fine pebble with a few fibres, lit from the top left), ink that sits a little unevenly
  * on the stock, the odd fleck in the board, and edges and corners only lightly softened
  * by handling — cared for, not worn out. Put it as the last child of the card face (which must be
  * `relative`); it takes the face's rounded corners. Every card wears differently.
@@ -21,12 +21,13 @@ const CardStock: React.FC<{ tone?: 'dark' | 'light'; className?: string }> = ({ 
     <span aria-hidden className={`pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] ${className}`}>
       <svg className="absolute inset-0 h-full w-full">
         <defs>
-          {/* linen emboss: threads both ways, raised into a relief and lit */}
+          {/* felt finish: a fine, even pebble pressed into the board, with a few longer
+              fibres in it, raised into a relief and lit */}
           <filter id={`${id}l`} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="0.95 0.045" numOctaves="2" seed={seed} result="h" />
-            <feTurbulence type="fractalNoise" baseFrequency="0.045 0.95" numOctaves="2" seed={seed + 1} result="v" />
-            <feComposite in="h" in2="v" operator="arithmetic" k2="0.5" k3="0.5" result="weave" />
-            <feDiffuseLighting in="weave" surfaceScale="1.6" diffuseConstant="1" lightingColor="#fff" result="lit">
+            <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="3" seed={seed} result="p" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.09 0.5" numOctaves="2" seed={seed + 1} result="fib" />
+            <feComposite in="p" in2="fib" operator="arithmetic" k2="0.75" k3="0.25" result="weave" />
+            <feDiffuseLighting in="weave" surfaceScale="1.3" diffuseConstant="1" lightingColor="#fff" result="lit">
               <feDistantLight azimuth="225" elevation="52" />
             </feDiffuseLighting>
             <feColorMatrix in="lit" type="saturate" values="0" />
@@ -64,8 +65,8 @@ const CardStock: React.FC<{ tone?: 'dark' | 'light'; className?: string }> = ({ 
 
         <rect width="100%" height="100%" filter={`url(#${id}l)`} style={{ mixBlendMode: 'soft-light' }} opacity={dark ? 0.5 : 0.4} />
         <rect width="100%" height="100%" fill="#fff" filter={`url(#${id}i)`} style={{ mixBlendMode: 'soft-light' }} opacity={dark ? 0.22 : 0.12} />
-        <rect width="100%" height="100%" fill={wear} filter={`url(#${id}f)`} opacity={dark ? 0.06 : 0.04} />
-        <g filter={`url(#${id}e)`} fill="none" stroke={wear} opacity={dark ? 0.22 : 0.12}>
+        <rect width="100%" height="100%" fill={wear} filter={`url(#${id}f)`} opacity={dark ? 0.03 : 0.02} />
+        <g filter={`url(#${id}e)`} fill="none" stroke={wear} opacity={dark ? 0.12 : 0.07}>
           {/* centred on the card's outline, so its inner half shows along every edge */}
           <rect width="100%" height="100%" rx="14" strokeWidth="3" />
           {/* the corners, where a card is held and shuffled */}
