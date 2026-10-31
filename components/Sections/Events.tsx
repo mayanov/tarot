@@ -4,7 +4,7 @@ import FadeIn from '../UI/FadeIn';
 import PencilRule from '../UI/PencilRule';
 import MaskReveal from '../UI/MaskReveal';
 import EventGallery from './EventGallery';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 import { btnPrimaryLight, btnSecondaryLight } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
@@ -17,7 +17,6 @@ const EVENT_PHOTOS = ['/event-1.jpeg', '/event-2.jpeg', '/event-3.jpeg', '/event
 
 const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   const [showAll, setShowAll] = useState(false);
-  const [lightbox, setLightbox] = useState<string | null>(null);
 
   // The list is managed from the admin dashboard (Events) and comes newest-first from
   // the API; the built-in list shows instantly and stays if the API can't be reached.
@@ -50,7 +49,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
       className="relative overflow-x-clip isolate"
     >
       {/* photo band — a staggered row of four (2×2 on phones) */}
-      <EventGallery photos={EVENT_PHOTOS} isIndonesian={isIndonesian} onOpen={setLightbox} />
+      <EventGallery photos={EVENT_PHOTOS} isIndonesian={isIndonesian} />
 
       {/* events history + CTAs — on the paper ground below the purple block */}
       <div className="mx-auto px-8 pt-10 md:pt-14 pb-10 md:pb-12 relative z-10 text-ink">
@@ -135,27 +134,6 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
           </div>
       </div>
 
-      {/* Lightbox */}
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-[90] flex items-center justify-center p-4 sm:p-8 bg-ink/80 backdrop-blur-sm animate-[fade-up_0.2s_ease-out]"
-          onClick={() => setLightbox(null)}
-        >
-          <img
-            src={lightbox}
-            alt=""
-            className="max-h-[90vh] max-w-full rounded-lg shadow-2xl object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <button
-            onClick={() => setLightbox(null)}
-            aria-label="Close"
-            className="absolute top-5 right-5 w-10 h-10 grid place-items-center rounded-lg bg-white/15 text-white hover:bg-white/25 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      )}
     </section>
   );
 };

@@ -89,12 +89,10 @@ const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '', variant
         <rect x="1%" y="14%" width="97%" height="70%" rx="9%" ry="50%" fill="#7a52b4" fillOpacity="0.06" filter={`url(#${id}a)`} />
         <rect x="9%" y="46%" width="72%" height="34%" rx="9%" ry="50%" fill="#6f86d6" fillOpacity="0.07" filter={`url(#${id}b)`} />
         <rect x="30%" y="12%" width="66%" height="30%" rx="9%" ry="50%" fill="#d77fa6" fillOpacity="0.075" filter={`url(#${id}b)`} />
-        {/* where the brush first touched down, the paint pooled; a drop of warm ochre
-            bled in at the far end */}
+        {/* where the brush first touched down, the paint pooled */}
         <g filter={`url(#${id}p)`}>
           <ellipse cx="6%" cy="46%" rx="7%" ry="26%" fill="#b48ad6" fillOpacity="0.12" />
           <ellipse cx="88%" cy="34%" rx="9%" ry="18%" fill="#e3a0c4" fillOpacity="0.1" />
-          <ellipse cx="76%" cy="70%" rx="10%" ry="20%" fill="#e2b36a" fillOpacity="0.12" />
           <ellipse cx="22%" cy="76%" rx="9%" ry="16%" fill="#6fb0c4" fillOpacity="0.09" />
         </g>
       </svg>

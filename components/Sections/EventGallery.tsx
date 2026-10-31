@@ -11,7 +11,7 @@ import { PaperShadow, paperCut } from '../UI/PaperEdge';
 // hover, when the card also straightens and lifts forward. On scroll-in they're dealt
 // one after another, with soft real shadows.
 
-type Props = { photos: string[]; isIndonesian: boolean; onOpen: (src: string) => void };
+type Props = { photos: string[]; isIndonesian: boolean };
 
 // per card: tilt, vertical offset, numeral, caption (every card is the deck's twilight
 // plum, DECK_WASH[1], like the About portrait)
@@ -25,7 +25,7 @@ const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
 
 
-const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
+const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [shown, setShown] = useState(false);
 
@@ -73,10 +73,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 aria-hidden
                 className="pointer-events-none absolute -z-10 inset-[10%_8%_3%_8%] rounded-[1rem] bg-[rgba(38,24,34,0.3)] blur-[18px] opacity-0 transition-opacity duration-500 group-hover/print:opacity-100 [transform:rotate(var(--r))_translateY(10px)]"
               />
-              <button
-                type="button"
-                onClick={() => onOpen(src)}
-                aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
+              <div
                 // a tarot card's 5:8, like the pricelist cards (the photo takes the height
                 // left after the head and foot); hover cancels the card's tilt (--r) and
                 // brings it a little closer (grows in place, so nothing under it is
@@ -115,7 +112,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 </span>
                 {/* printed on tarot card stock */}
                 <CardStock />
-              </button>
+              </div>
             </div>
           );
         })}
