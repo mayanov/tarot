@@ -4,8 +4,9 @@ import React from 'react';
 // boxes. Wrap the contents of every button styled with a class from ./buttons
 // (those make it `relative isolate group/btn`) in one: the face sits behind the
 // label, and the label gets the same print wear as the headings.
-//   primary   → a painted swatch (gouache, ragged edges, pooled rim, paper grain)
-//   secondary → a box drawn round it in felt-tip marker;
+//   primary   → a painted swatch (gouache, ragged edges, pooled rim, paper grain),
+//               ruled round in felt-tip marker
+//   secondary → a box ruled round it in felt-tip marker;
 //               on hover the swatch is painted in behind it
 
 const useInkId = () => {
@@ -88,27 +89,52 @@ export const PencilFrame: React.FC<{ className?: string }> = ({ className = '' }
   );
 };
 
-/** a box drawn round its button in one go with a felt-tip marker: a bold, even line
-    with soft rounded corners that wobbles a little, and where the pen started and
-    finished at the top-left the two ends overlap, the ink doubling up darker */
+/** a box ruled round its button with a felt-tip marker, one stroke per side: each
+    runs a little past the corners, and where two cross the ink doubles up darker
+    (the strokes are translucent). The ink feathers into the paper's fibres, pools
+    darker along the edges of the stroke, and the paper's tooth breaks it up a little */
 export const MarkerFrame: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { id, seed } = useInkId();
   return (
-    <span aria-hidden className={`pointer-events-none absolute -inset-[2px] -z-10 ${className}`}>
-      <svg className="absolute inset-[1.5px] h-[calc(100%-3px)] w-[calc(100%-3px)] overflow-visible">
+    <span aria-hidden className={`pointer-events-none absolute -inset-[4px] -z-10 ${className}`}>
+      <svg className="block h-full w-full overflow-visible">
         <defs>
-          <filter id={`${id}k`} x="-10%" y="-40%" width="120%" height="180%">
-            {/* the hand's slow wobble, then the felt tip's slightly soft edge */}
-            <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed={seed} result="w" />
-            <feDisplacementMap in="SourceGraphic" in2="w" scale="3" xChannelSelector="R" yChannelSelector="G" result="d" />
-            <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="1" seed={seed + 1} result="e" />
-            <feDisplacementMap in="d" in2="e" scale="0.8" xChannelSelector="R" yChannelSelector="G" />
+          <filter id={`${id}k`} x="-10%" y="-40%" width="120%" height="180%" colorInterpolationFilters="sRGB">
+            {/* the hand's slow wobble, then the ink bleeding along the paper's fibres */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed={seed} result="w" />
+            <feDisplacementMap in="SourceGraphic" in2="w" scale="2.6" xChannelSelector="R" yChannelSelector="G" result="d" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed={seed + 1} result="f" />
+            <feDisplacementMap in="d" in2="f" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="b" />
+            <feGaussianBlur in="b" stdDeviation="0.35" result="s" />
+            {/* the ink pools darker along both edges of the stroke as it soaks in */}
+            <feMorphology in="s" operator="erode" radius="0.7" result="er" />
+            <feComposite in="s" in2="er" operator="out" result="rim" />
+            <feMerge result="m">
+              <feMergeNode in="s" />
+              <feMergeNode in="rim" />
+            </feMerge>
+            {/* the paper's tooth: the tip skips a little here and there */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" seed={seed + 2} result="g" />
+            <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.45" result="ga" />
+            <feComposite in="m" in2="ga" operator="in" />
           </filter>
         </defs>
-        <g filter={`url(#${id}k)`} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" fill="none">
-          <rect width="100%" height="100%" rx="5" ry="5" strokeWidth="2.2" strokeOpacity="0.9" />
-          {/* where the stroke began and ended, run a little past each other */}
-          <path d="M-1.5 9 C-1.8 4 1 -0.6 7 -0.9 L22 -1.4" strokeWidth="2.2" strokeOpacity="0.45" />
+        {/* the box sits 4px in from this svg's edge, so each stroke starts and ends
+            ~3px past its corners; nested svgs shifted by a few px give the far edges
+            without calc() */}
+        <g filter={`url(#${id}k)`} stroke="currentColor" strokeLinecap="round" fill="none" strokeWidth="2.4" strokeOpacity="0.72">
+          <svg x="-1" overflow="visible">
+            <line x1="2" y1="4.6" x2="100%" y2="3.7" />
+          </svg>
+          <svg x="-4.4" y="-1" overflow="visible">
+            <line x1="100%" y1="2" x2="100%" y2="100%" />
+          </svg>
+          <svg x="-1" y="-4.2" overflow="visible">
+            <line x1="100%" y1="100%" x2="2.5" y2="100%" />
+          </svg>
+          <svg y="-1" overflow="visible">
+            <line x1="4.1" y1="100%" x2="4.7" y2="2" />
+          </svg>
         </g>
       </svg>
     </span>
@@ -124,11 +150,16 @@ interface ButtonInkProps {
 const ButtonInk: React.FC<React.PropsWithChildren<ButtonInkProps>> = ({ kind, tone, children }) => {
   const fade = 'transition-[color,opacity] duration-300';
   const face = kind === 'primary'
-    ? <PaintSwatch className={`${fade} ${tone === 'light' ? 'text-moon group-hover/btn:text-plum' : 'text-cream group-hover/btn:text-moon'}`} />
+    ? (
+      <>
+        <PaintSwatch className={`${fade} ${tone === 'light' ? 'text-moon group-hover/btn:text-plum' : 'text-cream group-hover/btn:text-moon'}`} />
+        <MarkerFrame className={`${fade} ${tone === 'light' ? 'text-plum group-hover/btn:text-ink' : 'text-moon group-hover/btn:text-cream'}`} />
+      </>
+    )
     : (
       <>
         <PaintSwatch className={`${fade} opacity-0 group-hover/btn:opacity-100 ${tone === 'light' ? 'text-plum' : 'text-cream'}`} />
-        <MarkerFrame className={`${fade} ${tone === 'light' ? 'text-ink/70 group-hover/btn:text-plum' : 'text-cream/80 group-hover/btn:text-cream'}`} />
+        <MarkerFrame className={`${fade} ${tone === 'light' ? 'text-plum group-hover/btn:text-ink' : 'text-cream group-hover/btn:text-moon'}`} />
       </>
     );
   return (
