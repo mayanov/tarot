@@ -17,7 +17,7 @@ type Props = { photos: string[]; isIndonesian: boolean; onOpen: (src: string) =>
 const PRINTS = [
   { rot: -4, y: 0, n: 'I', wash: 0, id: 'di balik meja', en: 'at the table' },
   { rot: 3, y: 2.5, n: 'II', wash: 2, id: 'sesi bersama', en: 'reading together' },
-  { rot: -2, y: -1, n: 'III', wash: 4, id: 'malam event', en: 'event night' },
+  { rot: -2, y: -1, n: 'III', wash: 1, id: 'malam event', en: 'event night' },
   { rot: 4, y: 2, n: 'IV', wash: 3, id: 'kartu terbuka', en: 'cards on the table' },
 ];
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
