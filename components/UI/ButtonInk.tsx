@@ -21,8 +21,9 @@ export const PaintSwatch: React.FC<{ className?: string }> = ({ className = '' }
       <svg className="block h-full w-full overflow-visible">
         <defs>
           <filter id={`${id}s`} x="-15%" y="-40%" width="130%" height="180%" colorInterpolationFilters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="0.035 0.07" numOctaves="2" seed={seed} result="n" />
-            <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G" result="d" />
+            {/* a steady hand: the edge only frays a little, it doesn't wave */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.22 0.3" numOctaves="1" seed={seed} result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="d" />
             {/* the paint pools a touch darker along its edge as it dries */}
             <feColorMatrix in="d" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 40 0" result="shape" />
             <feMorphology in="shape" operator="erode" radius="2" result="er" />
