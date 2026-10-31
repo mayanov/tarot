@@ -46,7 +46,7 @@ const spatter = (seed: number, count: number) => {
     return { x: r() * 100, y: r() * 100, r: big ? 1.4 + r() * 1.2 : 0.45 + r() * 0.7, o: big ? 0.55 + r() * 0.3 : 0.3 + r() * 0.5 };
   });
 };
-const CAT_STARS = [0, 1, 2, 3, 4].map((k) => spatter(90210 + k * 7777, 44));
+const CAT_STARS = [0, 1, 2, 3, 4].map((k) => spatter(90210 + k * 7777, 18));
 
 const Spatter: React.FC<{ k: number }> = ({ k }) => {
   const id = React.useId().replace(/:/g, '');

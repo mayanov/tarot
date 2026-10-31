@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CelestialMark from '../UI/CelestialMark';
-import CardStock, { PhotoPrint } from '../UI/CardStock';
+import CardStock from '../UI/CardStock';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
 import { PaperShadow, paperCut } from '../UI/PaperEdge';
 
@@ -103,10 +103,8 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                     // soft vintage tone that clears on hover
                     className="absolute inset-0 w-full h-full object-cover [filter:sepia(0.22)_saturate(0.85)_contrast(1.05)] group-hover:[filter:none] transition-[filter] duration-700"
                   />
-                  {/* printed onto the card (plum blacks, the paper's grain through it),
-                      with a gentle inner vignette */}
-                  <PhotoPrint />
-                  <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[0.3rem] shadow-[inset_0_0_40px_rgba(30,18,50,0.25)]" />
+                  {/* a gentle inner vignette, like a printed photo */}
+                  <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[0.3rem] shadow-[inset_0_0_40px_rgba(30,18,50,0.25)] ring-1 ring-inset ring-white/10" />
                 </span>
                 {/* foot: the title, set like a card name */}
                 <span className="flex items-center justify-center gap-1.5 md:gap-2 pt-2 md:pt-3 text-center">
