@@ -47,4 +47,17 @@ const CardStock: React.FC<{ tone?: 'dark' | 'light'; className?: string }> = ({ 
   );
 };
 
+/**
+ * Makes a photo read as printed onto the card rather than a screen image laid on it:
+ * the blacks lift to a deep plum ink (ink on stock never gets screen-black), and the
+ * paper's fibres show through the print. Put it over the photo, inside its (relative,
+ * rounded) box.
+ */
+export const PhotoPrint: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <span aria-hidden className={`pointer-events-none absolute inset-0 rounded-[inherit] ${className}`}>
+    <span className="absolute inset-0 mix-blend-lighten" style={{ background: '#2c1f3c' }} />
+    <span className="absolute inset-0 bg-paper mix-blend-multiply opacity-45" />
+  </span>
+);
+
 export default CardStock;

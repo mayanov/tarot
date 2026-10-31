@@ -4,7 +4,7 @@ import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import CountUp from '../UI/CountUp';
 import CelestialMark from '../UI/CelestialMark';
-import CardStock from '../UI/CardStock';
+import CardStock, { PhotoPrint } from '../UI/CardStock';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
 import { PaperShadow, paperCut, tornTop } from '../UI/PaperEdge';
 import { Phase } from '../UI/MoonPhaseDivider';
@@ -110,7 +110,8 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
               />
               {/* flat plum tint (no directional gradient) to cohere with the palette */}
               <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
-              <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[0.45rem] ring-1 ring-inset ring-white/10" />
+              {/* printed onto the card: plum blacks, the paper's grain through it */}
+              <PhotoPrint />
             </div>
             <figcaption className="pt-3 flex flex-col items-center gap-1 text-center">
               <span className="print-text font-elegant font-semibold uppercase tracking-[0.28em] text-[0.8rem] md:text-[0.85rem] text-cream/90 pl-[0.28em]">

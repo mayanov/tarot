@@ -65,9 +65,11 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                             <CelestialMark name="sparkle" className="print-ink w-6 md:w-8 text-moon" />
                             Disclaimer
                         </h2>
-                        <div className="flex gap-2">
-                            {['Non-refundable', '18+'].map((tag) => (
-                                <span key={tag} className="print-ink rounded-[3px] bg-moon px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+                        {/* the two hard rules, rubber-stamped onto the sheet: an inked outline,
+                            pressed a little crooked, the ink catching unevenly */}
+                        <div className="flex gap-3">
+                            {['Non-refundable', '18+'].map((tag, i) => (
+                                <span key={tag} className={`print-ink mix-blend-multiply rounded-[4px] border-[1.5px] border-current px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-moon/85 ${i ? 'rotate-[2.5deg]' : '-rotate-[2deg]'}`}>
                                     {tag}
                                 </span>
                             ))}

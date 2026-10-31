@@ -3,6 +3,7 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock, Copy } from 'lucide-react';
 import CelestialMark from '../UI/CelestialMark';
+import { PaintSwatch } from '../UI/ButtonInk';
 import { FaWhatsapp } from 'react-icons/fa';
 import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
 import { trackEvent, SERVICE_TRACK_NAME } from '../../services/analytics';
@@ -313,9 +314,13 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
   // ---- shared bits of the layout ----
   const label = 'block text-[13px] font-medium text-ink/75 mb-1.5';
-  const field = 'w-full rounded-lg bg-white border border-ink/15 px-3.5 py-2.5 text-[15px] text-ink placeholder-ink/30 focus:border-moon focus:ring-2 focus:ring-moon/15 focus:outline-none transition-all';
+  // fields are lines to write on, ruled in pencil (.pencil-field), not boxes; the line
+  // darkens to the brand purple while you write on it
+  const field = 'pencil-field w-full bg-transparent px-1 pt-2 pb-2.5 font-elegant text-[17px] text-ink placeholder-ink/30 focus:outline-none';
   const chip = (active: boolean) => `flex flex-col text-center rounded-lg border px-2 py-2.5 transition-colors ${active ? 'border-moon bg-moon/[0.07] text-moon' : 'border-ink/15 bg-white text-ink/75 hover:border-moon/40'}`;
-  const primaryBtn = 'inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-moon text-cream text-sm font-semibold hover:bg-plum transition-colors disabled:opacity-40 disabled:pointer-events-none';
+  // painted on the paper like the site's buttons: put {swatch} as the first child
+  const primaryBtn = 'group/btn relative isolate inline-flex items-center gap-1.5 px-6 py-2.5 text-cream text-sm font-semibold disabled:opacity-40 disabled:pointer-events-none';
+  const swatch = <PaintSwatch className="transition-colors duration-300 text-moon group-hover/btn:text-plum" />;
 
   // the bottom bar: running total on the left (once known), the next action on the right
   const bottomBar = (action: React.ReactNode) => (
@@ -560,6 +565,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
               {bottomBar(
                 <button onClick={() => setStep(2)} disabled={!date || !time || (needsPackage && !pkg)} className={primaryBtn}>
+                  {swatch}
                   {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
                 </button>
               )}
@@ -630,6 +636,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
               {bottomBar(
                 <button onClick={() => setStep(3)} disabled={!detailsValid} className={primaryBtn}>
+                  {swatch}
                   {t('Lanjut', 'Continue')} <ChevronRight className="w-4 h-4" />
                 </button>
               )}
@@ -664,6 +671,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
               {bottomBar(
                 <button onClick={submit} disabled={submitting} className={primaryBtn}>
+                  {swatch}
                   {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', 'Confirm booking')}
                 </button>
               )}
@@ -699,6 +707,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
               <div className="mt-5 flex flex-col items-center gap-3">
                 <a href={waLink} target="_blank" rel="noopener noreferrer" className={`${primaryBtn} px-8 py-3`}>
+                  {swatch}
                   <span className="inline-flex items-center gap-2"><FaWhatsapp size={18} /> {t('Kirim Bukti Pembayaran', 'Send Payment Proof')}</span>
                 </a>
                 {isIndonesian && (

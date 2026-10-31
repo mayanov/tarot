@@ -540,3 +540,19 @@ html.lenis body {
   -webkit-mask-image: var(--ink-grain-faint);
           mask-image: var(--ink-grain-faint);
 }
+
+/* A form field as a line to write on: ruled in pencil (a wobbling line with a fainter
+   second pass, tiled along the bottom) instead of a box; it darkens to the brand
+   purple while it has focus. */
+.pencil-field {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27240%27%20height%3D%278%27%3E%3Cpath%20d%3D%27M0%204.2C30%203.4%2060%204.9%2090%204.1S150%203.3%20180%204.4S225%204.6%20240%204.2%27%20fill%3D%27none%27%20stroke%3D%27%232B2426%27%20stroke-opacity%3D%270.42%27%20stroke-width%3D%271.3%27%20stroke-linecap%3D%27round%27/%3E%3Cpath%20d%3D%27M14%205C70%204.4%20120%205.4%20196%204.7%27%20fill%3D%27none%27%20stroke%3D%27%232B2426%27%20stroke-opacity%3D%270.17%27%20stroke-width%3D%270.8%27/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: left bottom;
+  background-size: 240px 8px;
+  border: 0;
+  border-radius: 0;
+}
+.pencil-field:focus {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27240%27%20height%3D%278%27%3E%3Cpath%20d%3D%27M0%204.2C30%203.4%2060%204.9%2090%204.1S150%203.3%20180%204.4S225%204.6%20240%204.2%27%20fill%3D%27none%27%20stroke%3D%27%236B3FA0%27%20stroke-opacity%3D%270.9%27%20stroke-width%3D%271.6%27%20stroke-linecap%3D%27round%27/%3E%3Cpath%20d%3D%27M14%205C70%204.4%20120%205.4%20196%204.7%27%20fill%3D%27none%27%20stroke%3D%27%236B3FA0%27%20stroke-opacity%3D%270.36%27%20stroke-width%3D%270.8%27/%3E%3C/svg%3E");
+}
+select.pencil-field { appearance: auto; }

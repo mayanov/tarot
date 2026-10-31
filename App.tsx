@@ -11,7 +11,7 @@ import BookingModal from './components/Booking/BookingModal';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
 import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
 import MoonPhaseDivider from './components/UI/MoonPhaseDivider';
-import { tornBottom } from './components/UI/PaperEdge';
+import { tornBottom, paperCut } from './components/UI/PaperEdge';
 import { PaintSwatch } from './components/UI/ButtonInk';
 import { ArrowUp, RefreshCw } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
@@ -462,7 +462,7 @@ function App() {
           // larger WhatsApp drop below (mr-1.5 = half the difference in size)
           <button
             onClick={scrollToTop}
-            className="group/btn relative isolate grid place-items-center w-11 h-11 mr-1.5 text-cream drop-shadow-[0_6px_10px_rgba(20,12,40,0.25)] transition-transform duration-300 hover:-translate-y-1"
+            className="group/btn relative isolate grid place-items-center w-11 h-11 mr-1.5 text-cream drop-shadow-[0_1px_1.5px_rgba(20,12,40,0.4)] transition-transform duration-300 hover:-translate-y-1"
             title="Back to Top"
           >
             <PaintSwatch round className="transition-colors duration-300 text-[#1c1a4c] group-hover/btn:text-moon" />
@@ -494,11 +494,14 @@ const WhatsAppFab: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
       aria-label={label}
       className="group relative flex items-center justify-end"
     >
-      <span className="mr-3 whitespace-nowrap rounded-lg bg-paper text-ink text-sm font-medium px-3.5 py-2 shadow-[0_10px_28px_-12px_rgba(20,12,40,0.45)] opacity-0 translate-x-3 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-x-0">
-        {label}
+      {/* the label: a little slip of paper, hand-cut, lying on the page */}
+      <span className="mr-3 drop-shadow-[0_1px_1.5px_rgba(20,12,40,0.35)] opacity-0 translate-x-3 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-x-0">
+        <span className="block whitespace-nowrap rounded-md bg-paper text-ink font-elegant italic text-[15px] px-3.5 py-2" style={paperCut(41, 8, 12)}>
+          {label}
+        </span>
       </span>
       {/* a drop of the brand purple, a pair with the back-to-top drop */}
-      <span className="relative isolate grid place-items-center w-14 h-14 text-cream drop-shadow-[0_10px_16px_rgba(57,35,78,0.35)]">
+      <span className="relative isolate grid place-items-center w-14 h-14 text-cream drop-shadow-[0_1px_1.5px_rgba(57,35,78,0.45)]">
         <PaintSwatch round className="transition-colors duration-300 text-moon group-hover:text-plum" />
         <FaWhatsapp size={24} />
       </span>

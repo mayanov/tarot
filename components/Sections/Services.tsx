@@ -4,10 +4,11 @@ import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import Disclaimer from './Disclaimer';
 import { btnPrimaryDark, btnSecondaryDark } from '../UI/buttons';
-import ButtonInk from '../UI/ButtonInk';
+import ButtonInk, { PaintSwatch, PencilFrame } from '../UI/ButtonInk';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
+import PencilRule from '../UI/PencilRule';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
 import { PaperShadow, paperCut } from '../UI/PaperEdge';
 import { lockPage, unlockPage } from '../UI/scroll';
@@ -30,23 +31,39 @@ const CAT_WASH = DECK_WASH;
 const CAT_ACCENT = ['#262f6a', '#55246e', '#b04f74', '#c4604e', '#a26a30'];
 const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent', 'sun'] as const;
 
-// A faint star dusting inside each band, so every category reads like its own
-// little night sky (one pattern per category for variety).
+// Stars flicked onto each face in white gouache (a loaded brush tapped over the card):
+// mostly fine specks, a few fuller drops, none perfectly round. One pattern per card.
 const sMul = (seed: number) => () => {
   seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
   let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
   t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
-const starDust = (seed: number, count: number) => {
+const spatter = (seed: number, count: number) => {
   const r = sMul(seed);
   return Array.from({ length: count }, () => {
-    const x = (r() * 100).toFixed(2), y = (r() * 100).toFixed(2);
-    const rad = (0.5 + r() * 1).toFixed(2), o = (0.3 + r() * 0.55).toFixed(2);
-    return `radial-gradient(${rad}px ${rad}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, rgba(255,255,255,0) 60%)`;
-  }).join(',');
+    const big = r() < 0.12;
+    return { x: r() * 100, y: r() * 100, r: big ? 1.4 + r() * 1.2 : 0.45 + r() * 0.7, o: big ? 0.55 + r() * 0.3 : 0.3 + r() * 0.5 };
+  });
 };
-const CAT_STARS = [0, 1, 2, 3, 4].map((k) => starDust(90210 + k * 7777, 48));
+const CAT_STARS = [0, 1, 2, 3, 4].map((k) => spatter(90210 + k * 7777, 44));
+
+const Spatter: React.FC<{ k: number }> = ({ k }) => {
+  const id = React.useId().replace(/:/g, '');
+  return (
+    <svg aria-hidden className="absolute inset-0 h-full w-full">
+      <filter id={`${id}s`} x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="1" seed={k + 3} />
+        <feDisplacementMap in="SourceGraphic" scale="1.6" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+      <g filter={`url(#${id}s)`} fill="#fbf7ee">
+        {CAT_STARS[k % CAT_STARS.length].map((d, j) => (
+          <circle key={j} cx={`${d.x.toFixed(2)}%`} cy={`${d.y.toFixed(2)}%`} r={d.r.toFixed(2)} opacity={d.o.toFixed(2)} />
+        ))}
+      </g>
+    </svg>
+  );
+};
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
 // Cheapest single price in a category (for the card's "from" line — not a range).
@@ -100,10 +117,9 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                 style={paperCut(11 + k * 23)}
             >
                 <CardWash colors={CAT_WASH[k % CAT_WASH.length]} />
-                <div aria-hidden className="absolute inset-0 opacity-70" style={{ backgroundImage: CAT_STARS[k % CAT_STARS.length] }} />
+                <Spatter k={k} />
                 {/* ornamental inner frame */}
                 <div aria-hidden className="absolute ring-1 ring-white/[0.16]" style={{ inset: cq(10.4), borderRadius: cq(13.6) }} />
-                <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-10 h-40 opacity-0 transition-opacity duration-500 group-hover/card:opacity-100" style={{ background: 'radial-gradient(60% 100% at 50% 0%, rgba(201,184,232,0.28), transparent 72%)' }} />
 
                 <div className="relative h-full flex flex-col items-center justify-between text-cream text-center" style={{ padding: `${cq(28)} ${cq(20)}` }}>
                     <span className="print-ink font-elegant italic text-cream/55 tracking-wide leading-[1.43]" style={{ fontSize: cq(14) }}>{numeral}</span>
@@ -181,10 +197,12 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                                 <li key={si} className={`flex items-start ${tight ? 'gap-2 text-[12.5px]' : 'gap-2.5 text-[14px]'} leading-snug text-ink/75`}>
                                                     <span
                                                         aria-hidden
-                                                        className={`shrink-0 grid place-items-center rounded-full font-semibold tabular-nums text-cream mt-[1px] ${tight ? 'w-4 h-4 text-[9px]' : 'w-[18px] h-[18px] text-[10px]'}`}
-                                                        style={{ backgroundColor: accent }}
+                                                        className={`relative isolate shrink-0 grid place-items-center font-semibold tabular-nums mt-[1px] ${tight ? 'w-4 h-4 text-[9px]' : 'w-[18px] h-[18px] text-[10px]'}`}
+                                                        style={{ color: accent }}
                                                     >
-                                                        {si + 1}
+                                                        {/* a drop of ink in the card's colour */}
+                                                        <PaintSwatch round />
+                                                        <span className="text-cream">{si + 1}</span>
                                                     </span>
                                                     <span>{st}</span>
                                                 </li>
@@ -214,19 +232,22 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => { e.stopPropagation(); g.cta.onClick && g.cta.onClick(); }}
-                                style={{ backgroundColor: accent }}
-                                className={`w-full inline-flex items-center justify-center rounded-lg text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
+                                style={{ color: accent }}
+                                className={`group/btn relative isolate w-full inline-flex items-center justify-center font-medium transition-[filter] duration-300 hover:brightness-110 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
                             >
-                                {g.cta.label}
+                                {/* painted onto the card in its colour, like the site's buttons */}
+                                <PaintSwatch />
+                                <span className="print-text text-cream">{g.cta.label}</span>
                             </a>
                         ) : (
                             <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); onBook && onBook(); }}
-                                style={{ backgroundColor: accent }}
-                                className={`w-full inline-flex items-center justify-center rounded-lg text-cream font-medium hover:brightness-110 transition-[filter] duration-300 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
+                                style={{ color: accent }}
+                                className={`group/btn relative isolate w-full inline-flex items-center justify-center font-medium transition-[filter] duration-300 hover:brightness-110 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
                             >
-                                {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                                <PaintSwatch />
+                                <span className="print-text text-cream">{isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}</span>
                             </button>
                         )}
                         {g.mapUrl && (
@@ -235,10 +256,13 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                style={{ ['--acc' as any]: accent }}
-                                className={`w-full inline-flex items-center justify-center rounded-lg border border-[var(--acc)] text-[var(--acc)] font-medium hover:bg-[var(--acc)] hover:text-cream transition-colors duration-300 ${tight ? 'py-2 text-[12px]' : big ? 'py-2.5 text-[13px]' : 'py-2 text-[12px]'}`}
+                                style={{ color: accent }}
+                                className={`group/btn relative isolate w-full inline-flex items-center justify-center font-medium transition-colors duration-300 ${tight ? 'py-2 text-[12px]' : big ? 'py-2.5 text-[13px]' : 'py-2 text-[12px]'}`}
                             >
-                                {isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}
+                                {/* sketched round in pencil; painted in on hover */}
+                                <PaintSwatch className="opacity-0 transition-opacity duration-300 group-hover/btn:opacity-100" />
+                                <PencilFrame />
+                                <span className="print-text transition-colors duration-300 group-hover/btn:text-cream">{isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}</span>
                             </a>
                         )}
                     </div>
@@ -258,7 +282,7 @@ const CardBack: React.FC<{ seed?: number }> = ({ seed = 5 }) => (
     <PaperShadow />
     <div className="absolute inset-0 overflow-hidden rounded-[1.15rem]" style={paperCut(seed)}>
         <CardWash colors={['#4a2e6e', '#241638', '#150c24']} />
-        <div aria-hidden className="absolute inset-0 opacity-60" style={{ backgroundImage: CAT_STARS[1] }} />
+        <span className="absolute inset-0 opacity-80"><Spatter k={1} /></span>
         <div aria-hidden className="absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-[#C9B8E8]/25" />
         <div aria-hidden className="absolute inset-[1.15rem] rounded-[0.6rem] ring-1 ring-[#C9B8E8]/10" />
         <div className="absolute inset-0 grid place-items-center">
@@ -604,15 +628,27 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                     </div>
                 </div>
             )}
-            <p className="print-body mt-12 md:mt-14 text-center text-ink/45 text-xs tracking-wide">
-                {isIndonesian ? 'Ketuk kartu untuk menariknya' : 'Tap a card to draw it'}
+            {/* a note pencilled in the margin, with a little arrow curling up to the cards */}
+            <p className="mt-10 md:mt-12 flex items-end justify-center gap-1.5 text-ink/55">
+                <svg aria-hidden viewBox="0 0 40 30" className="w-9 h-7 -mb-0.5 [filter:url(#pencil-icon)]" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M36 26C24 27 12 22 9 6" />
+                    <path d="M4 11L9 5.5l4.5 6" />
+                </svg>
+                <span className="inline-block -rotate-2 font-['Reenie_Beanie',cursive] text-[1.45rem] md:text-[1.6rem] leading-none">
+                    {isIndonesian ? 'Ketuk kartu untuk menariknya' : 'Tap a card to draw it'}
+                </span>
             </p>
 
             {/* full-screen "drawn card" reveal — portaled to <body> so it sits above the
                 nav and blurs the WHOLE page; click anywhere outside to close */}
             {selected !== null && typeof document !== 'undefined' && createPortal(
                 <div data-lenis-prevent className={`fixed inset-0 z-[300] overscroll-none touch-none flex flex-col items-center justify-center md:gap-5 md:p-6 overflow-hidden gap-4 px-5 py-5 ${booking || closing ? 'pointer-events-none' : ''}`} onClick={close} role="dialog" aria-modal="true">
-                    <div aria-hidden className="absolute inset-0 bg-ink/55 backdrop-blur-xl" style={{ animation: 'tarotFade 0.3s ease', opacity: landing ? 0 : 1, transition: `opacity ${FLIGHT_MS}ms ease` }} />
+                    {/* the table the card is drawn onto: a night wash over the page (no screen
+                        blur), with the paper's grain showing through */}
+                    <div aria-hidden className="absolute inset-0" style={{ animation: 'tarotFade 0.3s ease', opacity: landing ? 0 : 1, transition: `opacity ${FLIGHT_MS}ms ease` }}>
+                        <div className="absolute inset-0 opacity-[0.95]" style={{ background: 'radial-gradient(110% 80% at 18% 0%, #3b2c70 0%, #221747 50%, #120c28 100%)' }} />
+                        <div className="absolute inset-0 bg-paper mix-blend-multiply opacity-40" />
+                    </div>
                     <div
                         ref={boxRef}
                         className="relative aspect-[5/8]"
@@ -682,17 +718,19 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                         </div>
                     </div>
 
-                    {/* service tabs — jump straight to another service by name */}
-                    <div className={`relative z-30 flex gap-2 max-w-xl flex-wrap justify-center`} style={{ opacity: booking || closing ? 0 : 1, transition: 'opacity 300ms ease' }} onClick={(e) => e.stopPropagation()}>
+                    {/* service tabs — jump straight to another service by name: words on the
+                        page, the current one underlined in pencil */}
+                    <div className={`relative z-30 flex gap-x-5 gap-y-2 max-w-xl flex-wrap justify-center`} style={{ opacity: booking || closing ? 0 : 1, transition: 'opacity 300ms ease' }} onClick={(e) => e.stopPropagation()}>
                         {groups.map((g, j) => (
                             <button
                                 key={g.type}
                                 type="button"
                                 onClick={() => switchTo(j)}
                                 aria-current={j === selected}
-                                className={`shrink-0 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-[12px] font-medium transition-colors duration-300 ${j === selected ? 'bg-cream text-ink' : 'bg-white/10 text-cream/85 hover:bg-white/20'}`}
+                                className={`group/tab relative shrink-0 whitespace-nowrap pb-1.5 font-elegant italic text-[14px] transition-colors duration-300 ${j === selected ? 'text-cream' : 'text-cream/55 hover:text-cream/85'}`}
                             >
                                 {g.type}
+                                <PencilRule className={`absolute inset-x-0 bottom-0 transition-opacity duration-300 ${j === selected ? 'text-cream/80 opacity-100' : 'text-cream/50 opacity-0 group-hover/tab:opacity-100'}`} />
                             </button>
                         ))}
                     </div>
