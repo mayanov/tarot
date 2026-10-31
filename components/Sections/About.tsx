@@ -65,7 +65,7 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
       ref={figRef}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
-      className="relative mx-auto w-[min(82vw,22rem)] sm:w-[24rem] lg:w-full pt-16 pb-2 lg:py-20 lg:order-2"
+      className="relative mx-auto w-[min(82vw,22rem)] sm:w-[24rem] lg:w-full pt-16 pb-2 lg:pt-12 lg:pb-14 lg:order-2"
     >
       <div className="relative" style={{ opacity: dealt ? 1 : 0, transition: `opacity 600ms ${EASE}` }}>
         {/* the face */}
@@ -159,13 +159,13 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         transform: risen ? 'none' : 'translateY(6rem)',
         transition: 'transform 1100ms cubic-bezier(0.16,1,0.3,1)',
       }}
-      className="bg-paper relative z-10 isolate overflow-hidden text-ink lg:min-h-[72vh] -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
+      className="bg-paper relative z-10 isolate overflow-hidden text-ink -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
       <SoftAura />
       {/* portrait and text side by side on desktop (portrait first on phones) */}
-      <div className="relative mx-auto px-8 lg:min-h-[72vh] flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,25rem)] xl:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] lg:gap-12 xl:gap-16 lg:items-center">
+      <div className="relative mx-auto max-w-6xl px-8 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,25rem)] xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-12 xl:gap-16 lg:items-start">
         <PortraitCard isIndonesian={isIndonesian} />
 
-        <FadeIn dir="left" className="w-full pt-14 pb-20 md:pb-28 lg:py-28">
+        <FadeIn dir="left" className="w-full pt-14 pb-20 md:pb-28 lg:pt-12 lg:pb-14">
           {/* hook title */}
           <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>
