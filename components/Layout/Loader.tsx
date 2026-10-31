@@ -37,9 +37,13 @@ const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 const MOON_IMG = `${import.meta.env.BASE_URL}moon.jpg`;
 const Face: React.FC<{ offset: number; shadowStyle?: React.CSSProperties }> = ({ offset, shadowStyle }) => (
   <>
-    <img src={MOON_IMG} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ transform: 'scale(1.06)' }} draggable={false} />
-    <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 70% at 42% 38%, rgba(107,63,160,0.16) 0%, transparent 70%)', mixBlendMode: 'screen' }} />
-    <div className="absolute -inset-px rounded-full" style={{ background: '#0d0b22', transform: `translateX(${offset}%)`, filter: 'blur(1.5px)', ...shadowStyle }} />
+    {/* the photo, softened and washed in the sky's rose-lilac so it reads as painted
+        into the twilight rather than pasted on top of it */}
+    <img src={MOON_IMG} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ transform: 'scale(1.06)', filter: 'contrast(0.82) brightness(1.08) saturate(0.6)' }} draggable={false} />
+    <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(90% 90% at 36% 32%, rgba(255,232,238,0.9) 0%, rgba(232,176,206,0.85) 45%, rgba(150,138,214,0.9) 100%)', mixBlendMode: 'color', opacity: 0.55 }} />
+    <div className="pointer-events-none absolute inset-0 rounded-full" style={{ boxShadow: 'inset 0 0 10px 1px rgba(80,60,140,0.45)' }} />
+    {/* the night side is the sky itself, a little see-through (earthshine), not black */}
+    <div className="absolute -inset-px rounded-full" style={{ background: '#1c1c50', opacity: 0.86, transform: `translateX(${offset}%)`, filter: 'blur(2.5px)', ...shadowStyle }} />
   </>
 );
 
@@ -234,7 +238,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
       >
         <Background />
         {/* soft violet bloom that warms up when the full moon forms */}
-        <div aria-hidden className="absolute left-1/2 top-[43%] h-[24rem] w-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(140,98,196,0.32) 0%, rgba(140,98,196,0) 68%)', opacity: flying ? 0 : merged ? 1 : 0.3, transition: flying ? 'opacity 500ms ease' : 'opacity 1200ms ease' }} />
+        <div aria-hidden className="absolute left-1/2 top-[43%] h-[24rem] w-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(226,160,206,0.26) 0%, rgba(160,120,210,0.14) 40%, rgba(160,120,210,0) 68%)', opacity: flying ? 0 : merged ? 1 : 0.3, transition: flying ? 'opacity 500ms ease' : 'opacity 1200ms ease' }} />
       </div>
 
       <div className="relative flex flex-col items-center">
@@ -268,7 +272,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
                 style={{
                   transform: `translate(-50%, -50%) translateX(${merged || flying ? 0 : slot * ROW_GAP_REM}rem) scale(${merged || flying ? 1.6 : 0.86 + fill * 0.14}) ${ph.waning ? 'scaleX(-1)' : ''}`,
                   opacity: merged || flying ? 0 : !showing ? 0 : 0.2 + fill * 0.8,
-                  boxShadow: on ? '0 0 16px 2px rgba(255,255,255,0.28)' : 'none',
+                  boxShadow: on ? '0 0 16px 2px rgba(240,200,228,0.3)' : 'none',
                   transition: merged || flying
                     ? `transform 900ms ${EASE} ${Math.abs(slot) * 40}ms, opacity 700ms ease ${180 + Math.abs(slot) * 40}ms`
                     : 'box-shadow 600ms ease',
@@ -290,8 +294,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
               transform: flying ? flight! : merged ? 'scale(1)' : 'scale(0.25)',
               opacity: flying ? 0 : merged ? 1 : 0,
               boxShadow: flying
-                ? '0 0 26px 4px rgba(255,255,255,0.18)'
-                : merged ? '0 0 110px 22px rgba(255,255,255,0.42)' : '0 0 0 0 rgba(255,255,255,0)',
+                ? '0 0 26px 4px rgba(240,206,230,0.18)'
+                : merged ? '0 0 40px 6px rgba(250,220,236,0.3), 0 0 120px 26px rgba(214,150,206,0.28)' : '0 0 0 0 rgba(240,206,230,0)',
               transition: flying
                 ? `transform ${REVEAL_FLIGHT_MS}ms ${EASE_FLIGHT}, box-shadow ${REVEAL_FLIGHT_MS}ms ease, opacity 320ms ease ${REVEAL_FLIGHT_MS - 120}ms`
                 : `opacity 700ms ease 120ms, transform 1100ms ${EASE}, box-shadow 1400ms ease`,
