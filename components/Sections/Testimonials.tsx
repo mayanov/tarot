@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
+import WatercolorWash from '../UI/WatercolorWash';
 import { btnSecondaryLight } from '../UI/buttons';
 
 interface TestimonialsProps {
@@ -241,6 +242,10 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
+        {/* a loose watercolour pool behind the quote, a warmer cousin of the Disclaimer's wash */}
+        <div aria-hidden className="pointer-events-none absolute -inset-y-10 md:-inset-y-14 inset-x-0 -z-10 mx-auto max-w-6xl">
+          <WatercolorWash variant="pool" />
+        </div>
         {/* a large, faint opening quote mark */}
         <div aria-hidden className="pointer-events-none text-center font-elegant text-moon/30 text-[5rem] md:text-[7rem] leading-[0.28] select-none"><span className="print-ink mix-blend-multiply inline-block py-[0.5em] -my-[0.5em]">&ldquo;</span></div>
 

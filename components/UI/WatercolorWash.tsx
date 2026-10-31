@@ -2,6 +2,12 @@ import React from 'react';
 
 interface WatercolorWashProps {
   className?: string;
+  /**
+   * 'panel' (default): a lilac wash over a block of text, roughly its shape.
+   * 'pool': a looser, rounded pool, warmer (rose first, lilac second) with peach and
+   * blue dropped in — for a single centred piece like a quote.
+   */
+  variant?: 'panel' | 'pool';
 }
 
 /**
@@ -34,8 +40,32 @@ const washFilter = (id: string, seed: number, freq: string, scale: number) => (
   </filter>
 );
 
-const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '' }) => {
+const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '', variant = 'panel' }) => {
   const id = React.useId().replace(/:/g, '');
+  if (variant === 'pool') {
+    return (
+      <svg aria-hidden className={`pointer-events-none absolute inset-0 h-full w-full overflow-visible ${className}`}>
+        <defs>
+          {washFilter(`${id}a`, 23, '0.0035 0.005', 120)}
+          {washFilter(`${id}b`, 31, '0.0045 0.006', 95)}
+          <filter id={`${id}p`} x="-40%" y="-40%" width="180%" height="180%" colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" seed="17" result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="100" xChannelSelector="R" yChannelSelector="G" result="d" />
+            <feGaussianBlur in="d" stdDeviation="26" />
+          </filter>
+        </defs>
+
+        {/* a rose pool laid down first, then a lilac pass that only half covers it */}
+        <ellipse cx="50%" cy="50%" rx="47%" ry="46%" fill="#c4689c" fillOpacity="0.05" filter={`url(#${id}a)`} />
+        <ellipse cx="44%" cy="56%" rx="36%" ry="38%" fill="#7a52b4" fillOpacity="0.035" filter={`url(#${id}b)`} />
+        <g filter={`url(#${id}p)`}>
+          <ellipse cx="74%" cy="30%" rx="18%" ry="22%" fill="#f0b48c" fillOpacity="0.1" />
+          <ellipse cx="24%" cy="70%" rx="17%" ry="20%" fill="#8fa6e2" fillOpacity="0.08" />
+          <ellipse cx="58%" cy="78%" rx="16%" ry="12%" fill="#e3a0c4" fillOpacity="0.09" />
+        </g>
+      </svg>
+    );
+  }
   return (
     <svg aria-hidden className={`pointer-events-none absolute inset-0 h-full w-full overflow-visible ${className}`}>
       <defs>
