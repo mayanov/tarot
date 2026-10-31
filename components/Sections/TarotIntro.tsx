@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import WatercolorSky, { PLUM } from '../Layout/WatercolorSky';
+import WatercolorSky, { NIGHT, PLUM, SUNRISE } from '../Layout/WatercolorSky';
 
 interface TarotIntroProps {
   isIndonesian?: boolean;
@@ -25,17 +25,17 @@ const STARS_STATIC = starField(srng, 300, 0.4, 1.1, 0.3, 0.72);
 const STARS_TWINKLE_A = starField(srng, 90, 0.8, 1.5, 0.55, 0.95);
 const STARS_TWINKLE_B = starField(srng, 70, 0.6, 1.1, 0.4, 0.82);
 
-// The night veil over the painted sky; it thins as you scroll (opacity only, so
-// it's compositor-cheap), letting the watercolour come up like a dawn.
-const NIGHT_VEIL = 'linear-gradient(180deg, rgb(16,8,28) 0%, rgb(12,6,24) 55%, rgb(7,5,18) 100%)';
-const veilAt = (p: number) => 0.82 - p * 0.68;
+// The sky is a timelapse: three painted skies (night, dawn, sunrise) stacked and
+// crossfaded by scroll, with the sun's glow rising from below and the stars going
+// out — all opacity/transform, so it's compositor-cheap.
 const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1);
 const smoothstep = (t: number) => { const x = clamp01(t); return x * x * (3 - 2 * x); };
+const fade = (p: number, a: number, b: number) => smoothstep((p - a) / (b - a));
 
 /**
  * A scroll-pinned "presentation" band between About and Services. The section is a
- * tall track with a sticky panel over a starry watercolour sky; while pinned, the sky
- * brightens (a night veil thins off the painting) and the lines build in — and the whole stack drifts gently the whole
+ * tall track with a sticky panel over a painted sky; while pinned, the sky runs a
+ * sunrise timelapse (night → dawn → sunrise) and the lines build in — and the whole stack drifts gently the whole
  * way, so scrolling always shows motion instead of feeling frozen. All scroll work is
  * imperative on refs (no per-frame re-render) and uses opacity/transform only, so it
  * stays smooth. Reduced-motion collapses it to a calm static section.
@@ -45,7 +45,10 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
   const sectionRef = useRef<HTMLElement>(null);
-  const skyLightRef = useRef<HTMLDivElement>(null);
+  const dawnRef = useRef<HTMLDivElement>(null);
+  const sunriseRef = useRef<HTMLDivElement>(null);
+  const sunRef = useRef<HTMLDivElement>(null);
+  const starsRef = useRef<HTMLDivElement>(null);
   const stackRef = useRef<HTMLDivElement>(null);
   const paraRef = useRef<HTMLParagraphElement>(null);
   const affirmRef = useRef<HTMLDivElement>(null);
@@ -64,8 +67,16 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
       if (!el) return;
       const total = el.offsetHeight - window.innerHeight; // pinned range
       const p = total > 0 ? clamp01(-el.getBoundingClientRect().top / total) : 0;
-      // sky brightens the whole way (continuous motion so it never feels frozen)
-      if (skyLightRef.current) skyLightRef.current.style.opacity = veilAt(p).toFixed(3);
+      // the timelapse: night gives way to dawn, dawn to sunrise, the sun climbs and the
+      // stars go out (continuous motion, so it never feels frozen)
+      if (dawnRef.current) dawnRef.current.style.opacity = fade(p, 0.05, 0.5).toFixed(3);
+      if (sunriseRef.current) sunriseRef.current.style.opacity = fade(p, 0.45, 0.92).toFixed(3);
+      if (starsRef.current) starsRef.current.style.opacity = (1 - fade(p, 0.3, 0.8)).toFixed(3);
+      if (sunRef.current) {
+        const s = fade(p, 0.2, 1);
+        sunRef.current.style.opacity = s.toFixed(3);
+        sunRef.current.style.transform = `translate3d(0, ${((1 - s) * 40).toFixed(1)}%, 0)`;
+      }
       // the whole stack drifts up gently across the pin (bloom stays put — moving a
       // 150px-blur layer each frame re-rasterizes the blur and causes scroll jank)
       if (stackRef.current) stackRef.current.style.transform = `translateY(${(18 - p * 44).toFixed(1)}px)`;
@@ -95,21 +106,33 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
       ref={sectionRef}
       id="tarot-intro"
       className={`relative text-cream ${reduce ? 'py-24 md:py-32' : ''}`}
-      style={{ height: reduce ? undefined : '155vh', background: 'rgb(7,5,18)' }}
+      style={{ height: reduce ? undefined : '200vh', background: '#05061a' }}
     >
       <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
-        {/* sky — a watercolour plum sky with a night veil over it that thins by scroll */}
-        <WatercolorSky palette={PLUM} className="absolute inset-0" />
+        {/* sky — night, with dawn and then sunrise painted over it, faded in by scroll */}
+        <WatercolorSky palette={NIGHT} className="absolute inset-0" />
+        <div ref={dawnRef} aria-hidden className="absolute inset-0 will-change-[opacity]" style={{ opacity: reduce ? 1 : 0 }}>
+          <WatercolorSky palette={PLUM} className="absolute inset-0" />
+        </div>
+        <div ref={sunriseRef} aria-hidden className="absolute inset-0 will-change-[opacity]" style={{ opacity: 0 }}>
+          <WatercolorSky palette={SUNRISE} className="absolute inset-0" />
+        </div>
+        {/* the sun's glow, rising from below the bottom edge */}
         <div
-          ref={skyLightRef}
+          ref={sunRef}
           aria-hidden
-          className="absolute inset-0 will-change-[opacity]"
-          style={{ background: NIGHT_VEIL, opacity: reduce ? 0.4 : veilAt(0) }}
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] mix-blend-screen will-change-[opacity,transform]"
+          style={{
+            opacity: reduce ? 0.4 : 0,
+            background: 'radial-gradient(55% 60% at 50% 100%, rgba(255,226,170,0.75) 0%, rgba(255,180,140,0.35) 38%, transparent 72%)',
+          }}
         />
+        {/* a soft shade behind the words, so cream text holds on the brightest sky */}
+        <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 45% at 50% 48%, rgba(24,14,48,0.32), transparent 75%)' }} />
 
         {/* starfield — each layer promoted to its own compositor layer so the sky
             crossfade never re-rasterizes them and twinkle stays composite-only */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div ref={starsRef} aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden will-change-[opacity]" style={{ opacity: reduce ? 0.5 : 1 }}>
           <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_STATIC), transform: 'translateZ(0)' }} />
           <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_A), transform: 'translateZ(0)', animation: reduce ? undefined : 'skyTwinkle 4.5s ease-in-out infinite' }} />
           <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_B), transform: 'translateZ(0)', animation: reduce ? undefined : 'skyTwinkle 6.5s ease-in-out 1.2s infinite' }} />
@@ -136,11 +159,11 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           <div
             ref={affirmRef}
             style={hidden}
-            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-[#C9B8E8] text-[1.05rem] will-change-[opacity,transform]"
+            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-cream/90 text-[1.05rem] [text-shadow:0_2px_18px_rgba(40,20,60,0.45)] will-change-[opacity,transform]"
           >
             {affirmations.map((w, i) => (
               <span key={w} className="inline-flex items-center gap-4">
-                {i > 0 && <span aria-hidden className="not-italic text-[#C9B8E8]/40">&middot;</span>}
+                {i > 0 && <span aria-hidden className="not-italic text-cream/45">&middot;</span>}
                 {w}
               </span>
             ))}

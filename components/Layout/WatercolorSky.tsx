@@ -191,4 +191,22 @@ export const PLUM: SkyPalette = {
   glow: ['rgba(255,200,214,0.6)', 'rgba(180,170,255,0.45)'],
 };
 
+// night and sunrise: the calm-space band's timelapse runs NIGHT → PLUM → SUNRISE
+export const NIGHT: SkyPalette = {
+  ground: '#0a0c22',
+  base: ['#05061a', '#0b0f2c', '#141a40', '#1f2552', '#2c2f62'],
+  back: ['#04051a', '#0c1032', '#10153a', '#1c2350', '#262457', '#1a2a5a'],
+  front: ['#1a2050', '#2a2e66', '#3a3a78', '#4a4684', '#34407a'],
+  bloom: '#8a90c0',
+  glow: ['rgba(120,140,220,0.35)', 'rgba(140,120,220,0.3)'],
+};
+export const SUNRISE: SkyPalette = {
+  ground: '#5a4a8a',
+  base: ['#2e3170', '#564b92', '#a2689c', '#e9968c', '#ffcf9c'],
+  back: ['#262a66', '#3f3f86', '#6b54a0', '#c4708f', '#ee9478', '#f2b07e'],
+  front: ['#7a64b0', '#c07aa8', '#f3a58c', '#ffd3a2', '#ffe2b8'],
+  bloom: '#fff0de',
+  glow: ['rgba(255,220,170,0.9)', 'rgba(255,190,200,0.6)'],
+};
+
 export default WatercolorSky;
