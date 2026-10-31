@@ -516,7 +516,7 @@ html.lenis body {
                  menu index): a much lighter wear, finer grain, so it reads easily.
    .print-body — body copy and small labels: barely there, only noticeable up
                  close, so the whole sheet reads as one print.
-   Never on buttons/controls. A mask clips to its box, so tight-leading headings
+   Never on a whole button/control — only its label (ButtonInk does it). A mask clips to its box, so tight-leading headings
    take pb-[0.14em] -mb-[0.14em] to keep their descenders.
 --------------------------------------------------------------------------- */
 :root {

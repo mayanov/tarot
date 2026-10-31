@@ -303,10 +303,11 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           href="https://share.google/4LrmhpcgHNXX9bTzr"
           target="_blank"
           rel="noopener noreferrer"
-          className={`${btnSecondaryLight} inline-flex gap-2 px-7 py-3`}
+          className={`${btnSecondaryLight} inline-flex gap-2 px-7 py-3 text-[1.05rem]`}
         >
-          <ButtonInk kind="secondary" tone="light" />
-          <span>{isIndonesian ? 'Lihat semua review di Google' : 'Read all reviews on Google'}</span>
+          <ButtonInk kind="secondary" tone="light">
+            <span>{isIndonesian ? 'Lihat semua review di Google' : 'Read all reviews on Google'}</span>
+          </ButtonInk>
         </a>
       </div>
     </div>

@@ -63,11 +63,12 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     <a
                         href="#services"
                         onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-                        className={`${btnPrimaryDark} mt-8 inline-flex group gap-3 px-8 py-3.5 text-sm`}
+                        className={`${btnPrimaryDark} mt-8 inline-flex group gap-3 px-8 py-3.5 text-[1.05rem]`}
                     >
-                      <ButtonInk kind="primary" tone="dark" />
+                      <ButtonInk kind="primary" tone="dark">
                         {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </ButtonInk>
                     </a>
                 </div>
 

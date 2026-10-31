@@ -149,10 +149,11 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
             <a
               href="#services"
               onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
-              className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-sm`}
+              className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-[1.05rem]`}
             >
-              <ButtonInk kind="primary" tone="dark" />
-              {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+              <ButtonInk kind="primary" tone="dark">
+                {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+              </ButtonInk>
             </a>
           </div>
         </Rise>

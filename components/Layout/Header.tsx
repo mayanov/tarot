@@ -272,10 +272,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <div className="flex items-center gap-4">
               <button
                 onClick={goToServices}
-                className={`${btnPrimaryDark} hidden sm:inline-flex px-6 py-2.5 text-[13px] tracking-[0.01em] whitespace-nowrap drop-shadow-[0_5px_12px_rgba(0,0,0,0.28)]`}
+                className={`${btnPrimaryDark} hidden sm:inline-flex px-6 py-2.5 text-[15px] whitespace-nowrap drop-shadow-[0_5px_12px_rgba(0,0,0,0.28)]`}
               >
-                <ButtonInk kind="primary" tone="dark" />
-                {isIndonesian ? 'Pesan' : 'Book'}
+                <ButtonInk kind="primary" tone="dark">
+                  {isIndonesian ? 'Pesan' : 'Book'}
+                </ButtonInk>
               </button>
 
               <button
@@ -455,10 +456,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
 
               <button
                 onClick={goToServices}
-                className={`${btnPrimaryLight} inline-flex group gap-3 px-6 sm:px-8 py-3 sm:py-3.5 text-sm`}
+                className={`${btnPrimaryLight} inline-flex group gap-3 px-6 sm:px-8 py-3 sm:py-3.5 text-[1.05rem]`}
               >
-                <ButtonInk kind="primary" tone="light" />
-                {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                <ButtonInk kind="primary" tone="light">
+                  {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
+                </ButtonInk>
               </button>
             </div>
           </div>

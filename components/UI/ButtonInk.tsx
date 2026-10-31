@@ -1,8 +1,9 @@
 import React from 'react';
 
 // The hand-made faces of the site's buttons, drawn on the paper instead of CSS
-// boxes. Put one as the first child of a button styled with a class from
-// ./buttons (those make it `relative isolate group/btn`); it sits behind the label.
+// boxes. Wrap the contents of every button styled with a class from ./buttons
+// (those make it `relative isolate group/btn`) in one: the face sits behind the
+// label, and the label gets the same print wear as the headings.
 //   primary   → a painted swatch (gouache, ragged edges, pooled rim, paper grain)
 //   secondary → a pencil frame sketched round it, lines overshooting the corners;
 //               on hover the swatch is painted in behind it
@@ -92,15 +93,22 @@ interface ButtonInkProps {
   tone: 'light' | 'dark';
 }
 
-const ButtonInk: React.FC<ButtonInkProps> = ({ kind, tone }) => {
+const ButtonInk: React.FC<React.PropsWithChildren<ButtonInkProps>> = ({ kind, tone, children }) => {
   const fade = 'transition-[color,opacity] duration-300';
-  if (kind === 'primary') {
-    return <PaintSwatch className={`${fade} ${tone === 'light' ? 'text-moon group-hover/btn:text-plum' : 'text-cream group-hover/btn:text-moon'}`} />;
-  }
+  const face = kind === 'primary'
+    ? <PaintSwatch className={`${fade} ${tone === 'light' ? 'text-moon group-hover/btn:text-plum' : 'text-cream group-hover/btn:text-moon'}`} />
+    : (
+      <>
+        <PaintSwatch className={`${fade} opacity-0 group-hover/btn:opacity-100 ${tone === 'light' ? 'text-plum' : 'text-cream'}`} />
+        <PencilFrame className={`${fade} ${tone === 'light' ? 'text-ink/40 group-hover/btn:text-plum' : 'text-cream/70 group-hover/btn:text-cream'}`} />
+      </>
+    );
   return (
     <>
-      <PaintSwatch className={`${fade} opacity-0 group-hover/btn:opacity-100 ${tone === 'light' ? 'text-plum' : 'text-cream'}`} />
-      <PencilFrame className={`${fade} ${tone === 'light' ? 'text-ink/40 group-hover/btn:text-plum' : 'text-cream/70 group-hover/btn:text-cream'}`} />
+      {face}
+      {/* the label is printed like the headings around it (a mask clips to its box,
+          so the padding/negative margin keep the descenders) */}
+      <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{children}</span>
     </>
   );
 };

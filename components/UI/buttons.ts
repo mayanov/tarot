@@ -15,7 +15,7 @@
 // The variant only sets the label colour: the face of every button is hand-made,
 // painted or pencilled on the paper — put <ButtonInk kind tone /> (./ButtonInk)
 // as its first child, matching the variant.
-const BASE = 'group/btn relative isolate items-center justify-center font-medium transition-colors duration-300';
+const BASE = 'group/btn relative isolate items-center justify-center font-elegant font-semibold leading-none transition-colors duration-300';
 
 export const btnPrimaryDark = `${BASE} text-ink hover:text-cream`;
 export const btnPrimaryLight = `${BASE} text-cream`;

@@ -110,11 +110,12 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                       setShowAll(true);
                     }
                   }}
-                  className={`${btnSecondaryLight} inline-flex group gap-2 min-w-[11rem] px-7 py-3 text-sm`}
+                  className={`${btnSecondaryLight} inline-flex group gap-2 min-w-[11rem] px-7 py-3 text-[1.05rem]`}
                 >
-                  <ButtonInk kind="secondary" tone="light" />
-                  {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
-                  <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
+                  <ButtonInk kind="secondary" tone="light">
+                    {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
+                    <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
+                  </ButtonInk>
                 </button>
               );
             })()}
@@ -124,10 +125,11 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 href="https://wa.link/5peyhb"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${btnPrimaryLight} inline-flex px-7 py-3 text-sm`}
+                className={`${btnPrimaryLight} inline-flex px-7 py-3 text-[1.05rem]`}
               >
-                <ButtonInk kind="primary" tone="light" />
-                Yuk Collab
+                <ButtonInk kind="primary" tone="light">
+                  Yuk Collab
+                </ButtonInk>
               </a>
             )}
           </div>

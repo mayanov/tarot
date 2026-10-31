@@ -18,8 +18,8 @@ interface ServicesProps {
 
 // Standardised button styles (used across the pricelist bands, which sit on dark sky):
 // shared button system (dark-background variants — used on the dark card reveal).
-const btnPrimary = `${btnPrimaryDark} inline-flex px-7 py-3 text-sm`;
-const btnSecondary = `${btnSecondaryDark} inline-flex px-7 py-3 text-sm`;
+const btnPrimary = `${btnPrimaryDark} inline-flex px-7 py-3 text-[1.05rem]`;
+const btnSecondary = `${btnSecondaryDark} inline-flex px-7 py-3 text-[1.05rem]`;
 
 // Per-category band backgrounds — rich radial gradients (a glow deepening into
 // near-black) so each category feels distinct and has depth, no photos. Paired
@@ -749,13 +749,15 @@ const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndones
     return (
         <div className="flex flex-wrap items-center gap-3">
             <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={btnPrimary}>
-                <ButtonInk kind="primary" tone="dark" />
-                {label}
+                <ButtonInk kind="primary" tone="dark">
+                  {label}
+                </ButtonInk>
             </button>
             {g.mapUrl && (
                 <a href={g.mapUrl} target="_blank" rel="noopener noreferrer" className={btnSecondary}>
-                    <ButtonInk kind="secondary" tone="dark" />
-                    {isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}
+                    <ButtonInk kind="secondary" tone="dark">
+                      {isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}
+                    </ButtonInk>
                 </a>
             )}
         </div>
