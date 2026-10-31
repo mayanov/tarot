@@ -58,15 +58,19 @@ const tearPath = (() => {
   }
   return d + ' L1600 22 L1600 48 Z';
 })();
-const TEAR = svgUrl(
+const tear = (flip: boolean) => svgUrl(
   `<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='48' viewBox='0 0 1600 48' preserveAspectRatio='none'>` +
   `<filter id='f' x='0' y='-50%' width='100%' height='200%'>` +
-  `<feTurbulence type='fractalNoise' baseFrequency='0.5 0.9' numOctaves='2' seed='7'/>` +
+  `<feTurbulence type='fractalNoise' baseFrequency='0.5 0.9' numOctaves='2' seed='${flip ? 11 : 7}'/>` +
   `<feDisplacementMap in='SourceGraphic' scale='1.6' xChannelSelector='R' yChannelSelector='G'/>` +
   `</filter>` +
+  // the bottom edge is the same tear turned upside down (paper above it)
+  (flip ? `<g transform='translate(0 48) scale(1 -1)'>` : '<g>') +
   `<path d='${tearPath}' fill='white' filter='url(#f)'/>` +
-  `</svg>`,
+  `</g></svg>`,
 );
+const TEAR = tear(false);
+const TEAR_BOTTOM = tear(true);
 
 /** mask for a sheet whose top edge is torn (the 48px band at the top), solid below */
 export const tornTop: React.CSSProperties = {
@@ -78,4 +82,16 @@ export const tornTop: React.CSSProperties = {
   maskSize: '100% 48px, 100% calc(100% - 46px)',
   WebkitMaskPosition: '0 0, 0 46px',
   maskPosition: '0 0, 0 46px',
+};
+
+/** mask for a sheet whose bottom edge is torn (the 48px band at the bottom), solid above */
+export const tornBottom: React.CSSProperties = {
+  WebkitMaskImage: `${TEAR_BOTTOM}, linear-gradient(#000, #000)`,
+  maskImage: `${TEAR_BOTTOM}, linear-gradient(#000, #000)`,
+  WebkitMaskRepeat: 'no-repeat',
+  maskRepeat: 'no-repeat',
+  WebkitMaskSize: '100% 48px, 100% calc(100% - 46px)',
+  maskSize: '100% 48px, 100% calc(100% - 46px)',
+  WebkitMaskPosition: '0 100%, 0 0',
+  maskPosition: '0 100%, 0 0',
 };

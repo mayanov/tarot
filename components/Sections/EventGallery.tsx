@@ -66,12 +66,12 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 transition: `transform 1100ms ${BOUNCE} ${i * 140}ms, opacity 500ms ease ${i * 140}ms`,
               }}
             >
-              {/* lying on the page; picked up on hover, it straightens and lifts off its
-                  shadow, which spreads and leaves the touching edge */}
-              <PaperShadow
-                radius="1rem"
-                className="transition-[transform] duration-500 group-hover/print:[transform:rotate(var(--r))_translateY(-5px)_scale(0.97)]"
-                contactClassName="transition-opacity duration-500 group-hover/print:opacity-0"
+              {/* lying on the page; picked up on hover, it straightens and lifts: the
+                  resting shadow fades and one wide, very soft shadow takes its place */}
+              <PaperShadow radius="1rem" className="transition-opacity duration-500 group-hover/print:opacity-0" />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -z-10 inset-[10%_8%_3%_8%] rounded-[1rem] bg-[rgba(38,24,34,0.3)] blur-[18px] opacity-0 transition-opacity duration-500 group-hover/print:opacity-100 [transform:rotate(var(--r))_translateY(10px)]"
               />
               <button
                 type="button"
@@ -79,8 +79,9 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
                 // a tarot card's 5:8, like the pricelist cards (the photo takes the height
                 // left after the head and foot); hover cancels the card's tilt (--r) and
-                // lifts it (no zoom); its edge is hand-cut (paperCut)
-                className="group relative flex aspect-[5/8] w-full flex-col p-1.5 md:p-2.5 rounded-[0.75rem] md:rounded-[1rem] transition-transform duration-500 group-hover/print:[transform:rotate(var(--r))_translateY(-10px)]"
+                // brings it a little closer (grows in place, so nothing under it is
+                // uncovered); its edge is hand-cut (paperCut)
+                className="group relative flex aspect-[5/8] w-full flex-col p-1.5 md:p-2.5 rounded-[0.75rem] md:rounded-[1rem] transition-transform duration-500 group-hover/print:[transform:rotate(var(--r))_scale(1.045)]"
                 style={{ transitionTimingFunction: EASE, ...paperCut(31 + i * 17, 16, 20) }}
               >
                 {/* the card's face, painted in watercolour */}
