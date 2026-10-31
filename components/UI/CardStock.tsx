@@ -4,8 +4,8 @@ import React from 'react';
  * Lays real card stock over a card face, so it reads as a printed tarot card that has
  * been handled rather than a flat screen shape: the linen-embossed finish of playing
  * cards (fine crossed threads, lit from the top left), ink that sits a little unevenly
- * on the stock, flecks in the board, and edges and corners rubbed pale where fingers
- * have shuffled it. Put it as the last child of the card face (which must be
+ * on the stock, the odd fleck in the board, and edges and corners only lightly softened
+ * by handling — cared for, not worn out. Put it as the last child of the card face (which must be
  * `relative`); it takes the face's rounded corners. Every card wears differently.
  *
  * tone: 'dark' for the night-plum faces (wear shows as pale, rubbed-through board),
@@ -64,16 +64,16 @@ const CardStock: React.FC<{ tone?: 'dark' | 'light'; className?: string }> = ({ 
 
         <rect width="100%" height="100%" filter={`url(#${id}l)`} style={{ mixBlendMode: 'soft-light' }} opacity={dark ? 0.5 : 0.4} />
         <rect width="100%" height="100%" fill="#fff" filter={`url(#${id}i)`} style={{ mixBlendMode: 'soft-light' }} opacity={dark ? 0.22 : 0.12} />
-        <rect width="100%" height="100%" fill={wear} filter={`url(#${id}f)`} opacity={dark ? 0.16 : 0.1} />
-        <g filter={`url(#${id}e)`} fill="none" stroke={wear} opacity={dark ? 0.55 : 0.28}>
+        <rect width="100%" height="100%" fill={wear} filter={`url(#${id}f)`} opacity={dark ? 0.06 : 0.04} />
+        <g filter={`url(#${id}e)`} fill="none" stroke={wear} opacity={dark ? 0.22 : 0.12}>
           {/* centred on the card's outline, so its inner half shows along every edge */}
-          <rect width="100%" height="100%" rx="14" strokeWidth="5" />
+          <rect width="100%" height="100%" rx="14" strokeWidth="3" />
           {/* the corners, where a card is held and shuffled */}
           <g stroke="none" fill={`url(#${id}c)`}>
-            <circle cx="0" cy="0" r="16" />
-            <svg x="100%" overflow="visible"><circle cx="0" cy="0" r="13" /></svg>
-            <svg y="100%" overflow="visible"><circle cx="0" cy="0" r="12" /></svg>
-            <svg x="100%" y="100%" overflow="visible"><circle cx="0" cy="0" r="17" /></svg>
+            <circle cx="0" cy="0" r="9" />
+            <svg x="100%" overflow="visible"><circle cx="0" cy="0" r="7" /></svg>
+            <svg y="100%" overflow="visible"><circle cx="0" cy="0" r="7" /></svg>
+            <svg x="100%" y="100%" overflow="visible"><circle cx="0" cy="0" r="9" /></svg>
           </g>
         </g>
       </svg>
