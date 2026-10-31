@@ -126,17 +126,38 @@ html.lenis body {
   from { opacity: 0; transform: translateX(-18%) scale(0.92) rotate(-4deg); }
   to   { opacity: 1; transform: translateX(0) scale(1) rotate(0); }
 }
+/* ---- Nav menu items slide in from the left ---- */
+@keyframes navSlide {
+  0%   { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+/* the menu closing: the links drop out before the paper lifts */
+@keyframes navOut {
+  to { opacity: 0; transform: translateY(14px); }
+}
+/* menu links: each line slides up from behind its baseline, and back down on close */
+@keyframes lineIn {
+  from { transform: translateY(115%); }
+  to   { transform: none; }
+}
+@keyframes lineOut {
+  to { transform: translateY(115%); }
+}
+/* the menu's moon rises and turns into place behind the index */
 /* FAQ answer panel: the newly chosen answer settles in */
 /* a painted sky fading in once its bitmap is ready */
 @keyframes skyFadeIn {from{opacity:0}to{opacity:1}}
-/* the menu's links and services settling onto the sheet as it slides in */
-@keyframes menuSettle {
-  from { opacity: 0; transform: translateX(28px); }
-  to   { opacity: 1; transform: none; }
-}
 @keyframes faqIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
+}
+
+@keyframes moonRise {
+  from { opacity: 0; transform: translateY(7%) rotate(-12deg) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes moonOut {
+  to { opacity: 0; }
 }
 
 /* ---- Kinetic marquee ---- */
