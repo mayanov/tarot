@@ -70,7 +70,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                   shadow, which spreads and leaves the touching edge */}
               <PaperShadow
                 radius="1rem"
-                className="transition-[transform] duration-500 group-hover/print:[transform:rotate(var(--r))_translate(3px,4px)]"
+                className="transition-[transform] duration-500 group-hover/print:[transform:rotate(var(--r))_translateY(-5px)_scale(0.97)]"
                 contactClassName="transition-opacity duration-500 group-hover/print:opacity-0"
               />
               <button

@@ -38,21 +38,22 @@ export const PaperShadow: React.FC<{ radius?: string; className?: string; contac
   <span aria-hidden className={`pointer-events-none absolute inset-0 -z-10 ${className}`}>
     {/* where the card touches the page */}
     <span className={`absolute inset-[1px] ${contactClassName}`} style={{ borderRadius: radius, boxShadow: '0 1px 1.5px rgba(38,24,34,0.42), 0 0 0.5px rgba(38,24,34,0.3)' }} />
-    {/* the corner that lifts: a soft shadow skewed toward the lower right */}
-    <span className="absolute" style={{ inset: '14% 3% 0 22%', borderRadius: radius, boxShadow: '4px 7px 12px rgba(38,24,34,0.26)', transform: 'rotate(1.2deg)' }} />
+    {/* the corner that lifts: a soft shadow skewed toward the lower right (a filled,
+        blurred shape, not a box-shadow, so nothing hollow shows if the card moves) */}
+    <span className="absolute" style={{ inset: '14% 3% 0 22%', borderRadius: radius, background: 'rgba(38,24,34,0.22)', filter: 'blur(7px)', transform: 'translate(4px,6px) rotate(1.2deg)' }} />
   </span>
 );
 
 // ---- the About sheet's torn top edge -------------------------------------------
 
-// a long, uneven tear across a 1600 x 48 band: small irregular steps riding on a gentle
-// wave, fibres frayed by a displacement filter; everything below it is paper
+// a soft deckled edge across a 1600 x 48 band: a barely-there wave with small irregular
+// steps, fibres lightly frayed by a displacement filter; everything below it is paper
 const tearPath = (() => {
   let s = 20250114;
   const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
   let d = 'M0 48 L0 22';
-  for (let x = 0; x <= 1600; x += 7 + rnd() * 9) {
-    const y = 22 + Math.sin(x / 210) * 5 + Math.sin(x / 63 + 1.3) * 2 + (rnd() - 0.5) * 4.5;
+  for (let x = 0; x <= 1600; x += 6 + rnd() * 7) {
+    const y = 22 + Math.sin(x / 260) * 1.6 + Math.sin(x / 70 + 1.3) * 0.6 + (rnd() - 0.5) * 1.4;
     d += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
   }
   return d + ' L1600 22 L1600 48 Z';
@@ -61,7 +62,7 @@ const TEAR = svgUrl(
   `<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='48' viewBox='0 0 1600 48' preserveAspectRatio='none'>` +
   `<filter id='f' x='0' y='-50%' width='100%' height='200%'>` +
   `<feTurbulence type='fractalNoise' baseFrequency='0.5 0.9' numOctaves='2' seed='7'/>` +
-  `<feDisplacementMap in='SourceGraphic' scale='3.5' xChannelSelector='R' yChannelSelector='G'/>` +
+  `<feDisplacementMap in='SourceGraphic' scale='1.6' xChannelSelector='R' yChannelSelector='G'/>` +
   `</filter>` +
   `<path d='${tearPath}' fill='white' filter='url(#f)'/>` +
   `</svg>`,
