@@ -50,10 +50,10 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
     return (
         // Sits right under the pricelist (rendered by Services), so it's read before
         // booking. Set like the fine-print page of a book, not a boxed notice: no frame
-        // or wash, a centred heading with an italic "before you book", the notes in one
-        // book-width column with hanging serif numerals, and the agreement as a closing line
+        // or wash, a centred heading with an italic "before you book", the notes flowing
+        // down two columns (balanced, no orphan row) with hanging serif numerals, and the agreement as a closing line
         // under a small sparkle rule.
-        <section id="disclaimer" className="mx-auto max-w-4xl px-8 pt-14 md:pt-20 pb-24 md:pb-32">
+        <section id="disclaimer" className="mx-auto max-w-5xl px-8 pt-12 md:pt-16 pb-20 md:pb-24">
             <FadeIn>
                 <div className="text-center">
                     <CelestialMark name="sparkle" className="print-ink mx-auto w-5 md:w-6 text-moon" />
@@ -66,10 +66,10 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                 </div>
             </FadeIn>
 
-            <ol className="mx-auto mt-12 md:mt-16 max-w-2xl grid gap-y-8 md:gap-y-10">
+            <ol className="mt-10 md:mt-12 md:columns-2 md:gap-x-16">
                 {items.map((it, index) => (
-                    <li key={index}>
-                        <FadeIn delay={0.06 * index} className="grid grid-cols-[2.25rem_1fr] md:grid-cols-[3.5rem_1fr]">
+                    <li key={index} className="mb-7 md:mb-8 break-inside-avoid">
+                        <FadeIn delay={0.06 * index} className="grid grid-cols-[2.25rem_1fr] md:grid-cols-[2.75rem_1fr]">
                             <span aria-hidden className="print-text pt-[0.2rem] font-elegant italic text-moon/70 text-[1.05rem] md:text-[1.15rem] leading-none">
                                 {NUMERALS[index]}.
                             </span>
@@ -87,12 +87,12 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
             </ol>
 
             <FadeIn>
-                <div className="mt-14 md:mt-20 flex items-center justify-center gap-4 text-moon/50" aria-hidden>
+                <div className="mt-6 md:mt-8 flex items-center justify-center gap-4 text-moon/50" aria-hidden>
                     <span className="h-px w-16 md:w-24 bg-current" />
                     <CelestialMark name="sparkle" className="print-ink w-3 text-moon/70" />
                     <span className="h-px w-16 md:w-24 bg-current" />
                 </div>
-                <p className="print-text mt-6 mx-auto max-w-2xl text-center font-elegant italic text-ink/75 text-[1.05rem] md:text-[1.15rem] leading-relaxed">
+                <p className="print-text mt-5 mx-auto max-w-2xl text-center font-elegant italic text-ink/75 text-[1.05rem] md:text-[1.15rem] leading-relaxed">
                     {agreement}
                 </p>
             </FadeIn>
