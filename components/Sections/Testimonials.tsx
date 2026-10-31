@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import WatercolorWash from '../UI/WatercolorWash';
 import { btnSecondaryLight } from '../UI/buttons';
+import ButtonInk from '../UI/ButtonInk';
 
 interface TestimonialsProps {
   isIndonesian?: boolean;
@@ -304,6 +305,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           rel="noopener noreferrer"
           className={`${btnSecondaryLight} inline-flex gap-2 px-7 py-3`}
         >
+          <ButtonInk kind="secondary" tone="light" />
           <span>{isIndonesian ? 'Lihat semua review di Google' : 'Read all reviews on Google'}</span>
         </a>
       </div>

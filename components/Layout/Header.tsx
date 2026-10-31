@@ -4,6 +4,7 @@ import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/scroll';
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
+import ButtonInk from '../UI/ButtonInk';
 import CelestialMark from '../UI/CelestialMark';
 import { MoonWatermark, moonNow } from './MenuMoon';
 
@@ -271,8 +272,9 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <div className="flex items-center gap-4">
               <button
                 onClick={goToServices}
-                className={`${btnPrimaryDark} hidden sm:inline-flex px-6 py-2.5 text-[13px] tracking-[0.01em] whitespace-nowrap shadow-[0_6px_20px_-8px_rgba(0,0,0,0.35)]`}
+                className={`${btnPrimaryDark} hidden sm:inline-flex px-6 py-2.5 text-[13px] tracking-[0.01em] whitespace-nowrap drop-shadow-[0_5px_12px_rgba(0,0,0,0.28)]`}
               >
+                <ButtonInk kind="primary" tone="dark" />
                 {isIndonesian ? 'Pesan' : 'Book'}
               </button>
 
@@ -455,6 +457,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 onClick={goToServices}
                 className={`${btnPrimaryLight} inline-flex group gap-3 px-6 sm:px-8 py-3 sm:py-3.5 text-sm`}
               >
+                <ButtonInk kind="primary" tone="light" />
                 {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
               </button>
             </div>

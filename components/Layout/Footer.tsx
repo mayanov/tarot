@@ -4,6 +4,7 @@ import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
 import { btnPrimaryDark } from '../UI/buttons';
+import ButtonInk from '../UI/ButtonInk';
 
 interface FooterProps {
     isIndonesian?: boolean;
@@ -64,6 +65,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
                         className={`${btnPrimaryDark} mt-8 inline-flex group gap-3 px-8 py-3.5 text-sm`}
                     >
+                      <ButtonInk kind="primary" tone="dark" />
                         {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </a>

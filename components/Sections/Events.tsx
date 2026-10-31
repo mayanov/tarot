@@ -7,6 +7,7 @@ import EventGallery from './EventGallery';
 import { ChevronDown, X } from 'lucide-react';
 import { smoothScrollToId } from '../UI/scroll';
 import { btnPrimaryLight, btnSecondaryLight } from '../UI/buttons';
+import ButtonInk from '../UI/ButtonInk';
 
 interface EventsProps {
   isIndonesian?: boolean;
@@ -111,6 +112,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                   }}
                   className={`${btnSecondaryLight} inline-flex group gap-2 min-w-[11rem] px-7 py-3 text-sm`}
                 >
+                  <ButtonInk kind="secondary" tone="light" />
                   {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
                   <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
                 </button>
@@ -124,6 +126,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 rel="noopener noreferrer"
                 className={`${btnPrimaryLight} inline-flex px-7 py-3 text-sm`}
               >
+                <ButtonInk kind="primary" tone="light" />
                 Yuk Collab
               </a>
             )}

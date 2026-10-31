@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import Disclaimer from './Disclaimer';
 import { btnPrimaryDark, btnSecondaryDark } from '../UI/buttons';
+import ButtonInk from '../UI/ButtonInk';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
 import { lockPage, unlockPage } from '../UI/scroll';
@@ -748,10 +749,12 @@ const OrderButton: React.FC<{ g: any; isIndonesian: boolean }> = ({ g, isIndones
     return (
         <div className="flex flex-wrap items-center gap-3">
             <button type="button" onClick={() => openBooking(BOOKING_MAP[g.type])} className={btnPrimary}>
+                <ButtonInk kind="primary" tone="dark" />
                 {label}
             </button>
             {g.mapUrl && (
                 <a href={g.mapUrl} target="_blank" rel="noopener noreferrer" className={btnSecondary}>
+                    <ButtonInk kind="secondary" tone="dark" />
                     {isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}
                 </a>
             )}

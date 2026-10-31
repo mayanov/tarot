@@ -12,11 +12,13 @@
 
 // Note: the display (inline-flex / hidden sm:inline-flex) is set per button, so
 // the variant stays out of the way of responsive hiding (e.g. the nav pill).
-// slightly rounded, matching the corners used across the site (not pill-shaped)
-const BASE = 'items-center justify-center rounded-lg font-medium transition-colors duration-300';
+// The variant only sets the label colour: the face of every button is hand-made,
+// painted or pencilled on the paper — put <ButtonInk kind tone /> (./ButtonInk)
+// as its first child, matching the variant.
+const BASE = 'group/btn relative isolate items-center justify-center font-medium transition-colors duration-300';
 
-export const btnPrimaryDark = `${BASE} bg-cream text-ink hover:bg-moon hover:text-cream`;
-export const btnPrimaryLight = `${BASE} bg-moon text-cream hover:bg-plum hover:text-cream`;
+export const btnPrimaryDark = `${BASE} text-ink hover:text-cream`;
+export const btnPrimaryLight = `${BASE} text-cream`;
 
-export const btnSecondaryDark = `${BASE} bg-transparent border border-cream/45 text-cream hover:bg-cream hover:text-ink hover:border-cream`;
-export const btnSecondaryLight = `${BASE} bg-transparent border border-ink/30 text-ink hover:bg-plum hover:text-cream hover:border-plum`;
+export const btnSecondaryDark = `${BASE} text-cream hover:text-ink`;
+export const btnSecondaryLight = `${BASE} text-ink hover:text-cream`;

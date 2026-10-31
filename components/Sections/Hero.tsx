@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { smoothScrollToId } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
 import { btnPrimaryDark } from '../UI/buttons';
+import ButtonInk from '../UI/ButtonInk';
 import Background from '../Layout/Background';
 import { REVEAL_FLIGHT_MS } from '../Layout/Loader';
 
@@ -150,6 +151,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
               onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
               className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-sm`}
             >
+              <ButtonInk kind="primary" tone="dark" />
               {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
             </a>
           </div>
