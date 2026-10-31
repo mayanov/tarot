@@ -9,6 +9,7 @@ import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
+import { PaperShadow, paperCut } from '../UI/PaperEdge';
 import { lockPage, unlockPage } from '../UI/scroll';
 import { trackEvent, SERVICE_TRACK_NAME, promoTrackName } from '../../services/analytics';
 
@@ -85,15 +86,18 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
         aria-label={g.type}
         onClick={onFlip}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onFlip(); } }}
-        className={`group/card relative block w-full ${fill ? 'h-full' : 'aspect-[5/8]'} cursor-pointer select-none [perspective:1600px] focus:outline-none`}
+        className={`group/card relative isolate block w-full ${fill ? 'h-full' : 'aspect-[5/8]'} cursor-pointer select-none [perspective:1600px] focus:outline-none`}
     >
+        {/* lying on the page (the shadow stays put while the card turns over) */}
+        <PaperShadow />
         <div
             className="relative h-full w-full transition-transform duration-[650ms] [transform-style:preserve-3d] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]"
             style={{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
         >
             {/* ===== FRONT — the card face ===== */}
             <div
-                className="absolute inset-0 [backface-visibility:hidden] [container-type:inline-size] overflow-hidden rounded-[1.15rem] [box-shadow:0_1px_2px_rgba(12,8,30,0.35),0_18px_34px_-18px_rgba(12,8,30,0.6)]"
+                className="absolute inset-0 [backface-visibility:hidden] [container-type:inline-size] overflow-hidden rounded-[1.15rem]"
+                style={paperCut(11 + k * 23)}
             >
                 <CardWash colors={CAT_WASH[k % CAT_WASH.length]} />
                 <div aria-hidden className="absolute inset-0 opacity-70" style={{ backgroundImage: CAT_STARS[k % CAT_STARS.length] }} />
@@ -120,7 +124,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
             </div>
 
             {/* ===== BACK — the booking options ===== */}
-            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] bg-paper text-ink [box-shadow:0_1px_2px_rgba(12,8,30,0.35),0_18px_34px_-18px_rgba(12,8,30,0.6)]">
+            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] bg-paper text-ink" style={paperCut(12 + k * 23)}>
                 <CardStock tone="light" />
                 {/* soft accent glow from the top for depth */}
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-20" style={{ background: `radial-gradient(85% 100% at 50% 0%, ${accent}1f, transparent 72%)` }} />
@@ -249,8 +253,10 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 // cards are visible at once. Clicking any card "draws" it into a full-screen reveal
 // that flips to the details; clicking the dark backdrop (anywhere outside) closes it.
 // The face-down back of a card, used while the deck is stacked before it's dealt.
-const CardBack: React.FC = () => (
-    <div className="absolute inset-0 overflow-hidden rounded-[1.15rem] [box-shadow:0_1px_2px_rgba(12,8,30,0.35),0_18px_34px_-18px_rgba(12,8,30,0.6)]">
+const CardBack: React.FC<{ seed?: number }> = ({ seed = 5 }) => (
+    <>
+    <PaperShadow />
+    <div className="absolute inset-0 overflow-hidden rounded-[1.15rem]" style={paperCut(seed)}>
         <CardWash colors={['#4a2e6e', '#241638', '#150c24']} />
         <div aria-hidden className="absolute inset-0 opacity-60" style={{ backgroundImage: CAT_STARS[1] }} />
         <div aria-hidden className="absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-[#C9B8E8]/25" />
@@ -263,6 +269,7 @@ const CardBack: React.FC = () => (
         </div>
         <CardStock />
     </div>
+    </>
 );
 
 // Deal timing (ms): each card leaves the deck DEAL_GAP after the previous one, travels
@@ -585,10 +592,10 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                     {!settled && (
                                         <div
                                             aria-hidden
-                                            className="absolute inset-0 pointer-events-none"
+                                            className="absolute inset-0 isolate pointer-events-none"
                                             style={dealt ? { animation: `dealCoverOff ${DEAL_FLIP}ms linear ${dealDelay(i) + DEAL_MOVE - 200}ms both` } : undefined}
                                         >
-                                            <CardBack />
+                                            <CardBack seed={7 + i * 13} />
                                         </div>
                                     )}
                                 </div>

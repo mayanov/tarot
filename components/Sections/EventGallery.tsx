@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
+import { PaperShadow, paperCut } from '../UI/PaperEdge';
 
 // The photo band above "Event & collaboration": the photos as tarot cards dealt
 // loosely on the paper — a tarot card like the About portrait, in the same twilight plum (numeral at
@@ -55,27 +56,32 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
               // different heights; the drop-in lands with a small bounce
               // stacking: the middle prints sit on top by default (--z); the hovered print
               // always comes to the front (a class, so it can override the default)
-              className="relative z-[var(--z)] hover:z-30 md:-mx-1"
+              className="group/print relative self-start z-[var(--z)] hover:z-30 md:-mx-1"
               style={{
                 ['--z' as any]: 10 - Math.abs(i - 1.5) * 2,
+                ['--r' as any]: `${-pr.rot}deg`,
                 marginTop: `${pr.y}rem`,
                 transform: shown ? `rotate(${pr.rot}deg)` : `translateY(-48px) rotate(${pr.rot * 2.5}deg) scale(1.06)`,
                 opacity: shown ? 1 : 0,
                 transition: `transform 1100ms ${BOUNCE} ${i * 140}ms, opacity 500ms ease ${i * 140}ms`,
               }}
             >
+              {/* lying on the page; picked up on hover, it straightens and lifts off its
+                  shadow, which spreads and leaves the touching edge */}
+              <PaperShadow
+                radius="1rem"
+                className="transition-[transform] duration-500 group-hover/print:[transform:rotate(var(--r))_translate(3px,4px)]"
+                contactClassName="transition-opacity duration-500 group-hover/print:opacity-0"
+              />
               <button
                 type="button"
                 onClick={() => onOpen(src)}
                 aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
                 // a tarot card's 5:8, like the pricelist cards (the photo takes the height
                 // left after the head and foot); hover cancels the card's tilt (--r) and
-                // lifts it (no zoom); deeper shadow
-                className="group relative flex aspect-[5/8] w-full flex-col p-1.5 md:p-2.5 rounded-[0.75rem] md:rounded-[1rem] shadow-[0_1px_2px_rgba(24,14,40,0.35),0_10px_18px_-10px_rgba(24,14,40,0.55)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_2px_4px_rgba(24,14,40,0.25),0_24px_36px_-16px_rgba(24,14,40,0.5)] hover:[transform:rotate(var(--r))_translateY(-10px)]"
-                style={{
-                  ['--r' as any]: `${-pr.rot}deg`,
-                  transitionTimingFunction: EASE,
-                }}
+                // lifts it (no zoom); its edge is hand-cut (paperCut)
+                className="group relative flex aspect-[5/8] w-full flex-col p-1.5 md:p-2.5 rounded-[0.75rem] md:rounded-[1rem] transition-transform duration-500 group-hover/print:[transform:rotate(var(--r))_translateY(-10px)]"
+                style={{ transitionTimingFunction: EASE, ...paperCut(31 + i * 17, 16, 20) }}
               >
                 {/* the card's face, painted in watercolour */}
                 <CardWash colors={DECK_WASH[1]} />

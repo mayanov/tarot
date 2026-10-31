@@ -6,6 +6,7 @@ import CountUp from '../UI/CountUp';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
+import { PaperShadow, paperCut, tornTop } from '../UI/PaperEdge';
 import { Phase } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import { moonNow } from '../Layout/MenuMoon';
@@ -70,16 +71,19 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
       className="relative mx-auto w-[min(76vw,20.5rem)] sm:w-[22rem] lg:w-[92%] lg:max-w-[28rem] lg:mr-0 lg:order-2"
     >
       <div className="relative" style={{ opacity: dealt ? 1 : 0, transition: `opacity 600ms ${EASE}` }}>
-        {/* the face */}
+        {/* the card, lying on the page (it tips as a whole, shadow and all) */}
         <div
           ref={faceRef}
-          className="relative rounded-[1.15rem] p-3 md:p-3.5 [box-shadow:0_30px_60px_-30px_rgba(24,14,40,0.65),0_1px_3px_rgba(24,14,40,0.35)]"
+          className="relative isolate"
           style={{
             transform: faceTransform,
             // tracks the pointer quickly; otherwise eases
             transition: hover ? 'transform 250ms ease-out' : `transform 1100ms ${EASE}`,
           }}
         >
+        <PaperShadow />
+        {/* the face, its edge hand-cut */}
+        <div className="relative rounded-[1.15rem] p-3 md:p-3.5" style={paperCut(53)}>
           {/* the deck's twilight plum (as the event photo cards), painted in watercolour,
               so it stands off the paper */}
           <CardWash colors={DECK_WASH[1]} />
@@ -117,7 +121,7 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
               </span>
             </figcaption>
           </div>
-          {/* printed on linen-finish card stock, and handled */}
+          {/* printed on tarot card stock */}
           <CardStock />
           {/* sheen that follows the pointer */}
           <div aria-hidden
@@ -127,6 +131,7 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
               opacity: hover ? 1 : 0,
               transition: 'opacity 400ms ease-out',
             }} />
+        </div>
         </div>
       </div>
     </figure>
@@ -144,7 +149,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
     );
   }, [isIndonesian]);
 
-  // The sheet's rounded top peeks over the bottom of the hero. Keep it tucked just
+  // The sheet's torn top peeks over the bottom of the hero. Keep it tucked just
   // below the screen while the loader hands off, then let it rise into place once
   // the moon and title have landed — so it arrives as its own beat, not a pop.
   const [risen, setRisen] = useState(false);
@@ -164,7 +169,15 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         transform: risen ? 'none' : 'translateY(6rem)',
         transition: 'transform 1100ms cubic-bezier(0.16,1,0.3,1)',
       }}
-      className="bg-paper relative z-10 isolate overflow-hidden text-ink -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
+      className="relative z-10 isolate overflow-hidden text-ink -mt-[2.75rem] lg:-mt-[4.5rem]">
+      {/* the sheet of paper, its top edge torn, laid over the sky: the tear casts a soft
+          shadow onto the sky just above it */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute inset-x-0 top-0 h-14 [filter:blur(6px)]">
+          <div className="h-full" style={{ ...tornTop, background: 'rgba(6,4,20,0.55)' }} />
+        </div>
+        <div className="absolute inset-0 bg-paper" style={tornTop} />
+      </div>
       {/* portrait and text side by side on desktop (portrait first on phones) */}
       <div className="relative mx-auto px-8 pt-14 md:pt-20 pb-14 md:pb-20 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)] lg:gap-16 xl:gap-24 lg:items-start">
         <PortraitCard isIndonesian={isIndonesian} />
