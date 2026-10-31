@@ -16,6 +16,7 @@ export default {
         display: ['Alegreya', 'Georgia', 'ui-serif', 'serif'],
         elegant: ['Alegreya', 'Georgia', 'ui-serif', 'serif'],
         signature: ['"Mrs Saint Delafield"', 'cursive'],
+        hand: ['Caveat', 'cursive'],
       },
       colors: {
         // --- Brand palette v2.0 (jewel tones) ---
