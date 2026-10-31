@@ -22,18 +22,19 @@ interface ServicesProps {
 const btnPrimary = `${btnPrimaryDark} inline-flex px-7 py-3 text-[1.05rem]`;
 const btnSecondary = `${btnSecondaryDark} inline-flex px-7 py-3 text-[1.05rem]`;
 
-// Per-category band backgrounds — rich radial gradients (a glow deepening into
-// near-black) so each category feels distinct and has depth, no photos. Paired
-// with a faint celestial watermark for mystique.
+// Per-category card faces, taken from the calm-space band's painted sky as it runs
+// night → plum → sunrise (TarotIntro / WatercolorSky NIGHT, PLUM, SUNRISE): each a
+// soft glow deepening into the darker tone beneath it, so the deck reads as part of
+// the same sky rather than a separate set of brand colours.
 const CAT_BG = [
-  'radial-gradient(135% 120% at 15% -15%, #35508f 0%, #22396F 52%, #162744 100%)', // blue  #22396F
-  'radial-gradient(135% 120% at 15% -15%, #553172 0%, #39234E 52%, #20132f 100%)', // plum  #39234E
-  'radial-gradient(135% 120% at 15% -15%, #e05b7c 0%, #CB3B5F 52%, #8a2942 100%)', // rose  #CB3B5F
-  'radial-gradient(135% 120% at 15% -15%, #ff8a6d 0%, #F76949 52%, #c2472a 100%)', // coral #F76949
-  'radial-gradient(135% 120% at 15% -15%, #e7bd63 0%, #B8862F 52%, #6e4c17 100%)', // gold  #B8862F (promo)
+  'radial-gradient(135% 120% at 15% -15%, #3a3a78 0%, #1f2552 52%, #10153a 100%)', // night indigo
+  'radial-gradient(135% 120% at 15% -15%, #7a3a78 0%, #4a2160 52%, #2a1440 100%)', // twilight plum
+  'radial-gradient(135% 120% at 15% -15%, #c27a9c 0%, #9a5482 52%, #5c2a62 100%)', // dusk rose
+  'radial-gradient(135% 120% at 15% -15%, #f6ae8a 0%, #d27e7c 52%, #7c4470 100%)', // sunrise peach
+  'radial-gradient(135% 120% at 15% -15%, #ffcf9c 0%, #d48a74 52%, #7a4a6e 100%)', // dawn apricot (promo)
 ];
 // The solid accent per card — the flipped detail borrows its card's colour.
-const CAT_ACCENT = ['#22396F', '#39234E', '#CB3B5F', '#F76949', '#9A6B1F'];
+const CAT_ACCENT = ['#1f2552', '#4a2160', '#9a5482', '#bc6a72', '#b8735e'];
 const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent', 'sun'] as const;
 
 // A faint star dusting inside each band, so every category reads like its own

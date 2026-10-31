@@ -164,10 +164,10 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       }}
       className="bg-paper relative z-10 isolate overflow-hidden text-ink -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
       {/* portrait and text side by side on desktop (portrait first on phones) */}
-      <div className="relative mx-auto px-8 pt-14 md:pt-20 pb-14 md:pb-20 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)] lg:gap-16 xl:gap-24 lg:items-start">
+      <div className="relative mx-auto px-8 pt-14 md:pt-20 pb-14 md:pb-20 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)] lg:gap-20 xl:gap-32 lg:items-start">
         <PortraitCard isIndonesian={isIndonesian} />
 
-        <FadeIn dir="left" className="w-full pt-12 md:pt-14 lg:pt-0">
+        <FadeIn dir="left" className="w-full pt-14 md:pt-16 lg:pt-2">
           {/* hook title */}
           <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>
@@ -175,18 +175,18 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </MaskReveal>
           </h2>
 
-          <div lang={isIndonesian ? 'id' : 'en'} className="print-body mt-7 md:mt-9 space-y-5 text-justify hyphens-auto">
-            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-ink first-letter:text-[3.4rem] first-letter:leading-[0.72]">
+          <div lang={isIndonesian ? 'id' : 'en'} className="print-body mt-9 md:mt-12 space-y-6 md:space-y-7 text-justify hyphens-auto">
+            <p className="text-[15px] md:text-base leading-[1.95] text-ink/60 font-light first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-ink first-letter:text-[3.4rem] first-letter:leading-[0.72]">
               {isIndonesian
                 ? 'Saya sudah membaca kartu Tarot sejak 2009 — lebih dari 15 tahun menjadikannya ruang untuk refleksi diri. Pada dasarnya, Tarot bekerja dengan membaca energi: gambaran dari situasi dan perasaan yang sedang kamu bawa saat ini.'
                 : 'I’ve been reading Tarot since 2009 — over 15 years using it as a space for self-reflection. At its core, Tarot works by reading energy: a snapshot of the situation and feelings you’re carrying right now.'}
             </p>
-            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light">
+            <p className="text-[15px] md:text-base leading-[1.95] text-ink/60 font-light">
               {isIndonesian
                 ? 'Dari situ kita lihat pola yang mungkin belum kamu sadari — soal karier, hubungan, keuangan, keluarga, atau keputusan besar — lalu menerjemahkannya jadi langkah yang jelas dan bisa kamu ambil.'
                 : 'From there we spot patterns you might not have noticed — around career, relationships, finances, family, or a big decision — and turn them into clear steps you can actually take.'}
             </p>
-            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light">
+            <p className="text-[15px] md:text-base leading-[1.95] text-ink/60 font-light">
               {isIndonesian
                 ? 'Jadi ini bukan soal ‘menerawang’ masa depan, melainkan sesi konsultasi yang jujur dan menenangkan — bukan untuk menakuti, tapi untuk memberi arah.'
                 : 'So it isn’t about ‘predicting’ the future — it’s an honest, grounding consultation, not to frighten you but to give you direction.'}
@@ -196,7 +196,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           {/* goal — the closing statement, set as a pull quote: a large opening mark hangs in
               its own indent beside the first line, the key word is picked out in purple
               italic, and it's signed by hand */}
-          <figure className="relative mt-12 md:mt-16 pl-12 md:pl-16">
+          <figure className="relative mt-14 md:mt-20 pl-12 md:pl-16">
             {/* (the ink texture sits on an inner box with room round the glyph — a mask clips
                 to its box) */}
             <span aria-hidden className="absolute left-0 -top-[0.14em] font-elegant font-semibold text-moon/80 text-[4.5rem] md:text-[5.75rem] leading-none select-none">
@@ -215,8 +215,8 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           </figure>
 
           {/* quiet credentials — a calm 3-up proof row (big serif numbers that count up), not a KPI bar */}
-          <div className="mt-10 md:mt-12"><PencilRule className="text-ink/30" /></div>
-          <div className="pt-8 grid grid-cols-3 gap-x-5 sm:gap-x-8">
+          <div className="mt-14 md:mt-16"><PencilRule className="text-ink/30" /></div>
+          <div className="pt-10 md:pt-12 grid grid-cols-3 gap-x-5 sm:gap-x-8">
             {[
               { n: isIndonesian ? '7.700+' : '7,700+', l: isIndonesian ? 'sesi tarot' : 'readings' },
               { n: isIndonesian ? '1.500+' : '1,500+', l: isIndonesian ? 'orang terbantu' : 'people guided' },
@@ -229,7 +229,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 <div className="print-body font-elegant font-semibold text-moon text-[1.7rem] sm:text-[2rem] md:text-[2.6rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em] pr-2 -mr-2">
                   {'still' in s ? s.n : <CountUp value={s.n} duration={1400 + i * 200} />}
                 </div>
-                <div className="print-body mt-2.5 font-elegant italic text-ink/55 text-[0.95rem] md:text-[1.05rem] leading-snug">{s.l}</div>
+                <div className="print-body mt-3.5 font-elegant italic text-ink/55 text-[0.95rem] md:text-[1.05rem] leading-snug">{s.l}</div>
               </div>
             ))}
           </div>
