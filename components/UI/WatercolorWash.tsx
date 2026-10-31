@@ -3,7 +3,7 @@ import React from 'react';
 interface WatercolorWashProps {
   className?: string;
   /**
-   * 'panel' (default): a lilac wash over a block of text, roughly its shape.
+   * 'panel' (default): a madder-rose wash over a block of text, roughly its shape.
    * 'stroke': one broad brushstroke swept across the page, streaked where the
    * bristles ran dry — cooler (blue-lilac), for a single line of content like a quote.
    */
@@ -12,8 +12,8 @@ interface WatercolorWashProps {
 
 /**
  * A pale watercolour wash to sit behind a block of text on the light paper sections,
- * in place of a bordered, tinted box: two overlapping lilac brush passes with ragged
- * edges where the pigment pooled as it dried, a few wet-in-wet blooms (rose, blue,
+ * in place of a bordered, tinted box: two overlapping madder-rose brush passes with ragged
+ * edges where the pigment pooled as it dried, a few wet-in-wet blooms (rose, coral,
  * violet) and the paper's granulation. Drawn in pixel units (no viewBox), so the brush
  * texture keeps its scale whatever the box's shape — a wide panel or a tall phone column.
  */
@@ -115,14 +115,14 @@ const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '', variant
       </defs>
 
       {/* first pass: the broad wash */}
-      <rect x="0.5%" y="1%" width="98%" height="97%" rx="60" fill="#7a52b4" fillOpacity="0.045" filter={`url(#${id}a)`} />
+      <rect x="0.5%" y="1%" width="98%" height="97%" rx="60" fill="#b5435a" fillOpacity="0.05" filter={`url(#${id}a)`} />
       {/* second pass, offset and narrower, so the edges double up unevenly */}
-      <rect x="4%" y="5%" width="93%" height="92%" rx="80" fill="#7a52b4" fillOpacity="0.03" filter={`url(#${id}b)`} />
+      <rect x="4%" y="5%" width="93%" height="92%" rx="80" fill="#a8445e" fillOpacity="0.035" filter={`url(#${id}b)`} />
       <g clipPath={`url(#${id}c)`} filter={`url(#${id}p)`}>
-        <ellipse cx="86%" cy="18%" rx="22%" ry="26%" fill="#e3a0c4" fillOpacity="0.1" />
-        <ellipse cx="12%" cy="78%" rx="20%" ry="24%" fill="#8fa6e2" fillOpacity="0.09" />
-        <ellipse cx="54%" cy="96%" rx="26%" ry="14%" fill="#b48ad6" fillOpacity="0.07" />
-        <ellipse cx="34%" cy="8%" rx="16%" ry="12%" fill="#c9b8e8" fillOpacity="0.09" />
+        <ellipse cx="86%" cy="18%" rx="22%" ry="26%" fill="#d9707a" fillOpacity="0.11" />
+        <ellipse cx="12%" cy="78%" rx="20%" ry="24%" fill="#c25a6e" fillOpacity="0.09" />
+        <ellipse cx="54%" cy="96%" rx="26%" ry="14%" fill="#b48ad6" fillOpacity="0.06" />
+        <ellipse cx="34%" cy="8%" rx="16%" ry="12%" fill="#e6a0a0" fillOpacity="0.1" />
       </g>
     </svg>
   );
