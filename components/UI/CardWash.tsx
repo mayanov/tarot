@@ -22,15 +22,15 @@ const CardWash: React.FC<{ colors: readonly [string, string, string]; className?
           {/* a pool of paint: wandering edge, soft body, a darker rim where it dried */}
           <filter id={`${id}p`} x="-30%" y="-30%" width="160%" height="160%" colorInterpolationFilters="sRGB">
             <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed={seed} result="n" />
-            <feDisplacementMap in="SourceGraphic" in2="n" scale="18" xChannelSelector="R" yChannelSelector="G" result="d" />
-            <feGaussianBlur in="d" stdDeviation="1.4" result="soft" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="10" xChannelSelector="R" yChannelSelector="G" result="d" />
+            <feGaussianBlur in="d" stdDeviation="3" result="soft" />
             <feGaussianBlur in="soft" stdDeviation="4.5" result="wide" />
             <feComposite in="soft" in2="wide" operator="arithmetic" k2="1" k3="-1" result="edge" />
             <feComponentTransfer in="edge" result="rim">
               <feFuncR type="linear" slope="0.7" />
               <feFuncG type="linear" slope="0.7" />
               <feFuncB type="linear" slope="0.7" />
-              <feFuncA type="linear" slope="1.3" />
+              <feFuncA type="linear" slope="0.5" />
             </feComponentTransfer>
             <feMerge>
               <feMergeNode in="soft" />
@@ -41,18 +41,18 @@ const CardWash: React.FC<{ colors: readonly [string, string, string]; className?
 
         {/* the deeper tone pooling low and into the far corner */}
         <g filter={`url(#${id}p)`}>
-          <ellipse cx="62" cy="150" rx="88" ry="52" fill={deep} opacity="0.85" />
-          <ellipse cx="104" cy="14" rx="38" ry="32" fill={deep} opacity="0.5" />
-          <ellipse cx="-6" cy="96" rx="22" ry="40" fill={deep} opacity="0.35" />
+          <ellipse cx="62" cy="150" rx="88" ry="52" fill={deep} opacity="0.55" />
+          <ellipse cx="104" cy="14" rx="38" ry="32" fill={deep} opacity="0.3" />
+          <ellipse cx="-6" cy="96" rx="22" ry="40" fill={deep} opacity="0.18" />
         </g>
         {/* the lighter tone dropped in near the top, and a drift across the middle */}
         <g filter={`url(#${id}p)`}>
-          <ellipse cx="20" cy="10" rx="56" ry="44" fill={light} opacity="0.7" />
-          <ellipse cx="44" cy="84" rx="48" ry="16" fill={light} opacity="0.22" transform="rotate(-14 44 84)" />
+          <ellipse cx="20" cy="10" rx="56" ry="44" fill={light} opacity="0.45" />
+          <ellipse cx="44" cy="84" rx="48" ry="16" fill={light} opacity="0.12" transform="rotate(-14 44 84)" />
         </g>
         {/* a pale backrun */}
         <g filter={`url(#${id}p)`}>
-          <ellipse cx="72" cy="58" rx="15" ry="12" fill={light} opacity="0.2" />
+          <ellipse cx="72" cy="58" rx="15" ry="12" fill={light} opacity="0.1" />
         </g>
       </svg>
       {/* pigment settling into the tooth: fine dark specks across the wash (in pixel
@@ -62,7 +62,7 @@ const CardWash: React.FC<{ colors: readonly [string, string, string]; className?
           <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" seed={seed + 1} />
           <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2 1.1" />
         </filter>
-        <rect width="100%" height="100%" fill={deep} filter={`url(#${id}g)`} opacity="0.28" />
+        <rect width="100%" height="100%" fill={deep} filter={`url(#${id}g)`} opacity="0.12" />
       </svg>
     </span>
   );
