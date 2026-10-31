@@ -5,6 +5,7 @@ import { ImageReveal } from '../UI/Reveal';
 import CountUp from '../UI/CountUp';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
+import CardWash from '../UI/CardWash';
 import { Phase } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import { moonNow } from '../Layout/MenuMoon';
@@ -74,13 +75,14 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
           ref={faceRef}
           className="relative rounded-[1.15rem] p-3 md:p-3.5 [box-shadow:0_30px_60px_-30px_rgba(24,14,40,0.65),0_1px_3px_rgba(24,14,40,0.35)]"
           style={{
-            // the deck's night plum (same as the Services card backs), so it stands off the paper
-            background: 'radial-gradient(130% 110% at 50% 0%, #3a2558 0%, #241638 55%, #150c24 100%)',
             transform: faceTransform,
             // tracks the pointer quickly; otherwise eases
             transition: hover ? 'transform 250ms ease-out' : `transform 1100ms ${EASE}`,
           }}
         >
+          {/* the deck's night plum (as the Services card backs), painted in watercolour,
+              so it stands off the paper */}
+          <CardWash colors={['#6a4590', '#241638', '#150c24']} />
           <div className="relative rounded-[0.8rem] ring-1 ring-[#C9B8E8]/25 px-2.5 md:px-3 pb-3 pt-2">
             {/* a tiny sparkle in each corner of the inner frame */}
             {CORNERS.map((c) => (

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
+import CardWash from '../UI/CardWash';
 
 // The photo band above "Event & collaboration": the photos as tarot cards dealt
 // loosely on the paper — the same night-plum card as the About portrait (numeral at
@@ -11,14 +12,14 @@ import CardStock from '../UI/CardStock';
 
 type Props = { photos: string[]; isIndonesian: boolean; onOpen: (src: string) => void };
 
-// per card: tilt, vertical offset, numeral, caption, and the glow at the top of its
-// night-plum gradient — shades of the brand's plum family, so the cards differ a
+// per card: tilt, vertical offset, numeral, caption, and the lighter tone washed into
+// its night-plum face — shades of the brand's plum family, so the cards differ a
 // little without leaving the site's palette
 const PRINTS = [
-  { rot: -4, y: 0, n: 'I', glow: '#3a2558', id: 'di balik meja', en: 'at the table' },
-  { rot: 3, y: 2.5, n: 'II', glow: '#553172', id: 'sesi bersama', en: 'reading together' },
-  { rot: -2, y: -1, n: 'III', glow: '#43295f', id: 'malam event', en: 'event night' },
-  { rot: 4, y: 2, n: 'IV', glow: '#5a3480', id: 'kartu terbuka', en: 'cards on the table' },
+  { rot: -4, y: 0, n: 'I', glow: '#5a3a80', id: 'di balik meja', en: 'at the table' },
+  { rot: 3, y: 2.5, n: 'II', glow: '#7a4a96', id: 'sesi bersama', en: 'reading together' },
+  { rot: -2, y: -1, n: 'III', glow: '#634088', id: 'malam event', en: 'event night' },
+  { rot: 4, y: 2, n: 'IV', glow: '#8a52a6', id: 'kartu terbuka', en: 'cards on the table' },
 ];
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
@@ -73,9 +74,10 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 style={{
                   ['--r' as any]: `${-pr.rot}deg`,
                   transitionTimingFunction: EASE,
-                  background: `radial-gradient(130% 110% at 50% 0%, ${pr.glow} 0%, #241638 55%, #150c24 100%)`,
                 }}
               >
+                {/* the night-plum face, painted in watercolour */}
+                <CardWash colors={[pr.glow, '#241638', '#150c24']} />
                 {/* inner frame */}
                 <span className="relative block rounded-[0.55rem] md:rounded-[0.7rem] ring-1 ring-[#C9B8E8]/25 px-1.5 md:px-2 pt-1 md:pt-1.5 pb-2 md:pb-2.5">
                 {/* head: the card's numeral between two rules */}
