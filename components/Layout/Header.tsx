@@ -292,11 +292,12 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 aria-expanded={menuOpen}
                 className={`group inline-flex items-center justify-center p-1.5 transition-colors duration-500 ${onPaper ? 'text-ink' : 'text-cream [filter:drop-shadow(0_1px_8px_rgba(0,0,0,0.55))]'}`}
               >
-                {/* two pencil strokes */}
-                <span className="flex flex-col items-end gap-[5px] w-6">
-                  <span className="block h-[2px] w-6 rounded-full bg-current transition-all duration-500" />
-                  <span className="block h-[2px] w-4 rounded-full bg-current group-hover:w-6 transition-all duration-500" />
-                </span>
+                {/* two pencil strokes, a little uneven, the shorter one drawn out to full
+                    length on hover (#pencil-icon, index.html) */}
+                <svg aria-hidden viewBox="0 0 24 12" className="block w-6 h-3 overflow-visible [filter:url(#pencil-icon)]" fill="none" stroke="currentColor" strokeLinecap="round">
+                  <line x1="0.6" y1="2.3" x2="23.4" y2="1.6" strokeWidth="1.7" />
+                  <line x1="0.6" y1="9.6" x2="23.2" y2="10.1" strokeWidth="1.6" className="origin-right [transform-box:fill-box] scale-x-[0.65] group-hover:scale-x-100 transition-transform duration-500" />
+                </svg>
               </button>
             </div>
           </div>
@@ -351,10 +352,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               aria-label={isIndonesian ? 'Tutup menu' : 'Close menu'}
               className="group inline-flex items-center justify-center -mr-2 p-2 text-ink"
             >
-              <span className="relative block w-5 h-5">
-                <span className="absolute top-1/2 left-0 h-px w-5 bg-ink -translate-y-1/2 rotate-45 transition-transform duration-500 group-hover:rotate-[135deg]" />
-                <span className="absolute top-1/2 left-0 h-px w-5 bg-ink -translate-y-1/2 -rotate-45 transition-transform duration-500 group-hover:rotate-[45deg]" />
-              </span>
+              {/* a pencilled cross, turning a quarter on hover */}
+              <svg aria-hidden viewBox="0 0 20 20" className="block w-5 h-5 overflow-visible [filter:url(#pencil-icon)] transition-transform duration-500 group-hover:rotate-90" fill="none" stroke="currentColor" strokeLinecap="round">
+                <line x1="1.2" y1="1.6" x2="18.8" y2="18.3" strokeWidth="1.5" />
+                <line x1="18.6" y1="1.2" x2="1.5" y2="18.7" strokeWidth="1.4" />
+              </svg>
             </button>
           </div>
 
