@@ -5,6 +5,7 @@ import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
 import { btnPrimaryDark } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
+import PencilRule from '../UI/PencilRule';
 
 interface FooterProps {
     isIndonesian?: boolean;
@@ -72,8 +73,9 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </a>
                 </div>
 
-                {/* small print */}
-                <div style={rise(200)} className="border-t border-cream/15 py-6 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 text-xs text-cream/50">
+                {/* small print, under a line drawn in white pencil */}
+                <PencilRule weight="fine" className="text-cream/30" />
+                <div style={rise(200)} className="py-6 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 text-xs text-cream/50">
                     <span>© {year} Mayanov Tarot · Jakarta</span>
                     <nav className="flex items-center gap-6" aria-label="Social">
                         <a

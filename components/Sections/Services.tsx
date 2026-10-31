@@ -629,7 +629,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                 </div>
             )}
             {/* a note pencilled in the margin, with a little arrow curling up to the cards */}
-            <p className="mt-10 md:mt-12 flex items-end justify-center gap-1.5 text-ink/55">
+            <p className="mt-10 md:mt-12 flex items-end justify-center gap-1.5 text-ink/75">
                 <svg aria-hidden viewBox="0 0 40 30" className="w-9 h-7 -mb-0.5 [filter:url(#pencil-icon)]" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M36 26C24 27 12 22 9 6" />
                     <path d="M4 11L9 5.5l4.5 6" />

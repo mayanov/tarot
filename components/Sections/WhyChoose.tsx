@@ -2,6 +2,7 @@ import React from 'react';
 import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
 import Testimonials from './Testimonials';
+import PencilRule from '../UI/PencilRule';
 
 interface WhyChooseProps {
   isIndonesian?: boolean;
@@ -65,6 +66,8 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
                   <p className="mt-1.5 md:mt-2.5 font-elegant text-ink text-[1.2rem] md:text-[1.95rem] lg:text-[1.6rem] xl:text-[1.95rem] leading-[1.2] tracking-[-0.015em]">
                     {reason.stat}
                   </p>
+                  {/* a short pencil stroke under each, drawn out further on hover */}
+                  <PencilRule className="mx-auto mt-3 md:mt-4 w-10 text-moon/45 transition-[width,color] duration-500 group-hover/row:w-20 group-hover/row:text-moon/70" />
                 </div>
               </FadeIn>
             ))}

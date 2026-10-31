@@ -224,13 +224,20 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isIndonesian]);
 
-  // Lock scroll while open — stop Lenis too, or it keeps scrolling the page behind.
   // Lock scroll while open — stops Lenis too, or it keeps scrolling the page behind.
   useEffect(() => {
     if (!open) return;
     lockPage();
     return unlockPage;
   }, [open]);
+
+  // Escape closes the form (and the pricelist card under it, if it came from one)
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, close]);
 
   // Load taken slots when a date is picked.
   useEffect(() => {

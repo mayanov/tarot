@@ -163,9 +163,11 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                     <button
                       onClick={() => pickCat(cat)}
                       aria-pressed={active}
-                      className={`font-elegant text-[1.1rem] md:text-[1.2rem] transition-colors duration-300 underline-offset-[6px] decoration-1 ${active ? 'italic text-moon underline decoration-moon' : 'text-ink/70 hover:text-moon'}`}
+                      className={`relative pb-1 font-elegant text-[1.1rem] md:text-[1.2rem] transition-colors duration-300 ${active ? 'italic text-moon' : 'text-ink/70 hover:text-moon'}`}
                     >
                       {cat}
+                      {/* the active one is underlined in pencil */}
+                      <PencilRule className={`absolute inset-x-0 bottom-0 transition-opacity duration-300 ${active ? 'opacity-100' : 'opacity-0'}`} />
                     </button>
                   </React.Fragment>
                 );
