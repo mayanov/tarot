@@ -4,7 +4,7 @@ import CardStock from '../UI/CardStock';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
 
 // The photo band above "Event & collaboration": the photos as tarot cards dealt
-// loosely on the paper — a tarot card like the About portrait, each in its own colour (numeral at
+// loosely on the paper — a tarot card like the About portrait, in the same twilight plum (numeral at
 // the head, framed photo, title) — each tilted at its own angle, at slightly different
 // heights and overlapping a little. Photos carry a soft vintage tone that clears on
 // hover, when the card also straightens and lifts forward. On scroll-in they're dealt
@@ -12,13 +12,13 @@ import CardWash, { DECK_WASH } from '../UI/CardWash';
 
 type Props = { photos: string[]; isIndonesian: boolean; onOpen: (src: string) => void };
 
-// per card: tilt, vertical offset, numeral, caption, and its colour from the deck
-// (DECK_WASH — the same colours as the pricelist cards), each card a different one
+// per card: tilt, vertical offset, numeral, caption (every card is the deck's twilight
+// plum, DECK_WASH[1], like the About portrait)
 const PRINTS = [
-  { rot: -4, y: 0, n: 'I', wash: 0, id: 'di balik meja', en: 'at the table' },
-  { rot: 3, y: 2.5, n: 'II', wash: 2, id: 'sesi bersama', en: 'reading together' },
-  { rot: -2, y: -1, n: 'III', wash: 1, id: 'malam event', en: 'event night' },
-  { rot: 4, y: 2, n: 'IV', wash: 3, id: 'kartu terbuka', en: 'cards on the table' },
+  { rot: -4, y: 0, n: 'I', id: 'di balik meja', en: 'at the table' },
+  { rot: 3, y: 2.5, n: 'II', id: 'sesi bersama', en: 'reading together' },
+  { rot: -2, y: -1, n: 'III', id: 'malam event', en: 'event night' },
+  { rot: 4, y: 2, n: 'IV', id: 'kartu terbuka', en: 'cards on the table' },
 ];
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
@@ -45,7 +45,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
     // on the page's own paper — no band — so the prints rest on the same surface
     // as Event & collaboration below
     <div className="relative px-6 md:px-8 pt-6 md:pt-8 pb-6 md:pb-10">
-      <div ref={ref} className="mx-auto max-w-6xl grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-0">
+      <div ref={ref} className="mx-auto w-[88%] max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-0">
         {photos.map((src, i) => {
           const pr = PRINTS[i % PRINTS.length];
           return (
@@ -78,7 +78,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 }}
               >
                 {/* the card's face, painted in watercolour */}
-                <CardWash colors={DECK_WASH[pr.wash]} />
+                <CardWash colors={DECK_WASH[1]} />
                 {/* inner frame */}
                 <span className="relative flex min-h-0 flex-1 flex-col rounded-[0.55rem] md:rounded-[0.7rem] ring-1 ring-white/[0.16] px-1.5 md:px-2 pt-1 md:pt-1.5 pb-2 md:pb-2.5">
                 {/* head: the card's numeral between two rules */}
