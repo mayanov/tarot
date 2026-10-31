@@ -6,8 +6,10 @@ interface WatercolorWashProps {
    * 'panel' (default): a lilac wash over a block of text, roughly its shape.
    * 'pool': a looser, rounded pool, warmer (rose first, lilac second) with peach and
    * blue dropped in — for a single centred piece like a quote.
+   * 'stroke': one broad brushstroke swept across the page, streaked where the
+   * bristles ran dry — cooler (blue-lilac), for a single line of content like a quote.
    */
-  variant?: 'panel' | 'pool';
+  variant?: 'panel' | 'pool' | 'stroke';
 }
 
 /**
@@ -40,8 +42,61 @@ const washFilter = (id: string, seed: number, freq: string, scale: number) => (
   </filter>
 );
 
+/**
+ * A broad brushstroke: edges torn along the direction of the sweep, the paint pooled
+ * along its rims, and dry streaks where the bristles skipped over the paper.
+ */
+const brushFilter = (id: string, seed: number, scale: number) => (
+  <filter id={id} x="-10%" y="-30%" width="120%" height="160%" colorInterpolationFilters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.0025 0.03" numOctaves="3" seed={seed} result="n" />
+    <feDisplacementMap in="SourceGraphic" in2="n" scale={scale} xChannelSelector="R" yChannelSelector="G" result="d" />
+    <feGaussianBlur in="d" stdDeviation="1.4" result="soft" />
+    <feColorMatrix in="soft" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 40 0" result="shape" />
+    <feMorphology in="shape" operator="erode" radius="5" result="er" />
+    <feGaussianBlur in="er" stdDeviation="6" result="erb" />
+    <feComposite in="shape" in2="erb" operator="out" result="band" />
+    <feComposite in="soft" in2="band" operator="in" result="rim" />
+    <feMerge result="m">
+      <feMergeNode in="soft" />
+      <feMergeNode in="rim" />
+      <feMergeNode in="rim" />
+    </feMerge>
+    {/* bristle streaks running along the stroke: some run dry and leave paper showing */}
+    <feTurbulence type="fractalNoise" baseFrequency="0.0015 0.11" numOctaves="2" seed={seed + 3} result="s" />
+    <feColorMatrix in="s" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -3.2 2.3" result="sa" />
+    <feComposite in="m" in2="sa" operator="in" result="streaked" />
+    <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed={seed + 2} result="g" />
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.9" result="ga" />
+    <feComposite in="streaked" in2="ga" operator="in" />
+  </filter>
+);
+
 const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '', variant = 'panel' }) => {
   const id = React.useId().replace(/:/g, '');
+  if (variant === 'stroke') {
+    return (
+      <svg aria-hidden style={{ transform: 'rotate(-2.5deg)' }} className={`pointer-events-none absolute inset-0 h-full w-full overflow-visible ${className}`}>
+        <defs>
+          {brushFilter(`${id}a`, 5, 70)}
+          {brushFilter(`${id}b`, 13, 50)}
+          <filter id={`${id}p`} x="-40%" y="-40%" width="180%" height="180%" colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="4" result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="80" xChannelSelector="R" yChannelSelector="G" result="d" />
+            <feGaussianBlur in="d" stdDeviation="20" />
+          </filter>
+        </defs>
+
+        {/* the main sweep, loaded with paint, then a narrower blue pass dragged through it */}
+        <rect x="1%" y="14%" width="97%" height="70%" rx="9%" ry="50%" fill="#7a52b4" fillOpacity="0.06" filter={`url(#${id}a)`} />
+        <rect x="9%" y="46%" width="72%" height="34%" rx="9%" ry="50%" fill="#6f86d6" fillOpacity="0.055" filter={`url(#${id}b)`} />
+        {/* where the brush first touched down, the paint pooled */}
+        <g filter={`url(#${id}p)`}>
+          <ellipse cx="6%" cy="46%" rx="7%" ry="26%" fill="#b48ad6" fillOpacity="0.12" />
+          <ellipse cx="88%" cy="34%" rx="9%" ry="18%" fill="#e3a0c4" fillOpacity="0.08" />
+        </g>
+      </svg>
+    );
+  }
   if (variant === 'pool') {
     return (
       <svg aria-hidden className={`pointer-events-none absolute inset-0 h-full w-full overflow-visible ${className}`}>
