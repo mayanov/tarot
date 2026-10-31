@@ -110,21 +110,21 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
     >
       <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
         {/* sky — night, with dawn and then sunrise painted over it, faded in by scroll */}
-        <WatercolorSky palette={NIGHT} className="absolute inset-0" />
+        <WatercolorSky palette={NIGHT} stars={false} className="absolute inset-0" />
         <div ref={dawnRef} aria-hidden className="absolute inset-0 will-change-[opacity]" style={{ opacity: reduce ? 1 : 0 }}>
-          <WatercolorSky palette={PLUM} className="absolute inset-0" />
+          <WatercolorSky palette={PLUM} stars={false} className="absolute inset-0" />
         </div>
         <div ref={sunriseRef} aria-hidden className="absolute inset-0 will-change-[opacity]" style={{ opacity: 0 }}>
-          <WatercolorSky palette={SUNRISE} className="absolute inset-0" />
+          <WatercolorSky palette={SUNRISE} stars={false} className="absolute inset-0" />
         </div>
         {/* the sun's glow, rising from below the bottom edge */}
         <div
           ref={sunRef}
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] mix-blend-screen will-change-[opacity,transform]"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] will-change-[opacity,transform]"
           style={{
             opacity: reduce ? 0.4 : 0,
-            background: 'radial-gradient(55% 60% at 50% 100%, rgba(255,226,170,0.75) 0%, rgba(255,180,140,0.35) 38%, transparent 72%)',
+            background: 'radial-gradient(55% 60% at 50% 100%, rgba(255,230,180,0.55) 0%, rgba(255,190,150,0.25) 38%, transparent 72%)',
           }}
         />
         {/* a soft shade behind the words, so cream text holds on the brightest sky */}

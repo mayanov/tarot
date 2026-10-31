@@ -1,12 +1,14 @@
-import React, { useId } from 'react';
+import React from 'react';
 
-// A sky painted in watercolour (the footer's, and the interlude's in its own palette) rather than photographed: a graded dusk wash (indigo at
-// the top through violet and rose to a pale lavender glow at the bottom), then long
-// wet-in-wet streaks laid across it like evening cloud, their edges bled and dried
-// darker. The streak layers drift very slowly against each other and the glow
-// breathes, so the sky feels alive; granulation and the paper's tooth sit on top,
-// with a few twinkling dots of white gouache. Each moving layer is its own SVG, so
-// the browser paints the filters once and only slides the result.
+// A sky painted in watercolour rather than photographed: a graded wash, long
+// wet-in-wet streaks laid across it like cloud (edges bled and dried darker), pale
+// backruns, granulation and the paper's tooth, and a few dots of white gouache.
+//
+// Performance: the painting is built as SVG *text* and shown through <img>, so the
+// browser rasterises its heavy noise filters once into a bitmap. Everything that
+// moves afterwards (the slow drift, the breathing glow, twinkling stars, crossfades
+// between skies) is a plain transform/opacity on those bitmaps — compositor-only,
+// so scrolling stays smooth.
 
 const W = 1600, H = 640;
 
@@ -29,6 +31,16 @@ const FRONT: Streak[] = [
   [1080, 560, 560, 28, -3, 0.35],
 ];
 
+// pale backruns, where water crept back into a drying wash
+const BLOOMS: [number, number, number, number][] = [[560, 250, 140, 50], [1120, 210, 160, 46], [1460, 470, 140, 54]];
+
+// small gouache dots, kept to the darker upper sky — [x%, y%, size px]
+const STARS: [number, number, number][] = [
+  [8.8, 9.4, 4.8], [20.6, 5.9, 3.4], [32.5, 14.4, 4.2], [43.1, 6.9, 2.8], [56.9, 12.5, 5],
+  [67.5, 4.7, 3.4], [78.8, 11.3, 4], [90.6, 7.2, 4.6], [96.6, 20.3, 3], [13.1, 25.8, 3],
+  [47.5, 23.4, 3.6], [74.4, 25, 2.8], [3.8, 34.4, 3.6], [86.9, 33.6, 3.4], [38.1, 30.6, 2.6],
+];
+
 export type SkyPalette = {
   ground: string;     // flat colour under everything
   base: string[];     // the graded wash, top to bottom (5 stops)
@@ -36,6 +48,105 @@ export type SkyPalette = {
   front: string[];    // one per FRONT streak
   bloom: string;      // the pale backruns
   glow: [string, string];
+};
+
+// the shared wash filter: soft body, wandering frilly edge, darker rim where it dried
+const washFilter = (id: string, blur: number, seed: number, scale: number) => `
+  <filter id="${id}" x="-30%" y="-60%" width="160%" height="220%">
+    <feGaussianBlur stdDeviation="${blur}" result="soft"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.005 0.018" numOctaves="5" seed="${seed}" result="n"/>
+    <feDisplacementMap in="soft" in2="n" scale="${scale}" xChannelSelector="R" yChannelSelector="G" result="bled"/>
+    <feMorphology in="bled" operator="erode" radius="4" result="inner"/>
+    <feGaussianBlur in="inner" stdDeviation="2.5" result="innerSoft"/>
+    <feComposite in="bled" in2="innerSoft" operator="out" result="rim"/>
+    <feColorMatrix in="rim" type="matrix" values="0.55 0 0 0 0  0 0.5 0 0 0  0 0 0.65 0 0  0 0 0 0.8 0" result="rimDark"/>
+    <feMerge><feMergeNode in="bled"/><feMergeNode in="rimDark"/></feMerge>
+  </filter>`;
+
+const streaks = (list: Streak[], colours: string[]) => list.map(([cx, cy, rx, ry, rot, o], i) =>
+  `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${colours[i]}" opacity="${o}" transform="rotate(${rot} ${cx} ${cy})"/>`).join('');
+
+const svg = (body: string) =>
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice">${body}</svg>`)}`;
+
+// the back sheet: graded wash + broad streaks + granulation + paper tooth
+const paintBack = (p: SkyPalette) => svg(`
+  <defs>
+    <linearGradient id="base" x1="0" y1="0" x2="0.15" y2="1">
+      ${[0, 0.3, 0.55, 0.78, 1].map((o, i) => `<stop offset="${o}" stop-color="${p.base[i]}"/>`).join('')}
+    </linearGradient>
+    ${washFilter('wash', 9, 7, 120)}
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" seed="3"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.18  0 0 0 0 0.1  0 0 0 0 0.3  0 0 0 -1.6 0.95"/>
+    </filter>
+    <filter id="paper" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="9"/>
+      <feDiffuseLighting surfaceScale="2.2" lighting-color="#ffffff"><feDistantLight azimuth="225" elevation="48"/></feDiffuseLighting>
+    </filter>
+  </defs>
+  <rect width="${W}" height="${H}" fill="url(#base)"/>
+  <g filter="url(#wash)">${streaks(BACK, p.back)}</g>
+  <rect width="${W}" height="${H}" filter="url(#grain)" opacity="0.5" style="mix-blend-mode:multiply"/>
+  <rect width="${W}" height="${H}" filter="url(#paper)" opacity="0.42" style="mix-blend-mode:multiply"/>`);
+
+// the front sheet: thin cloud streaks and backruns on a transparent ground
+const paintFront = (p: SkyPalette) => svg(`
+  <defs>
+    ${washFilter('wash', 5, 19, 90)}
+    <filter id="bloom" x="-50%" y="-80%" width="200%" height="260%">
+      <feGaussianBlur stdDeviation="9" result="soft"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="4" seed="21" result="n"/>
+      <feDisplacementMap in="soft" in2="n" scale="55" xChannelSelector="R" yChannelSelector="G" result="b"/>
+      <feMorphology in="b" operator="erode" radius="3" result="i"/>
+      <feComposite in="b" in2="i" operator="out" result="edge"/>
+      <feFlood flood-color="#2a1850" flood-opacity="0.45"/>
+      <feComposite in2="edge" operator="in" result="edgeInk"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="edgeInk"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#wash)">${streaks(FRONT, p.front)}</g>
+  <g filter="url(#bloom)" fill="${p.bloom}" opacity="0.32">
+    ${BLOOMS.map(([cx, cy, rx, ry]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`).join('')}
+  </g>`);
+
+// each palette is painted once per page load, however many times it's shown
+const painted = new Map<SkyPalette, { back: string; front: string }>();
+const paint = (p: SkyPalette) => {
+  let v = painted.get(p);
+  if (!v) { v = { back: paintBack(p), front: paintFront(p) }; painted.set(p, v); }
+  return v;
+};
+
+const sheet = 'absolute -inset-[6%] w-[112%] h-[112%] max-w-none object-cover select-none';
+
+const WatercolorSky: React.FC<{ palette?: SkyPalette; stars?: boolean; className?: string; style?: React.CSSProperties; skyRef?: React.Ref<HTMLDivElement> }> = ({ palette: p = DUSK, stars = true, className = '', style, skyRef }) => {
+  const { back, front } = paint(p);
+  return (
+    <div ref={skyRef} aria-hidden className={`pointer-events-none isolate overflow-hidden ${className}`} style={{ background: p.ground, ...style }}>
+      {/* the broad wash, drifting one way… */}
+      <img src={back} alt="" decoding="async" draggable={false} className={`${sheet} motion-safe:animate-[nebulaDrift_48s_ease-in-out_infinite]`} />
+      {/* …the glow low in the sky, breathing… */}
+      <div
+        className="absolute -inset-[10%] motion-safe:animate-[nebulaDrift_30s_ease-in-out_infinite_reverse]"
+        style={{ background: `radial-gradient(60% 45% at 38% 82%, ${p.glow[0]}, transparent 70%), radial-gradient(45% 40% at 78% 70%, ${p.glow[1]}, transparent 70%)`, opacity: 0.4 }}
+      />
+      {/* …and the thin cloud streaks the other way */}
+      <img src={front} alt="" decoding="async" draggable={false} className={`${sheet} motion-safe:animate-[nebulaDrift_36s_ease-in-out_infinite_reverse]`} />
+      {/* gouache stars, twinkling (opacity only) */}
+      {stars && STARS.map(([x, y, s], i) => (
+        <span
+          key={i}
+          className="absolute rounded-full motion-safe:animate-[starPulse_var(--d)_ease-in-out_infinite]"
+          style={{
+            left: `${x}%`, top: `${y}%`, width: s, height: s,
+            background: 'radial-gradient(circle, rgba(248,242,255,0.95) 0%, rgba(248,242,255,0.5) 45%, transparent 75%)',
+            '--d': `${4 + (i % 5) * 1.3}s`, animationDelay: `${(i * 0.7) % 5}s`,
+          } as React.CSSProperties}
+        />
+      ))}
+    </div>
+  );
 };
 
 // dusk: indigo through violet to rose — the footer
@@ -46,127 +157,6 @@ export const DUSK: SkyPalette = {
   front: ['#4b2e86', '#7a4aa6', '#c07aa8', '#e0acd0', '#f0c2d4'],
   bloom: '#e4d2f2',
   glow: ['rgba(255,214,236,0.9)', 'rgba(214,190,255,0.7)'],
-};
-
-// pale backruns, where water crept back into a drying wash
-const BLOOMS: [number, number, number, number][] = [[560, 250, 140, 50], [1120, 210, 160, 46], [1460, 470, 140, 54]];
-
-// small gouache dots, kept to the darker upper sky
-const STARS: [number, number, number][] = [
-  [140, 60, 1.6], [330, 38, 1.1], [520, 92, 1.4], [690, 44, 0.9], [910, 80, 1.7],
-  [1080, 30, 1.1], [1260, 72, 1.3], [1450, 46, 1.5], [1545, 130, 1], [210, 165, 1],
-  [760, 150, 1.2], [1190, 160, 0.9], [60, 220, 1.2], [1390, 215, 1.1], [610, 196, 0.8],
-];
-
-// the shared wash filter: soft body, wandering frilly edge, darker rim where it dried
-const WashFilter: React.FC<{ id: string; blur: number; seed: number; scale: number }> = ({ id, blur, seed, scale }) => (
-  <filter id={id} x="-30%" y="-60%" width="160%" height="220%">
-    <feGaussianBlur stdDeviation={blur} result="soft" />
-    <feTurbulence type="fractalNoise" baseFrequency="0.005 0.018" numOctaves="5" seed={seed} result="n" />
-    <feDisplacementMap in="soft" in2="n" scale={scale} xChannelSelector="R" yChannelSelector="G" result="bled" />
-    <feMorphology in="bled" operator="erode" radius="4" result="inner" />
-    <feGaussianBlur in="inner" stdDeviation="2.5" result="innerSoft" />
-    <feComposite in="bled" in2="innerSoft" operator="out" result="rim" />
-    <feColorMatrix in="rim" type="matrix" values="0.55 0 0 0 0  0 0.5 0 0 0  0 0 0.65 0 0  0 0 0 0.8 0" result="rimDark" />
-    <feMerge><feMergeNode in="bled" /><feMergeNode in="rimDark" /></feMerge>
-  </filter>
-);
-
-const Layer: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({ children, className = '', style }) => (
-  <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" className={`absolute w-full h-full ${className}`} style={style}>
-    {children}
-  </svg>
-);
-
-const streaks = (list: Streak[], colours: string[]) => list.map(([cx, cy, rx, ry, rot, o], i) => (
-  <ellipse key={i} cx={cx} cy={cy} rx={rx} ry={ry} fill={colours[i]} opacity={o} transform={`rotate(${rot} ${cx} ${cy})`} />
-));
-
-const WatercolorSky: React.FC<{ palette?: SkyPalette; className?: string; style?: React.CSSProperties; skyRef?: React.Ref<HTMLDivElement> }> = ({ palette: p = DUSK, className = '', style, skyRef }) => {
-  const id = useId().replace(/:/g, '');
-  const f = (n: string) => `url(#${id}${n})`;
-  return (
-    <div ref={skyRef} aria-hidden className={`pointer-events-none isolate overflow-hidden ${className}`} style={{ background: p.ground, ...style }}>
-      {/* the graded wash */}
-      <Layer className="inset-0">
-        <defs>
-          <linearGradient id={`${id}base`} x1="0" y1="0" x2="0.15" y2="1">
-            {[0, 0.3, 0.55, 0.78, 1].map((o, i) => <stop key={o} offset={o} stopColor={p.base[i]} />)}
-          </linearGradient>
-        </defs>
-        <rect width={W} height={H} fill={`url(#${id}base)`} />
-      </Layer>
-
-      {/* broad streaks, drifting one way… */}
-      <div className="absolute -inset-[6%] motion-safe:animate-[nebulaDrift_48s_ease-in-out_infinite]">
-        <Layer className="inset-0">
-          <defs><WashFilter id={`${id}back`} blur={9} seed={7} scale={120} /></defs>
-          <g filter={f('back')}>{streaks(BACK, p.back)}</g>
-        </Layer>
-      </div>
-      {/* …the glow low in the sky, breathing… */}
-      <div
-        className="absolute -inset-[10%] mix-blend-soft-light motion-safe:animate-[nebulaDrift_30s_ease-in-out_infinite_reverse]"
-        style={{ background: `radial-gradient(60% 45% at 38% 82%, ${p.glow[0]}, transparent 70%), radial-gradient(45% 40% at 78% 70%, ${p.glow[1]}, transparent 70%)` }}
-      />
-      {/* …and the thin cloud streaks the other way */}
-      <div className="absolute -inset-[6%] motion-safe:animate-[nebulaDrift_36s_ease-in-out_infinite_reverse]">
-        <Layer className="inset-0">
-          <defs>
-            <WashFilter id={`${id}front`} blur={5} seed={19} scale={90} />
-            <filter id={`${id}bloom`} x="-50%" y="-80%" width="200%" height="260%">
-              <feGaussianBlur stdDeviation="9" result="soft" />
-              <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="4" seed="21" result="n" />
-              <feDisplacementMap in="soft" in2="n" scale="55" xChannelSelector="R" yChannelSelector="G" result="b" />
-              <feMorphology in="b" operator="erode" radius="3" result="i" />
-              <feComposite in="b" in2="i" operator="out" result="edge" />
-              <feFlood floodColor="#2a1850" floodOpacity="0.45" />
-              <feComposite in2="edge" operator="in" result="edgeInk" />
-              <feMerge><feMergeNode in="b" /><feMergeNode in="edgeInk" /></feMerge>
-            </filter>
-          </defs>
-          <g filter={f('front')}>{streaks(FRONT, p.front)}</g>
-          <g filter={f('bloom')} fill={p.bloom} opacity="0.32">
-            {BLOOMS.map(([cx, cy, rx, ry], i) => <ellipse key={i} cx={cx} cy={cy} rx={rx} ry={ry} />)}
-          </g>
-        </Layer>
-      </div>
-
-      {/* granulation and the paper's tooth, still while the paint moves under them */}
-      <Layer className="inset-0">
-        <defs>
-          <filter id={`${id}grain`} x="0" y="0" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" seed="3" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0.18  0 0 0 0 0.1  0 0 0 0 0.3  0 0 0 -1.6 0.95" />
-          </filter>
-          <filter id={`${id}paper`} x="0" y="0" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="9" result="t" />
-            <feDiffuseLighting in="t" surfaceScale="2.2" lightingColor="#ffffff">
-              <feDistantLight azimuth="225" elevation="48" />
-            </feDiffuseLighting>
-          </filter>
-        </defs>
-        <rect width={W} height={H} filter={f('grain')} opacity="0.5" style={{ mixBlendMode: 'multiply' }} />
-        <rect width={W} height={H} filter={f('paper')} opacity="0.42" style={{ mixBlendMode: 'multiply' }} />
-      </Layer>
-
-      {/* gouache stars, twinkling */}
-      <Layer className="inset-0">
-        <defs>
-          <filter id={`${id}star`} x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="0.9" /></filter>
-        </defs>
-        <g fill="#f8f2ff" filter={f('star')}>
-          {STARS.map(([x, y, r], i) => (
-            <circle
-              key={i} cx={x} cy={y} r={r * 1.5}
-              className="motion-safe:animate-[starPulse_var(--d)_ease-in-out_infinite]"
-              style={{ '--d': `${4 + (i % 5) * 1.3}s`, animationDelay: `${(i * 0.7) % 5}s`, opacity: 0.75 } as React.CSSProperties}
-            />
-          ))}
-        </g>
-      </Layer>
-    </div>
-  );
 };
 
 // midnight: deep navy through blue-violet to a cool periwinkle haze — the interlude,
@@ -180,18 +170,7 @@ export const MIDNIGHT: SkyPalette = {
   glow: ['rgba(196,214,255,0.6)', 'rgba(206,190,255,0.45)'],
 };
 
-// plum: aubergine through berry to a rosy blush, with a few blue streaks — the
-// "calm space" band, warmer than the interlude's midnight
-export const PLUM: SkyPalette = {
-  ground: '#2a1638',
-  base: ['#160b24', '#2a1440', '#4a2160', '#7a3a78', '#b0688a'],
-  back: ['#140a22', '#2a1446', '#331a52', '#5c2a74', '#7d3a7c', '#3e3a7e'],
-  front: ['#4a2470', '#8a4a8e', '#c27a9c', '#e2a6b8', '#5a6ab0'],
-  bloom: '#f0d4e2',
-  glow: ['rgba(255,200,214,0.6)', 'rgba(180,170,255,0.45)'],
-};
-
-// night and sunrise: the calm-space band's timelapse runs NIGHT → PLUM → SUNRISE
+// the calm-space band's timelapse runs NIGHT → PLUM → SUNRISE
 export const NIGHT: SkyPalette = {
   ground: '#0a0c22',
   base: ['#05061a', '#0b0f2c', '#141a40', '#1f2552', '#2c2f62'],
@@ -199,6 +178,14 @@ export const NIGHT: SkyPalette = {
   front: ['#1a2050', '#2a2e66', '#3a3a78', '#4a4684', '#34407a'],
   bloom: '#8a90c0',
   glow: ['rgba(120,140,220,0.35)', 'rgba(140,120,220,0.3)'],
+};
+export const PLUM: SkyPalette = {
+  ground: '#2a1638',
+  base: ['#160b24', '#2a1440', '#4a2160', '#7a3a78', '#b0688a'],
+  back: ['#140a22', '#2a1446', '#331a52', '#5c2a74', '#7d3a7c', '#3e3a7e'],
+  front: ['#4a2470', '#8a4a8e', '#c27a9c', '#e2a6b8', '#5a6ab0'],
+  bloom: '#f0d4e2',
+  glow: ['rgba(255,200,214,0.6)', 'rgba(180,170,255,0.45)'],
 };
 export const SUNRISE: SkyPalette = {
   ground: '#5a4a8a',
