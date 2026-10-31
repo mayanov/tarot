@@ -5,6 +5,7 @@ import { trackEvent } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/scroll';
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
+import NightWash from '../UI/NightWash';
 import CelestialMark from '../UI/CelestialMark';
 import { MoonWatermark, moonNow } from './MenuMoon';
 
@@ -227,14 +228,19 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     { name: isIndonesian ? 'FAQ' : 'FAQ', id: 'faq' },
   ];
 
-  // The floating bar's marks stay cream throughout; on scroll a translucent dark
-  // glass fades in behind them (readable over both the light and dark sections).
+  // The floating bar's marks stay cream throughout; on scroll an indigo watercolour
+  // band fades in behind them (readable over both the light and dark sections).
 
   // Brand mark — badge always; full wordmark eases in once scrolled.
   const Wordmark: React.FC<{ onDark?: boolean }> = ({ onDark = true }) => (
     <div className="flex items-center gap-2 cursor-pointer group whitespace-nowrap" onClick={handleLogoClick}>
-      <span className={`grid place-items-center w-7 h-7 shrink-0 rounded-full border font-serif text-base leading-none transition-colors duration-500 ${onDark ? 'border-cream/50 text-cream group-hover:bg-cream group-hover:text-ink [text-shadow:0_1px_8px_rgba(0,0,0,0.45)] shadow-[0_2px_10px_-4px_rgba(0,0,0,0.4)]' : 'border-ink/30 text-ink group-hover:bg-ink group-hover:text-cream'}`}>
-        M
+      {/* the badge's ring is drawn in pencil; on hover it fills with paint */}
+      <span className={`relative grid place-items-center w-7 h-7 shrink-0 font-serif text-base leading-none transition-colors duration-500 ${onDark ? 'text-cream group-hover:text-ink [text-shadow:0_1px_8px_rgba(0,0,0,0.45)]' : 'text-ink group-hover:text-cream'}`}>
+        <svg aria-hidden className={`absolute inset-0 h-full w-full overflow-visible [filter:url(#pencil-icon)] ${onDark ? 'text-cream/70' : 'text-ink/45'}`}>
+          <circle cx="50%" cy="50%" r="48%" className={`opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${onDark ? 'fill-cream' : 'fill-ink'}`} />
+          <circle cx="50%" cy="50%" r="48%" fill="none" stroke="currentColor" strokeWidth="1.4" />
+        </svg>
+        <span className="relative">M</span>
       </span>
       <span className={`overflow-hidden whitespace-nowrap transition-[max-width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled || menuOpen ? 'max-w-[220px]' : 'max-w-0'}`}>
         <span className={`pl-0.5 text-base font-serif font-bold uppercase tracking-tight ${onDark ? 'text-cream [text-shadow:0_1px_10px_rgba(0,0,0,0.55),0_0_2px_rgba(0,0,0,0.4)]' : 'text-ink'}`}>
@@ -247,12 +253,9 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50">
-        {/* solid frosted glass bar (fades in on scroll) — a flat tint + blur with a
-            hairline bottom edge, so it reads as a defined nav bar, not a gradient */}
-        <div
-          className={`pointer-events-none absolute inset-0 backdrop-blur-xl border-b border-white/[0.08] transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`}
-          style={{ background: 'rgba(10,12,22,0.18)' }}
-        />
+        {/* a band of night-sky watercolour (fades in on scroll) — the hero's sky
+            following you down the page, readable over the light and dark sections */}
+        <NightWash className={`transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`} />
 
         <div className="relative mx-auto px-8 flex justify-between items-center py-2.5 md:py-3">
           {/* LEFT — brand (hidden while the overlay owns the top row) */}
@@ -286,9 +289,10 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 aria-expanded={menuOpen}
                 className="group inline-flex items-center justify-center p-1.5 text-cream [filter:drop-shadow(0_1px_8px_rgba(0,0,0,0.55))]"
               >
+                {/* two pencil strokes */}
                 <span className="flex flex-col items-end gap-[5px] w-6">
-                  <span className="block h-[1.5px] w-6 bg-current transition-all duration-500" />
-                  <span className="block h-[1.5px] w-4 bg-current group-hover:w-6 transition-all duration-500" />
+                  <span className="block h-[2px] w-6 rounded-full bg-current transition-all duration-500" />
+                  <span className="block h-[2px] w-4 rounded-full bg-current group-hover:w-6 transition-all duration-500" />
                 </span>
               </button>
             </div>

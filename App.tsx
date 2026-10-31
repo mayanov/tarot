@@ -11,6 +11,7 @@ import BookingModal from './components/Booking/BookingModal';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
 import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
 import MoonPhaseDivider from './components/UI/MoonPhaseDivider';
+import { PaintSwatch } from './components/UI/ButtonInk';
 import { ArrowUp, RefreshCw } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 
@@ -448,12 +449,14 @@ function App() {
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-4 items-end">
         {showBackToTop && (
+          // a drop of indigo ink with a pencilled arrow on it
           <button
             onClick={scrollToTop}
-            className="p-3 rounded-lg bg-ink/30 backdrop-blur-md text-cream/70 hover:text-cream hover:bg-ink/55 transition-all duration-300 border border-cream/15 hover:-translate-y-1"
+            className="group/btn relative isolate grid place-items-center w-11 h-11 text-cream drop-shadow-[0_6px_10px_rgba(20,12,40,0.25)] transition-transform duration-300 hover:-translate-y-1"
             title="Back to Top"
           >
-            <ArrowUp className="w-5 h-5" />
+            <PaintSwatch round className="transition-colors duration-300 text-[#1c1a4c] group-hover/btn:text-moon" />
+            <ArrowUp className="w-5 h-5 [filter:url(#pencil-icon)]" strokeWidth={1.6} />
           </button>
         )}
 
@@ -464,7 +467,7 @@ function App() {
   );
 }
 
-// Floating WhatsApp button in the site's palette (brand purple, cream icon). Calm:
+// Floating WhatsApp button: a painted drop of the brand purple, cream icon. Calm:
 // no looping animation — a label slides out only on hover.
 const WhatsAppFab: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
   const text = isIndonesian
@@ -484,7 +487,9 @@ const WhatsAppFab: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
       <span className="mr-3 whitespace-nowrap rounded-lg bg-paper text-ink text-sm font-medium px-3.5 py-2 shadow-[0_10px_28px_-12px_rgba(20,12,40,0.45)] opacity-0 translate-x-3 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-x-0">
         {label}
       </span>
-      <span className="relative grid place-items-center w-14 h-14 rounded-full bg-moon text-cream ring-1 ring-cream/20 shadow-[0_12px_30px_-10px_rgba(57,35,78,0.7)] transition-colors duration-300 group-hover:bg-plum">
+      {/* a drop of the brand purple, a pair with the back-to-top drop */}
+      <span className="relative isolate grid place-items-center w-14 h-14 text-cream drop-shadow-[0_10px_16px_rgba(57,35,78,0.35)]">
+        <PaintSwatch round className="transition-colors duration-300 text-moon group-hover:text-plum" />
         <FaWhatsapp size={24} />
       </span>
     </a>

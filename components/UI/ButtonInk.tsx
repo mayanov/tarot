@@ -14,8 +14,9 @@ const useInkId = () => {
   return { id: raw.replace(/:/g, ''), seed };
 };
 
-/** a flat-ish patch of paint in currentColor, filling its box */
-export const PaintSwatch: React.FC<{ className?: string }> = ({ className = '' }) => {
+/** a flat-ish patch of paint in currentColor, filling its box; `round` makes it a
+    drop of ink, its edge a little less even */
+export const PaintSwatch: React.FC<{ className?: string; round?: boolean }> = ({ className = '', round = false }) => {
   const { id, seed } = useInkId();
   return (
     <span aria-hidden className={`pointer-events-none absolute inset-0 -z-10 ${className}`}>
@@ -23,8 +24,8 @@ export const PaintSwatch: React.FC<{ className?: string }> = ({ className = '' }
         <defs>
           <filter id={`${id}s`} x="-15%" y="-40%" width="130%" height="180%" colorInterpolationFilters="sRGB">
             {/* a steady hand: the edge only frays a little, it doesn't wave */}
-            <feTurbulence type="fractalNoise" baseFrequency="0.22 0.3" numOctaves="1" seed={seed} result="n" />
-            <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="d" />
+            <feTurbulence type="fractalNoise" baseFrequency={round ? '0.08' : '0.22 0.3'} numOctaves={round ? 2 : 1} seed={seed} result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale={round ? 3.5 : 1.6} xChannelSelector="R" yChannelSelector="G" result="d" />
             {/* the paint pools a touch darker along its edge as it dries */}
             <feColorMatrix in="d" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 40 0" result="shape" />
             <feMorphology in="shape" operator="erode" radius="2" result="er" />
@@ -47,7 +48,7 @@ export const PaintSwatch: React.FC<{ className?: string }> = ({ className = '' }
             <feComposite in="m" in2="ga" operator="in" />
           </filter>
         </defs>
-        <rect width="100%" height="100%" rx="4" fill="currentColor" filter={`url(#${id}s)`} />
+        <rect width="100%" height="100%" rx={round ? '50%' : 4} ry={round ? '50%' : 4} fill="currentColor" filter={`url(#${id}s)`} />
       </svg>
     </span>
   );
