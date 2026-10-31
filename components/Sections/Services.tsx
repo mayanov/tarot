@@ -8,6 +8,7 @@ import ButtonInk from '../UI/ButtonInk';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
+import CardWash from '../UI/CardWash';
 import { lockPage, unlockPage } from '../UI/scroll';
 import { trackEvent, SERVICE_TRACK_NAME, promoTrackName } from '../../services/analytics';
 
@@ -22,17 +23,15 @@ interface ServicesProps {
 const btnPrimary = `${btnPrimaryDark} inline-flex px-7 py-3 text-[1.05rem]`;
 const btnSecondary = `${btnSecondaryDark} inline-flex px-7 py-3 text-[1.05rem]`;
 
-// Per-category card faces, taken from the calm-space band's painted sky as it runs
-// night → plum → sunrise (TarotIntro / WatercolorSky NIGHT, PLUM, SUNRISE): each a
-// soft glow deepening into the darker tone beneath it, so the deck reads as part of
-// the same sky rather than a separate set of brand colours.
-const CAT_BG = [
-  'radial-gradient(135% 120% at 15% -15%, #4a5aa0 0%, #262f6a 52%, #121840 100%)', // night indigo
-  'radial-gradient(135% 120% at 15% -15%, #8a4290 0%, #55246e 52%, #2a1440 100%)', // twilight plum
-  'radial-gradient(135% 120% at 15% -15%, #e48cab 0%, #c0587e 52%, #7a2c55 100%)', // dusk rose
-  'radial-gradient(135% 120% at 15% -15%, #ffb894 0%, #e47c66 52%, #a2464c 100%)', // sunrise coral
-  'radial-gradient(135% 120% at 15% -15%, #ffd99c 0%, #d99a52 52%, #8e5a2c 100%)', // dawn apricot (promo)
-];
+// Per-category card faces, painted in watercolour (CardWash) from the calm-space
+// band's sky — each card its own dominant colour, as [light, mid, deep].
+const CAT_WASH = [
+  ['#5a6ab8', '#262f6a', '#121840'], // night indigo
+  ['#9a52a0', '#55246e', '#2a1440'], // twilight plum
+  ['#ec98b4', '#c0587e', '#7a2c55'], // dusk rose
+  ['#ffbe98', '#e47c66', '#a2464c'], // sunrise coral
+  ['#ffdca0', '#d99a52', '#8e5a2c'], // dawn apricot (promo)
+] as const;
 // The solid accent per card — the flipped detail borrows its card's colour.
 const CAT_ACCENT = ['#262f6a', '#55246e', '#b04f74', '#c4604e', '#a26a30'];
 const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent', 'sun'] as const;
@@ -102,8 +101,8 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
             {/* ===== FRONT — the card face ===== */}
             <div
                 className="absolute inset-0 [backface-visibility:hidden] [container-type:inline-size] overflow-hidden rounded-[1.15rem] [box-shadow:0_1px_2px_rgba(12,8,30,0.35),0_18px_34px_-18px_rgba(12,8,30,0.6)]"
-                style={{ background: CAT_BG[k % CAT_BG.length] }}
             >
+                <CardWash colors={CAT_WASH[k % CAT_WASH.length]} />
                 <div aria-hidden className="absolute inset-0 opacity-70" style={{ backgroundImage: CAT_STARS[k % CAT_STARS.length] }} />
                 {/* ornamental inner frame */}
                 <div aria-hidden className="absolute ring-1 ring-white/[0.16]" style={{ inset: cq(10.4), borderRadius: cq(13.6) }} />
@@ -258,8 +257,8 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 // that flips to the details; clicking the dark backdrop (anywhere outside) closes it.
 // The face-down back of a card, used while the deck is stacked before it's dealt.
 const CardBack: React.FC = () => (
-    <div className="absolute inset-0 overflow-hidden rounded-[1.15rem] [box-shadow:0_1px_2px_rgba(12,8,30,0.35),0_18px_34px_-18px_rgba(12,8,30,0.6)]"
-        style={{ background: 'radial-gradient(130% 110% at 50% 0%, #3a2558 0%, #241638 55%, #150c24 100%)' }}>
+    <div className="absolute inset-0 overflow-hidden rounded-[1.15rem] [box-shadow:0_1px_2px_rgba(12,8,30,0.35),0_18px_34px_-18px_rgba(12,8,30,0.6)]">
+        <CardWash colors={['#4a2e6e', '#241638', '#150c24']} />
         <div aria-hidden className="absolute inset-0 opacity-60" style={{ backgroundImage: CAT_STARS[1] }} />
         <div aria-hidden className="absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-[#C9B8E8]/25" />
         <div aria-hidden className="absolute inset-[1.15rem] rounded-[0.6rem] ring-1 ring-[#C9B8E8]/10" />

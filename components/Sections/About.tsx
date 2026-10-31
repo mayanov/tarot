@@ -66,7 +66,7 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
       ref={figRef}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
-      className="relative mx-auto w-[min(72vw,19rem)] sm:w-[20rem] lg:w-[84%] lg:max-w-[25rem] lg:mr-0 lg:order-2"
+      className="relative mx-auto w-[min(76vw,20.5rem)] sm:w-[22rem] lg:w-[92%] lg:max-w-[28rem] lg:mr-0 lg:order-2"
     >
       <div className="relative" style={{ opacity: dealt ? 1 : 0, transition: `opacity 600ms ${EASE}` }}>
         {/* the face */}
