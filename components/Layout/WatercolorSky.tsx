@@ -44,17 +44,15 @@ const CLEAR: Streak[] = [
 // a clear sky's few high wisps, thin and lit from below near the horizon (colours
 // from the front slots)
 const WISPS: Streak[] = [
-  [300, 360, 420, 12, -4, 0.4],
-  [1280, 330, 380, 11, 3, 0.35],
-  [520, 450, 600, 18, -3, 0.6],
-  [1160, 430, 540, 16, 2, 0.55],
-  [820, 530, 760, 22, -1, 0.7],
-  [220, 595, 520, 20, 2, 0.65],
-  [1420, 575, 480, 18, -2, 0.6],
+  [520, 470, 560, 14, -3, 0.32],
+  [1180, 450, 500, 13, 2, 0.28],
+  [820, 545, 720, 18, -1, 0.4],
+  [260, 600, 480, 16, 2, 0.36],
+  [1400, 585, 440, 15, -2, 0.32],
 ];
 
 // a faint band of starlight laid diagonally across a clear night, like the Milky Way
-const BAND: Streak = [880, 200, 1100, 90, -16, 0.28];
+const BAND: Streak = [880, 200, 1100, 90, -16, 0.12];
 
 // pale backruns, where water crept back into a drying wash
 const BLOOMS: [number, number, number, number][] = [[560, 250, 140, 50], [1120, 210, 160, 46], [1460, 470, 140, 54]];
@@ -144,7 +142,7 @@ const paintSvg = (p: SkyPalette) => svg(`
   <rect width="${W}" height="${H}" fill="url(#base)"/>
   <g filter="url(#wash)">${streaks(p.clear ? CLEAR : BACK, p.back)}</g>
   <g opacity="0.4"><rect width="${W}" height="${H}" fill="url(#g1)"/><rect width="${W}" height="${H}" fill="url(#g2)"/></g>
-  ${p.clear ? `<rect width="${W}" height="${H}" fill="url(#horizon)" opacity="0.8"/>
+  ${p.clear ? `<rect width="${W}" height="${H}" fill="url(#horizon)" opacity="0.55"/>
   <g filter="url(#wisp)">${streaks([BAND], [p.bloom])}</g>
   <g filter="url(#wisp)">${streaks(WISPS, p.front)}</g>` : `<g filter="url(#wash2)">${streaks(FRONT, p.front)}</g>
   <g filter="url(#bloom)" fill="${p.bloom}" opacity="0.32">
@@ -258,12 +256,12 @@ export const MIDNIGHT: SkyPalette = {
 // lightening to a luminous violet-rose horizon, blue up the left, a magenta bloom
 // upper-right, teal lower-right, and a few thin lit wisps low down
 export const TWILIGHT: SkyPalette = {
-  ground: '#1c1c50',
-  base: ['#050a2a', '#0f1e58', '#243488', '#5446a2', '#a06aae'],
-  back: ['#040824', '#2e5ccc', '#b04aa6', '#3a3eaa', '#7a4ab4', '#2a9ab0'],
-  front: ['#e09ac4', '#9aaae4', '#f2b0c8', '#b48ad6', '#8ccad8'],
-  bloom: '#e4dcff',
-  glow: ['rgba(245,160,190,0.85)', 'rgba(110,210,230,0.7)'],
+  ground: '#1a1a48',
+  base: ['#060a28', '#101c52', '#22307c', '#4a4296', '#86609e'],
+  back: ['#050824', '#2a4eae', '#8a4a98', '#34389a', '#6448a4', '#2a7e98'],
+  front: ['#c890b8', '#8e9ad4', '#dca4bc', '#a284c8', '#80b6c8'],
+  bloom: '#dcd4f4',
+  glow: ['rgba(225,150,190,0.7)', 'rgba(110,190,215,0.55)'],
   clear: true,
 };
 
