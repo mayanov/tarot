@@ -6,7 +6,6 @@ import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/sc
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
 import PencilRule from '../UI/PencilRule';
-import { playPageTurn } from '../UI/paperSound';
 import CelestialMark from '../UI/CelestialMark';
 import { MoonWatermark, moonNow } from './MenuMoon';
 
@@ -55,13 +54,18 @@ interface NavItem {
   children?: { name: string; id: string }[];
 }
 
-// Menu motion: opening, a new page is turned over onto the site from the left, hinged
-// at its left edge (WIPE_MS, with the sound of paper); closing turns it back. Everything
-// in the menu is printed on that page, so it moves with it and has no motion of its own.
-const WIPE_MS = 800;
-const WIPE_EASE = 'cubic-bezier(0.6,0,0.3,1)';
-const PAGE_TURNED = 'perspective(2600px) rotateY(0deg)';
-const PAGE_AWAY = 'perspective(2600px) rotateY(-89deg)';
+// Menu motion: opening, a sheet of paper is slid in from the right over the site, its
+// leading edge casting a soft shadow (WIPE_MS), and the links and services settle onto
+// it one after another as it lands (SETTLE_AT, SETTLE_STEP); closing slides the sheet
+// straight back out with everything on it.
+const WIPE_MS = 750;
+const WIPE_EASE = 'cubic-bezier(0.65,0,0.2,1)';
+const SETTLE_AT = 380;
+const SETTLE_STEP = 55;
+const settle = (on: boolean, delay: number) => ({
+  className: on ? 'animate-[menuSettle_0.7s_cubic-bezier(0.22,1,0.36,1)_both]' : '',
+  style: on ? { animationDelay: `${delay}ms` } : undefined,
+});
 
 // The services in the menu — the same mark and starting price as their pricelist
 // card (a short name for the phone chips); picking one opens the booking form on it.
@@ -90,13 +94,6 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     setClosing(true);
     closeTimer.current = window.setTimeout(() => { setMenuOpen(false); setClosing(false); closingRef.current = false; }, 0);
   };
-  // every turn of the page is heard (open, and the turn back after the links leave)
-  const turned = useRef(false);
-  useEffect(() => {
-    if (!turned.current && !menuOpen) return;
-    turned.current = true;
-    playPageTurn(WIPE_MS);
-  }, [menuOpen]);
   // opening again mid-close cancels the close (the links come straight back)
   // the section on screen when the menu opens (marked in the index)
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -308,11 +305,10 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
       <div
         className={`bg-paper fixed inset-0 z-[110] overflow-hidden outline-none ${menuOpen && !closing ? '' : 'pointer-events-none'}`}
         style={{
-          // a page turned over onto the site, hinged at its left edge, and turned back;
-          // hidden (visibility) only once it has gone
-          transform: menuOpen ? PAGE_TURNED : PAGE_AWAY,
-          transformOrigin: 'left center',
-          backfaceVisibility: 'hidden',
+          // the sheet slid over the site from the right and back; hidden (visibility)
+          // only once it has gone. The shadow is the sheet's own, on its leading edge.
+          transform: menuOpen ? 'translateX(0)' : 'translateX(calc(100% + 60px))',
+          boxShadow: '-24px 0 50px -12px rgba(20,12,40,0.28)',
           visibility: menuOpen ? 'visible' : 'hidden',
           transition: `transform ${WIPE_MS}ms ${WIPE_EASE}, visibility 0s linear ${menuOpen ? 0 : WIPE_MS}ms`,
         }}
@@ -324,13 +320,6 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         inert={!menuOpen}
         tabIndex={-1}
       >
-        {/* the light across the page as it turns: shaded away from the hinge while it's
-            in the air, clearing as it lies flat */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-r from-transparent via-ink/[0.06] to-ink/30"
-          style={{ opacity: menuOpen ? 0 : 1, transition: `opacity ${WIPE_MS}ms ${WIPE_EASE}` }}
-        />
         {/* tonight's moon, printed faintly into the paper — behind the services on wide
             screens, low in the corner on phones */}
         <div aria-hidden className="pointer-events-none absolute aspect-square w-[92vw] -right-[34vw] bottom-[12dvh] sm:w-[62vw] sm:-right-[14vw] lg:w-[min(38rem,76vh)] lg:right-[calc(14rem-min(38rem,76vh)/2)] lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2">
@@ -378,7 +367,8 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                   >
                     <span className="block">
                       <span
-                        className={`flex items-baseline gap-3 sm:gap-5 transition-colors duration-500 group-hover/link:text-moon ${active ? 'text-moon' : 'text-ink'}`}
+                        className={`flex items-baseline gap-3 sm:gap-5 transition-colors duration-500 group-hover/link:text-moon ${active ? 'text-moon' : 'text-ink'} ${settle(menuOpen && !closing, SETTLE_AT + i * SETTLE_STEP).className}`}
+                        style={settle(menuOpen && !closing, SETTLE_AT + i * SETTLE_STEP).style}
                       >
                         {/* index number, like the FAQ list — on hover (desktop) it lifts away
                             and a small star takes its place, while the name steps forward */}
@@ -417,7 +407,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <p className={`print-body font-elegant italic text-sm text-ink/45`}>{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
             <ul className="mt-3 group/svs">
               {menuServices.map((sv, j) => (
-                <li key={sv.id} className={`border-t border-ink/10 last:border-b`}>
+                <li key={sv.id} className={`border-t border-ink/10 last:border-b ${settle(menuOpen && !closing, SETTLE_AT + 120 + j * SETTLE_STEP).className}`} style={settle(menuOpen && !closing, SETTLE_AT + 120 + j * SETTLE_STEP).style}>
                   <button type="button" onClick={() => showService(sv.id)} className="group/sv w-full flex items-baseline gap-3 py-3.5 text-left transition-[opacity,padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/svs:opacity-40 hover:!opacity-100 hover:pl-2">
                     <CelestialMark name={sv.mark} className="print-ink w-3.5 shrink-0 self-center text-ink/35 transition-colors duration-300 group-hover/sv:text-moon" />
                     <span className="print-text flex-1 min-w-0 font-elegant font-medium text-ink text-[1.45rem] leading-tight tracking-[-0.01em] transition-colors duration-300 group-hover/sv:text-moon">{sv.name}</span>
