@@ -173,12 +173,14 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </MaskReveal>
           </h2>
 
-          <div lang={isIndonesian ? 'id' : 'en'} className="print-body mt-7 md:mt-9 space-y-5 text-justify hyphens-auto">
-            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-ink first-letter:text-[3.4rem] first-letter:leading-[0.72]">
-              {isIndonesian
-                ? 'Saya sudah membaca kartu Tarot sejak 2009 — lebih dari 15 tahun menjadikannya ruang untuk refleksi diri. Pada dasarnya, Tarot bekerja dengan membaca energi: gambaran dari situasi dan perasaan yang sedang kamu bawa saat ini.'
-                : 'I’ve been reading Tarot since 2009 — over 15 years using it as a space for self-reflection. At its core, Tarot works by reading energy: a snapshot of the situation and feelings you’re carrying right now.'}
-            </p>
+          {/* lead — the entry point: larger, in the serif and full ink, with the drop cap */}
+          <p className="print-text mt-7 md:mt-9 font-elegant text-[1.2rem] md:text-[1.35rem] leading-[1.55] text-ink/85 first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:font-semibold first-letter:text-ink first-letter:text-[4rem] md:first-letter:text-[4.4rem] first-letter:leading-[0.74]">
+            {isIndonesian
+              ? 'Saya sudah membaca kartu Tarot sejak 2009 — lebih dari 15 tahun menjadikannya ruang untuk refleksi diri. Pada dasarnya, Tarot bekerja dengan membaca energi: gambaran dari situasi dan perasaan yang sedang kamu bawa saat ini.'
+              : 'I’ve been reading Tarot since 2009 — over 15 years using it as a space for self-reflection. At its core, Tarot works by reading energy: a snapshot of the situation and feelings you’re carrying right now.'}
+          </p>
+
+          <div lang={isIndonesian ? 'id' : 'en'} className="print-body mt-5 md:mt-6 space-y-5 text-justify hyphens-auto">
             <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light">
               {isIndonesian
                 ? 'Dari situ kita lihat pola yang mungkin belum kamu sadari — soal karier, hubungan, keuangan, keluarga, atau keputusan besar — lalu menerjemahkannya jadi langkah yang jelas dan bisa kamu ambil.'
@@ -202,8 +204,10 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
                 ? 'Tujuan saya simpel: memberikan kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
                 : 'My goal is simple: to give you the clarity to make decisions with confidence.'}
             </blockquote>
-            <figcaption className="print-body mt-5 flex items-center gap-2.5 font-elegant italic text-[1.05rem] tracking-[0.01em] text-moon">
-              <span aria-hidden className="h-px w-6 bg-moon/60" /> Mayanov
+            {/* signed by hand (a script face, loaded for just these letters), printed in plum */}
+            <figcaption className="mt-4 flex items-center gap-3 text-moon">
+              <span aria-hidden className="h-px w-6 bg-moon/50" />
+              <span className="print-body inline-block py-[0.3em] -my-[0.3em] pr-3 font-signature text-[2.5rem] md:text-[2.9rem] leading-none">Mayanov</span>
             </figcaption>
           </figure>
 
@@ -212,12 +216,15 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             {[
               { n: isIndonesian ? '7.700+' : '7,700+', l: isIndonesian ? 'sesi tarot' : 'readings' },
               { n: isIndonesian ? '1.500+' : '1,500+', l: isIndonesian ? 'orang terbantu' : 'people guided' },
-              { n: '5.0', l: isIndonesian ? 'rating Google' : 'on Google' },
+              // a rating shouldn't count up through 2.5, 3.8… — it simply appears
+              { n: '5.0', l: isIndonesian ? 'rating di Google' : 'rating on Google', still: true },
             ].map((s, i) => (
               <div key={i} className={i > 0 ? 'pl-5 sm:pl-8 border-l border-ink/10' : undefined}>
                 {/* (only the faint grain here — two masks stacked washed the purple out) */}
-                <div className="print-body font-elegant font-semibold text-moon text-[1.9rem] md:text-[2.4rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em]"><CountUp value={s.n} duration={1400 + i * 200} /></div>
-                <div className="print-body mt-2.5 text-ink/50 font-normal text-[13px] md:text-sm leading-snug">{s.l}</div>
+                <div className="print-body font-elegant font-semibold text-moon text-[1.7rem] sm:text-[2rem] md:text-[2.6rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em] pr-2 -mr-2">
+                  {'still' in s ? s.n : <CountUp value={s.n} duration={1400 + i * 200} />}
+                </div>
+                <div className="print-body mt-2.5 font-elegant italic text-ink/55 text-[0.95rem] md:text-[1.05rem] leading-snug">{s.l}</div>
               </div>
             ))}
           </div>
