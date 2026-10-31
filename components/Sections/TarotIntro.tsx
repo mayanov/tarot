@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
+import WatercolorSky, { PLUM } from '../Layout/WatercolorSky';
 
 interface TarotIntroProps {
   isIndonesian?: boolean;
 }
 
 // Deterministic starfield for this section's night sky (own seed, so it's a
-// different star pattern from the hero background and the footer's photo sky).
+// different star pattern from the hero background and the painted skies elsewhere).
 const mulberry32 = (seed: number) => () => {
   seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
   let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
@@ -24,17 +25,17 @@ const STARS_STATIC = starField(srng, 300, 0.4, 1.1, 0.3, 0.72);
 const STARS_TWINKLE_A = starField(srng, 90, 0.8, 1.5, 0.55, 0.95);
 const STARS_TWINKLE_B = starField(srng, 70, 0.6, 1.1, 0.4, 0.82);
 
-// Two static sky gradients — a deep night and a lighter dusk — crossfaded with
-// opacity (compositor-cheap) rather than regenerating a gradient each frame.
-const GRAD_DARK = 'linear-gradient(180deg, rgb(26,15,51) 0%, rgb(17,11,40) 55%, rgb(7,5,18) 100%)';
-const GRAD_LIGHT = 'linear-gradient(180deg, rgb(74,54,120) 0%, rgb(52,36,92) 55%, rgb(34,24,66) 100%)';
+// The night veil over the painted sky; it thins as you scroll (opacity only, so
+// it's compositor-cheap), letting the watercolour come up like a dawn.
+const NIGHT_VEIL = 'linear-gradient(180deg, rgb(16,8,28) 0%, rgb(12,6,24) 55%, rgb(7,5,18) 100%)';
+const veilAt = (p: number) => 0.82 - p * 0.68;
 const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1);
 const smoothstep = (t: number) => { const x = clamp01(t); return x * x * (3 - 2 * x); };
 
 /**
  * A scroll-pinned "presentation" band between About and Services. The section is a
- * tall track with a sticky panel over a starry sky; while pinned, the sky brightens
- * (dark → dusk) and the lines build in — and the whole stack drifts gently the whole
+ * tall track with a sticky panel over a starry watercolour sky; while pinned, the sky
+ * brightens (a night veil thins off the painting) and the lines build in — and the whole stack drifts gently the whole
  * way, so scrolling always shows motion instead of feeling frozen. All scroll work is
  * imperative on refs (no per-frame re-render) and uses opacity/transform only, so it
  * stays smooth. Reduced-motion collapses it to a calm static section.
@@ -64,7 +65,7 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
       const total = el.offsetHeight - window.innerHeight; // pinned range
       const p = total > 0 ? clamp01(-el.getBoundingClientRect().top / total) : 0;
       // sky brightens the whole way (continuous motion so it never feels frozen)
-      if (skyLightRef.current) skyLightRef.current.style.opacity = p.toFixed(3);
+      if (skyLightRef.current) skyLightRef.current.style.opacity = veilAt(p).toFixed(3);
       // the whole stack drifts up gently across the pin (bloom stays put — moving a
       // 150px-blur layer each frame re-rasterizes the blur and causes scroll jank)
       if (stackRef.current) stackRef.current.style.transform = `translateY(${(18 - p * 44).toFixed(1)}px)`;
@@ -97,13 +98,13 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
       style={{ height: reduce ? undefined : '155vh', background: 'rgb(7,5,18)' }}
     >
       <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
-        {/* sky — a static dark base with a lighter dusk crossfaded over it by scroll */}
-        <div aria-hidden className="absolute inset-0" style={{ background: GRAD_DARK }} />
+        {/* sky — a watercolour plum sky with a night veil over it that thins by scroll */}
+        <WatercolorSky palette={PLUM} className="absolute inset-0" />
         <div
           ref={skyLightRef}
           aria-hidden
           className="absolute inset-0 will-change-[opacity]"
-          style={{ background: GRAD_LIGHT, opacity: reduce ? 0.5 : 0 }}
+          style={{ background: NIGHT_VEIL, opacity: reduce ? 0.4 : veilAt(0) }}
         />
 
         {/* starfield — each layer promoted to its own compositor layer so the sky
@@ -114,13 +115,6 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_B), transform: 'translateZ(0)', animation: reduce ? undefined : 'skyTwinkle 6.5s ease-in-out 1.2s infinite' }} />
         </div>
 
-        {/* soft violet bloom — static depth (not transformed on scroll, so its big
-            blur never re-rasterizes mid-scroll) */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-1/4 -right-1/4 w-[42rem] h-[42rem] rounded-full blur-[120px]"
-          style={{ background: 'radial-gradient(circle, rgba(122,88,190,0.32), transparent 70%)' }}
-        />
 
         <div ref={stackRef} className="mx-auto px-8 relative z-10 w-full max-w-3xl text-center will-change-transform">
           <h2

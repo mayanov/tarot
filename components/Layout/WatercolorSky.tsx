@@ -180,4 +180,15 @@ export const MIDNIGHT: SkyPalette = {
   glow: ['rgba(196,214,255,0.6)', 'rgba(206,190,255,0.45)'],
 };
 
+// plum: aubergine through berry to a rosy blush, with a few blue streaks — the
+// "calm space" band, warmer than the interlude's midnight
+export const PLUM: SkyPalette = {
+  ground: '#2a1638',
+  base: ['#160b24', '#2a1440', '#4a2160', '#7a3a78', '#b0688a'],
+  back: ['#140a22', '#2a1446', '#331a52', '#5c2a74', '#7d3a7c', '#3e3a7e'],
+  front: ['#4a2470', '#8a4a8e', '#c27a9c', '#e2a6b8', '#5a6ab0'],
+  bloom: '#f0d4e2',
+  glow: ['rgba(255,200,214,0.6)', 'rgba(180,170,255,0.45)'],
+};
+
 export default WatercolorSky;
