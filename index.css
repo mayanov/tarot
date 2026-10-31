@@ -422,7 +422,8 @@ html.lenis body {
   margin: 0;
 }
 .booking-cal .rdp-month_caption {
-  font-weight: 700;
+  font-family: theme('fontFamily.serif');
+  font-weight: 600;
   color: #2B2426;
   font-size: 1rem;
   padding-left: 0.6rem;
@@ -442,15 +443,17 @@ html.lenis body {
 }
 .booking-cal .rdp-button_previous:hover:not([disabled]),
 .booking-cal .rdp-button_next:hover:not([disabled]) {
-  background-color: #EAEAEA;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2040%2040%27%3E%3Cpath%20d%3D%27M20.5%203.2C30.6%202.6%2037.4%2010.4%2036.8%2020.8S29.2%2037.6%2019.4%2037.1S2.7%2028.9%203.3%2019.3S10.9%203.8%2020.5%203.2Z%27%20fill%3D%27%236B3FA0%27%20fill-opacity%3D%270.12%27/%3E%3Cpath%20d%3D%27M21%205.5C29.5%205.2%2034.8%2011.5%2034.4%2020.2%27%20fill%3D%27none%27%20stroke%3D%27%236B3FA0%27%20stroke-opacity%3D%270.37%27%20stroke-width%3D%271.2%27/%3E%3C/svg%3E") center / 100% 100% no-repeat;
 }
 .booking-cal .rdp-day_button {
   color: #2B2426;
   border: none;
   font-weight: 500;
 }
+/* days are numbers on the paper; hovering one lays a pale wash under it, and the
+   chosen day gets a drop of brand-purple paint (a hand-painted blob, not a square) */
 .booking-cal .rdp-day_button:hover:not([disabled]) {
-  background-color: #EAEAEA;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2040%2040%27%3E%3Cpath%20d%3D%27M20.5%203.2C30.6%202.6%2037.4%2010.4%2036.8%2020.8S29.2%2037.6%2019.4%2037.1S2.7%2028.9%203.3%2019.3S10.9%203.8%2020.5%203.2Z%27%20fill%3D%27%236B3FA0%27%20fill-opacity%3D%270.12%27/%3E%3Cpath%20d%3D%27M21%205.5C29.5%205.2%2034.8%2011.5%2034.4%2020.2%27%20fill%3D%27none%27%20stroke%3D%27%236B3FA0%27%20stroke-opacity%3D%270.37%27%20stroke-width%3D%271.2%27/%3E%3C/svg%3E") center / 100% 100% no-repeat;
   color: #2B2426;
 }
 .booking-cal .rdp-today:not(.rdp-selected) .rdp-day_button {
@@ -461,8 +464,8 @@ html.lenis body {
 .booking-cal .rdp-selected .rdp-day_button,
 .booking-cal .rdp-selected:hover .rdp-day_button,
 .booking-cal .rdp-selected:focus .rdp-day_button {
-  background-color: #2B2426 !important;
-  color: #FFFFFF !important;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2040%2040%27%3E%3Cpath%20d%3D%27M20.5%203.2C30.6%202.6%2037.4%2010.4%2036.8%2020.8S29.2%2037.6%2019.4%2037.1S2.7%2028.9%203.3%2019.3S10.9%203.8%2020.5%203.2Z%27%20fill%3D%27%236B3FA0%27%20fill-opacity%3D%270.92%27/%3E%3Cpath%20d%3D%27M21%205.5C29.5%205.2%2034.8%2011.5%2034.4%2020.2%27%20fill%3D%27none%27%20stroke%3D%27%236B3FA0%27%20stroke-opacity%3D%271%27%20stroke-width%3D%271.2%27/%3E%3C/svg%3E") center / 100% 100% no-repeat !important;
+  color: #FBF7EE !important;
   border: none !important;
   font-weight: 700;
 }

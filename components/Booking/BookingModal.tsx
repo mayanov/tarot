@@ -3,7 +3,8 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock, Copy } from 'lucide-react';
 import CelestialMark from '../UI/CelestialMark';
-import { PaintSwatch } from '../UI/ButtonInk';
+import { PaintSwatch, PencilFrame } from '../UI/ButtonInk';
+import PencilRule from '../UI/PencilRule';
 import { FaWhatsapp } from 'react-icons/fa';
 import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
 import { trackEvent, SERVICE_TRACK_NAME } from '../../services/analytics';
@@ -317,14 +318,20 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   // fields are lines to write on, ruled in pencil (.pencil-field), not boxes; the line
   // darkens to the brand purple while you write on it
   const field = 'pencil-field w-full bg-transparent px-1 pt-2 pb-2.5 font-elegant text-[17px] text-ink placeholder-ink/30 focus:outline-none';
-  const chip = (active: boolean) => `flex flex-col text-center rounded-lg border px-2 py-2.5 transition-colors ${active ? 'border-moon bg-moon/[0.07] text-moon' : 'border-ink/15 bg-white text-ink/75 hover:border-moon/40'}`;
+  // options are framed in pencil; the chosen one is painted over (put {chipInk(active)}
+  // as the first child)
+  const chip = (active: boolean) => `group/chip relative isolate flex flex-col text-center px-2 py-2.5 transition-colors ${active ? 'text-cream' : 'text-ink/75 hover:text-moon'}`;
+  const chipInk = (active: boolean) => active
+    ? <PaintSwatch className="text-moon" />
+    : <PencilFrame className="text-ink/35 transition-colors group-hover/chip:text-moon/70" />;
   // painted on the paper like the site's buttons: put {swatch} as the first child
   const primaryBtn = 'group/btn relative isolate inline-flex items-center gap-1.5 px-6 py-2.5 text-cream text-sm font-semibold disabled:opacity-40 disabled:pointer-events-none';
   const swatch = <PaintSwatch className="transition-colors duration-300 text-moon group-hover/btn:text-plum" />;
 
   // the bottom bar: running total on the left (once known), the next action on the right
   const bottomBar = (action: React.ReactNode) => (
-    <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-6 px-5 md:px-6 py-3.5 bg-paper/95 backdrop-blur-sm border-t border-ink/10 flex items-center justify-between gap-3">
+    <div className="sticky bottom-0 z-10 -mx-5 md:-mx-6 -mb-5 mt-6 px-5 md:px-6 py-3.5 bg-paper flex items-center justify-between gap-3">
+      <PencilRule weight="fine" className="absolute inset-x-0 top-0 text-ink/30" />
       <div className="min-w-0">
         {totalPrice && (
           <>
@@ -337,12 +344,17 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     </div>
   );
 
-  // one "label · value" line in a summary list
+  // one "label · value" line in a summary list, ruled off in pencil above (close the
+  // list with {rule})
+  const rule = <PencilRule weight="fine" className="text-ink/30" />;
   const row = (k: string, v: React.ReactNode) => (
-    <div className="flex items-start justify-between gap-4 py-2.5">
-      <span className="text-sm text-ink/55">{k}</span>
-      <span className="text-sm text-ink font-medium text-right break-words">{v}</span>
-    </div>
+    <>
+      {rule}
+      <div className="flex items-start justify-between gap-4 py-2.5">
+        <span className="text-sm text-ink/55">{k}</span>
+        <span className="text-sm text-ink font-medium text-right break-words">{v}</span>
+      </div>
+    </>
   );
 
   const copyAccount = () => {
@@ -354,15 +366,16 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   // Payment (Indonesian market): QRIS | Transfer Bank as two tabs
   const paymentPanel = () => !isIndonesian ? null : (
     <div>
-      <div className="flex rounded-lg bg-ink/[0.05] p-1 text-sm font-medium">
+      <div className="flex gap-6 text-sm font-medium">
         {([['qris', 'QRIS'], ['bank', t('Transfer Bank', 'Bank transfer')]] as const).map(([id, lbl]) => (
           <button
             key={id}
             type="button"
             onClick={() => setPayTab(id)}
-            className={`flex-1 rounded-md py-1.5 transition-colors ${payTab === id ? 'bg-white text-ink shadow-sm' : 'text-ink/55 hover:text-ink'}`}
+            className={`relative pb-1.5 transition-colors ${payTab === id ? 'text-ink' : 'text-ink/50 hover:text-ink'}`}
           >
             {lbl}
+            <PencilRule className={`absolute inset-x-0 bottom-0 transition-colors ${payTab === id ? 'text-moon' : 'text-transparent'}`} />
           </button>
         ))}
       </div>
@@ -376,12 +389,14 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           <span className="text-xs text-ink/55">{t('Scan dengan aplikasi bank atau e-wallet', 'Scan with any banking or e-wallet app')}</span>
         </div>
       ) : (
-        <div className="mt-4 flex items-center justify-between gap-4 rounded-lg border border-ink/10 bg-white px-4 py-3.5">
+        <div className="relative isolate mt-4 flex items-center justify-between gap-4 px-4 py-3.5">
+          <PencilFrame className="text-ink/30" />
           <div className="min-w-0">
             <div className="text-xs text-ink/55">{PAYMENT.bankName} · a.n. {PAYMENT.accountHolder}</div>
             <div className="mt-1 font-serif font-semibold text-lg text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
           </div>
-          <button type="button" onClick={copyAccount} className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink hover:border-moon hover:text-moon transition-colors">
+          <button type="button" onClick={copyAccount} className="group/copy relative isolate shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-ink hover:text-moon transition-colors">
+            <PencilFrame className="text-ink/35 transition-colors group-hover/copy:text-moon/70" />
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? t('Tersalin', 'Copied') : t('Salin', 'Copy')}
           </button>
@@ -417,31 +432,34 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
         {/* scroll only the content (data-lenis-prevent lets this scroll natively) */}
         <div className="relative max-h-[92vh] overflow-y-auto overscroll-contain" data-lenis-prevent>
-        {/* header */}
-        <div className="sticky top-0 z-10 bg-plum">
-          <div className="flex items-center justify-between gap-4 px-5 md:px-6 py-4">
+        {/* header — on the same paper as the form: the title in ink, and the steps as a
+            faint pencil line drawn over in purple as far as you've got */}
+        <div className="sticky top-0 z-10 bg-paper">
+          <div className="flex items-center justify-between gap-4 px-5 md:px-6 pt-4 pb-3">
             <div className="flex items-center gap-3 min-w-0">
               {(step === 1 || step === 2 || step === 3) && (
-                <button onClick={goBack} aria-label="Back" className="shrink-0 text-cream/75 hover:text-cream transition-colors">
+                <button onClick={goBack} aria-label="Back" className="shrink-0 text-ink/50 hover:text-ink transition-colors">
                   <ArrowLeft className="w-5 h-5" />
                 </button>
               )}
-              <div className="font-serif font-semibold text-cream text-[1.1rem] md:text-[1.2rem] leading-tight truncate">
+              <div className="font-serif font-semibold text-ink text-[1.2rem] md:text-[1.3rem] leading-tight truncate">
                 {step === 0 ? t('Pilih layanan', 'Choose a service') : (service?.name ?? t('Booking Sesi', 'Book a Session'))}
               </div>
             </div>
-            <button onClick={close} aria-label="Close" className="shrink-0 text-cream/75 hover:text-cream transition-colors">
+            <button onClick={close} aria-label="Close" className="shrink-0 text-ink/50 hover:text-ink transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
-          {/* stepper — which step, how many, and a thin line that fills */}
           {step < 4 && (
-            <div className="px-5 md:px-6 pb-3">
-              <div className="text-[12px] text-cream/70">
-                {t('Langkah', 'Step')} {cur + 1} {t('dari', 'of')} {seq.length} · <span className="text-cream">{stepLabels[step]}</span>
+            <div className="px-5 md:px-6 pb-2">
+              <div className="text-[12px] text-ink/50">
+                {t('Langkah', 'Step')} {cur + 1} {t('dari', 'of')} {seq.length} · <span className="font-elegant italic text-[14px] text-moon">{stepLabels[step]}</span>
               </div>
-              <div className="mt-2 h-[3px] rounded-full bg-cream/15 overflow-hidden">
-                <div className="h-full rounded-full bg-[#C9B8E8] transition-[width] duration-500" style={{ width: `${((cur + 1) / seq.length) * 100}%` }} />
+              <div className="relative mt-1.5">
+                <PencilRule collapse={false} weight="fine" className="text-ink/35" />
+                <div className="absolute inset-0 text-moon transition-[clip-path] duration-500" style={{ clipPath: `inset(0 ${100 - ((cur + 1) / seq.length) * 100}% 0 0)` }}>
+                  <PencilRule collapse={false} />
+                </div>
               </div>
             </div>
           )}
@@ -450,28 +468,32 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
         <div className="relative px-5 md:px-6 py-5">
           {/* STEP 0 — service: rows with the card's mark + starting price */}
           {step === 0 && (
-            <div className="-mx-2 divide-y divide-ink/10">
-              {services.map((s) => {
+            <div className="-mx-2">
+              {services.map((s, i) => {
                 const look = SERVICE_LOOK[s.id];
                 return (
+                  <React.Fragment key={s.id}>
+                  {i > 0 && <PencilRule weight="fine" className="text-ink/30" />}
                   <button
-                    key={s.id}
                     onClick={() => { pickService(s); setPkg(null); setTime(null); setDate(undefined); setStep(s.scheduled ? 1 : 2); }}
-                    className="group w-full flex items-center gap-4 text-left rounded-lg px-2 py-3.5 hover:bg-ink/[0.03] transition-colors"
+                    className="group w-full flex items-center gap-4 text-left px-2 py-3.5"
                   >
-                    <span className="shrink-0 grid place-items-center w-11 h-11 rounded-full text-cream" style={{ backgroundColor: look?.accent || '#39234E' }}>
-                      <CelestialMark name={look?.mark || 'star'} className="w-5" />
+                    {/* a drop of the card's colour, painted on */}
+                    <span className="relative isolate shrink-0 grid place-items-center w-11 h-11" style={{ color: look?.accent || '#39234E' }}>
+                      <PaintSwatch round />
+                      <CelestialMark name={look?.mark || 'star'} className="w-5 text-cream" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block font-serif font-semibold text-[1.05rem] text-ink leading-tight">{s.name}</span>
+                      <span className="block font-serif font-semibold text-[1.05rem] text-ink group-hover:text-moon transition-colors leading-tight">{s.name}</span>
                       <span className="block mt-1 text-[13px] text-ink/55 leading-snug">{s.meta}</span>
                     </span>
                     <span className="shrink-0 text-right">
                       <span className="block text-[11px] text-ink/45 leading-none">{s.packages?.length ? t('mulai', 'from') : ' '}</span>
                       <span className="block mt-1 font-serif font-semibold text-ink leading-none">{fromPrice(s)}</span>
                     </span>
-                    <ChevronRight className="w-4 h-4 text-ink/35 group-hover:text-ink group-hover:translate-x-0.5 transition-all shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-ink/35 group-hover:text-moon group-hover:translate-x-0.5 transition-all shrink-0" />
                   </button>
+                  </React.Fragment>
                 );
               })}
             </div>
@@ -494,7 +516,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 {/* 1. date */}
                 <div>
                   <span className={label}>{t('Tanggal', 'Date')}</span>
-                  <div className="booking-cal rounded-lg bg-white border border-ink/10 text-ink p-2 sm:p-3 flex items-center justify-center">
+                  <div className="booking-cal text-ink p-1 flex items-center justify-center">
                     <DayPicker
                       mode="single"
                       selected={date}
@@ -512,13 +534,14 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   {service?.packages && (
                     <div className="mb-5" style={{ opacity: date ? 1 : 0.45, transition: 'opacity 300ms ease' }}>
                       <span className={label}>{t('Durasi', 'Duration')}</span>
-                      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
+                      <div className="grid gap-3.5" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
                         {service.packages.map((p) => {
                           const [pName, ...pRest] = p.split(' · ');
                           return (
                             <button key={p} type="button" onClick={() => { setPkg(p); setTime(null); }} className={chip(pkg === p)}>
+                              {chipInk(pkg === p)}
                               <span className="text-[13px] font-medium leading-snug">{pName}</span>
-                              <span className="mt-0.5 text-[12px] leading-snug text-ink/50">{pRest.join(' · ')}</span>
+                              <span className={`mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-cream/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
                             </button>
                           );
                         })}
@@ -533,16 +556,17 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   ) : needsPackage && !pkg ? (
                     <p className="text-sm text-ink/55 py-2">{t('Pilih durasi dulu untuk melihat jam.', 'Choose a duration to see available times.')}</p>
                   ) : time ? (
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-moon bg-moon/[0.07] px-4 py-3">
-                      <span className="flex items-center gap-2 font-serif font-semibold text-lg text-moon tabular-nums">
+                    <div className="relative isolate flex items-center justify-between gap-3 px-4 py-3">
+                      <PaintSwatch className="text-moon" />
+                      <span className="flex items-center gap-2 font-serif font-semibold text-lg text-cream tabular-nums">
                         {time} – {addMinutes(time, durationMin || 30)}
                       </span>
-                      <button type="button" onClick={() => setTime(null)} className="text-xs text-ink/60 hover:text-ink underline underline-offset-2">{t('Ubah', 'Change')}</button>
+                      <button type="button" onClick={() => setTime(null)} className="text-xs text-cream/75 hover:text-cream underline underline-offset-2">{t('Ubah', 'Change')}</button>
                     </div>
                   ) : visibleSlots.length === 0 ? (
                     <p className="text-sm text-ink/55 py-2">{t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}</p>
                   ) : (
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-x-3.5 gap-y-3">
                       {visibleSlots.map((slot) => {
                         // Block this start if the session would run past closing time or overlaps a taken slot.
                         const span = slotSpan(slot, durationMin || 30);
@@ -552,8 +576,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                             key={slot}
                             disabled={isTaken}
                             onClick={() => setTime(slot)}
-                            className={`py-2 rounded-lg text-sm font-medium border transition-colors tabular-nums ${isTaken ? 'border-transparent text-ink/25 line-through cursor-not-allowed' : 'border-ink/15 bg-white text-ink hover:border-moon hover:text-moon'}`}
+                            className={`group/slot relative isolate py-2 text-sm font-medium transition-colors tabular-nums ${isTaken ? 'text-ink/25 line-through cursor-not-allowed' : 'text-ink hover:text-moon'}`}
                           >
+                            {!isTaken && <PencilFrame className="text-ink/20 transition-colors group-hover/slot:text-moon/70" />}
                             {slot}
                           </button>
                         );
@@ -586,13 +611,14 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 {service?.packages && !scheduled && (
                   <div>
                     <span className={label}>{t('Paket', 'Package')}</span>
-                    <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
+                    <div className="grid gap-3.5" style={{ gridTemplateColumns: `repeat(${service.packages.length}, minmax(0, 1fr))` }}>
                       {service.packages.map((p) => {
                         const [pName, ...pRest] = p.split(' · ');
                         return (
                           <button key={p} type="button" onClick={() => setPkg(p)} className={chip(pkg === p)}>
+                            {chipInk(pkg === p)}
                             <span className="text-[13px] font-medium leading-snug">{pName}</span>
-                            <span className="mt-0.5 text-[12px] leading-snug text-ink/50">{pRest.join(' · ')}</span>
+                            <span className={`mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-cream/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
                           </button>
                         );
                       })}
@@ -649,7 +675,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {error && <div className="mb-4 text-sm text-ink bg-ink/[0.05] rounded-lg px-4 py-3">{error}</div>}
 
               <h3 className="font-serif font-semibold text-ink text-lg">{t('Ringkasan', 'Summary')}</h3>
-              <div className="mt-2 divide-y divide-ink/10 border-y border-ink/10">
+              <div className="mt-2">
                 {row(t('Layanan', 'Service'), service?.name)}
                 {pkg && row(scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package'), pkg.split(' · ')[0])}
                 {scheduled && date && row(t('Jadwal', 'Schedule'), `${fmtLongDate(toISODate(date), isIndonesian ? 'id' : 'en')} · ${time ? timeRange(time) : ''}`)}
@@ -657,6 +683,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 {row(t('Tanggal lahir', 'Date of birth'), fmtLongDate(dob, isIndonesian ? 'id' : 'en'))}
                 {row('WhatsApp', whatsapp)}
                 {email.trim() && row('Email', email)}
+                {rule}
               </div>
 
               {isIndonesian && (
@@ -681,22 +708,25 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           {/* STEP 4 — done */}
           {step === 4 && (
             <div className="text-center py-4">
-              <div className="mx-auto w-14 h-14 rounded-full bg-moon/10 grid place-items-center text-moon mb-4">
-                <Check className="w-7 h-7" />
+              <div className="relative isolate mx-auto w-14 h-14 grid place-items-center text-moon mb-4">
+                <PaintSwatch round />
+                <Check className="w-7 h-7 text-cream" />
               </div>
               <h3 className="font-serif font-semibold text-2xl text-ink">{t('Booking diterima!', 'You’re booked!')}</h3>
               <p className="mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
                 {t('Terima kasih, ', 'Thank you, ')}{name || t('kamu', 'friend')}. {t('Aku akan menghubungimu via WhatsApp', 'I’ll reach out on WhatsApp')} ({whatsapp}) {t('untuk konfirmasi.', 'to confirm.')}
               </p>
 
-              <div className="mt-5 text-left divide-y divide-ink/10 border-y border-ink/10">
+              <div className="mt-5 text-left">
                 {row(t('Layanan', 'Service'), service?.name)}
                 {pkg && row(scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package'), pkg.split(' · ')[0])}
                 {scheduled && date && row(t('Jadwal', 'Schedule'), `${fmtLongDate(toISODate(date), isIndonesian ? 'id' : 'en')} · ${time ? timeRange(time) : ''}`)}
+                {rule}
                 <div className="flex items-center justify-between gap-4 py-3">
                   <span className="text-sm font-medium text-ink">Total</span>
                   <span className="font-serif font-semibold text-lg text-ink">{totalPrice || '—'}</span>
                 </div>
+                {rule}
               </div>
 
               {isIndonesian && showPay && <div className="mt-5 text-left">{paymentPanel()}</div>}
