@@ -144,6 +144,12 @@ html.lenis body {
   to { transform: translateY(115%); }
 }
 /* the menu's moon rises and turns into place behind the index */
+/* FAQ answer panel: the newly chosen answer settles in */
+@keyframes faqIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
 @keyframes moonRise {
   from { opacity: 0; transform: translateY(7%) rotate(-12deg) scale(0.96); }
   to   { opacity: 1; transform: none; }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, ArrowUpRight } from 'lucide-react';
+import { Plus, ArrowUpRight, ArrowRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 
 interface FAQProps {
@@ -120,7 +120,21 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   const showAll = activeCat === allLabel || !faqs.some((f) => f.cat === activeCat);
   const filtered = showAll ? faqs : faqs.filter((f) => f.cat === activeCat);
 
-  const toggleFAQ = (key: string) => setOpenKey((cur) => (cur === key ? null : key));
+  // the answer shown in the desktop panel: the chosen question, else the first one listed
+  const current = filtered.find((f) => f.question === openKey) ?? filtered[0];
+  const currentNo = current ? filtered.indexOf(current) + 1 : 0;
+
+  // phones: an accordion (tap again to close). Desktop: a question is picked for the
+  // panel on the right, so tapping it again keeps it.
+  const toggleFAQ = (key: string) => {
+    if (window.matchMedia('(min-width: 1024px)').matches) setOpenKey(key);
+    else setOpenKey((cur) => (cur === key ? null : key));
+  };
+  const pickCat = (cat: string) => {
+    setActiveCat(cat);
+    const list = cat === allLabel ? faqs : faqs.filter((f) => f.cat === cat);
+    setOpenKey(list[0]?.question ?? null);
+  };
 
   const wa = `https://wa.me/6287786280310?text=${encodeURIComponent(isIndonesian ? 'Halo kak, aku mau tanya soal sesi tarot.' : "Hi! I have a question about a tarot reading.")}`;
 
@@ -128,12 +142,12 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
     // A typographic index on the page's own paper (no panel, no divider): the
     // questions are set as large serif lines, filtered by an inline sentence, and the
     // section closes on a direct WhatsApp question instead of the last item.
-    // Desktop: the title, filter and WhatsApp question hold the left column (title
-    // pinned while the list scrolls); the questions and answers run down the right.
+    // Desktop: the questions run down the left and the chosen one's answer sits on the
+    // right (pinned while the list scrolls); phones keep the accordion.
     <section id="faq" className="relative text-ink pt-16 md:pt-24 pb-24 md:pb-36">
-      <div className="mx-auto px-8 lg:grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16 xl:gap-x-24">
-        <FadeIn dir="blur" duration={1.15} className="lg:col-start-1 lg:row-start-1 lg:sticky lg:top-28 lg:self-start">
-          <div>
+      <div className="mx-auto px-8">
+        <FadeIn dir="blur" duration={1.15}>
+          <div className="text-center">
             <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
               {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
             </h2>
@@ -146,7 +160,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   <React.Fragment key={cat}>
                     {ci > 0 && <span aria-hidden className="mx-1.5 text-ink/25">·</span>}
                     <button
-                      onClick={() => setActiveCat(cat)}
+                      onClick={() => pickCat(cat)}
                       aria-pressed={active}
                       className={`font-elegant text-[1.1rem] md:text-[1.2rem] transition-colors duration-300 underline-offset-[6px] decoration-1 ${active ? 'italic text-moon underline decoration-moon' : 'text-ink/70 hover:text-moon'}`}
                     >
@@ -159,8 +173,9 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           </div>
         </FadeIn>
 
+        <div className="mt-10 md:mt-12 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24 lg:items-start">
         {/* the index */}
-        <ol className="mt-10 md:mt-12 lg:mt-0 lg:col-start-2 lg:row-start-1 lg:row-span-2">
+        <ol>
           {filtered.map((faq, index) => {
             const open = openKey === faq.question;
             return (
@@ -178,10 +193,12 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                       {faq.question}
                     </span>
                     {/* a bare + that turns into × when open — no container */}
-                    <Plus aria-hidden className={`self-center w-5 h-5 transition-[transform,color] duration-500 ${open ? 'rotate-45 text-moon' : 'text-ink/40 group-hover:text-moon'}`} strokeWidth={1.5} />
+                    <Plus aria-hidden className={`lg:hidden self-center w-5 h-5 transition-[transform,color] duration-500 ${open ? 'rotate-45 text-moon' : 'text-ink/40 group-hover:text-moon'}`} strokeWidth={1.5} />
+                    {/* desktop: an arrow pointing to the answer on the right */}
+                    <ArrowRight aria-hidden className={`hidden lg:block self-center w-5 h-5 transition-[transform,opacity,color] duration-500 ${current === faq ? 'opacity-100 text-moon' : 'opacity-0 -translate-x-2 text-ink/40 group-hover:opacity-100 group-hover:translate-x-0'}`} strokeWidth={1.5} />
                   </button>
 
-                  <div className={`grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                  <div className={`lg:hidden grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                     <div className="overflow-hidden">
                       {/* the answer lines up under the question text, in a narrower column */}
                       <p className="print-body pb-6 md:pb-7 pl-[2.75rem] md:pl-[4rem] pr-10 max-w-3xl text-ink/65 text-[0.95rem] md:text-base leading-[1.75] whitespace-pre-line font-light">
@@ -195,9 +212,25 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           })}
         </ol>
 
+        {/* desktop: the chosen question's answer */}
+        <aside aria-live="polite" className="hidden lg:block lg:sticky lg:top-28 border-t border-ink/10 pt-6">
+          {current && (
+            <div key={current.question} className="animate-[faqIn_500ms_cubic-bezier(0.16,1,0.3,1)]">
+              <p className="font-elegant italic text-sm tabular-nums text-moon">{String(currentNo).padStart(2, '0')}</p>
+              <h3 className="print-text mt-2 font-elegant font-semibold text-ink text-[1.6rem] xl:text-[1.9rem] leading-[1.2] tracking-[-0.015em]">
+                {current.question}
+              </h3>
+              <p className="print-body mt-5 text-ink/65 text-base leading-[1.8] whitespace-pre-line font-light">
+                {current.answer}
+              </p>
+            </div>
+          )}
+        </aside>
+        </div>
+
         {/* closing — ask directly */}
-        <FadeIn dir="up" className="lg:col-start-1 lg:row-start-2 lg:self-end">
-          <div className="mt-16 md:mt-20">
+        <FadeIn dir="up">
+          <div className="mt-16 md:mt-20 text-center">
             <p className="print-text font-elegant italic text-ink/60 text-xl md:text-2xl">
               {isIndonesian ? 'Masih penasaran?' : 'Still curious?'}
             </p>
