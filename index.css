@@ -145,6 +145,8 @@ html.lenis body {
 }
 /* the menu's moon rises and turns into place behind the index */
 /* FAQ answer panel: the newly chosen answer settles in */
+/* a painted sky fading in once its bitmap is ready */
+@keyframes skyFadeIn {from{opacity:0}to{opacity:1}}
 @keyframes faqIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }

@@ -1,14 +1,13 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 // A sky painted in watercolour rather than photographed: a graded wash, long
 // wet-in-wet streaks laid across it like cloud (edges bled and dried darker), pale
 // backruns, granulation and the paper's tooth, and a few dots of white gouache.
 //
-// Performance: the painting is built as SVG *text* and shown through <img>, so the
-// browser rasterises its heavy noise filters once into a bitmap. Everything that
-// moves afterwards (the slow drift, the breathing glow, twinkling stars, crossfades
-// between skies) is a plain transform/opacity on those bitmaps — compositor-only,
-// so scrolling stays smooth.
+// Performance: the painting is built as SVG text and drawn once, at idle time, into a
+// JPEG bitmap. Everything that moves afterwards (the slow drift, twinkling stars,
+// crossfades between skies) is a plain transform/opacity on that one bitmap —
+// compositor-only, and paused while the sky is off screen — so scrolling stays smooth.
 
 const W = 1600, H = 640;
 
@@ -69,13 +68,27 @@ const streaks = (list: Streak[], colours: string[]) => list.map(([cx, cy, rx, ry
 const svg = (body: string) =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice">${body}</svg>`)}`;
 
-// the back sheet: graded wash + broad streaks + granulation + paper tooth
-const paintBack = (p: SkyPalette) => svg(`
+// the whole painting in one sheet: graded wash, broad streaks, the glow, thin cloud
+// streaks and backruns, then granulation and the paper's tooth over everything
+const paintSvg = (p: SkyPalette) => svg(`
   <defs>
     <linearGradient id="base" x1="0" y1="0" x2="0.15" y2="1">
       ${[0, 0.3, 0.55, 0.78, 1].map((o, i) => `<stop offset="${o}" stop-color="${p.base[i]}"/>`).join('')}
     </linearGradient>
+    <radialGradient id="g1" cx="0.38" cy="0.82" r="0.6"><stop offset="0" stop-color="${p.glow[0]}"/><stop offset="0.7" stop-color="${p.glow[0]}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="g2" cx="0.78" cy="0.7" r="0.45"><stop offset="0" stop-color="${p.glow[1]}"/><stop offset="0.7" stop-color="${p.glow[1]}" stop-opacity="0"/></radialGradient>
     ${washFilter('wash', 9, 7, 120)}
+    ${washFilter('wash2', 5, 19, 90)}
+    <filter id="bloom" x="-50%" y="-80%" width="200%" height="260%">
+      <feGaussianBlur stdDeviation="9" result="soft"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="4" seed="21" result="n"/>
+      <feDisplacementMap in="soft" in2="n" scale="55" xChannelSelector="R" yChannelSelector="G" result="b"/>
+      <feMorphology in="b" operator="erode" radius="3" result="i"/>
+      <feComposite in="b" in2="i" operator="out" result="edge"/>
+      <feFlood flood-color="#2a1850" flood-opacity="0.45"/>
+      <feComposite in2="edge" operator="in" result="edgeInk"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="edgeInk"/></feMerge>
+    </filter>
     <filter id="grain" x="0" y="0" width="100%" height="100%">
       <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" seed="3"/>
       <feColorMatrix type="matrix" values="0 0 0 0 0.18  0 0 0 0 0.1  0 0 0 0 0.3  0 0 0 -1.6 0.95"/>
@@ -87,64 +100,89 @@ const paintBack = (p: SkyPalette) => svg(`
   </defs>
   <rect width="${W}" height="${H}" fill="url(#base)"/>
   <g filter="url(#wash)">${streaks(BACK, p.back)}</g>
+  <g opacity="0.4"><rect width="${W}" height="${H}" fill="url(#g1)"/><rect width="${W}" height="${H}" fill="url(#g2)"/></g>
+  <g filter="url(#wash2)">${streaks(FRONT, p.front)}</g>
+  <g filter="url(#bloom)" fill="${p.bloom}" opacity="0.32">
+    ${BLOOMS.map(([cx, cy, rx, ry]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`).join('')}
+  </g>
   <rect width="${W}" height="${H}" filter="url(#grain)" opacity="0.5" style="mix-blend-mode:multiply"/>
   <rect width="${W}" height="${H}" filter="url(#paper)" opacity="0.42" style="mix-blend-mode:multiply"/>`);
 
-// the front sheet: thin cloud streaks and backruns on a transparent ground
-const paintFront = (p: SkyPalette) => svg(`
-  <defs>
-    ${washFilter('wash', 5, 19, 90)}
-    <filter id="bloom" x="-50%" y="-80%" width="200%" height="260%">
-      <feGaussianBlur stdDeviation="9" result="soft"/>
-      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="4" seed="21" result="n"/>
-      <feDisplacementMap in="soft" in2="n" scale="55" xChannelSelector="R" yChannelSelector="G" result="b"/>
-      <feMorphology in="b" operator="erode" radius="3" result="i"/>
-      <feComposite in="b" in2="i" operator="out" result="edge"/>
-      <feFlood flood-color="#2a1850" flood-opacity="0.45"/>
-      <feComposite in2="edge" operator="in" result="edgeInk"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="edgeInk"/></feMerge>
-    </filter>
-  </defs>
-  <g filter="url(#wash)">${streaks(FRONT, p.front)}</g>
-  <g filter="url(#bloom)" fill="${p.bloom}" opacity="0.32">
-    ${BLOOMS.map(([cx, cy, rx, ry]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`).join('')}
-  </g>`);
-
-// each palette is painted once per page load, however many times it's shown
-const painted = new Map<SkyPalette, { back: string; front: string }>();
-const paint = (p: SkyPalette) => {
-  let v = painted.get(p);
-  if (!v) { v = { back: paintBack(p), front: paintFront(p) }; painted.set(p, v); }
+// Each palette is painted once per page load into a plain JPEG bitmap (at 1.5× the
+// sheet), queued for idle time so the heavy filters never run during a scroll. Until
+// it's ready the sky shows its flat ground colour, then fades the painting in.
+const SCALE = 1.5;
+const bitmaps = new Map<SkyPalette, Promise<string>>();
+let queue: Promise<unknown> = Promise.resolve();
+const idle = () => new Promise<void>((r) => {
+  const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
+  if (ric) ric(() => r(), { timeout: 1500 }); else setTimeout(r, 60);
+});
+const bitmap = (p: SkyPalette) => {
+  let v = bitmaps.get(p);
+  if (!v) {
+    v = queue.then(idle).then(() => new Promise<string>((resolve) => {
+      const src = paintSvg(p);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const c = document.createElement('canvas');
+          c.width = W * SCALE; c.height = H * SCALE;
+          c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
+          c.toBlob((b) => resolve(b ? URL.createObjectURL(b) : src), 'image/jpeg', 0.9);
+        } catch { resolve(src); }
+      };
+      img.onerror = () => resolve(src);
+      img.src = src;
+    }));
+    queue = v;
+    bitmaps.set(p, v);
+  }
   return v;
 };
 
-const sheet = 'absolute -inset-[6%] w-[112%] h-[112%] max-w-none object-cover select-none';
-
 const WatercolorSky: React.FC<{ palette?: SkyPalette; stars?: boolean; className?: string; style?: React.CSSProperties; skyRef?: React.Ref<HTMLDivElement> }> = ({ palette: p = DUSK, stars = true, className = '', style, skyRef }) => {
-  const { back, front } = paint(p);
+  const [src, setSrc] = useState<string>();
+  const [onScreen, setOnScreen] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let live = true;
+    bitmap(p).then((u) => { if (live) setSrc(u); });
+    return () => { live = false; };
+  }, [p]);
+  // drift and twinkle only while the sky is on screen
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setOnScreen(e.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const play = { animationPlayState: onScreen ? 'running' : 'paused' } as const;
   return (
     <div ref={skyRef} aria-hidden className={`pointer-events-none isolate overflow-hidden ${className}`} style={{ background: p.ground, ...style }}>
-      {/* the broad wash, drifting one way… */}
-      <img src={back} alt="" decoding="async" draggable={false} className={`${sheet} motion-safe:animate-[nebulaDrift_48s_ease-in-out_infinite]`} />
-      {/* …the glow low in the sky, breathing… */}
-      <div
-        className="absolute -inset-[10%] motion-safe:animate-[nebulaDrift_30s_ease-in-out_infinite_reverse]"
-        style={{ background: `radial-gradient(60% 45% at 38% 82%, ${p.glow[0]}, transparent 70%), radial-gradient(45% 40% at 78% 70%, ${p.glow[1]}, transparent 70%)`, opacity: 0.4 }}
-      />
-      {/* …and the thin cloud streaks the other way */}
-      <img src={front} alt="" decoding="async" draggable={false} className={`${sheet} motion-safe:animate-[nebulaDrift_36s_ease-in-out_infinite_reverse]`} />
-      {/* gouache stars, twinkling (opacity only) */}
-      {stars && STARS.map(([x, y, s], i) => (
-        <span
-          key={i}
-          className="absolute rounded-full motion-safe:animate-[starPulse_var(--d)_ease-in-out_infinite]"
-          style={{
-            left: `${x}%`, top: `${y}%`, width: s, height: s,
-            background: 'radial-gradient(circle, rgba(248,242,255,0.95) 0%, rgba(248,242,255,0.5) 45%, transparent 75%)',
-            '--d': `${4 + (i % 5) * 1.3}s`, animationDelay: `${(i * 0.7) % 5}s`,
-          } as React.CSSProperties}
-        />
-      ))}
+      <div ref={boxRef} className="absolute inset-0">
+        {/* the painting, drifting very slowly so the sky feels alive */}
+        {src && (
+          <img
+            src={src} alt="" draggable={false}
+            className="absolute -inset-[6%] w-[112%] h-[112%] max-w-none object-cover select-none animate-[skyFadeIn_900ms_ease-out_both] motion-safe:[animation:skyFadeIn_900ms_ease-out_both,nebulaDrift_48s_ease-in-out_infinite]"
+            style={play}
+          />
+        )}
+        {/* gouache stars, twinkling (opacity only) */}
+        {stars && STARS.map(([x, y, s], i) => (
+          <span
+            key={i}
+            className="absolute rounded-full motion-safe:animate-[starPulse_var(--d)_ease-in-out_infinite]"
+            style={{
+              left: `${x}%`, top: `${y}%`, width: s, height: s,
+              background: 'radial-gradient(circle, rgba(248,242,255,0.95) 0%, rgba(248,242,255,0.5) 45%, transparent 75%)',
+              '--d': `${4 + (i % 5) * 1.3}s`, animationDelay: `${(i * 0.7) % 5}s`, ...play,
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
     </div>
   );
 };
