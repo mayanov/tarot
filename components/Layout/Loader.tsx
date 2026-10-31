@@ -34,72 +34,23 @@ const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 
 // One moon face with its shadow parked at `offset` (0 = new, 104 = full). Defined
 // outside Loader so re-renders don't remount it (that would skip the shadow's slide).
-const MOON_IMG = `${import.meta.env.BASE_URL}moon.jpg`;
-// The moon is DRAWN, not photographed: light pencil on the twilight — a wobbly double
-// outline, a few sketched maria and craters, and the night side hatched in. Lines use
-// non-scaling strokes so the tiny row moons and the big full moon share one line weight.
-const PENCIL = '#efe4f2';
-const MARIA = [
-  'M30 30 C38 24 50 27 52 35 C55 43 46 49 38 47 C30 45 25 37 30 30 Z',
-  'M56 50 C63 45 73 48 74 56 C75 64 66 68 59 65 C53 62 51 55 56 50 Z',
-  'M34 58 C39 55 45 58 45 63 C45 68 39 70 35 67 C31 64 31 60 34 58 Z',
-];
-const CRATERS: [number, number, number][] = [[64, 30, 4], [45, 76, 3.2], [24, 50, 2.4], [70, 72, 2.2]];
-const Face: React.FC<{ offset: number; shadowStyle?: React.CSSProperties }> = ({ offset, shadowStyle }) => {
-  const id = React.useId().replace(/:/g, '');
-  const line = { fill: 'none', stroke: PENCIL, strokeLinecap: 'round' as const, vectorEffect: 'non-scaling-stroke' as const };
-  return (
-    <>
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" aria-hidden>
-        <defs>
-          {/* pencil: a slight hand wobble, then grain that breaks the strokes up */}
-          <filter id={`${id}p`} x="-10%" y="-10%" width="120%" height="120%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="4" result="w" />
-            <feDisplacementMap in="SourceGraphic" in2="w" scale="2.4" xChannelSelector="R" yChannelSelector="G" result="d" />
-            <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="9" result="g" />
-            <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.8 1.55" result="ga" />
-            <feComposite in="d" in2="ga" operator="in" />
-          </filter>
-          <pattern id={`${id}h`} width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
-            <line x1="0" y1="0" x2="0" y2="5" {...line} strokeWidth="0.8" strokeOpacity="0.6" />
-          </pattern>
-        </defs>
-        <g filter={`url(#${id}p)`}>
-          {/* the lit face: just a breath of paper-white */}
-          <circle cx="50" cy="50" r="46" fill={PENCIL} fillOpacity="0.2" />
-          {MARIA.map((d, i) => (
-            <path key={i} d={d} fill={`url(#${id}h)`} {...line} strokeWidth="0.6" strokeOpacity="0.45" style={{ fill: `url(#${id}h)` }} />
-          ))}
-          {CRATERS.map(([cx, cy, r], i) => (
-            <circle key={i} cx={cx} cy={cy} r={r} {...line} strokeWidth="0.6" strokeOpacity="0.5" />
-          ))}
-        </g>
-      </svg>
-      {/* the night side: the sky itself, cross-hatched in pencil */}
-      <div className="absolute -inset-px rounded-full overflow-hidden" style={{ transform: `translateX(${offset}%)`, ...shadowStyle }}>
-        <div className="absolute inset-0" style={{ background: '#15143e' }} />
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" aria-hidden>
-          <defs>
-            <pattern id={`${id}x`} width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-50)">
-              <line x1="0" y1="0" x2="0" y2="7" {...line} strokeWidth="0.7" strokeOpacity="0.4" />
-            </pattern>
-          </defs>
-          <g filter={`url(#${id}p)`}>
-            <rect width="100" height="100" fill={`url(#${id}h)`} />
-            <rect width="100" height="100" fill={`url(#${id}x)`} />
-          </g>
-        </svg>
-      </div>
-      {/* the outline, drawn twice like a sketch that went round more than once */}
-      <svg className="pointer-events-none absolute inset-0 w-full h-full" viewBox="0 0 100 100" aria-hidden>
-        <g filter={`url(#${id}p)`}>
-          <circle cx="50" cy="50" r="45.5" {...line} strokeWidth="1.1" strokeOpacity="0.9" />
-          <circle cx="50.8" cy="49.4" r="45.8" {...line} strokeWidth="0.7" strokeOpacity="0.4" />
-        </g>
-      </svg>
-    </>
-  );
-};
+const MOON_IMG = `${import.meta.env.BASE_URL}moon-sketch.webp`;
+const NIGHT_IMG = `${import.meta.env.BASE_URL}moon-night.webp`;
+// The moon is DRAWN: a light-pencil rendering of the moon photo (hatched tone, a loose
+// sketched rim — see moon-sketch.webp), on the twilight. The night side is the sky,
+// lightly hatched over (moon-night.webp); it slides across to set the phase, while
+// the hatching inside it stays put on the paper.
+// At the row's tiny size the hatching averages out faint, so small moons stack the
+// drawing (`layers`) to keep the same weight of pencil as the big one.
+const Face: React.FC<{ offset: number; shadowStyle?: React.CSSProperties; layers?: number }> = ({ offset, shadowStyle, layers = 1 }) => (
+  <>
+    {Array.from({ length: layers }, (_, i) => <img key={i} src={MOON_IMG} alt="" className="absolute inset-0 w-full h-full" draggable={false} />)}
+    <div className="absolute -inset-px rounded-full overflow-hidden" style={{ transform: `translateX(${offset}%)`, filter: 'blur(0.6px)', ...shadowStyle }}>
+      <div className="absolute inset-0" style={{ background: '#1c1c50' }} />
+      <img src={NIGHT_IMG} alt="" className="absolute inset-px w-[calc(100%-2px)] h-[calc(100%-2px)]" style={{ transform: `translateX(${-offset}%)`, transition: shadowStyle?.transition }} draggable={false} />
+    </div>
+  </>
+);
 
 const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -197,6 +148,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
       if (img.complete && img.naturalWidth) safe(task)();
     };
     decode(MOON_IMG, 'moon');
+    new Image().src = NIGHT_IMG;
     // the page itself (scripts, styles, images in the document)
     if (document.readyState === 'complete') safe('page')();
     else window.addEventListener('load', safe('page'), { once: true });
@@ -334,7 +286,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
               >
                 {/* a real moon photo, waxing from new to its own phase as its share fills
                     (waning moons are mirrored so their lit side faces the other way) */}
-                <Face offset={ph.p * fill * 104} />
+                <Face offset={ph.p * fill * 104} layers={3} />
               </div>
             );
           })}
