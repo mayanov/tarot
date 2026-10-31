@@ -36,8 +36,8 @@ const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 // outside Loader so re-renders don't remount it (that would skip the shadow's slide).
 const MOON_IMG = `${import.meta.env.BASE_URL}moon-sketch.webp`;
 const NIGHT_IMG = `${import.meta.env.BASE_URL}moon-night.webp`;
-// The moon is DRAWN: a light-pencil rendering of the moon photo (hatched tone, a loose
-// sketched rim — see moon-sketch.webp), on the twilight. The night side is the sky,
+// The moon is DRAWN: cream pencil on dark paper, made from the moon photo (smudged tone,
+// loose outlines of the maria, a sketched rim — scripts/sketch_moon.py). The night side is the sky,
 // lightly hatched over (moon-night.webp); it slides across to set the phase, while
 // the hatching inside it stays put on the paper.
 // At the row's tiny size the hatching averages out faint, so small moons stack the
@@ -286,7 +286,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
               >
                 {/* a real moon photo, waxing from new to its own phase as its share fills
                     (waning moons are mirrored so their lit side faces the other way) */}
-                <Face offset={ph.p * fill * 104} layers={3} />
+                <Face offset={ph.p * fill * 104} layers={2} />
               </div>
             );
           })}
