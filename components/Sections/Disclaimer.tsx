@@ -1,6 +1,7 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
 import CelestialMark from '../UI/CelestialMark';
+import WatercolorWash from '../UI/WatercolorWash';
 
 
 interface DisclaimerProps {
@@ -47,16 +48,15 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
 
     return (
         // Sits right under the pricelist (rendered by Services), so it's read before
-        // booking. Printed fine print, lifted just enough to read as important: a faint
-        // lilac wash and purple border, one large very faint star in the corner, the
+        // booking. Printed fine print, lifted just enough to read as important: a pale
+        // watercolour wash (no ruled box), one large very faint star in the corner, the
         // two hard rules as stamped labels, the notes as running text in two columns.
         <section id="disclaimer" className="mx-auto px-4 md:px-8 pt-8 md:pt-12 pb-20 md:pb-28">
             <FadeIn>
-                <div className="relative isolate overflow-hidden rounded-lg px-6 py-8 md:px-12 md:py-11">
-                    {/* the printed box — its rule and wash on their own layer, so the ink wear
-                        doesn't stack on the text inside */}
-                    <div aria-hidden className="print-text pointer-events-none absolute inset-0 -z-10 rounded-lg border-[1.5px] border-moon/60 bg-moon/[0.07]" />
-                    <CelestialMark name="sparkle" className="print-ink pointer-events-none absolute -right-7 -top-7 -z-10 w-40 md:w-52 text-moon/[0.11]" />
+                <div className="relative isolate px-6 py-9 md:px-12 md:py-12">
+                    {/* a hand-painted watercolour wash behind the notes instead of a ruled box */}
+                    <WatercolorWash className="-z-10" />
+                    <CelestialMark name="sparkle" className="print-ink pointer-events-none absolute -right-2 -top-5 -z-10 w-36 md:w-48 text-moon/[0.11]" />
 
                     <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pb-6 border-b border-moon/30">
                         {/* the title carries the weight: large, in the brand purple */}
