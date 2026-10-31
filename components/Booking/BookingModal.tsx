@@ -3,7 +3,7 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock, Copy } from 'lucide-react';
 import CelestialMark from '../UI/CelestialMark';
-import { PaintSwatch, PencilFrame } from '../UI/ButtonInk';
+import { PaintSwatch, PencilFrame, MarkerFrame } from '../UI/ButtonInk';
 import PencilRule from '../UI/PencilRule';
 import { FaWhatsapp } from 'react-icons/fa';
 import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
@@ -325,12 +325,12 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   // fields are lines to write on, ruled in pencil (.pencil-field), not boxes; the line
   // darkens to the brand purple while you write on it
   const field = 'pencil-field w-full bg-transparent px-1 pt-2 pb-2.5 font-elegant text-[17px] text-ink placeholder-ink/30 focus:outline-none';
-  // options are framed in pencil; the chosen one is painted over (put {chipInk(active)}
+  // options are boxed in marker; the chosen one is painted over (put {chipInk(active)}
   // as the first child)
   const chip = (active: boolean) => `group/chip relative isolate flex flex-col text-center px-2 py-2.5 transition-colors ${active ? 'text-cream' : 'text-ink/75 hover:text-moon'}`;
   const chipInk = (active: boolean) => active
     ? <PaintSwatch className="text-moon" />
-    : <PencilFrame className="text-ink/35 transition-colors group-hover/chip:text-moon/70" />;
+    : <MarkerFrame className="text-ink/45 transition-colors group-hover/chip:text-moon/80" />;
   // painted on the paper like the site's buttons: put {swatch} as the first child
   const primaryBtn = 'group/btn relative isolate inline-flex items-center gap-1.5 px-6 py-2.5 text-cream text-sm font-semibold disabled:opacity-40 disabled:pointer-events-none';
   const swatch = <PaintSwatch className="transition-colors duration-300 text-moon group-hover/btn:text-plum" />;
@@ -403,7 +403,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
             <div className="mt-1 font-serif font-semibold text-lg text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
           </div>
           <button type="button" onClick={copyAccount} className="group/copy relative isolate shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-ink hover:text-moon transition-colors">
-            <PencilFrame className="text-ink/35 transition-colors group-hover/copy:text-moon/70" />
+            <MarkerFrame className="text-ink/45 transition-colors group-hover/copy:text-moon/80" />
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? t('Tersalin', 'Copied') : t('Salin', 'Copy')}
           </button>
@@ -585,7 +585,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                             onClick={() => setTime(slot)}
                             className={`group/slot relative isolate py-2 text-sm font-medium transition-colors tabular-nums ${isTaken ? 'text-ink/25 line-through cursor-not-allowed' : 'text-ink hover:text-moon'}`}
                           >
-                            {!isTaken && <PencilFrame className="text-ink/20 transition-colors group-hover/slot:text-moon/70" />}
+                            {!isTaken && <MarkerFrame className="text-ink/25 transition-colors group-hover/slot:text-moon/80" />}
                             {slot}
                           </button>
                         );

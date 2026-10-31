@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
 import Disclaimer from './Disclaimer';
 import { btnPrimaryDark, btnSecondaryDark } from '../UI/buttons';
-import ButtonInk, { PaintSwatch, PencilFrame } from '../UI/ButtonInk';
+import ButtonInk, { PaintSwatch, MarkerFrame } from '../UI/ButtonInk';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
@@ -259,9 +259,9 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                 style={{ color: accent }}
                                 className={`group/btn relative isolate w-full inline-flex items-center justify-center font-medium transition-colors duration-300 ${tight ? 'py-2 text-[12px]' : big ? 'py-2.5 text-[13px]' : 'py-2 text-[12px]'}`}
                             >
-                                {/* sketched round in pencil; painted in on hover */}
+                                {/* boxed in marker; painted in on hover */}
                                 <PaintSwatch className="opacity-0 transition-opacity duration-300 group-hover/btn:opacity-100" />
-                                <PencilFrame />
+                                <MarkerFrame />
                                 <span className="print-text transition-colors duration-300 group-hover/btn:text-cream">{isIndonesian ? 'Rekomendasi Tempat' : 'Recommended Spot'}</span>
                             </a>
                         )}

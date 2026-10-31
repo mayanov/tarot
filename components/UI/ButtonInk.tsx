@@ -5,7 +5,7 @@ import React from 'react';
 // (those make it `relative isolate group/btn`) in one: the face sits behind the
 // label, and the label gets the same print wear as the headings.
 //   primary   → a painted swatch (gouache, ragged edges, pooled rim, paper grain)
-//   secondary → a pencil frame sketched round it, lines overshooting the corners;
+//   secondary → a box drawn round it in felt-tip marker;
 //               on hover the swatch is painted in behind it
 
 const useInkId = () => {
@@ -88,6 +88,33 @@ export const PencilFrame: React.FC<{ className?: string }> = ({ className = '' }
   );
 };
 
+/** a box drawn round its button in one go with a felt-tip marker: a bold, even line
+    with soft rounded corners that wobbles a little, and where the pen started and
+    finished at the top-left the two ends overlap, the ink doubling up darker */
+export const MarkerFrame: React.FC<{ className?: string }> = ({ className = '' }) => {
+  const { id, seed } = useInkId();
+  return (
+    <span aria-hidden className={`pointer-events-none absolute -inset-[2px] -z-10 ${className}`}>
+      <svg className="absolute inset-[1.5px] h-[calc(100%-3px)] w-[calc(100%-3px)] overflow-visible">
+        <defs>
+          <filter id={`${id}k`} x="-10%" y="-40%" width="120%" height="180%">
+            {/* the hand's slow wobble, then the felt tip's slightly soft edge */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed={seed} result="w" />
+            <feDisplacementMap in="SourceGraphic" in2="w" scale="3" xChannelSelector="R" yChannelSelector="G" result="d" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="1" seed={seed + 1} result="e" />
+            <feDisplacementMap in="d" in2="e" scale="0.8" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+        <g filter={`url(#${id}k)`} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" fill="none">
+          <rect width="100%" height="100%" rx="5" ry="5" strokeWidth="2.2" strokeOpacity="0.9" />
+          {/* where the stroke began and ended, run a little past each other */}
+          <path d="M-1.5 9 C-1.8 4 1 -0.6 7 -0.9 L22 -1.4" strokeWidth="2.2" strokeOpacity="0.45" />
+        </g>
+      </svg>
+    </span>
+  );
+};
+
 interface ButtonInkProps {
   kind: 'primary' | 'secondary';
   /** the background the button sits on: light paper, or a dark one (sky, cards, footer) */
@@ -101,7 +128,7 @@ const ButtonInk: React.FC<React.PropsWithChildren<ButtonInkProps>> = ({ kind, to
     : (
       <>
         <PaintSwatch className={`${fade} opacity-0 group-hover/btn:opacity-100 ${tone === 'light' ? 'text-plum' : 'text-cream'}`} />
-        <PencilFrame className={`${fade} ${tone === 'light' ? 'text-ink/40 group-hover/btn:text-plum' : 'text-cream/70 group-hover/btn:text-cream'}`} />
+        <MarkerFrame className={`${fade} ${tone === 'light' ? 'text-ink/70 group-hover/btn:text-plum' : 'text-cream/80 group-hover/btn:text-cream'}`} />
       </>
     );
   return (
