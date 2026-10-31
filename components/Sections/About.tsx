@@ -65,7 +65,7 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
       ref={figRef}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
-      className="relative mx-auto w-[min(82vw,22rem)] sm:w-[24rem] lg:w-full lg:max-w-[32rem] lg:mr-0 pt-16 pb-2 lg:pt-24 lg:pb-20 lg:order-2"
+      className="relative mx-auto w-[min(82vw,22rem)] sm:w-[24rem] lg:w-full lg:max-w-[32rem] lg:mr-0 lg:order-2"
     >
       <div className="relative" style={{ opacity: dealt ? 1 : 0, transition: `opacity 600ms ${EASE}` }}>
         {/* the face */}
@@ -162,10 +162,10 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       className="bg-paper relative z-10 isolate overflow-hidden text-ink -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
       <SoftAura />
       {/* portrait and text side by side on desktop (portrait first on phones) */}
-      <div className="relative mx-auto px-8 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)] lg:gap-16 xl:gap-24 lg:items-center">
+      <div className="relative mx-auto px-8 pt-20 md:pt-28 pb-20 md:pb-28 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)] lg:gap-16 xl:gap-24 lg:items-center">
         <PortraitCard isIndonesian={isIndonesian} />
 
-        <FadeIn dir="left" className="w-full pt-14 pb-20 md:pb-28 lg:pt-24 lg:pb-20">
+        <FadeIn dir="left" className="w-full pt-12 md:pt-14 lg:pt-0">
           {/* hook title */}
           <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>
