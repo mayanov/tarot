@@ -56,18 +56,12 @@ interface NavItem {
 }
 
 // Menu motion: opening, a new page is turned over onto the site from the left, hinged
-// at its left edge (WIPE_MS, with the sound of paper), and the links rise in one by
-// one as it settles; closing plays it backwards — the links drop out, last first
-// (OUT_MS), then the page is turned back.
+// at its left edge (WIPE_MS, with the sound of paper); closing turns it back. Everything
+// in the menu is printed on that page, so it moves with it and has no motion of its own.
 const WIPE_MS = 800;
 const WIPE_EASE = 'cubic-bezier(0.6,0,0.3,1)';
 const PAGE_TURNED = 'perspective(2600px) rotateY(0deg)';
 const PAGE_AWAY = 'perspective(2600px) rotateY(-89deg)';
-const OUT_MS = 380;
-// the links: each line slides up into place from behind its own baseline (a mask),
-// one after another, starting while the paper is still coming down
-const LINE_IN_AT = 260;
-const LINE_STEP = 60;
 
 // The services in the menu — the same mark and starting price as their pricelist
 // card (a short name for the phone chips); picking one opens the booking form on it.
@@ -87,14 +81,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const onPaper = isScrolled && !menuOpen; // the bar is on its paper strip
-  const [closing, setClosing] = useState(false); // links leaving, paper still down
+  const [closing, setClosing] = useState(false); // the tick between the close click and the page turning back
   const closingRef = useRef(false);
   const closeTimer = useRef<number | undefined>(undefined);
   const closeMenu = () => {
     if (closingRef.current) return;
     closingRef.current = true;
     setClosing(true);
-    closeTimer.current = window.setTimeout(() => { setMenuOpen(false); setClosing(false); closingRef.current = false; }, OUT_MS);
+    closeTimer.current = window.setTimeout(() => { setMenuOpen(false); setClosing(false); closingRef.current = false; }, 0);
   };
   // every turn of the page is heard (open, and the turn back after the links leave)
   const turned = useRef(false);
@@ -155,7 +149,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!menuOpen) return;
-    const t = window.setTimeout(() => overlayRef.current?.focus({ preventScroll: true }), LINE_IN_AT);
+    const t = window.setTimeout(() => overlayRef.current?.focus({ preventScroll: true }), WIPE_MS / 2);
     return () => {
       window.clearTimeout(t);
       if (overlayRef.current?.contains(document.activeElement)) menuBtnRef.current?.focus({ preventScroll: true });
@@ -208,11 +202,6 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   const menuServices = isIndonesian ? MENU_SERVICES_ID : MENU_SERVICES_EN;
   // tonight's moon, worked out again each time the menu opens
   const moon = useMemo(() => moonNow(), [menuOpen]); // eslint-disable-line react-hooks/exhaustive-deps
-  // the rows that fade/rise in (and out) with the links
-  const rowAnim = (inAt: number, outAt = 0) => ({
-    className: closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0',
-    style: { animationDelay: `${closing ? outAt : inAt}ms` },
-  });
 
   const handleLogoClick = () => {
     if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
@@ -343,23 +332,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           style={{ opacity: menuOpen ? 0 : 1, transition: `opacity ${WIPE_MS}ms ${WIPE_EASE}` }}
         />
         {/* tonight's moon, printed faintly into the paper — behind the services on wide
-            screens, low in the corner on phones; it rises and turns into place as the
-            paper comes down */}
+            screens, low in the corner on phones */}
         <div aria-hidden className="pointer-events-none absolute aspect-square w-[92vw] -right-[34vw] bottom-[12dvh] sm:w-[62vw] sm:-right-[14vw] lg:w-[min(38rem,76vh)] lg:right-[calc(14rem-min(38rem,76vh)/2)] lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2">
-          <div
-            className={`w-full h-full ${closing ? 'animate-[moonOut_0.35s_ease-in_both]' : menuOpen ? 'animate-[moonRise_1.8s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`}
-            style={{ animationDelay: closing ? '0ms' : '220ms' }}
-          >
-            <MoonWatermark moon={moon} className="w-full h-full text-ink" />
-          </div>
+          <MoonWatermark moon={moon} className="w-full h-full text-ink" />
         </div>
 
         <div className="relative h-full mx-auto px-8 flex flex-col">
-          {/* Top row — brand + close (in with the paper's leading edge, out with the links) */}
-          <div
-            className={`flex items-center justify-between py-4 md:py-5 shrink-0 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`}
-            style={{ animationDelay: closing ? '120ms' : '160ms' }}
-          >
+          {/* Top row — brand + close */}
+          <div className="flex items-center justify-between py-4 md:py-5 shrink-0">
             <Wordmark onDark={false} />
             {/* phones: the language switch sits up here, keeping the bottom row to one line */}
             {onSwitchRegion && (
@@ -381,7 +361,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           </div>
 
           {/* Main — the section index (left) and, on wide screens, the services (right) */}
-          <div key={menuOpen ? 'open' : 'closed'} className="flex-1 min-h-0 overflow-y-auto lg:grid lg:grid-cols-[1fr_minmax(20rem,24rem)] lg:gap-16 xl:gap-24 lg:items-center pt-[2.5dvh] pb-[2dvh] sm:py-8">
+          <div className="flex-1 min-h-0 overflow-y-auto lg:grid lg:grid-cols-[1fr_minmax(20rem,24rem)] lg:gap-16 xl:gap-24 lg:items-center pt-[2.5dvh] pb-[2dvh] sm:py-8">
           <nav className="flex flex-col justify-start lg:justify-center">
             <ul className="group/nav">
               {navLinks.map((link, i) => {
@@ -396,12 +376,9 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                     aria-current={active ? 'true' : undefined}
                     className="group/link w-full flex items-center py-[1.1dvh] sm:py-2.5 text-left"
                   >
-                    {/* the mask (with room below for descenders, and to the right for the name's
-                        hover step and italic overhang) and the line sliding in it */}
-                    <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em] lg:pr-8 lg:-mr-8">
+                    <span className="block">
                       <span
-                        className={`flex items-baseline gap-3 sm:gap-5 transition-colors duration-500 group-hover/link:text-moon ${active ? 'text-moon' : 'text-ink'} ${closing ? 'animate-[lineOut_0.3s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[lineIn_0.85s_cubic-bezier(0.22,1,0.36,1)_both]' : 'translate-y-[115%]'}`}
-                        style={{ animationDelay: `${closing ? (navLinks.length - 1 - i) * 30 : LINE_IN_AT + i * LINE_STEP}ms` }}
+                        className={`flex items-baseline gap-3 sm:gap-5 transition-colors duration-500 group-hover/link:text-moon ${active ? 'text-moon' : 'text-ink'}`}
                       >
                         {/* index number, like the FAQ list — on hover (desktop) it lifts away
                             and a small star takes its place, while the name steps forward */}
@@ -419,7 +396,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             </ul>
 
             {/* phones / tablets: the services as a row of chips under the index */}
-            <div className={`lg:hidden mt-[2.5dvh] sm:mt-7 ${rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).className}`} style={rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).style}>
+            <div className={`lg:hidden mt-[2.5dvh] sm:mt-7`}>
               <p className="print-body font-elegant italic text-sm text-ink/45 mb-2">{isIndonesian ? 'Langsung pesan' : 'Book directly'}</p>
               <div className="flex flex-wrap gap-2">
                 {menuServices.map((sv) => (
@@ -437,10 +414,10 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           {/* (its rows come in one after another, like the index; the hover dimming sits on
               the buttons, since the rows' entrance animation holds their opacity) */}
           <aside className="hidden lg:block">
-            <p className={`print-body font-elegant italic text-sm text-ink/45 ${rowAnim(LINE_IN_AT + 180, 60).className}`} style={rowAnim(LINE_IN_AT + 180, 60).style}>{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
+            <p className={`print-body font-elegant italic text-sm text-ink/45`}>{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
             <ul className="mt-3 group/svs">
               {menuServices.map((sv, j) => (
-                <li key={sv.id} className={`border-t border-ink/10 last:border-b ${rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).className}`} style={rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).style}>
+                <li key={sv.id} className={`border-t border-ink/10 last:border-b`}>
                   <button type="button" onClick={() => showService(sv.id)} className="group/sv w-full flex items-baseline gap-3 py-3.5 text-left transition-[opacity,padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/svs:opacity-40 hover:!opacity-100 hover:pl-2">
                     <CelestialMark name={sv.mark} className="print-ink w-3.5 shrink-0 self-center text-ink/35 transition-colors duration-300 group-hover/sv:text-moon" />
                     <span className="print-text flex-1 min-w-0 font-elegant font-medium text-ink text-[1.45rem] leading-tight tracking-[-0.01em] transition-colors duration-300 group-hover/sv:text-moon">{sv.name}</span>
@@ -453,7 +430,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           </div>
 
           {/* Bottom — language toggle + socials + book */}
-          <div className={`shrink-0 pt-4 pb-5 md:py-6 border-t border-ink/10 flex flex-row items-center justify-between gap-5 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: closing ? '0ms' : `${LINE_IN_AT + navLinks.length * LINE_STEP + 80}ms` }}>
+          <div className={`shrink-0 pt-4 pb-5 md:py-6 border-t border-ink/10 flex flex-row items-center justify-between gap-5`}>
             {onSwitchRegion ? (
               <div className="hidden sm:block">
                 <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />
