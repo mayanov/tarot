@@ -114,7 +114,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                         every card, so icons, titles and prices line up across the whole spread */}
                     <div className="flex flex-col items-center" style={{ gap: cq(16) }}>
                         <div className="grid place-items-center" style={{ height: cq(64) }}>
-                            <span className="block" style={{ width: cq(64) }}><CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className="print-ink block w-full text-cream/90 [filter:drop-shadow(0_4px_20px_rgba(6,4,14,0.5))]" /></span>
+                            <span className="block" style={{ width: cq(64) }}><CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className="print-ink block w-full text-cream/90" /></span>
                         </div>
                         <h3 className="min-h-[2.24em] flex items-center justify-center font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch]" style={{ fontSize: cq(22.4) }}>{g.type}</h3>
                     </div>
