@@ -189,16 +189,19 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </p>
           </div>
 
-          {/* goal — a flush-left closing statement (aligned with the title), with
-              a decorative quote mark above and a signature, so it stays designed */}
-          <figure className="relative mt-10 md:mt-12">
-            {/* (the ink texture sits on an inner box with room round the glyph — a mask clips to
-                its box, and this line box is far shorter than the mark) */}
-            <span aria-hidden className="block font-serif text-moon/45 text-[4rem] leading-[0.4] h-7 select-none"><span className="print-ink mix-blend-multiply inline-block py-[0.5em] -my-[0.5em]">”</span></span>
-            <blockquote className="print-text font-elegant text-ink text-[1.5rem] md:text-[1.9rem] leading-[1.24] tracking-[-0.02em]">
+          {/* goal — the closing statement, set as a pull quote: a large opening mark hangs in
+              its own indent beside the first line, the key word is picked out in purple
+              italic, and it's signed by hand */}
+          <figure className="relative mt-12 md:mt-16 pl-12 md:pl-16">
+            {/* (the ink texture sits on an inner box with room round the glyph — a mask clips
+                to its box) */}
+            <span aria-hidden className="absolute left-0 -top-[0.14em] font-elegant font-semibold text-moon/80 text-[4.5rem] md:text-[5.75rem] leading-none select-none">
+              <span className="print-ink mix-blend-multiply inline-block py-[0.2em] -my-[0.2em] pr-[0.1em]">“</span>
+            </span>
+            <blockquote className="print-text font-elegant text-ink text-[1.6rem] md:text-[2.1rem] leading-[1.2] tracking-[-0.02em]">
               {isIndonesian
-                ? 'Tujuan saya simpel: memberikan kejelasan agar kamu bisa mengambil keputusan dengan percaya diri.'
-                : 'My goal is simple: to give you the clarity to make decisions with confidence.'}
+                ? <>Tujuan saya simpel: memberikan <em className="italic text-moon">kejelasan</em> agar kamu bisa mengambil keputusan dengan percaya diri.</>
+                : <>My goal is simple: to give you the <em className="italic text-moon">clarity</em> to make decisions with confidence.</>}
             </blockquote>
             {/* signed by hand (a script face, loaded for just these letters), printed in plum */}
             <figcaption className="mt-4 flex items-center gap-3 text-moon">
