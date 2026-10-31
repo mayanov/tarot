@@ -27,14 +27,14 @@ const btnSecondary = `${btnSecondaryDark} inline-flex px-7 py-3 text-[1.05rem]`;
 // soft glow deepening into the darker tone beneath it, so the deck reads as part of
 // the same sky rather than a separate set of brand colours.
 const CAT_BG = [
-  'radial-gradient(135% 120% at 15% -15%, #3a3a78 0%, #1f2552 52%, #10153a 100%)', // night indigo
-  'radial-gradient(135% 120% at 15% -15%, #7a3a78 0%, #4a2160 52%, #2a1440 100%)', // twilight plum
-  'radial-gradient(135% 120% at 15% -15%, #c27a9c 0%, #9a5482 52%, #5c2a62 100%)', // dusk rose
-  'radial-gradient(135% 120% at 15% -15%, #f6ae8a 0%, #d27e7c 52%, #7c4470 100%)', // sunrise peach
-  'radial-gradient(135% 120% at 15% -15%, #ffcf9c 0%, #d48a74 52%, #7a4a6e 100%)', // dawn apricot (promo)
+  'radial-gradient(135% 120% at 15% -15%, #4a5aa0 0%, #262f6a 52%, #121840 100%)', // night indigo
+  'radial-gradient(135% 120% at 15% -15%, #8a4290 0%, #55246e 52%, #2a1440 100%)', // twilight plum
+  'radial-gradient(135% 120% at 15% -15%, #e48cab 0%, #c0587e 52%, #7a2c55 100%)', // dusk rose
+  'radial-gradient(135% 120% at 15% -15%, #ffb894 0%, #e47c66 52%, #a2464c 100%)', // sunrise coral
+  'radial-gradient(135% 120% at 15% -15%, #ffd99c 0%, #d99a52 52%, #8e5a2c 100%)', // dawn apricot (promo)
 ];
 // The solid accent per card — the flipped detail borrows its card's colour.
-const CAT_ACCENT = ['#1f2552', '#4a2160', '#9a5482', '#bc6a72', '#b8735e'];
+const CAT_ACCENT = ['#262f6a', '#55246e', '#b04f74', '#c4604e', '#a26a30'];
 const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent', 'sun'] as const;
 
 // A faint star dusting inside each band, so every category reads like its own
