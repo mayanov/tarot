@@ -128,10 +128,12 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
     // A typographic index on the page's own paper (no panel, no divider): the
     // questions are set as large serif lines, filtered by an inline sentence, and the
     // section closes on a direct WhatsApp question instead of the last item.
+    // Desktop: the title, filter and WhatsApp question hold the left column (title
+    // pinned while the list scrolls); the questions and answers run down the right.
     <section id="faq" className="relative text-ink pt-16 md:pt-24 pb-24 md:pb-36">
-      <div className="mx-auto px-6 md:px-8 max-w-4xl">
-        <FadeIn dir="blur" duration={1.15}>
-          <div className="text-center">
+      <div className="mx-auto px-8 lg:grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16 xl:gap-x-24">
+        <FadeIn dir="blur" duration={1.15} className="lg:col-start-1 lg:row-start-1 lg:sticky lg:top-28 lg:self-start">
+          <div>
             <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
               {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
             </h2>
@@ -158,7 +160,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
         </FadeIn>
 
         {/* the index */}
-        <ol className="mt-10 md:mt-12">
+        <ol className="mt-10 md:mt-12 lg:mt-0 lg:col-start-2 lg:row-start-1 lg:row-span-2">
           {filtered.map((faq, index) => {
             const open = openKey === faq.question;
             return (
@@ -194,8 +196,8 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
         </ol>
 
         {/* closing — ask directly */}
-        <FadeIn dir="up">
-          <div className="mt-16 md:mt-20 text-center">
+        <FadeIn dir="up" className="lg:col-start-1 lg:row-start-2 lg:self-end">
+          <div className="mt-16 md:mt-20">
             <p className="print-text font-elegant italic text-ink/60 text-xl md:text-2xl">
               {isIndonesian ? 'Masih penasaran?' : 'Still curious?'}
             </p>
