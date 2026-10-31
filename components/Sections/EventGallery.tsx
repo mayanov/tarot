@@ -1,22 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
+import CelestialMark from '../UI/CelestialMark';
 
-// The photo band above "Event & collaboration": the photos as polaroid prints laid
-// loosely on the purple band, like prints on a table — each tilted at its own angle,
-// at slightly different heights and overlapping a little. Photos carry a soft vintage
-// tone that clears on hover, when the print also straightens and lifts forward. On
-// scroll-in they drop into place one after another.
-// They rest on the page's own paper (no coloured band), with soft real shadows.
+// The photo band above "Event & collaboration": the photos as tarot cards dealt
+// loosely on the paper — the same night-plum card as the About portrait (numeral at
+// the head, framed photo, title) — each tilted at its own angle, at slightly different
+// heights and overlapping a little. Photos carry a soft vintage tone that clears on
+// hover, when the card also straightens and lifts forward. On scroll-in they're dealt
+// one after another, with soft real shadows.
 
 type Props = { photos: string[]; isIndonesian: boolean; onOpen: (src: string) => void };
 
-// per print: tilt, vertical offset, caption, and its own frame colour — shades of
-// the brand's plum family (deep plum, plum, the lighter plum of the card gradients,
-// the moon violet), so the prints differ without leaving the site's palette
+// per card: tilt, vertical offset, numeral, caption, and the glow at the top of its
+// night-plum gradient — shades of the brand's plum family, so the cards differ a
+// little without leaving the site's palette
 const PRINTS = [
-  { rot: -4, y: 0, bg: '#2A1839', id: 'di balik meja', en: 'at the table' },
-  { rot: 3, y: 2.5, bg: '#6B3FA0', id: 'sesi bersama', en: 'reading together' },
-  { rot: -2, y: -1, bg: '#39234E', id: 'malam event', en: 'event night' },
-  { rot: 4, y: 2, bg: '#553172', id: 'kartu terbuka', en: 'cards on the table' },
+  { rot: -4, y: 0, n: 'I', glow: '#3a2558', id: 'di balik meja', en: 'at the table' },
+  { rot: 3, y: 2.5, n: 'II', glow: '#553172', id: 'sesi bersama', en: 'reading together' },
+  { rot: -2, y: -1, n: 'III', glow: '#43295f', id: 'malam event', en: 'event night' },
+  { rot: 4, y: 2, n: 'IV', glow: '#5a3480', id: 'kartu terbuka', en: 'cards on the table' },
 ];
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
@@ -66,11 +67,23 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 type="button"
                 onClick={() => onOpen(src)}
                 aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
-                // hover cancels the print's tilt (--r) and lifts it (no zoom); deeper shadow
-                className="group relative block w-full p-2.5 md:p-3 pb-0 rounded-[3px] ring-1 ring-white/10 shadow-[0_14px_30px_-14px_rgba(42,24,57,0.55)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_28px_50px_-18px_rgba(42,24,57,0.45)] hover:[transform:rotate(var(--r))_translateY(-10px)]"
-                style={{ ['--r' as any]: `${-pr.rot}deg`, transitionTimingFunction: EASE, backgroundColor: pr.bg }}
+                // hover cancels the card's tilt (--r) and lifts it (no zoom); deeper shadow
+                className="group relative block w-full p-1.5 md:p-2.5 rounded-[0.75rem] md:rounded-[1rem] ring-1 ring-white/10 shadow-[0_18px_36px_-16px_rgba(24,14,40,0.6)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_32px_56px_-20px_rgba(24,14,40,0.55)] hover:[transform:rotate(var(--r))_translateY(-10px)]"
+                style={{
+                  ['--r' as any]: `${-pr.rot}deg`,
+                  transitionTimingFunction: EASE,
+                  background: `radial-gradient(130% 110% at 50% 0%, ${pr.glow} 0%, #241638 55%, #150c24 100%)`,
+                }}
               >
-                <span className="relative block aspect-[4/5] overflow-hidden bg-ink/10">
+                {/* inner frame */}
+                <span className="relative block rounded-[0.55rem] md:rounded-[0.7rem] ring-1 ring-[#C9B8E8]/25 px-1.5 md:px-2 pt-1 md:pt-1.5 pb-2 md:pb-2.5">
+                {/* head: the card's numeral between two rules */}
+                <span aria-hidden className="print-ink flex items-center justify-center gap-2 pb-1 md:pb-1.5 text-[#C9B8E8]/75">
+                  <span className="h-px w-4 md:w-6 bg-gradient-to-r from-transparent to-current opacity-60" />
+                  <span className="font-elegant italic text-[0.7rem] md:text-[0.85rem] leading-none tracking-[0.12em]">{pr.n}</span>
+                  <span className="h-px w-4 md:w-6 bg-gradient-to-l from-transparent to-current opacity-60" />
+                </span>
+                <span className="relative block aspect-[4/5] overflow-hidden rounded-[0.3rem] bg-ink/10">
                   <img
                     src={src}
                     alt={isIndonesian ? `Sesi tarot Mayanov di event ${i + 1}` : `Mayanov tarot session at event ${i + 1}`}
@@ -80,11 +93,14 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                     className="absolute inset-0 w-full h-full object-cover [filter:sepia(0.22)_saturate(0.85)_contrast(1.05)] group-hover:[filter:none] transition-[filter] duration-700"
                   />
                   {/* a gentle inner vignette, like a printed photo */}
-                  <span aria-hidden className="pointer-events-none absolute inset-0 shadow-[inset_0_0_40px_rgba(30,18,50,0.25)]" />
+                  <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[0.3rem] shadow-[inset_0_0_40px_rgba(30,18,50,0.25)] ring-1 ring-inset ring-white/10" />
                 </span>
-                <span className="flex items-baseline justify-between gap-2 px-1 py-3 md:py-4">
-                  <span className="font-elegant italic text-cream/95 text-[0.95rem] md:text-[1.05rem]">{isIndonesian ? pr.id : pr.en}</span>
-                  <span className="font-elegant italic text-cream/65 text-xs tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                {/* foot: the title, set like a card name */}
+                <span className="flex items-center justify-center gap-1.5 md:gap-2 pt-2 md:pt-3 text-center">
+                  <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-[#C9B8E8]/55" />
+                  <span className="font-elegant font-semibold uppercase tracking-[0.18em] md:tracking-[0.24em] text-[0.6rem] md:text-[0.72rem] text-cream/90 pl-[0.2em]">{isIndonesian ? pr.id : pr.en}</span>
+                  <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-[#C9B8E8]/55" />
+                </span>
                 </span>
               </button>
             </div>
