@@ -5,7 +5,7 @@ import { trackEvent } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/scroll';
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
-import NightWash from '../UI/NightWash';
+import PencilRule from '../UI/PencilRule';
 import CelestialMark from '../UI/CelestialMark';
 import { MoonWatermark, moonNow } from './MenuMoon';
 
@@ -82,6 +82,7 @@ const MENU_SERVICES_EN: MenuService[] = [
 const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const onPaper = isScrolled && !menuOpen; // the bar is on its paper strip
   const [closing, setClosing] = useState(false); // links leaving, paper still down
   const closingRef = useRef(false);
   const closeTimer = useRef<number | undefined>(undefined);
@@ -253,21 +254,23 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50">
-        {/* a band of night-sky watercolour (fades in on scroll) — the hero's sky
-            following you down the page, readable over the light and dark sections */}
-        <NightWash className={`transition-opacity duration-500 ${isScrolled && !menuOpen ? 'opacity-100' : 'opacity-0'}`} />
+        {/* once scrolled, a strip of the site's paper with a pencil line drawn under it
+            (fades in); the bar's text turns to ink to sit on it */}
+        <div aria-hidden className={`bg-paper pointer-events-none absolute inset-0 transition-opacity duration-500 ${onPaper ? 'opacity-100' : 'opacity-0'}`}>
+          <PencilRule className="absolute inset-x-0 bottom-0 text-ink/35" />
+        </div>
 
         <div className="relative mx-auto px-8 flex justify-between items-center py-2.5 md:py-3">
           {/* LEFT — brand (hidden while the overlay owns the top row) */}
           <div className={`transition-opacity duration-300 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-            <Wordmark />
+            <Wordmark onDark={!onPaper} />
           </div>
 
           {/* RIGHT — language toggle + the Pesan/Menu pair (joined) */}
           <div className={`flex items-stretch gap-2.5 transition-opacity duration-300 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {onSwitchRegion && (
               <div className="hidden md:flex mr-1">
-                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} />
+                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light={onPaper} />
               </div>
             )}
 
@@ -275,9 +278,9 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <div className="flex items-center gap-4">
               <button
                 onClick={goToServices}
-                className={`${btnPrimaryDark} hidden sm:inline-flex px-6 py-2.5 text-[15px] whitespace-nowrap drop-shadow-[0_5px_12px_rgba(0,0,0,0.28)]`}
+                className={`${onPaper ? btnPrimaryLight : `${btnPrimaryDark} drop-shadow-[0_5px_12px_rgba(0,0,0,0.28)]`} hidden sm:inline-flex px-6 py-2.5 text-[15px] whitespace-nowrap`}
               >
-                <ButtonInk kind="primary" tone="dark">
+                <ButtonInk kind="primary" tone={onPaper ? 'light' : 'dark'}>
                   {isIndonesian ? 'Pesan' : 'Book'}
                 </ButtonInk>
               </button>
@@ -287,7 +290,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
                 onClick={openMenu}
                 aria-label={isIndonesian ? 'Buka menu' : 'Open menu'}
                 aria-expanded={menuOpen}
-                className="group inline-flex items-center justify-center p-1.5 text-cream [filter:drop-shadow(0_1px_8px_rgba(0,0,0,0.55))]"
+                className={`group inline-flex items-center justify-center p-1.5 transition-colors duration-500 ${onPaper ? 'text-ink' : 'text-cream [filter:drop-shadow(0_1px_8px_rgba(0,0,0,0.55))]'}`}
               >
                 {/* two pencil strokes */}
                 <span className="flex flex-col items-end gap-[5px] w-6">
