@@ -2,6 +2,7 @@ import React from 'react';
 import FadeIn from '../UI/FadeIn';
 import CelestialMark from '../UI/CelestialMark';
 import WatercolorWash from '../UI/WatercolorWash';
+import PencilRule from '../UI/PencilRule';
 
 
 interface DisclaimerProps {
@@ -58,7 +59,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                     <WatercolorWash className="-z-10" />
                     <CelestialMark name="sparkle" className="print-ink pointer-events-none absolute -right-2 -top-5 -z-10 w-36 md:w-48 text-moon/[0.11]" />
 
-                    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pb-6 border-b border-moon/30">
+                    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pb-5">
                         {/* the title carries the weight: large, in the brand purple */}
                         <h2 className="print-text pb-[0.14em] -mb-[0.14em] flex items-center gap-3 font-elegant font-bold text-moon text-[2.2rem] sm:text-[2.6rem] md:text-[3.1rem] leading-none tracking-[-0.02em]">
                             <CelestialMark name="sparkle" className="print-ink w-6 md:w-8 text-moon" />
@@ -72,6 +73,8 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                             ))}
                         </div>
                     </div>
+                    {/* dividers drawn in pencil on the paper, not CSS borders */}
+                    <PencilRule className="text-moon/70" />
 
                     <div className="print-body mt-6 md:columns-2 md:gap-12">
                         {items.map((it, index) => (
@@ -81,7 +84,8 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         ))}
                     </div>
 
-                    <p className="print-text mt-2 pt-5 border-t border-moon/30 font-elegant italic font-medium text-moon text-[1rem] md:text-[1.05rem]">
+                    <PencilRule className="mt-2 text-moon/70" />
+                    <p className="print-text mt-4 font-elegant italic font-medium text-moon text-[1rem] md:text-[1.05rem]">
                         {agreement}
                     </p>
                 </div>
