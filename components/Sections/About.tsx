@@ -18,7 +18,7 @@ interface AboutProps {
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const CORNERS = ['left-1.5 top-1.5', 'right-1.5 top-1.5', 'left-1.5 bottom-1.5', 'right-1.5 bottom-1.5'];
 
-// The portrait, printed as a tarot card: a cream card face (tonight's moon at its head,
+// The portrait, printed as a tarot card: a night-plum card face (tonight's moon at its head,
 // framed photo, title), set down a little askew. Dealt into place when it
 // scrolls into view; on desktop it tips toward the pointer with a soft sheen.
 const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
@@ -71,24 +71,22 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
         {/* the face */}
         <div
           ref={faceRef}
-          className="relative rounded-[1.15rem] p-3 md:p-3.5 ring-1 ring-ink/10 [box-shadow:0_34px_70px_-30px_rgba(24,14,40,0.55),0_2px_6px_-2px_rgba(24,14,40,0.15)]"
+          className="relative rounded-[1.15rem] p-3 md:p-3.5 ring-1 ring-white/10 [box-shadow:0_40px_80px_-30px_rgba(24,14,40,0.7),0_2px_8px_-2px_rgba(24,14,40,0.25)]"
           style={{
-            backgroundColor: '#F6F0E5',
-            backgroundImage: `url('${import.meta.env.BASE_URL}paper.webp')`,
-            backgroundSize: '600px 600px',
-            backgroundBlendMode: 'multiply',
+            // the deck's night plum (same as the Services card backs), so it stands off the paper
+            background: 'radial-gradient(130% 110% at 50% 0%, #3a2558 0%, #241638 55%, #150c24 100%)',
             transform: faceTransform,
             // tracks the pointer quickly; otherwise eases
             transition: hover ? 'transform 250ms ease-out' : `transform 1100ms ${EASE}`,
           }}
         >
-          <div className="relative rounded-[0.8rem] ring-1 ring-ink/15 px-2.5 md:px-3 pb-3 pt-2">
+          <div className="relative rounded-[0.8rem] ring-1 ring-[#C9B8E8]/25 px-2.5 md:px-3 pb-3 pt-2">
             {/* a tiny sparkle in each corner of the inner frame */}
             {CORNERS.map((c) => (
-              <CelestialMark key={c} name="sparkle" className={`print-ink absolute ${c} w-2 text-moon/45`} />
+              <CelestialMark key={c} name="sparkle" className={`print-ink absolute ${c} w-2 text-[#C9B8E8]/55`} />
             ))}
             {/* head: tonight's moon between two rules */}
-            <div aria-hidden className="print-ink flex items-center justify-center gap-2.5 pb-2 text-moon/70">
+            <div aria-hidden className="print-ink flex items-center justify-center gap-2.5 pb-2 text-[#C9B8E8]/80">
               <span className="h-px w-7 bg-gradient-to-r from-transparent to-current opacity-60" />
               <Phase p={moon.p} waning={moon.waning} size={13} />
               <span className="h-px w-7 bg-gradient-to-l from-transparent to-current opacity-60" />
@@ -105,22 +103,22 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
               />
               {/* flat plum tint (no directional gradient) to cohere with the palette */}
               <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
-              <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[0.45rem] ring-1 ring-inset ring-ink/10" />
+              <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[0.45rem] ring-1 ring-inset ring-white/10" />
             </div>
             <figcaption className="pt-3 flex flex-col items-center gap-1 text-center">
-              <span className="print-text font-elegant font-semibold uppercase tracking-[0.28em] text-[0.8rem] md:text-[0.85rem] text-ink/80 pl-[0.28em]">
+              <span className="print-text font-elegant font-semibold uppercase tracking-[0.28em] text-[0.8rem] md:text-[0.85rem] text-cream/90 pl-[0.28em]">
                 {isIndonesian ? 'Sang Pembaca' : 'The Reader'}
               </span>
-              <span className="print-body font-elegant italic text-[0.8rem] text-ink/45">
+              <span className="print-body font-elegant italic text-[0.8rem] text-[#C9B8E8]/60">
                 {isIndonesian ? 'Mayanov · sejak 2009' : 'Mayanov · since 2009'}
               </span>
             </figcaption>
           </div>
           {/* sheen that follows the pointer */}
           <div aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-[1.15rem] mix-blend-soft-light"
+            className="pointer-events-none absolute inset-0 rounded-[1.15rem] mix-blend-screen"
             style={{
-              background: 'radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,0.55), rgba(255,255,255,0) 50%)',
+              background: 'radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(201,184,232,0.16), rgba(201,184,232,0) 55%)',
               opacity: hover ? 1 : 0,
               transition: 'opacity 400ms ease-out',
             }} />
