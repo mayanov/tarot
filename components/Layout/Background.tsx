@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import WatercolorSky, { TWILIGHT } from './WatercolorSky';
 
 // Deterministic PRNG so the starfield is identical on every render / reload
 // (no hydration flicker, no re-shuffle on state change).
@@ -118,8 +119,8 @@ const StarCanvas: React.FC<{ dots: Dot[]; glow?: boolean; className?: string; st
 };
 
 // Fixed night sky behind the whole page (only visible at the hero, since the
-// content sections are opaque): overlapping atmospheric color fields with a diffuse
-// Milky-Way band and a living, multi-temperature starfield that drifts on scroll.
+// content sections are opaque): a watercolour twilight with a living,
+// multi-temperature starfield over it that drifts on scroll.
 const Background: React.FC = () => {
   const rootRef = useRef<HTMLDivElement>(null);
   const fieldRef = useRef<HTMLDivElement>(null);
@@ -171,52 +172,9 @@ const Background: React.FC = () => {
 
   return (
     <div ref={rootRef} className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* 1 — deep atmospheric base: a smooth vertical twilight, zenith darkest,
-          shaded a touch bluer through the middle so it reads as sky */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(177deg, #0b0924 0%, #10122f 22%, #181a44 46%, #221c48 70%, #140f2c 100%)',
-        }}
-      />
-      {/* 2a — the COOL side of the sky: blues up the left, teal/cyan pooling toward
-          the lower-right, and a faint cool breath across the zenith (drifts slowly) */}
-      <div
-        aria-hidden
-        className="absolute inset-0 will-change-transform"
-        style={{
-          background:
-            'radial-gradient(70% 56% at 16% 20%, rgba(52,80,178,0.28), transparent 70%),' +
-            'radial-gradient(58% 50% at 86% 78%, rgba(42,124,142,0.24), transparent 72%),' +
-            'radial-gradient(52% 42% at 50% 5%, rgba(72,112,168,0.18), transparent 70%)',
-          animation: reduce ? undefined : 'nebulaDrift 52s ease-in-out infinite',
-        }}
-      />
-      {/* 2b — the WARM side: a violet glow behind the wordmark, a rose/magenta bloom
-          upper-right, an indigo-violet pool lower-left, and a faint ember low so the
-          twilight carries real chromatic range instead of one flat wash (drifts, offset) */}
-      <div
-        aria-hidden
-        className="absolute inset-0 will-change-transform"
-        style={{
-          background:
-            'radial-gradient(82% 60% at 50% 42%, rgba(112,66,150,0.34), transparent 68%),' +
-            'radial-gradient(56% 50% at 82% 16%, rgba(178,98,158,0.24), transparent 72%),' +
-            'radial-gradient(60% 52% at 12% 84%, rgba(60,52,132,0.30), transparent 74%),' +
-            'radial-gradient(36% 28% at 56% 93%, rgba(166,100,88,0.13), transparent 68%)',
-          animation: reduce ? undefined : 'nebulaDrift 70s ease-in-out -24s infinite',
-        }}
-      />
-      {/* 3 — diffuse Milky-Way band: a blurred diagonal light, very low opacity */}
-      <div
-        aria-hidden
-        className="absolute left-[-20%] right-[-20%] top-[10%] h-[48%] rotate-[12deg] blur-[30px]"
-        style={{
-          background:
-            'linear-gradient(180deg, transparent 0%, rgba(150,132,214,0.10) 42%, rgba(120,138,206,0.13) 55%, transparent 100%)',
-        }}
-      />
+      {/* 1 — the sky itself, painted in watercolour (blue up the left, a violet
+          heart, a rose bloom upper-right, teal lower-right), drifting very slowly */}
+      <WatercolorSky palette={TWILIGHT} stars={false} className="absolute inset-0" />
 
       {/* 4 — the starfield: a fixed dusting (incl. the band cluster) plus twinkling
           layers and bright accent stars, all drifting together a touch on scroll */}

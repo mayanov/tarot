@@ -209,6 +209,17 @@ export const MIDNIGHT: SkyPalette = {
   glow: ['rgba(255,190,220,0.6)', 'rgba(150,210,240,0.5)'],
 };
 
+// twilight: the hero and loader — a deep night with real chromatic range: blue up
+// the left, a violet heart, a rose bloom upper-right and teal pooling lower-right
+export const TWILIGHT: SkyPalette = {
+  ground: '#141235',
+  base: ['#0b0924', '#121434', '#1c1d4c', '#2a2058', '#1a1236'],
+  back: ['#0a0a26', '#2a3a8c', '#7a3f8a', '#4a2c7e', '#2f2a78', '#1f5a6e'],
+  front: ['#3e4aa0', '#a05a9a', '#7a5ab0', '#5a4aa0', '#2f7a8a'],
+  bloom: '#c9b8e8',
+  glow: ['rgba(150,100,200,0.7)', 'rgba(80,170,190,0.5)'],
+};
+
 // the calm-space band's timelapse runs NIGHT → PLUM → SUNRISE
 export const NIGHT: SkyPalette = {
   ground: '#0a0c22',
