@@ -8,7 +8,7 @@ import ButtonInk from '../UI/ButtonInk';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
-import CardWash from '../UI/CardWash';
+import CardWash, { DECK_WASH } from '../UI/CardWash';
 import { lockPage, unlockPage } from '../UI/scroll';
 import { trackEvent, SERVICE_TRACK_NAME, promoTrackName } from '../../services/analytics';
 
@@ -23,15 +23,8 @@ interface ServicesProps {
 const btnPrimary = `${btnPrimaryDark} inline-flex px-7 py-3 text-[1.05rem]`;
 const btnSecondary = `${btnSecondaryDark} inline-flex px-7 py-3 text-[1.05rem]`;
 
-// Per-category card faces, painted in watercolour (CardWash) from the calm-space
-// band's sky — each card its own dominant colour, as [light, mid, deep].
-const CAT_WASH = [
-  ['#5a6ab8', '#262f6a', '#121840'], // night indigo
-  ['#9a52a0', '#55246e', '#2a1440'], // twilight plum
-  ['#ec98b4', '#c0587e', '#7a2c55'], // dusk rose
-  ['#ffbe98', '#e47c66', '#a2464c'], // sunrise coral
-  ['#ffdca0', '#d99a52', '#8e5a2c'], // dawn apricot (promo)
-] as const;
+// Per-category card faces, painted in watercolour (CardWash) — each its own colour.
+const CAT_WASH = DECK_WASH;
 // The solid accent per card — the flipped detail borrows its card's colour.
 const CAT_ACCENT = ['#262f6a', '#55246e', '#b04f74', '#c4604e', '#a26a30'];
 const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent', 'sun'] as const;

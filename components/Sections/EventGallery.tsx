@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
-import CardWash from '../UI/CardWash';
+import CardWash, { DECK_WASH } from '../UI/CardWash';
 
 // The photo band above "Event & collaboration": the photos as tarot cards dealt
-// loosely on the paper — the same night-plum card as the About portrait (numeral at
+// loosely on the paper — a tarot card like the About portrait, each in its own colour (numeral at
 // the head, framed photo, title) — each tilted at its own angle, at slightly different
 // heights and overlapping a little. Photos carry a soft vintage tone that clears on
 // hover, when the card also straightens and lifts forward. On scroll-in they're dealt
@@ -12,14 +12,13 @@ import CardWash from '../UI/CardWash';
 
 type Props = { photos: string[]; isIndonesian: boolean; onOpen: (src: string) => void };
 
-// per card: tilt, vertical offset, numeral, caption, and the lighter tone washed into
-// its night-plum face — shades of the brand's plum family, so the cards differ a
-// little without leaving the site's palette
+// per card: tilt, vertical offset, numeral, caption, and its colour from the deck
+// (DECK_WASH — the same colours as the pricelist cards), each card a different one
 const PRINTS = [
-  { rot: -4, y: 0, n: 'I', glow: '#5a3a80', id: 'di balik meja', en: 'at the table' },
-  { rot: 3, y: 2.5, n: 'II', glow: '#7a4a96', id: 'sesi bersama', en: 'reading together' },
-  { rot: -2, y: -1, n: 'III', glow: '#634088', id: 'malam event', en: 'event night' },
-  { rot: 4, y: 2, n: 'IV', glow: '#8a52a6', id: 'kartu terbuka', en: 'cards on the table' },
+  { rot: -4, y: 0, n: 'I', wash: 0, id: 'di balik meja', en: 'at the table' },
+  { rot: 3, y: 2.5, n: 'II', wash: 2, id: 'sesi bersama', en: 'reading together' },
+  { rot: -2, y: -1, n: 'III', wash: 4, id: 'malam event', en: 'event night' },
+  { rot: 4, y: 2, n: 'IV', wash: 3, id: 'kartu terbuka', en: 'cards on the table' },
 ];
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
@@ -76,12 +75,12 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                   transitionTimingFunction: EASE,
                 }}
               >
-                {/* the night-plum face, painted in watercolour */}
-                <CardWash colors={[pr.glow, '#241638', '#150c24']} />
+                {/* the card's face, painted in watercolour */}
+                <CardWash colors={DECK_WASH[pr.wash]} />
                 {/* inner frame */}
-                <span className="relative block rounded-[0.55rem] md:rounded-[0.7rem] ring-1 ring-[#C9B8E8]/25 px-1.5 md:px-2 pt-1 md:pt-1.5 pb-2 md:pb-2.5">
+                <span className="relative block rounded-[0.55rem] md:rounded-[0.7rem] ring-1 ring-white/[0.16] px-1.5 md:px-2 pt-1 md:pt-1.5 pb-2 md:pb-2.5">
                 {/* head: the card's numeral between two rules */}
-                <span aria-hidden className="print-ink flex items-center justify-center gap-2 pb-1 md:pb-1.5 text-[#C9B8E8]/75">
+                <span aria-hidden className="print-ink flex items-center justify-center gap-2 pb-1 md:pb-1.5 text-cream/60">
                   <span className="h-px w-4 md:w-6 bg-gradient-to-r from-transparent to-current opacity-60" />
                   <span className="font-elegant italic text-[0.7rem] md:text-[0.85rem] leading-none tracking-[0.12em]">{pr.n}</span>
                   <span className="h-px w-4 md:w-6 bg-gradient-to-l from-transparent to-current opacity-60" />
@@ -100,9 +99,9 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 </span>
                 {/* foot: the title, set like a card name */}
                 <span className="flex items-center justify-center gap-1.5 md:gap-2 pt-2 md:pt-3 text-center">
-                  <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-[#C9B8E8]/55" />
+                  <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-cream/50" />
                   <span className="font-elegant font-semibold uppercase tracking-[0.18em] md:tracking-[0.24em] text-[0.6rem] md:text-[0.72rem] text-cream/90 pl-[0.2em]">{isIndonesian ? pr.id : pr.en}</span>
-                  <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-[#C9B8E8]/55" />
+                  <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-cream/50" />
                 </span>
                 </span>
                 {/* printed on linen-finish card stock, and handled */}

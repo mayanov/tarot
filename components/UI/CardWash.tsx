@@ -9,6 +9,16 @@ import React from 'react';
  *
  * colors: [light, mid, deep] — mid is the card's body colour.
  */
+// The deck's colours, from the calm-space band's sky (TarotIntro), as [light, mid,
+// deep] — the pricelist cards and the event photo cards are dealt from these.
+export const DECK_WASH = [
+  ['#5a6ab8', '#262f6a', '#121840'], // night indigo
+  ['#9a52a0', '#55246e', '#2a1440'], // twilight plum
+  ['#ec98b4', '#c0587e', '#7a2c55'], // dusk rose
+  ['#ffbe98', '#e47c66', '#a2464c'], // sunrise coral
+  ['#ffdca0', '#d99a52', '#8e5a2c'], // dawn apricot
+] as const;
+
 const CardWash: React.FC<{ colors: readonly [string, string, string]; className?: string }> = ({ colors, className = '' }) => {
   const raw = React.useId();
   const id = raw.replace(/:/g, '');
