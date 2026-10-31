@@ -35,17 +35,71 @@ const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 // One moon face with its shadow parked at `offset` (0 = new, 104 = full). Defined
 // outside Loader so re-renders don't remount it (that would skip the shadow's slide).
 const MOON_IMG = `${import.meta.env.BASE_URL}moon.jpg`;
-const Face: React.FC<{ offset: number; shadowStyle?: React.CSSProperties }> = ({ offset, shadowStyle }) => (
-  <>
-    {/* the photo, softened and washed in the sky's rose-lilac so it reads as painted
-        into the twilight rather than pasted on top of it */}
-    <img src={MOON_IMG} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ transform: 'scale(1.06)', filter: 'contrast(0.82) brightness(1.08) saturate(0.6)' }} draggable={false} />
-    <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(90% 90% at 36% 32%, rgba(255,232,238,0.9) 0%, rgba(232,176,206,0.85) 45%, rgba(150,138,214,0.9) 100%)', mixBlendMode: 'color', opacity: 0.55 }} />
-    <div className="pointer-events-none absolute inset-0 rounded-full" style={{ boxShadow: 'inset 0 0 10px 1px rgba(80,60,140,0.45)' }} />
-    {/* the night side is the sky itself, a little see-through (earthshine), not black */}
-    <div className="absolute -inset-px rounded-full" style={{ background: '#1c1c50', opacity: 0.86, transform: `translateX(${offset}%)`, filter: 'blur(2.5px)', ...shadowStyle }} />
-  </>
-);
+// The moon is DRAWN, not photographed: light pencil on the twilight — a wobbly double
+// outline, a few sketched maria and craters, and the night side hatched in. Lines use
+// non-scaling strokes so the tiny row moons and the big full moon share one line weight.
+const PENCIL = '#efe4f2';
+const MARIA = [
+  'M30 30 C38 24 50 27 52 35 C55 43 46 49 38 47 C30 45 25 37 30 30 Z',
+  'M56 50 C63 45 73 48 74 56 C75 64 66 68 59 65 C53 62 51 55 56 50 Z',
+  'M34 58 C39 55 45 58 45 63 C45 68 39 70 35 67 C31 64 31 60 34 58 Z',
+];
+const CRATERS: [number, number, number][] = [[64, 30, 4], [45, 76, 3.2], [24, 50, 2.4], [70, 72, 2.2]];
+const Face: React.FC<{ offset: number; shadowStyle?: React.CSSProperties }> = ({ offset, shadowStyle }) => {
+  const id = React.useId().replace(/:/g, '');
+  const line = { fill: 'none', stroke: PENCIL, strokeLinecap: 'round' as const, vectorEffect: 'non-scaling-stroke' as const };
+  return (
+    <>
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" aria-hidden>
+        <defs>
+          {/* pencil: a slight hand wobble, then grain that breaks the strokes up */}
+          <filter id={`${id}p`} x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="4" result="w" />
+            <feDisplacementMap in="SourceGraphic" in2="w" scale="2.4" xChannelSelector="R" yChannelSelector="G" result="d" />
+            <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="9" result="g" />
+            <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.8 1.55" result="ga" />
+            <feComposite in="d" in2="ga" operator="in" />
+          </filter>
+          <pattern id={`${id}h`} width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+            <line x1="0" y1="0" x2="0" y2="5" {...line} strokeWidth="0.8" strokeOpacity="0.6" />
+          </pattern>
+        </defs>
+        <g filter={`url(#${id}p)`}>
+          {/* the lit face: just a breath of paper-white */}
+          <circle cx="50" cy="50" r="46" fill={PENCIL} fillOpacity="0.2" />
+          {MARIA.map((d, i) => (
+            <path key={i} d={d} fill={`url(#${id}h)`} {...line} strokeWidth="0.6" strokeOpacity="0.45" style={{ fill: `url(#${id}h)` }} />
+          ))}
+          {CRATERS.map(([cx, cy, r], i) => (
+            <circle key={i} cx={cx} cy={cy} r={r} {...line} strokeWidth="0.6" strokeOpacity="0.5" />
+          ))}
+        </g>
+      </svg>
+      {/* the night side: the sky itself, cross-hatched in pencil */}
+      <div className="absolute -inset-px rounded-full overflow-hidden" style={{ transform: `translateX(${offset}%)`, ...shadowStyle }}>
+        <div className="absolute inset-0" style={{ background: '#15143e' }} />
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" aria-hidden>
+          <defs>
+            <pattern id={`${id}x`} width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-50)">
+              <line x1="0" y1="0" x2="0" y2="7" {...line} strokeWidth="0.7" strokeOpacity="0.4" />
+            </pattern>
+          </defs>
+          <g filter={`url(#${id}p)`}>
+            <rect width="100" height="100" fill={`url(#${id}h)`} />
+            <rect width="100" height="100" fill={`url(#${id}x)`} />
+          </g>
+        </svg>
+      </div>
+      {/* the outline, drawn twice like a sketch that went round more than once */}
+      <svg className="pointer-events-none absolute inset-0 w-full h-full" viewBox="0 0 100 100" aria-hidden>
+        <g filter={`url(#${id}p)`}>
+          <circle cx="50" cy="50" r="45.5" {...line} strokeWidth="1.1" strokeOpacity="0.9" />
+          <circle cx="50.8" cy="49.4" r="45.8" {...line} strokeWidth="0.7" strokeOpacity="0.4" />
+        </g>
+      </svg>
+    </>
+  );
+};
 
 const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -272,7 +326,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
                 style={{
                   transform: `translate(-50%, -50%) translateX(${merged || flying ? 0 : slot * ROW_GAP_REM}rem) scale(${merged || flying ? 1.6 : 0.86 + fill * 0.14}) ${ph.waning ? 'scaleX(-1)' : ''}`,
                   opacity: merged || flying ? 0 : !showing ? 0 : 0.2 + fill * 0.8,
-                  boxShadow: on ? '0 0 16px 2px rgba(240,200,228,0.3)' : 'none',
+                  boxShadow: on ? '0 0 14px 1px rgba(240,200,228,0.16)' : 'none',
                   transition: merged || flying
                     ? `transform 900ms ${EASE} ${Math.abs(slot) * 40}ms, opacity 700ms ease ${180 + Math.abs(slot) * 40}ms`
                     : 'box-shadow 600ms ease',
@@ -294,8 +348,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
               transform: flying ? flight! : merged ? 'scale(1)' : 'scale(0.25)',
               opacity: flying ? 0 : merged ? 1 : 0,
               boxShadow: flying
-                ? '0 0 26px 4px rgba(240,206,230,0.18)'
-                : merged ? '0 0 40px 6px rgba(250,220,236,0.3), 0 0 120px 26px rgba(214,150,206,0.28)' : '0 0 0 0 rgba(240,206,230,0)',
+                ? '0 0 20px 2px rgba(240,206,230,0.1)'
+                : merged ? '0 0 90px 18px rgba(214,150,206,0.16)' : '0 0 0 0 rgba(240,206,230,0)',
               transition: flying
                 ? `transform ${REVEAL_FLIGHT_MS}ms ${EASE_FLIGHT}, box-shadow ${REVEAL_FLIGHT_MS}ms ease, opacity 320ms ease ${REVEAL_FLIGHT_MS - 120}ms`
                 : `opacity 700ms ease 120ms, transform 1100ms ${EASE}, box-shadow 1400ms ease`,
@@ -303,7 +357,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
           >
             <Face
               offset={flying ? 40 : 104}
-              shadowStyle={{ filter: 'blur(2px)', transition: flying ? `transform ${REVEAL_FLIGHT_MS - 150}ms cubic-bezier(0.45,0,0.2,1) 120ms` : 'none' }}
+              shadowStyle={{ transition: flying ? `transform ${REVEAL_FLIGHT_MS - 150}ms cubic-bezier(0.45,0,0.2,1) 120ms` : 'none' }}
             />
           </div>
         </div>
