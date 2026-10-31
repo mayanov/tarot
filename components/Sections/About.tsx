@@ -3,7 +3,6 @@ import FadeIn from '../UI/FadeIn';
 import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import CountUp from '../UI/CountUp';
-import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
 import { Phase } from '../UI/MoonPhaseDivider';
 import { moonNow } from '../Layout/MenuMoon';
@@ -160,7 +159,6 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         transition: 'transform 1100ms cubic-bezier(0.16,1,0.3,1)',
       }}
       className="bg-paper relative z-10 isolate overflow-hidden text-ink -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
-      <SoftAura />
       {/* portrait and text side by side on desktop (portrait first on phones) */}
       <div className="relative mx-auto px-8 pt-14 md:pt-20 pb-14 md:pb-20 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)] lg:gap-16 xl:gap-24 lg:items-start">
         <PortraitCard isIndonesian={isIndonesian} />
@@ -173,14 +171,12 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </MaskReveal>
           </h2>
 
-          {/* lead — the entry point: larger, in the serif and full ink, with the drop cap */}
-          <p className="print-text mt-7 md:mt-9 font-elegant text-[1.2rem] md:text-[1.35rem] leading-[1.55] text-ink/85 first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:font-semibold first-letter:text-ink first-letter:text-[4rem] md:first-letter:text-[4.4rem] first-letter:leading-[0.74]">
-            {isIndonesian
-              ? 'Saya sudah membaca kartu Tarot sejak 2009 — lebih dari 15 tahun menjadikannya ruang untuk refleksi diri. Pada dasarnya, Tarot bekerja dengan membaca energi: gambaran dari situasi dan perasaan yang sedang kamu bawa saat ini.'
-              : 'I’ve been reading Tarot since 2009 — over 15 years using it as a space for self-reflection. At its core, Tarot works by reading energy: a snapshot of the situation and feelings you’re carrying right now.'}
-          </p>
-
-          <div lang={isIndonesian ? 'id' : 'en'} className="print-body mt-5 md:mt-6 space-y-5 text-justify hyphens-auto">
+          <div lang={isIndonesian ? 'id' : 'en'} className="print-body mt-7 md:mt-9 space-y-5 text-justify hyphens-auto">
+            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-ink first-letter:text-[3.4rem] first-letter:leading-[0.72]">
+              {isIndonesian
+                ? 'Saya sudah membaca kartu Tarot sejak 2009 — lebih dari 15 tahun menjadikannya ruang untuk refleksi diri. Pada dasarnya, Tarot bekerja dengan membaca energi: gambaran dari situasi dan perasaan yang sedang kamu bawa saat ini.'
+                : 'I’ve been reading Tarot since 2009 — over 15 years using it as a space for self-reflection. At its core, Tarot works by reading energy: a snapshot of the situation and feelings you’re carrying right now.'}
+            </p>
             <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light">
               {isIndonesian
                 ? 'Dari situ kita lihat pola yang mungkin belum kamu sadari — soal karier, hubungan, keuangan, keluarga, atau keputusan besar — lalu menerjemahkannya jadi langkah yang jelas dan bisa kamu ambil.'
