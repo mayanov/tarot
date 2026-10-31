@@ -49,8 +49,6 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
     const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
     face.style.setProperty('--ry', `${(x * 12).toFixed(2)}deg`);
     face.style.setProperty('--rx', `${(-y * 9).toFixed(2)}deg`);
-    face.style.setProperty('--mx', `${((x + 0.5) * 100).toFixed(1)}%`);
-    face.style.setProperty('--my', `${((y + 0.5) * 100).toFixed(1)}%`);
     if (!hover) setHover(true);
   };
   const onLeave = () => {
@@ -123,14 +121,6 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
           </div>
           {/* printed on tarot card stock */}
           <CardStock />
-          {/* sheen that follows the pointer */}
-          <div aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-[1.15rem] mix-blend-screen"
-            style={{
-              background: 'radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(201,184,232,0.16), rgba(201,184,232,0) 55%)',
-              opacity: hover ? 1 : 0,
-              transition: 'opacity 400ms ease-out',
-            }} />
         </div>
         </div>
       </div>
