@@ -44,12 +44,17 @@ const CLEAR: Streak[] = [
 // a clear sky's few high wisps, thin and lit from below near the horizon (colours
 // from the front slots)
 const WISPS: Streak[] = [
-  [420, 440, 520, 16, -3, 0.5],
-  [1180, 400, 460, 14, 2, 0.45],
-  [820, 520, 700, 20, -1, 0.55],
-  [240, 590, 480, 18, 2, 0.5],
-  [1400, 560, 420, 16, -2, 0.45],
+  [300, 360, 420, 12, -4, 0.4],
+  [1280, 330, 380, 11, 3, 0.35],
+  [520, 450, 600, 18, -3, 0.6],
+  [1160, 430, 540, 16, 2, 0.55],
+  [820, 530, 760, 22, -1, 0.7],
+  [220, 595, 520, 20, 2, 0.65],
+  [1420, 575, 480, 18, -2, 0.6],
 ];
+
+// a faint band of starlight laid diagonally across a clear night, like the Milky Way
+const BAND: Streak = [880, 200, 1100, 90, -16, 0.28];
 
 // pale backruns, where water crept back into a drying wash
 const BLOOMS: [number, number, number, number][] = [[560, 250, 140, 50], [1120, 210, 160, 46], [1460, 470, 140, 54]];
@@ -116,7 +121,7 @@ const paintSvg = (p: SkyPalette) => svg(`
     ${p.clear ? softWashFilter('wash') : washFilter('wash', 9, 7, 120)}
     ${washFilter('wash2', 5, 19, 90)}
     ${washFilter('wisp', 12, 27, 150)}
-    <linearGradient id="horizon" x1="0" y1="0" x2="0" y2="1"><stop offset="0.45" stop-color="${p.glow[0]}" stop-opacity="0"/><stop offset="1" stop-color="${p.glow[0]}"/></linearGradient>
+    <linearGradient id="horizon" x1="0" y1="0" x2="0" y2="1"><stop offset="0.45" stop-color="${p.glow[0]}" stop-opacity="0"/><stop offset="0.8" stop-color="${p.glow[0]}" stop-opacity="0.55"/><stop offset="1" stop-color="${p.glow[0]}"/></linearGradient>
     <filter id="bloom" x="-50%" y="-80%" width="200%" height="260%">
       <feGaussianBlur stdDeviation="9" result="soft"/>
       <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="4" seed="21" result="n"/>
@@ -139,7 +144,8 @@ const paintSvg = (p: SkyPalette) => svg(`
   <rect width="${W}" height="${H}" fill="url(#base)"/>
   <g filter="url(#wash)">${streaks(p.clear ? CLEAR : BACK, p.back)}</g>
   <g opacity="0.4"><rect width="${W}" height="${H}" fill="url(#g1)"/><rect width="${W}" height="${H}" fill="url(#g2)"/></g>
-  ${p.clear ? `<rect width="${W}" height="${H}" fill="url(#horizon)" opacity="0.55"/>
+  ${p.clear ? `<rect width="${W}" height="${H}" fill="url(#horizon)" opacity="0.8"/>
+  <g filter="url(#wisp)">${streaks([BAND], [p.bloom])}</g>
   <g filter="url(#wisp)">${streaks(WISPS, p.front)}</g>` : `<g filter="url(#wash2)">${streaks(FRONT, p.front)}</g>
   <g filter="url(#bloom)" fill="${p.bloom}" opacity="0.32">
     ${BLOOMS.map(([cx, cy, rx, ry]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`).join('')}
@@ -252,12 +258,12 @@ export const MIDNIGHT: SkyPalette = {
 // lightening to a luminous violet-rose horizon, blue up the left, a magenta bloom
 // upper-right, teal lower-right, and a few thin lit wisps low down
 export const TWILIGHT: SkyPalette = {
-  ground: '#1a1a48',
-  base: ['#060a26', '#111c4e', '#22307a', '#4a4296', '#8a5ea6'],
-  back: ['#050822', '#2a52b8', '#9a4a9e', '#3a3a9a', '#6a4aa8', '#2a86a0'],
-  front: ['#c88ab8', '#8a9ad8', '#e0a0bc', '#9a7ac8', '#7ab8cc'],
-  bloom: '#d8c8f0',
-  glow: ['rgba(230,150,190,0.75)', 'rgba(110,200,220,0.6)'],
+  ground: '#1c1c50',
+  base: ['#050a2a', '#0f1e58', '#243488', '#5446a2', '#a06aae'],
+  back: ['#040824', '#2e5ccc', '#b04aa6', '#3a3eaa', '#7a4ab4', '#2a9ab0'],
+  front: ['#e09ac4', '#9aaae4', '#f2b0c8', '#b48ad6', '#8ccad8'],
+  bloom: '#e4dcff',
+  glow: ['rgba(245,160,190,0.85)', 'rgba(110,210,230,0.7)'],
   clear: true,
 };
 
