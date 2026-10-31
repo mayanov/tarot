@@ -52,7 +52,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
         // two hard rules as stamped labels, the notes as running text in two columns.
         <section id="disclaimer" className="mx-auto px-4 md:px-8 pt-8 md:pt-12 pb-20 md:pb-28">
             <FadeIn>
-                <div className="relative isolate overflow-hidden mx-auto max-w-5xl rounded-lg border-[1.5px] border-moon/60 bg-moon/[0.07] px-6 py-8 md:px-12 md:py-11">
+                <div className="relative isolate overflow-hidden rounded-lg border-[1.5px] border-moon/60 bg-moon/[0.07] px-6 py-8 md:px-12 md:py-11">
                     <CelestialMark name="sparkle" className="pointer-events-none absolute -right-7 -top-7 -z-10 w-40 md:w-52 text-moon/[0.11]" />
 
                     <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pb-6 border-b border-moon/30">
