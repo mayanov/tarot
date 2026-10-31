@@ -5,6 +5,7 @@ import About from './components/Sections/About';
 import WhyChoose from './components/Sections/WhyChoose';
 import TarotIntro from './components/Sections/TarotIntro';
 import Footer from './components/Layout/Footer';
+import WatercolorSky from './components/Layout/WatercolorSky';
 import Loader from './components/Layout/Loader';
 import BookingModal from './components/Booking/BookingModal';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
@@ -52,16 +53,6 @@ function App() {
   const footerInnerRef = useRef<HTMLDivElement>(null);
   const footerSkyRef = useRef<HTMLDivElement>(null);
   const [footerH, setFooterH] = useState(0);
-  // The footer's sky photo is the biggest image on the page but only seen at the very
-  // bottom — fetch it a couple of seconds after the hero is up, not during start-up.
-  const [footerSkyOn, setFooterSkyOn] = useState(false);
-  useEffect(() => {
-    let t: number | undefined;
-    const later = () => { t = window.setTimeout(() => setFooterSkyOn(true), 2000); };
-    window.addEventListener('mt:reveal', later, { once: true });
-    const fallback = window.setTimeout(() => setFooterSkyOn(true), 9000);
-    return () => { window.removeEventListener('mt:reveal', later); if (t) clearTimeout(t); clearTimeout(fallback); };
-  }, []);
   const [reduceMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
@@ -432,23 +423,17 @@ function App() {
         ref={footerRef}
         className="fixed bottom-0 inset-x-0 z-0 isolate overflow-hidden rounded-t-[2.25rem] md:rounded-t-[3.5rem]"
       >
-        {/* the sky photo spanning the whole region (same sky as the hero — bookends the page) */}
-        <div
-          ref={footerSkyRef}
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 will-change-transform"
-          style={{
-            backgroundImage: footerSkyOn ? `url(${import.meta.env.BASE_URL}sky-hero.jpg)` : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transform: 'scale(1.1)',
-          }}
+        {/* a watercolour purple sky, painted inline (no photo to fetch) */}
+        <WatercolorSky
+          skyRef={footerSkyRef}
+          className="absolute inset-0 -z-10 will-change-transform"
+          style={{ transform: 'scale(1.1)' }}
         />
-        {/* legibility veil so cream text stays readable over the brighter nebula */}
+        {/* a light veil so the cream text keeps its contrast over the paler washes */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10"
-          style={{ background: 'linear-gradient(180deg, rgba(16,16,40,0.56) 0%, rgba(16,16,40,0.42) 48%, rgba(16,16,40,0.54) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(20,12,38,0.18) 0%, rgba(20,12,38,0.08) 50%, rgba(20,12,38,0.3) 100%)' }}
         />
 
         <div ref={footerInnerRef} className="relative p-3 sm:p-5 md:p-6 will-change-transform" style={reduceMotion ? undefined : { opacity: 0.12 }}>
