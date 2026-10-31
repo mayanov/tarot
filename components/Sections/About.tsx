@@ -4,6 +4,7 @@ import MaskReveal from '../UI/MaskReveal';
 import { ImageReveal } from '../UI/Reveal';
 import CountUp from '../UI/CountUp';
 import CelestialMark from '../UI/CelestialMark';
+import CardStock from '../UI/CardStock';
 import { Phase } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import { moonNow } from '../Layout/MenuMoon';
@@ -71,7 +72,7 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
         {/* the face */}
         <div
           ref={faceRef}
-          className="relative rounded-[1.15rem] p-3 md:p-3.5 ring-1 ring-white/10 [box-shadow:0_40px_80px_-30px_rgba(24,14,40,0.7),0_2px_8px_-2px_rgba(24,14,40,0.25)]"
+          className="relative rounded-[1.15rem] p-3 md:p-3.5 [box-shadow:0_30px_60px_-30px_rgba(24,14,40,0.65),0_1px_3px_rgba(24,14,40,0.35)]"
           style={{
             // the deck's night plum (same as the Services card backs), so it stands off the paper
             background: 'radial-gradient(130% 110% at 50% 0%, #3a2558 0%, #241638 55%, #150c24 100%)',
@@ -114,6 +115,8 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
               </span>
             </figcaption>
           </div>
+          {/* printed on linen-finish card stock, and handled */}
+          <CardStock />
           {/* sheen that follows the pointer */}
           <div aria-hidden
             className="pointer-events-none absolute inset-0 rounded-[1.15rem] mix-blend-screen"

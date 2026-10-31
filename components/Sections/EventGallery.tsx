@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CelestialMark from '../UI/CelestialMark';
+import CardStock from '../UI/CardStock';
 
 // The photo band above "Event & collaboration": the photos as tarot cards dealt
 // loosely on the paper — the same night-plum card as the About portrait (numeral at
@@ -68,7 +69,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 onClick={() => onOpen(src)}
                 aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
                 // hover cancels the card's tilt (--r) and lifts it (no zoom); deeper shadow
-                className="group relative block w-full p-1.5 md:p-2.5 rounded-[0.75rem] md:rounded-[1rem] ring-1 ring-white/10 shadow-[0_18px_36px_-16px_rgba(24,14,40,0.6)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_32px_56px_-20px_rgba(24,14,40,0.55)] hover:[transform:rotate(var(--r))_translateY(-10px)]"
+                className="group relative block w-full p-1.5 md:p-2.5 rounded-[0.75rem] md:rounded-[1rem] shadow-[0_1px_2px_rgba(24,14,40,0.35),0_10px_18px_-10px_rgba(24,14,40,0.55)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_2px_4px_rgba(24,14,40,0.25),0_24px_36px_-16px_rgba(24,14,40,0.5)] hover:[transform:rotate(var(--r))_translateY(-10px)]"
                 style={{
                   ['--r' as any]: `${-pr.rot}deg`,
                   transitionTimingFunction: EASE,
@@ -102,6 +103,8 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                   <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-[#C9B8E8]/55" />
                 </span>
                 </span>
+                {/* printed on linen-finish card stock, and handled */}
+                <CardStock />
               </button>
             </div>
           );

@@ -7,6 +7,7 @@ import { btnPrimaryDark, btnSecondaryDark } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
 import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
+import CardStock from '../UI/CardStock';
 import { lockPage, unlockPage } from '../UI/scroll';
 import { trackEvent, SERVICE_TRACK_NAME, promoTrackName } from '../../services/analytics';
 
@@ -99,7 +100,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
         >
             {/* ===== FRONT — the card face ===== */}
             <div
-                className="absolute inset-0 [backface-visibility:hidden] [container-type:inline-size] overflow-hidden rounded-[1.15rem] ring-1 ring-white/15 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
+                className="absolute inset-0 [backface-visibility:hidden] [container-type:inline-size] overflow-hidden rounded-[1.15rem] [box-shadow:0_1px_2px_rgba(12,8,30,0.35),0_18px_34px_-18px_rgba(12,8,30,0.6)]"
                 style={{ background: CAT_BG[k % CAT_BG.length] }}
             >
                 <div aria-hidden className="absolute inset-0 opacity-70" style={{ backgroundImage: CAT_STARS[k % CAT_STARS.length] }} />
@@ -122,10 +123,12 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                         <span className="font-serif font-semibold whitespace-nowrap leading-[1.55]" style={{ fontSize: cq(g.promo ? 16.8 : 18) }}>{g.promo ? g.priceLabel : fromPrice(g)}</span>
                     </div>
                 </div>
+                <CardStock />
             </div>
 
             {/* ===== BACK — the booking options ===== */}
-            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] bg-paper text-ink [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]">
+            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] bg-paper text-ink [box-shadow:0_1px_2px_rgba(12,8,30,0.35),0_18px_34px_-18px_rgba(12,8,30,0.6)]">
+                <CardStock tone="light" />
                 {/* soft accent glow from the top for depth */}
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-20" style={{ background: `radial-gradient(85% 100% at 50% 0%, ${accent}1f, transparent 72%)` }} />
 
@@ -254,7 +257,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
 // that flips to the details; clicking the dark backdrop (anywhere outside) closes it.
 // The face-down back of a card, used while the deck is stacked before it's dealt.
 const CardBack: React.FC = () => (
-    <div className="absolute inset-0 overflow-hidden rounded-[1.15rem] ring-1 ring-white/15 [box-shadow:0_34px_70px_-34px_rgba(12,8,30,0.7)]"
+    <div className="absolute inset-0 overflow-hidden rounded-[1.15rem] [box-shadow:0_1px_2px_rgba(12,8,30,0.35),0_18px_34px_-18px_rgba(12,8,30,0.6)]"
         style={{ background: 'radial-gradient(130% 110% at 50% 0%, #3a2558 0%, #241638 55%, #150c24 100%)' }}>
         <div aria-hidden className="absolute inset-0 opacity-60" style={{ backgroundImage: CAT_STARS[1] }} />
         <div aria-hidden className="absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-[#C9B8E8]/25" />
@@ -265,6 +268,7 @@ const CardBack: React.FC = () => (
                 <span className="print-ink font-elegant italic text-[11px] tracking-[0.32em] uppercase text-[#C9B8E8]/55">Mayanov</span>
             </div>
         </div>
+        <CardStock />
     </div>
 );
 
