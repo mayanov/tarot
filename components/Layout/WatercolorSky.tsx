@@ -197,15 +197,16 @@ export const DUSK: SkyPalette = {
   glow: ['rgba(255,214,236,0.9)', 'rgba(214,190,255,0.7)'],
 };
 
-// midnight: deep navy through blue-violet to a cool periwinkle haze — the interlude,
-// a night sky to the footer's dusk
+// midnight: deep navy at the top warming through violet to a mauve-rose haze, with
+// a teal-blue drift and a few aqua and pink lights — the interlude, a night sky to
+// the footer's dusk
 export const MIDNIGHT: SkyPalette = {
-  ground: '#1f2a5a',
-  base: ['#0d1638', '#1b2858', '#2c3a80', '#4f579c', '#7f88c4'],
-  back: ['#0b1333', '#1a2560', '#20306e', '#3b4c9c', '#5b4f9e', '#4f6bb0'],
-  front: ['#2a3a7e', '#4a5cac', '#7a86c6', '#a9b2e0', '#c8c4ea'],
-  bloom: '#d5dcf5',
-  glow: ['rgba(196,214,255,0.6)', 'rgba(206,190,255,0.45)'],
+  ground: '#2a2560',
+  base: ['#0d1638', '#1e2560', '#3a3488', '#6a4a9e', '#a7739f'],
+  back: ['#0b1333', '#2a1f62', '#1c3a74', '#4b3c9c', '#7a4a9a', '#2f6a9a'],
+  front: ['#3a3a8e', '#6a5ab0', '#b07ab0', '#e0a8c4', '#7fb0d8'],
+  bloom: '#e6dcf5',
+  glow: ['rgba(255,190,220,0.6)', 'rgba(150,210,240,0.5)'],
 };
 
 // the calm-space band's timelapse runs NIGHT → PLUM → SUNRISE
