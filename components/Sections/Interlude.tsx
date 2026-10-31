@@ -1,6 +1,7 @@
 import React from 'react';
 import IlluminateText from '../UI/IlluminateText';
 import CelestialMark from '../UI/CelestialMark';
+import WatercolorSky, { MIDNIGHT } from '../Layout/WatercolorSky';
 
 interface InterludeProps {
   isIndonesian?: boolean;
@@ -16,15 +17,11 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
     <section
       id="interlude"
       className="relative overflow-hidden isolate text-cream py-24 md:py-32"
-      style={{ background: 'linear-gradient(165deg, #28336B 0%, #202A5C 48%, #0E1A3D 100%)' }}
     >
-      {/* faint indigo glow for depth */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-1/4 left-1/2 -translate-x-1/2 w-[60rem] h-[36rem] max-w-[120vw] rounded-full blur-[130px]"
-        style={{ background: 'radial-gradient(circle, rgba(74,96,190,0.28), transparent 70%)' }}
-      />
-
+      {/* a watercolour night sky — the footer's painting in a midnight palette */}
+      <WatercolorSky palette={MIDNIGHT} className="absolute inset-0 -z-10" />
+      {/* a light veil so the cream quote keeps its contrast over the paler washes */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg, rgba(8,12,34,0.12) 0%, rgba(8,12,34,0.22) 100%)' }} />
 
       <div className="mx-auto px-8 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
