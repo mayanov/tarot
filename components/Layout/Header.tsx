@@ -6,6 +6,7 @@ import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/sc
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
 import PencilRule from '../UI/PencilRule';
+import { playPageTurn } from '../UI/paperSound';
 import CelestialMark from '../UI/CelestialMark';
 import { MoonWatermark, moonNow } from './MenuMoon';
 
@@ -54,11 +55,14 @@ interface NavItem {
   children?: { name: string; id: string }[];
 }
 
-// Menu motion: opening, the paper wipes down over the site (WIPE_MS) and the links rise
-// in one by one as it settles; closing plays it backwards — the links drop out, last
-// first (OUT_MS), then the paper wipes back up.
-const WIPE_MS = 700;
-const WIPE_EASE = 'cubic-bezier(0.76,0,0.24,1)';
+// Menu motion: opening, a new page is turned over onto the site from the left, hinged
+// at its left edge (WIPE_MS, with the sound of paper), and the links rise in one by
+// one as it settles; closing plays it backwards — the links drop out, last first
+// (OUT_MS), then the page is turned back.
+const WIPE_MS = 800;
+const WIPE_EASE = 'cubic-bezier(0.6,0,0.3,1)';
+const PAGE_TURNED = 'perspective(2600px) rotateY(0deg)';
+const PAGE_AWAY = 'perspective(2600px) rotateY(-89deg)';
 const OUT_MS = 380;
 // the links: each line slides up into place from behind its own baseline (a mask),
 // one after another, starting while the paper is still coming down
@@ -92,6 +96,13 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
     setClosing(true);
     closeTimer.current = window.setTimeout(() => { setMenuOpen(false); setClosing(false); closingRef.current = false; }, OUT_MS);
   };
+  // every turn of the page is heard (open, and the turn back after the links leave)
+  const turned = useRef(false);
+  useEffect(() => {
+    if (!turned.current && !menuOpen) return;
+    turned.current = true;
+    playPageTurn(WIPE_MS);
+  }, [menuOpen]);
   // opening again mid-close cancels the close (the links come straight back)
   // the section on screen when the menu opens (marked in the index)
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -308,11 +319,13 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
       <div
         className={`bg-paper fixed inset-0 z-[110] overflow-hidden outline-none ${menuOpen && !closing ? '' : 'pointer-events-none'}`}
         style={{
-          // a wipe from the top edge: the paper is drawn down over the site and lifted
-          // back up; hidden (visibility) only once it has lifted
-          clipPath: menuOpen ? 'inset(0 0 0 0)' : 'inset(0 0 100% 0)',
+          // a page turned over onto the site, hinged at its left edge, and turned back;
+          // hidden (visibility) only once it has gone
+          transform: menuOpen ? PAGE_TURNED : PAGE_AWAY,
+          transformOrigin: 'left center',
+          backfaceVisibility: 'hidden',
           visibility: menuOpen ? 'visible' : 'hidden',
-          transition: `clip-path ${WIPE_MS}ms ${WIPE_EASE}, visibility 0s linear ${menuOpen ? 0 : WIPE_MS}ms`,
+          transition: `transform ${WIPE_MS}ms ${WIPE_EASE}, visibility 0s linear ${menuOpen ? 0 : WIPE_MS}ms`,
         }}
         ref={overlayRef}
         role="dialog"
@@ -322,6 +335,13 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
         inert={!menuOpen}
         tabIndex={-1}
       >
+        {/* the light across the page as it turns: shaded away from the hinge while it's
+            in the air, clearing as it lies flat */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-r from-transparent via-ink/[0.06] to-ink/30"
+          style={{ opacity: menuOpen ? 0 : 1, transition: `opacity ${WIPE_MS}ms ${WIPE_EASE}` }}
+        />
         {/* tonight's moon, printed faintly into the paper — behind the services on wide
             screens, low in the corner on phones; it rises and turns into place as the
             paper comes down */}

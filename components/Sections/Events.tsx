@@ -81,7 +81,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         key={event.id || ii}
                         className="group relative flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2 first:pt-0"
                       >
-                        {ii > 0 && <PencilRule className="absolute inset-x-0 top-0 text-ink/25" />}
+                        {ii > 0 && <PencilRule weight="fine" className="absolute inset-x-0 top-0 text-ink/25" />}
                         <h3 className="print-body font-serif font-medium text-ink text-sm md:text-base leading-[1.25] transition-colors duration-500 group-hover:text-moon">
                           {event.title}
                         </h3>

@@ -244,13 +244,13 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         onMouseLeave={() => setPaused(false)}
       >
         {/* one broad watercolour brushstroke swept behind the quote */}
-        <div aria-hidden className="pointer-events-none absolute -inset-y-10 md:-inset-y-14 inset-x-0 -z-10 mx-auto max-w-6xl">
+        <div aria-hidden className="pointer-events-none absolute -inset-y-10 md:-inset-y-14 inset-x-0 -z-10 mx-auto max-w-6xl xl:max-w-[86rem] 2xl:max-w-[94rem]">
           <WatercolorWash variant="stroke" />
         </div>
         {/* a large, faint opening quote mark */}
         <div aria-hidden className="pointer-events-none text-center font-elegant text-moon/30 text-[5rem] md:text-[7rem] leading-[0.28] select-none"><span className="print-ink mix-blend-multiply inline-block py-[0.5em] -my-[0.5em]">&ldquo;</span></div>
 
-        <div className="relative grid max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto mt-5 md:mt-7">
+        <div className="relative grid max-w-3xl lg:max-w-4xl xl:max-w-[72rem] 2xl:max-w-[80rem] mx-auto mt-5 md:mt-7">
           {reviews.map((r, i) => {
             const active = i === index;
             return (
@@ -284,7 +284,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           type="button"
           onClick={() => go(-1)}
           aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
-          className="absolute left-2 md:left-6 lg:left-10 top-1/2 -translate-y-1/2 z-10 p-2 text-moon hover:text-moon/60 transition-colors duration-500"
+          className="absolute left-2 md:left-6 lg:left-10 xl:left-4 top-1/2 -translate-y-1/2 z-10 p-2 text-moon hover:text-moon/60 transition-colors duration-500"
         >
           <ChevronLeft className="print-ink [filter:url(#pencil-icon)] w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
         </button>
@@ -292,7 +292,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           type="button"
           onClick={() => go(1)}
           aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
-          className="absolute right-2 md:right-6 lg:right-10 top-1/2 -translate-y-1/2 z-10 p-2 text-moon hover:text-moon/60 transition-colors duration-500"
+          className="absolute right-2 md:right-6 lg:right-10 xl:right-4 top-1/2 -translate-y-1/2 z-10 p-2 text-moon hover:text-moon/60 transition-colors duration-500"
         >
           <ChevronRight className="print-ink [filter:url(#pencil-icon)] w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
         </button>

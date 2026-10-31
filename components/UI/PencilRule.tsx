@@ -12,6 +12,8 @@ interface PencilRuleProps {
    * and its wobble spills over the margins. Pass false to give it its full 12px.
    */
   collapse?: boolean;
+  /** 'fine': a lighter hand, a thinner line (for rules between list rows) */
+  weight?: 'regular' | 'fine';
 }
 
 /**
@@ -20,7 +22,8 @@ interface PencilRuleProps {
  * at the ends, with a fainter second pass where the hand went over it again. Every
  * instance gets its own wobble. Drawn in pixel units, so it keeps its scale at any length.
  */
-const PencilRule: React.FC<PencilRuleProps> = ({ className = '', vertical = false, fade = 'both', collapse = true }) => {
+const PencilRule: React.FC<PencilRuleProps> = ({ className = '', vertical = false, fade = 'both', collapse = true, weight = 'regular' }) => {
+  const fine = weight === 'fine';
   const rawId = React.useId();
   const id = rawId.replace(/:/g, '');
   const seed = [...rawId].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 997, 7);
@@ -57,8 +60,8 @@ const PencilRule: React.FC<PencilRuleProps> = ({ className = '', vertical = fals
         </mask>
       </defs>
       <g mask={`url(#${id}m)`} filter={`url(#${id}f)`} stroke="currentColor" strokeLinecap="round" fill="none">
-        <line {...along('0.5%', '99.5%', '50%', '50%')} strokeWidth="1.9" strokeOpacity="0.85" />
-        <line {...along('6%', '88%', '62%', '40%')} strokeWidth="1.1" strokeOpacity="0.4" />
+        <line {...along('0.5%', '99.5%', '50%', '50%')} strokeWidth={fine ? 1.1 : 1.9} strokeOpacity="0.85" />
+        <line {...along('6%', '88%', '62%', '40%')} strokeWidth={fine ? 0.7 : 1.1} strokeOpacity={fine ? 0.3 : 0.4} />
       </g>
     </svg>
   );

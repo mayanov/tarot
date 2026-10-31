@@ -449,10 +449,11 @@ function App() {
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-4 items-end">
         {showBackToTop && (
-          // a drop of indigo ink with a pencilled arrow on it
+          // a drop of indigo ink with a pencilled arrow on it; centred over the
+          // larger WhatsApp drop below (mr-1.5 = half the difference in size)
           <button
             onClick={scrollToTop}
-            className="group/btn relative isolate grid place-items-center w-11 h-11 text-cream drop-shadow-[0_6px_10px_rgba(20,12,40,0.25)] transition-transform duration-300 hover:-translate-y-1"
+            className="group/btn relative isolate grid place-items-center w-11 h-11 mr-1.5 text-cream drop-shadow-[0_6px_10px_rgba(20,12,40,0.25)] transition-transform duration-300 hover:-translate-y-1"
             title="Back to Top"
           >
             <PaintSwatch round className="transition-colors duration-300 text-[#1c1a4c] group-hover/btn:text-moon" />

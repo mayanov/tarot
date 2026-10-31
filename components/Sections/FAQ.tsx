@@ -181,7 +181,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
             const open = openKey === faq.question;
             return (
               <li key={faq.question}>
-                <PencilRule className="text-ink/30" />
+                <PencilRule weight="fine" className="text-ink/30" />
                 <FadeIn delay={Math.min(index, 6) * 55} dir="up" distance={0.6}>
                   <button
                     onClick={() => toggleFAQ(faq.question)}
@@ -209,7 +209,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                     </div>
                   </div>
                 </FadeIn>
-                {index === filtered.length - 1 && <PencilRule className="text-ink/30" />}
+                {index === filtered.length - 1 && <PencilRule weight="fine" className="text-ink/30" />}
               </li>
             );
           })}
@@ -217,7 +217,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
 
         {/* desktop: the chosen question's answer */}
         <aside aria-live="polite" className="hidden lg:block lg:sticky lg:top-28">
-          <div className="mb-6"><PencilRule className="text-ink/30" /></div>
+          <div className="mb-6"><PencilRule weight="fine" className="text-ink/30" /></div>
           {current && (
             <div key={current.question} className="animate-[faqIn_500ms_cubic-bezier(0.16,1,0.3,1)]">
               <p className="print-body font-elegant italic text-sm tabular-nums text-moon">{String(currentNo).padStart(2, '0')}</p>
