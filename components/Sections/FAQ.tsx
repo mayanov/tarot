@@ -153,7 +153,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
             </h2>
 
             {/* category filter — a quiet row of words, the active one in purple italic */}
-            <p className="mt-6 md:mt-8 text-[0.95rem] md:text-base text-ink/50 font-light">
+            <p className="print-body mt-6 md:mt-8 text-[0.95rem] md:text-base text-ink/50 font-light">
               {categories.map((cat, ci) => {
                 const active = showAll ? cat === allLabel : cat === activeCat;
                 return (
@@ -186,16 +186,16 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                     aria-expanded={open}
                     className="group w-full grid grid-cols-[2rem_1fr_auto] md:grid-cols-[2.75rem_1fr_auto] items-baseline gap-x-3 md:gap-x-5 py-4 md:py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-moon/40 rounded-sm"
                   >
-                    <span aria-hidden className={`font-elegant italic text-sm tabular-nums transition-colors duration-300 ${open ? 'text-moon' : 'text-ink/35'}`}>
+                    <span aria-hidden className={`print-body font-elegant italic text-sm tabular-nums transition-colors duration-300 ${open ? 'text-moon' : 'text-ink/35'}`}>
                       {String(index + 1).padStart(2, '0')}
                     </span>
                     <span className={`print-text font-elegant font-medium text-[1.1rem] md:text-[1.3rem] leading-snug tracking-[-0.01em] transition-[color,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'text-moon' : 'text-ink group-hover:translate-x-1.5 group-hover:text-moon'}`}>
                       {faq.question}
                     </span>
                     {/* a bare + that turns into × when open — no container */}
-                    <Plus aria-hidden className={`lg:hidden self-center w-5 h-5 transition-[transform,color] duration-500 ${open ? 'rotate-45 text-moon' : 'text-ink/40 group-hover:text-moon'}`} strokeWidth={1.5} />
+                    <Plus aria-hidden className={`print-ink lg:hidden self-center w-5 h-5 transition-[transform,color] duration-500 ${open ? 'rotate-45 text-moon' : 'text-ink/40 group-hover:text-moon'}`} strokeWidth={1.5} />
                     {/* desktop: an arrow pointing to the answer on the right */}
-                    <ArrowRight aria-hidden className={`hidden lg:block self-center w-5 h-5 transition-[transform,opacity,color] duration-500 ${current === faq ? 'opacity-100 text-moon' : 'opacity-0 -translate-x-2 text-ink/40 group-hover:opacity-100 group-hover:translate-x-0'}`} strokeWidth={1.5} />
+                    <ArrowRight aria-hidden className={`print-ink hidden lg:block self-center w-5 h-5 transition-[transform,opacity,color] duration-500 ${current === faq ? 'opacity-100 text-moon' : 'opacity-0 -translate-x-2 text-ink/40 group-hover:opacity-100 group-hover:translate-x-0'}`} strokeWidth={1.5} />
                   </button>
 
                   <div className={`lg:hidden grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
@@ -216,7 +216,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
         <aside aria-live="polite" className="hidden lg:block lg:sticky lg:top-28 border-t border-ink/10 pt-6">
           {current && (
             <div key={current.question} className="animate-[faqIn_500ms_cubic-bezier(0.16,1,0.3,1)]">
-              <p className="font-elegant italic text-sm tabular-nums text-moon">{String(currentNo).padStart(2, '0')}</p>
+              <p className="print-body font-elegant italic text-sm tabular-nums text-moon">{String(currentNo).padStart(2, '0')}</p>
               <h3 className="print-text mt-2 font-elegant font-semibold text-ink text-[1.6rem] xl:text-[1.9rem] leading-[1.2] tracking-[-0.015em]">
                 {current.question}
               </h3>
@@ -240,7 +240,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               rel="noopener noreferrer"
               className="group mt-3 inline-flex items-center gap-3 font-elegant font-semibold text-ink text-[1.8rem] md:text-[2.6rem] leading-tight tracking-[-0.02em] hover:text-moon transition-colors duration-300"
             >
-              {isIndonesian ? 'Tanya langsung via WhatsApp' : 'Ask me on WhatsApp'}
+              <span className="print-text pb-[0.14em] -mb-[0.14em]">{isIndonesian ? 'Tanya langsung via WhatsApp' : 'Ask me on WhatsApp'}</span>
               <ArrowUpRight className="w-7 h-7 md:w-9 md:h-9 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1" strokeWidth={1.5} />
             </a>
           </div>

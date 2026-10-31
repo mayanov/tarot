@@ -599,7 +599,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                     </div>
                 </div>
             )}
-            <p className="mt-12 md:mt-14 text-center text-ink/45 text-xs tracking-wide">
+            <p className="print-body mt-12 md:mt-14 text-center text-ink/45 text-xs tracking-wide">
                 {isIndonesian ? 'Ketuk kartu untuk menariknya' : 'Tap a card to draw it'}
             </p>
 
@@ -937,7 +937,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             <div className="mx-auto px-8 pt-14 md:pt-20 pb-6 md:pb-10">
                 <FadeIn>
                     {/* centred over the spread, no subtitle — the cards say the rest */}
-                    <h2 className="text-center font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+                    <h2 className="print-text pb-[0.14em] -mb-[0.14em] text-center font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                         {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
                     </h2>
                 </FadeIn>

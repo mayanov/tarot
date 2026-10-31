@@ -280,7 +280,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
           className="absolute left-2 md:left-6 lg:left-10 top-1/2 -translate-y-1/2 z-10 p-2 text-moon hover:text-moon/60 transition-colors duration-500"
         >
-          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
+          <ChevronLeft className="print-ink w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
         </button>
         <button
           type="button"
@@ -288,7 +288,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
           className="absolute right-2 md:right-6 lg:right-10 top-1/2 -translate-y-1/2 z-10 p-2 text-moon hover:text-moon/60 transition-colors duration-500"
         >
-          <ChevronRight className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
+          <ChevronRight className="print-ink w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
         </button>
       </div>
 

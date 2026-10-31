@@ -52,25 +52,28 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
         // two hard rules as stamped labels, the notes as running text in two columns.
         <section id="disclaimer" className="mx-auto px-4 md:px-8 pt-8 md:pt-12 pb-20 md:pb-28">
             <FadeIn>
-                <div className="relative isolate overflow-hidden rounded-lg border-[1.5px] border-moon/60 bg-moon/[0.07] px-6 py-8 md:px-12 md:py-11">
-                    <CelestialMark name="sparkle" className="pointer-events-none absolute -right-7 -top-7 -z-10 w-40 md:w-52 text-moon/[0.11]" />
+                <div className="relative isolate overflow-hidden rounded-lg px-6 py-8 md:px-12 md:py-11">
+                    {/* the printed box — its rule and wash on their own layer, so the ink wear
+                        doesn't stack on the text inside */}
+                    <div aria-hidden className="print-text pointer-events-none absolute inset-0 -z-10 rounded-lg border-[1.5px] border-moon/60 bg-moon/[0.07]" />
+                    <CelestialMark name="sparkle" className="print-ink pointer-events-none absolute -right-7 -top-7 -z-10 w-40 md:w-52 text-moon/[0.11]" />
 
                     <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pb-6 border-b border-moon/30">
                         {/* the title carries the weight: large, in the brand purple */}
-                        <h2 className="flex items-center gap-3 font-elegant font-bold text-moon text-[2.2rem] sm:text-[2.6rem] md:text-[3.1rem] leading-none tracking-[-0.02em]">
-                            <CelestialMark name="sparkle" className="w-6 md:w-8 text-moon" />
+                        <h2 className="print-text pb-[0.14em] -mb-[0.14em] flex items-center gap-3 font-elegant font-bold text-moon text-[2.2rem] sm:text-[2.6rem] md:text-[3.1rem] leading-none tracking-[-0.02em]">
+                            <CelestialMark name="sparkle" className="print-ink w-6 md:w-8 text-moon" />
                             Disclaimer
                         </h2>
                         <div className="flex gap-2">
                             {['Non-refundable', '18+'].map((tag) => (
-                                <span key={tag} className="rounded-[3px] bg-moon px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+                                <span key={tag} className="print-ink rounded-[3px] bg-moon px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
                                     {tag}
                                 </span>
                             ))}
                         </div>
                     </div>
 
-                    <div className="mt-6 md:columns-2 md:gap-12">
+                    <div className="print-body mt-6 md:columns-2 md:gap-12">
                         {items.map((it, index) => (
                             <p key={index} className="mb-4 break-inside-avoid text-[0.9rem] md:text-[0.95rem] leading-[1.7] text-ink/65 font-light">
                                 <span className="font-medium text-ink">{it.label}.</span> {it.text}
@@ -78,7 +81,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         ))}
                     </div>
 
-                    <p className="mt-2 pt-5 border-t border-moon/30 font-elegant italic font-medium text-moon text-[1rem] md:text-[1.05rem]">
+                    <p className="print-text mt-2 pt-5 border-t border-moon/30 font-elegant italic font-medium text-moon text-[1rem] md:text-[1.05rem]">
                         {agreement}
                     </p>
                 </div>
