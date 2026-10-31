@@ -45,7 +45,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
     // on the page's own paper — no band — so the prints rest on the same surface
     // as Event & collaboration below
     <div className="relative px-6 md:px-8 pt-6 md:pt-8 pb-6 md:pb-10">
-      <div ref={ref} className="mx-auto w-[88%] max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-5">
+      <div ref={ref} className="mx-auto w-[88%] max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-0">
         {photos.map((src, i) => {
           const pr = PRINTS[i % PRINTS.length];
           return (
@@ -55,7 +55,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
               // different heights; the drop-in lands with a small bounce
               // stacking: the middle prints sit on top by default (--z); the hovered print
               // always comes to the front (a class, so it can override the default)
-              className="relative z-[var(--z)] hover:z-30 md:-mx-3"
+              className="relative z-[var(--z)] hover:z-30 md:-mx-1"
               style={{
                 ['--z' as any]: 10 - Math.abs(i - 1.5) * 2,
                 marginTop: `${pr.y}rem`,
