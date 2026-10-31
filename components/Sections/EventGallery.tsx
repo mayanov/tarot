@@ -68,8 +68,10 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 type="button"
                 onClick={() => onOpen(src)}
                 aria-label={isIndonesian ? `Lihat foto event ${i + 1}` : `View event photo ${i + 1}`}
-                // hover cancels the card's tilt (--r) and lifts it (no zoom); deeper shadow
-                className="group relative block w-full p-1.5 md:p-2.5 rounded-[0.75rem] md:rounded-[1rem] shadow-[0_1px_2px_rgba(24,14,40,0.35),0_10px_18px_-10px_rgba(24,14,40,0.55)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_2px_4px_rgba(24,14,40,0.25),0_24px_36px_-16px_rgba(24,14,40,0.5)] hover:[transform:rotate(var(--r))_translateY(-10px)]"
+                // a tarot card's 5:8, like the pricelist cards (the photo takes the height
+                // left after the head and foot); hover cancels the card's tilt (--r) and
+                // lifts it (no zoom); deeper shadow
+                className="group relative flex aspect-[5/8] w-full flex-col p-1.5 md:p-2.5 rounded-[0.75rem] md:rounded-[1rem] shadow-[0_1px_2px_rgba(24,14,40,0.35),0_10px_18px_-10px_rgba(24,14,40,0.55)] transition-[transform,box-shadow] duration-500 hover:shadow-[0_2px_4px_rgba(24,14,40,0.25),0_24px_36px_-16px_rgba(24,14,40,0.5)] hover:[transform:rotate(var(--r))_translateY(-10px)]"
                 style={{
                   ['--r' as any]: `${-pr.rot}deg`,
                   transitionTimingFunction: EASE,
@@ -78,14 +80,14 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                 {/* the card's face, painted in watercolour */}
                 <CardWash colors={DECK_WASH[pr.wash]} />
                 {/* inner frame */}
-                <span className="relative block rounded-[0.55rem] md:rounded-[0.7rem] ring-1 ring-white/[0.16] px-1.5 md:px-2 pt-1 md:pt-1.5 pb-2 md:pb-2.5">
+                <span className="relative flex min-h-0 flex-1 flex-col rounded-[0.55rem] md:rounded-[0.7rem] ring-1 ring-white/[0.16] px-1.5 md:px-2 pt-1 md:pt-1.5 pb-2 md:pb-2.5">
                 {/* head: the card's numeral between two rules */}
                 <span aria-hidden className="print-ink flex items-center justify-center gap-2 pb-1 md:pb-1.5 text-cream/60">
                   <span className="h-px w-4 md:w-6 bg-gradient-to-r from-transparent to-current opacity-60" />
                   <span className="font-elegant italic text-[0.7rem] md:text-[0.85rem] leading-none tracking-[0.12em]">{pr.n}</span>
                   <span className="h-px w-4 md:w-6 bg-gradient-to-l from-transparent to-current opacity-60" />
                 </span>
-                <span className="relative block aspect-[4/5] overflow-hidden rounded-[0.3rem] bg-ink/10">
+                <span className="relative block min-h-0 flex-1 overflow-hidden rounded-[0.3rem] bg-ink/10">
                   <img
                     src={src}
                     alt={isIndonesian ? `Sesi tarot Mayanov di event ${i + 1}` : `Mayanov tarot session at event ${i + 1}`}
@@ -104,7 +106,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian, onOpen }) => {
                   <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-cream/50" />
                 </span>
                 </span>
-                {/* printed on linen-finish card stock, and handled */}
+                {/* printed on tarot card stock */}
                 <CardStock />
               </button>
             </div>
