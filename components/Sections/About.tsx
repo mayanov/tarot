@@ -65,7 +65,7 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
       ref={figRef}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
-      className="relative mx-auto w-[min(82vw,22rem)] sm:w-[24rem] lg:w-full lg:max-w-[28rem] pt-16 pb-2 lg:py-20 lg:order-2"
+      className="relative mx-auto w-[min(82vw,22rem)] sm:w-[24rem] lg:w-full pt-16 pb-2 lg:py-20 lg:order-2"
     >
       <div className="relative" style={{ opacity: dealt ? 1 : 0, transition: `opacity 600ms ${EASE}` }}>
         {/* the face */}
@@ -162,7 +162,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
       className="bg-paper relative z-10 isolate overflow-hidden text-ink lg:min-h-[72vh] -mt-[2.75rem] lg:-mt-[4.5rem] rounded-t-[2.75rem] lg:rounded-t-[4.5rem] shadow-[0_-30px_70px_-22px_rgba(6,4,20,0.55)]">
       <SoftAura />
       {/* portrait and text side by side on desktop (portrait first on phones) */}
-      <div className="relative mx-auto px-8 lg:min-h-[72vh] flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24 lg:items-center">
+      <div className="relative mx-auto px-8 lg:min-h-[72vh] flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,25rem)] xl:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] lg:gap-12 xl:gap-16 lg:items-center">
         <PortraitCard isIndonesian={isIndonesian} />
 
         <FadeIn dir="left" className="w-full pt-14 pb-20 md:pb-28 lg:py-28">
@@ -173,7 +173,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </MaskReveal>
           </h2>
 
-          <div className="print-body mt-7 md:mt-9 space-y-5">
+          <div lang={isIndonesian ? 'id' : 'en'} className="print-body mt-7 md:mt-9 space-y-5 text-justify hyphens-auto">
             <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-ink first-letter:text-[3.4rem] first-letter:leading-[0.72]">
               {isIndonesian
                 ? 'Saya sudah membaca kartu Tarot sejak 2009 — lebih dari 15 tahun menjadikannya ruang untuk refleksi diri. Pada dasarnya, Tarot bekerja dengan membaca energi: gambaran dari situasi dan perasaan yang sedang kamu bawa saat ini.'
