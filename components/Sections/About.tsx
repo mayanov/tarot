@@ -5,6 +5,7 @@ import { ImageReveal } from '../UI/Reveal';
 import CountUp from '../UI/CountUp';
 import CelestialMark from '../UI/CelestialMark';
 import { Phase } from '../UI/MoonPhaseDivider';
+import PencilRule from '../UI/PencilRule';
 import { moonNow } from '../Layout/MenuMoon';
 import { trackEvent } from '../../services/analytics';
 import { REVEAL_FLIGHT_MS } from '../Layout/Loader';
@@ -205,20 +206,22 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             </blockquote>
             {/* signed by hand (a script face, loaded for just these letters), printed in plum */}
             <figcaption className="mt-4 flex items-center gap-3 text-moon">
-              <span aria-hidden className="h-px w-6 bg-moon/50" />
+              <PencilRule fade="start" className="w-6 text-moon/60" />
               <span className="print-body inline-block py-[0.3em] -my-[0.3em] pr-3 font-signature text-[2.5rem] md:text-[2.9rem] leading-none">Mayanov</span>
             </figcaption>
           </figure>
 
           {/* quiet credentials — a calm 3-up proof row (big serif numbers that count up), not a KPI bar */}
-          <div className="mt-10 md:mt-12 pt-8 border-t border-ink/10 grid grid-cols-3 gap-x-5 sm:gap-x-8">
+          <div className="mt-10 md:mt-12"><PencilRule className="text-ink/30" /></div>
+          <div className="pt-8 grid grid-cols-3 gap-x-5 sm:gap-x-8">
             {[
               { n: isIndonesian ? '7.700+' : '7,700+', l: isIndonesian ? 'sesi tarot' : 'readings' },
               { n: isIndonesian ? '1.500+' : '1,500+', l: isIndonesian ? 'orang terbantu' : 'people guided' },
               // a rating shouldn't count up through 2.5, 3.8… — it simply appears
               { n: '5.0', l: isIndonesian ? 'rating di Google' : 'rating on Google', still: true },
             ].map((s, i) => (
-              <div key={i} className={i > 0 ? 'pl-5 sm:pl-8 border-l border-ink/10' : undefined}>
+              <div key={i} className={i > 0 ? 'relative pl-5 sm:pl-8' : undefined}>
+                {i > 0 && <PencilRule vertical className="absolute inset-y-0 left-0 text-ink/30" />}
                 {/* (only the faint grain here — two masks stacked washed the purple out) */}
                 <div className="print-body font-elegant font-semibold text-moon text-[1.7rem] sm:text-[2rem] md:text-[2.6rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em] pr-2 -mr-2">
                   {'still' in s ? s.n : <CountUp value={s.n} duration={1400 + i * 200} />}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, ArrowUpRight, ArrowRight } from 'lucide-react';
 import FadeIn from '../UI/FadeIn';
+import PencilRule from '../UI/PencilRule';
 
 interface FAQProps {
   isIndonesian?: boolean;
@@ -179,7 +180,8 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           {filtered.map((faq, index) => {
             const open = openKey === faq.question;
             return (
-              <li key={faq.question} className="border-t border-ink/10 last:border-b">
+              <li key={faq.question}>
+                <PencilRule className="text-ink/30" />
                 <FadeIn delay={Math.min(index, 6) * 55} dir="up" distance={0.6}>
                   <button
                     onClick={() => toggleFAQ(faq.question)}
@@ -207,13 +209,15 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                     </div>
                   </div>
                 </FadeIn>
+                {index === filtered.length - 1 && <PencilRule className="text-ink/30" />}
               </li>
             );
           })}
         </ol>
 
         {/* desktop: the chosen question's answer */}
-        <aside aria-live="polite" className="hidden lg:block lg:sticky lg:top-28 border-t border-ink/10 pt-6">
+        <aside aria-live="polite" className="hidden lg:block lg:sticky lg:top-28">
+          <div className="mb-6"><PencilRule className="text-ink/30" /></div>
           {current && (
             <div key={current.question} className="animate-[faqIn_500ms_cubic-bezier(0.16,1,0.3,1)]">
               <p className="print-body font-elegant italic text-sm tabular-nums text-moon">{String(currentNo).padStart(2, '0')}</p>

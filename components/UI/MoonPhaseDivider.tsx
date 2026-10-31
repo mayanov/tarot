@@ -1,5 +1,6 @@
 import React from 'react';
 import FadeIn from './FadeIn';
+import PencilRule from './PencilRule';
 
 // A quiet section break: a hairline across the page with a row of moon phases in
 // the middle — waxing up to a full moon and waning again (an echo of the loader).
@@ -29,13 +30,13 @@ const MoonPhaseDivider: React.FC<{ className?: string }> = ({ className = '' }) 
   <div aria-hidden className={`mx-auto px-8 ${className}`}>
     <FadeIn dir="none">
       <div className="print-ink mix-blend-multiply flex items-center gap-4 md:gap-6 text-moon">
-        <span className="h-px flex-1 bg-gradient-to-r from-transparent to-moon/30" />
+        <PencilRule fade="start" className="flex-1 text-moon/70" />
         <div className="flex items-center gap-2.5 md:gap-3.5">
           {PHASES.map((ph, i) => (
             <Phase key={i} p={ph.p} waning={ph.waning} size={ph.p === 1 ? 18 : 13} />
           ))}
         </div>
-        <span className="h-px flex-1 bg-gradient-to-l from-transparent to-moon/30" />
+        <PencilRule fade="end" className="flex-1 text-moon/70" />
       </div>
     </FadeIn>
   </div>

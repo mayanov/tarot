@@ -74,7 +74,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         </div>
                     </div>
                     {/* dividers drawn in pencil on the paper, not CSS borders */}
-                    <PencilRule className="text-moon/70" />
+                    <PencilRule collapse={false} className="text-moon/70" />
 
                     <div className="print-body mt-6 md:columns-2 md:gap-12">
                         {items.map((it, index) => (
@@ -84,7 +84,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                         ))}
                     </div>
 
-                    <PencilRule className="mt-2 text-moon/70" />
+                    <PencilRule collapse={false} className="mt-2 text-moon/70" />
                     <p className="print-text mt-4 font-elegant italic font-medium text-moon text-[1rem] md:text-[1.05rem]">
                         {agreement}
                     </p>

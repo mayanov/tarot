@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchEvents, FALLBACK_EVENTS, EventItem } from '../../services/events';
 import FadeIn from '../UI/FadeIn';
+import PencilRule from '../UI/PencilRule';
 import MaskReveal from '../UI/MaskReveal';
 import EventGallery from './EventGallery';
 import { ChevronDown, X } from 'lucide-react';
@@ -66,7 +67,8 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
           <div>
             {timeline.map((grp, gi) => (
               <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 70} dir="up" distance={0.7}>
-                <div className="grid md:grid-cols-[7rem_1fr] gap-y-3 md:gap-x-12 md:items-start border-t border-ink/10 pt-4 md:pt-5 pb-4 md:pb-5">
+                <PencilRule className="text-ink/30" />
+                <div className="grid md:grid-cols-[7rem_1fr] gap-y-3 md:gap-x-12 md:items-start pt-4 md:pt-5 pb-4 md:pb-5">
                   {/* year marker */}
                   <div className="print-text pb-[0.14em] -mb-[0.14em] font-elegant italic text-moon text-2xl md:text-[1.9rem] leading-none tracking-tight md:pt-1.5">
                     {grp.year}
@@ -76,8 +78,9 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                     {grp.items.map((event, ii) => (
                       <li
                         key={event.id || ii}
-                        className="group flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2 border-t border-ink/10 first:border-t-0 first:pt-0"
+                        className="group relative flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2 first:pt-0"
                       >
+                        {ii > 0 && <PencilRule className="absolute inset-x-0 top-0 text-ink/25" />}
                         <h3 className="print-body font-serif font-medium text-ink text-sm md:text-base leading-[1.25] transition-colors duration-500 group-hover:text-moon">
                           {event.title}
                         </h3>
