@@ -45,56 +45,46 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
         ? 'Dengan melakukan booking, kamu menyetujui catatan di atas. Berlaku untuk semua layanan · 18+.'
         : 'By booking a session, you agree to the notes above. Applies to all services · 18+.';
 
-    const NUMERALS = ['i', 'ii', 'iii', 'iv', 'v'];
-
     return (
         // Sits right under the pricelist (rendered by Services), so it's read before
-        // booking. Set like the fine-print page of a book, not a boxed notice: no frame
-        // or wash, a centred heading with an italic "before you book", the notes flowing
-        // down two columns (balanced, no orphan row) with hanging serif numerals, and the agreement as a closing line
-        // under a small sparkle rule.
-        <section id="disclaimer" className="mx-auto max-w-5xl px-8 pt-12 md:pt-16 pb-20 md:pb-24">
+        // booking. Printed fine print, lifted just enough to read as important: a faint
+        // lilac wash and purple border, one large very faint star in the corner, the
+        // two hard rules as stamped labels, the notes as running text in two columns.
+        <section id="disclaimer" className="mx-auto px-4 md:px-8 pt-8 md:pt-12 pb-20 md:pb-28">
             <FadeIn>
-                <div className="text-center">
-                    <CelestialMark name="sparkle" className="print-ink mx-auto w-5 md:w-6 text-moon" />
-                    <h2 className="print-text mt-5 pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.1rem] sm:text-[2.5rem] md:text-[2.9rem] leading-none tracking-[-0.02em]">
-                        Disclaimer
-                    </h2>
-                    <p className="print-text mt-3 font-elegant italic text-moon text-[1.05rem] md:text-[1.15rem]">
-                        {isIndonesian ? 'baca dulu sebelum memesan' : 'worth a read before you book'}
+                <div className="relative isolate overflow-hidden rounded-lg px-6 py-8 md:px-12 md:py-11">
+                    {/* the printed box — its rule and wash on their own layer, so the ink wear
+                        doesn't stack on the text inside */}
+                    <div aria-hidden className="print-text pointer-events-none absolute inset-0 -z-10 rounded-lg border-[1.5px] border-moon/60 bg-moon/[0.07]" />
+                    <CelestialMark name="sparkle" className="print-ink pointer-events-none absolute -right-7 -top-7 -z-10 w-40 md:w-52 text-moon/[0.11]" />
+
+                    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pb-6 border-b border-moon/30">
+                        {/* the title carries the weight: large, in the brand purple */}
+                        <h2 className="print-text pb-[0.14em] -mb-[0.14em] flex items-center gap-3 font-elegant font-bold text-moon text-[2.2rem] sm:text-[2.6rem] md:text-[3.1rem] leading-none tracking-[-0.02em]">
+                            <CelestialMark name="sparkle" className="print-ink w-6 md:w-8 text-moon" />
+                            Disclaimer
+                        </h2>
+                        <div className="flex gap-2">
+                            {['Non-refundable', '18+'].map((tag) => (
+                                <span key={tag} className="print-ink rounded-[3px] bg-moon px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="print-body mt-6 md:columns-2 md:gap-12">
+                        {items.map((it, index) => (
+                            <p key={index} className="mb-4 break-inside-avoid text-[0.9rem] md:text-[0.95rem] leading-[1.7] text-ink/65 font-light">
+                                <span className="font-medium text-ink">{it.label}.</span> {it.text}
+                            </p>
+                        ))}
+                    </div>
+
+                    <p className="print-text mt-2 pt-5 border-t border-moon/30 font-elegant italic font-medium text-moon text-[1rem] md:text-[1.05rem]">
+                        {agreement}
                     </p>
                 </div>
-            </FadeIn>
-
-            <ol className="mt-10 md:mt-12 md:columns-2 md:gap-x-16">
-                {items.map((it, index) => (
-                    <li key={index} className="mb-7 md:mb-8 break-inside-avoid">
-                        <FadeIn delay={0.06 * index} className="grid grid-cols-[2.25rem_1fr] md:grid-cols-[2.75rem_1fr]">
-                            <span aria-hidden className="print-text pt-[0.2rem] font-elegant italic text-moon/70 text-[1.05rem] md:text-[1.15rem] leading-none">
-                                {NUMERALS[index]}.
-                            </span>
-                            <div>
-                                <h3 className="print-text font-elegant font-semibold text-ink text-[1.2rem] md:text-[1.3rem] leading-snug">
-                                    {it.label}
-                                </h3>
-                                <p className="print-body mt-1.5 text-[0.9rem] md:text-[0.95rem] leading-[1.7] text-ink/60 font-light">
-                                    {it.text}
-                                </p>
-                            </div>
-                        </FadeIn>
-                    </li>
-                ))}
-            </ol>
-
-            <FadeIn>
-                <div className="mt-6 md:mt-8 flex items-center justify-center gap-4 text-moon/50" aria-hidden>
-                    <span className="h-px w-16 md:w-24 bg-current" />
-                    <CelestialMark name="sparkle" className="print-ink w-3 text-moon/70" />
-                    <span className="h-px w-16 md:w-24 bg-current" />
-                </div>
-                <p className="print-text mt-5 mx-auto max-w-2xl text-center font-elegant italic text-ink/75 text-[1.05rem] md:text-[1.15rem] leading-relaxed">
-                    {agreement}
-                </p>
             </FadeIn>
         </section>
     );
