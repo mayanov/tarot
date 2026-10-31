@@ -421,20 +421,22 @@ function App() {
           slides the page up and uncovers the footer sitting here. */}
       <div
         ref={footerRef}
-        className="fixed bottom-0 inset-x-0 z-0 isolate overflow-hidden rounded-t-[2.25rem] md:rounded-t-[3.5rem]"
+        className="fixed bottom-0 inset-x-0 z-0 isolate"
       >
-        {/* a watercolour purple sky, painted inline (no photo to fetch) */}
-        <WatercolorSky
-          skyRef={footerSkyRef}
-          className="absolute inset-0 -z-10 will-change-transform"
-          style={{ transform: 'scale(1.1)' }}
-        />
-        {/* a light veil so the cream text keeps its contrast over the paler washes */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{ background: 'linear-gradient(180deg, rgba(20,12,38,0.18) 0%, rgba(20,12,38,0.08) 50%, rgba(20,12,38,0.3) 100%)' }}
-        />
+        {/* a watercolour purple sky, painted inline (no photo to fetch). It reaches up
+            past the footer's top, so the page's rounded corners show sky, not a gap. */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-20 md:-top-28 -z-10 overflow-hidden">
+          <WatercolorSky
+            skyRef={footerSkyRef}
+            className="absolute inset-0 will-change-transform"
+            style={{ transform: 'scale(1.1)' }}
+          />
+          {/* a light veil so the cream text keeps its contrast over the paler washes */}
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(180deg, rgba(20,12,38,0.1) 0%, rgba(20,12,38,0.05) 50%, rgba(20,12,38,0.28) 100%)' }}
+          />
+        </div>
 
         <div ref={footerInnerRef} className="relative p-3 sm:p-5 md:p-6 will-change-transform" style={reduceMotion ? undefined : { opacity: 0.12 }}>
           <Footer isIndonesian={isIndonesian} />
