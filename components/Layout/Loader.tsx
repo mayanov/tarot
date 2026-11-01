@@ -1,8 +1,7 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import Background from './Background';
+import React, { useEffect, useRef, useState } from 'react';
 import { stopLenis, startLenis } from '../UI/scroll';
-import { PHASES as DIVIDER_PHASES } from '../UI/MoonPhaseDivider';
-import PencilRule from '../UI/PencilRule';
+import { PHASES } from '../UI/MoonPhaseDivider';
+import { TornPaper } from '../UI/PaperEdge';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -10,103 +9,132 @@ interface LoaderProps {
   isIndonesian?: boolean;
 }
 
-// How long the hand-off to the hero takes (ms). The hero times its own entrance
-// against these, so keep them in sync with Hero.tsx.
-export const REVEAL_FLIGHT_MS = 1150; // moon flies up and wanes into the hero crescent
-const REVEAL_TOTAL_MS = 1550;         // loader fully gone
+// The loader is a cover sheet of the site's paper laid over the hero. While the page
+// loads, a tarot card is drawn onto it in pencil, stroke by stroke as the loading
+// progresses: the card's edges ruled in, a crescent moon outlined and hatched in
+// coloured pencil, a few stars, the moon phases along its foot, and the name pressed
+// in last. Once everything is in, the sheet is lifted off upward, its torn bottom edge
+// and soft shadow passing over the night sky, uncovering the hero, the same gesture
+// as the About sheet sliding over the sky when the page scrolls.
+
+// The hand-off's timing (ms). The hero and About time their entrances against these.
+export const REVEAL_FLIGHT_MS = 700;  // the sheet has cleared the middle of the screen
+const LIFT_MS = 1150;                 // the sheet is off the screen
 // Scrolling stays locked until the hero's entrance (and the About sheet rising under
-// it) has finished, so an early scroll can't catch the page mid-animation. The last
-// hero line lands ~REVEAL_FLIGHT_MS + 1.2s after the hand-off; About ~+1.35s.
+// it) has finished, so an early scroll can't catch the page mid-animation.
 const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
-const WORDMARK_PX = 20;               // the wordmark's size while loading
 
-// Loading is REAL: progress comes from the work the page actually waits on (fonts, the
-// location check, and the page itself). It's shown as the site's moon-phase divider,
-// drawn in by hand as it loads, in the same pencil and flat moons as on the page: the
-// pencil lines are drawn outward from the centre, and the seven moons (crescent, half,
-// gibbous, FULL, gibbous, half, crescent) are each ringed round, then filled in, the
-// outer pair first and the full moon last, while the name is written out beneath, left
-// to right. At 100% the row glides into the centre and becomes the full moon, which
-// then flies up and wanes into the crescent above the hero title.
-const ROW_GAP_REM = 1.7;     // distance between moons in the row
-const TASKS = ['fonts', 'app', 'page'] as const;
-const MIN_CLIMB_MS = 1600;   // even on a fast connection, the bar takes this long to fill (no flash)
-const SETTLE_MS = 850;       // the merged full moon holds a beat before the hand-off
+// Loading is REAL: progress comes from the work the page actually waits on.
+const TASKS = ['fonts', 'paper', 'app', 'page'] as const;
+const MIN_CLIMB_MS = 2600;    // even on a fast connection the drawing takes this long to draw
+const SETTLE_MS = 450;        // the finished drawing holds a beat before the sheet lifts
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
+const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
 
-// The moons are drawn as the site draws them (the divider's Phase glyphs, the hero's
-// crescent): flat shapes in the cream ink, with a faint pencilled ring round each.
-const INK = 'rgba(243,241,236,0.85)';
+// ---- the drawing ----
+// A card in a 200 × 320 box. Each stroke is drawn along its length (a dash pulled
+// along the path) in its turn; `w` is its share of the time, roughly its length.
+type Stroke = { d: string; w: number; tone: 'graphite' | 'violet'; width: number; opacity?: number; hatch?: boolean };
 
-// One of the row's moons, drawn in as its share of the progress fills: the ring goes
-// round first, then the lit part is filled in (waning moons are mirrored)
-const DrawnPhase: React.FC<{ p: number; fill: number }> = ({ p, fill }) => {
-  const r = 7, c = 8;
+// the crescent: an outer arc round the left and the terminator's shallower arc
+const CRESCENT = 'M112 93.5 A48 48 0 1 0 112 186.5 A52 52 0 0 1 112 93.5 Z';
+const cross = (x: number, y: number, s: number): Stroke[] => [
+  { d: `M${x - s} ${y + 0.4} L${x + s} ${y - 0.3}`, w: 0.35, tone: 'graphite', width: 0.9 },
+  { d: `M${x + 0.3} ${y - s} L${x - 0.2} ${y + s}`, w: 0.35, tone: 'graphite', width: 0.9 },
+];
+const STROKES: Stroke[] = [
+  // the card's edges, each ruled a little past the corners
+  { d: 'M4 12 C 60 10.5, 140 11.6, 196 10.8', w: 2, tone: 'graphite', width: 1.3 },
+  { d: 'M189.4 4 C 190.6 100, 189.2 220, 190 316', w: 2.6, tone: 'graphite', width: 1.3 },
+  { d: 'M196 309.4 C 130 310.6, 70 308.8, 4 309.8', w: 2, tone: 'graphite', width: 1.3 },
+  { d: 'M10.8 316 C 9.6 210, 11.3 100, 10.4 4', w: 2.6, tone: 'graphite', width: 1.3 },
+  // a finer inner border
+  { d: 'M21 25 Q21 21 25 21 L175 21 Q179 21 179 25 L179 295 Q179 299 175 299 L25 299 Q21 299 21 295 Z', w: 4, tone: 'graphite', width: 0.6, opacity: 0.55 },
+  // the crescent, outlined in coloured pencil, then gone over again more lightly
+  { d: 'M112 93.5 A48 48 0 1 0 112 186.5', w: 2.4, tone: 'violet', width: 1.5 },
+  { d: 'M112 186.5 A52 52 0 0 1 112 93.5', w: 1.6, tone: 'violet', width: 1.2 },
+  { d: 'M108 95.5 A46.5 46.5 0 1 0 110 185', w: 1.4, tone: 'violet', width: 0.6, opacity: 0.45 },
+  // hatched in, short diagonal strokes across the lit part (clipped to it)
+  ...Array.from({ length: 13 }, (_, i): Stroke => ({
+    d: `M${40 + i * 6.5} ${196} L${78 + i * 6.5} ${86}`, w: 0.42, tone: 'violet', width: 0.75, opacity: 0.6, hatch: true,
+  })),
+  // stars, a few crosses and pinpoints
+  ...cross(52, 64, 4.5), ...cross(150, 58, 3.5), ...cross(158, 206, 4), ...cross(48, 226, 3),
+  { d: 'M140 112 l0.1 0.1', w: 0.15, tone: 'graphite', width: 2.2 },
+  { d: 'M70 196 l0.1 0.1', w: 0.15, tone: 'graphite', width: 1.8 },
+  { d: 'M166 140 l0.1 0.1', w: 0.15, tone: 'graphite', width: 1.6 },
+  // a rule above the card's foot
+  { d: 'M42 246 C 80 245.2, 120 246.6, 158 245.6', w: 1.4, tone: 'graphite', width: 0.7, opacity: 0.6 },
+];
+const PHASE_W = 0.5; // each moon of the row along the foot
+const TOTAL_W = STROKES.reduce((n, s) => n + s.w, 0) + PHASES.length * PHASE_W;
+
+// one moon of the row, outlined round then shaded in (same geometry as the divider's Phase)
+const DrawnPhase: React.FC<{ p: number; waning?: boolean; x: number; y: number; r: number; draw: number }> = ({ p, waning = false, x, y, r, draw }) => {
   const rx = Math.abs(1 - 2 * p) * r;
-  const lit = `M ${c} ${c - r} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${rx} ${r} 0 0 ${p > 0.5 ? 1 : 0} ${c} ${c - r} Z`;
-  const ring = Math.min(1, fill / 0.5);
-  const shade = Math.max(0, Math.min(1, (fill - 0.4) / 0.6));
+  const lit = `M ${x} ${y - r} A ${r} ${r} 0 0 1 ${x} ${y + r} A ${rx} ${r} 0 0 ${p > 0.5 ? 1 : 0} ${x} ${y - r} Z`;
+  const outline = Math.min(1, draw / 0.6);
+  const shade = Math.max(0, (draw - 0.5) / 0.5);
   return (
-    <svg viewBox="0 0 16 16" className="absolute inset-0 h-full w-full overflow-visible">
-      <circle cx={c} cy={c} r={r} fill="none" stroke={INK} strokeOpacity={0.45} strokeWidth={1} strokeLinecap="round"
-        pathLength={1} strokeDasharray="1" strokeDashoffset={1 - ring} transform={`rotate(-90 ${c} ${c})`} />
-      {p >= 1 ? <circle cx={c} cy={c} r={r} fill={INK} opacity={shade} /> : <path d={lit} fill={INK} opacity={shade} />}
+    <g transform={waning ? `translate(${2 * x} 0) scale(-1 1)` : undefined}>
+      <circle cx={x} cy={y} r={r} fill="none" stroke="currentColor" strokeOpacity={0.6} strokeWidth={0.6}
+        pathLength={1} strokeDasharray="1" strokeDashoffset={1 - outline} transform={`rotate(-90 ${x} ${y})`} strokeLinecap="round" />
+      {p >= 1 ? <circle cx={x} cy={y} r={r} fill="currentColor" opacity={shade * 0.85} /> : <path d={lit} fill="currentColor" opacity={shade * 0.85} />}
+    </g>
+  );
+};
+
+const CardDrawing: React.FC<{ progress: number; className?: string }> = ({ progress, className = '' }) => {
+  const id = React.useId().replace(/:/g, '');
+  let at = progress * TOTAL_W; // how far along the drawing the hand has got
+  const take = (w: number) => { const v = Math.max(0, Math.min(1, at / w)); at -= w; return v; };
+  const strokes = STROKES.map((s) => ({ ...s, t: take(s.w) }));
+  const phases = PHASES.map((ph) => ({ ...ph, t: take(PHASE_W) }));
+  const named = Math.max(0, Math.min(1, progress * 6 - 5)); // the name presses in over the last sixth
+  return (
+    <svg viewBox="0 0 200 320" className={`overflow-visible ${className}`} fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <defs>
+        <clipPath id={`${id}c`}><path d={CRESCENT} /></clipPath>
+      </defs>
+      <g style={{ filter: 'url(#pencil-icon)' }}>
+        {strokes.map((s, i) => s.t > 0 && (
+          <path
+            key={i}
+            d={s.d}
+            pathLength={1}
+            strokeDasharray="1"
+            strokeDashoffset={1 - s.t}
+            stroke={s.tone === 'violet' ? '#6B3FA0' : '#221D3C'}
+            strokeWidth={s.width}
+            strokeOpacity={s.opacity ?? 0.82}
+            clipPath={s.hatch ? `url(#${id}c)` : undefined}
+          />
+        ))}
+        <g className="text-moon">
+          {phases.map((ph, i) => (
+            <DrawnPhase key={i} p={ph.p} waning={ph.waning} x={64 + i * 12} y={268} r={ph.p === 1 ? 4.6 : 3.6} draw={ph.t} />
+          ))}
+        </g>
+      </g>
+      <text
+        x="100" y="292" textAnchor="middle"
+        className="letterpress font-serif font-medium uppercase"
+        style={{ fontSize: 11.5, letterSpacing: '0.2em', fill: '#221D3C', opacity: named }}
+      >
+        Mayanov Tarot
+      </text>
     </svg>
   );
 };
 
-// The full moon the row becomes: the cream disc, with the sky's shadow parked at
-// `offset` (0 = new, 104 = full) sliding across it as it wanes into the crescent.
-const Face: React.FC<{ offset: number; shadowStyle?: React.CSSProperties }> = ({ offset, shadowStyle }) => (
-  <>
-    <div className="absolute inset-0 rounded-full" style={{ background: INK }} />
-    <div className="absolute -inset-px rounded-full" style={{ transform: `translateX(${offset}%)`, background: '#1c1c50', filter: 'blur(0.6px)', ...shadowStyle }} />
-  </>
-);
-
 const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const moonRef = useRef<HTMLDivElement>(null);
-  const [stage, setStage] = useState<'idle' | 'row' | 'moon'>('idle');
-  const [pct, setPct] = useState(0); // displayed progress, 0–100
+  const [pct, setPct] = useState(0);              // progress, 0–100
+  const [complete, setComplete] = useState(false);
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [leaving, setLeaving] = useState(false);
-  const [flight, setFlight] = useState<string | null>(null); // moon's transform toward the hero crescent
   const [gone, setGone] = useState(false);
   const [unlocked, setUnlocked] = useState(false); // page may scroll again
-
-  // THE WORDMARK is drawn at the hero title's real size and position (so it stays
-  // crisp) and scaled DOWN into its slot under the moon. On hand-off it simply drops
-  // that transform — gliding up and growing into the exact spot of the hero title,
-  // which then takes over invisibly (same font, size and position).
-  const slotRef = useRef<HTMLDivElement>(null);
-  const [word, setWord] = useState<null | { left: number; top: number; width: number; height: number; fontSize: string; rest: string }>(null);
-  const leavingRef = useRef(false);
-  const measureRef = useRef<() => void>(() => {});
-  useLayoutEffect(() => {
-    const measure = () => {
-      if (leavingRef.current) return;
-      const title = document.querySelector<HTMLElement>('[data-hero-title]');
-      const slot = slotRef.current;
-      if (!title || !slot) return;
-      const r = title.getBoundingClientRect();
-      const sr = slot.getBoundingClientRect();
-      const fs = parseFloat(getComputedStyle(title).fontSize) || 32;
-      const dx = sr.left + sr.width / 2 - (r.left + r.width / 2);
-      const dy = sr.top + sr.height / 2 - (r.top + r.height / 2);
-      setWord({
-        left: r.left, top: r.top, width: r.width, height: r.height, fontSize: `${fs}px`,
-        rest: `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${(WORDMARK_PX / fs).toFixed(4)})`,
-      });
-    };
-    measureRef.current = measure;
-    measure();
-    // web fonts can change the title's size after first paint — re-measure then too
-    // (and again just before the hand-off, in case anything moved the title since)
-    (document as any).fonts?.ready?.then(measure);
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, []);
 
   // The page must not scroll while loading. Native overflow:hidden isn't enough: the
   // smooth-scroll library (Lenis) starts right after this and drives the scroll itself.
@@ -154,9 +182,15 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     let cancelled = false;
     const safe = (task: string) => () => { if (!cancelled) mark(task); };
     const timers = TASKS.map((task) => window.setTimeout(safe(task), TASK_TIMEOUT_MS));
-    // fonts (the title's size depends on them)
+    // fonts (the hero title's size depends on them)
     const fonts = (document as any).fonts;
     if (fonts?.ready) fonts.ready.then(safe('fonts')).catch(safe('fonts')); else safe('fonts')();
+    // the paper's grain: the sheet itself and every light section are printed on it
+    const img = new Image();
+    img.onload = safe('paper');
+    img.onerror = safe('paper');
+    img.src = PAPER_IMG;
+    if (img.complete && img.naturalWidth) safe('paper')();
     // the page itself (scripts, styles, images in the document)
     if (document.readyState === 'complete') safe('page')();
     else window.addEventListener('load', safe('page'), { once: true });
@@ -171,15 +205,14 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const lastDoneAt = useRef(performance.now());
   useEffect(() => { lastDoneAt.current = performance.now(); }, [doneCount]);
 
-  // ---- the progress bar: eases toward what's actually finished ----
+  // ---- progress: eases toward what's actually finished ----
   // It can't fill faster than MIN_CLIMB_MS, never passes the work that's done (it only
-  // creeps a little into the next step while waiting, so it never looks frozen), and
-  // never shows 100% until everything has finished.
+  // creeps a little into the next step while waiting, so the pencil never looks stuck),
+  // and never completes until everything has finished.
   useEffect(() => {
     const climb = reduce ? 1 : MIN_CLIMB_MS;
     const t0 = performance.now();
-    let shown = 0;
-    setStage('row');
+    let p = 0;
     // a ~30fps timer rather than rAF, so progress keeps moving even in a background tab
     const tick = () => {
       const now = performance.now();
@@ -188,184 +221,61 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
       const timeCap = Math.min(1, (now - t0) / climb) * 100;
       const creep = allDone ? 0 : 12 * (1 - Math.exp(-(now - lastDoneAt.current) / 1800));
       const target = Math.min(timeCap, allDone ? 100 : Math.min(99, real * 100 + creep));
-      shown += (target - shown) * (reduce ? 1 : 0.16);
-      if (allDone && timeCap >= 100 && shown > 99.4) shown = 100;
-      setPct(shown);
-      if (shown >= 100) { clearInterval(iv); setStage('moon'); }
+      p += (target - p) * (reduce ? 1 : 0.14);
+      if (allDone && timeCap >= 100 && p > 99.4) p = 100;
+      setPct(p);
+      if (p >= 100) { clearInterval(iv); setComplete(true); }
     };
     const iv = window.setInterval(tick, 33);
     return () => clearInterval(iv);
   }, [reduce]);
 
-  // ---- the hand-off: only once loading reached 100% and the full moon has settled ----
+  // ---- the hand-off: the finished drawing holds a beat, then the sheet is lifted off ----
   useEffect(() => {
-    if (stage !== 'moon') return;
-    let next = 0;
+    if (!complete) return;
     const t = window.setTimeout(() => {
-      // re-measure the hero title where it is NOW, let that settle for a frame (the
-      // wordmark doesn't move: it's re-anchored, still scaled into its slot), then go
-      measureRef.current();
-      next = window.setTimeout(handOff, 40);
-    }, reduce ? 0 : SETTLE_MS);
-    const handOff = () => {
-      // Aim the moon at the hero's crescent: the crescent's lit disc sits at
-      // (41%, 50%) of its icon and spans 62.5% of its width (see CelestialMark).
-      const from = moonRef.current?.getBoundingClientRect();
-      const target = document.querySelector('[data-hero-moon] svg')?.getBoundingClientRect();
-      if (from && target && !reduce) {
-        const size = target.width * 0.625;
-        const cx = target.left + target.width * 0.414;
-        const cy = target.top + target.height * 0.5;
-        const dx = cx - (from.left + from.width / 2);
-        const dy = cy - (from.top + from.height / 2);
-        setFlight(`translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${(size / from.width).toFixed(4)})`);
-      }
-      leavingRef.current = true;
       setLeaving(true);
-      // tell the hero to play its entrance in step with the flight
+      // tell the hero to play its entrance as the sheet uncovers it
       try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
-      window.setTimeout(() => setGone(true), reduce ? 400 : REVEAL_TOTAL_MS);
-    };
-    return () => { clearTimeout(t); clearTimeout(next); };
-  }, [stage, reduce]);
+      window.setTimeout(() => setGone(true), reduce ? 400 : LIFT_MS + 50);
+    }, reduce ? 0 : SETTLE_MS);
+    return () => clearTimeout(t);
+  }, [complete, reduce]);
+
+  // the page under the sheet shows the paper's colour until the sheet is up (index.html
+  // sets html.booting, so the first frame before React isn't the night sky)
+  useEffect(() => {
+    if (leaving) document.documentElement.classList.remove('booting');
+  }, [leaving]);
 
   if (gone) return null;
 
-  const flying = leaving && !reduce && !!flight;
-  const showing = stage !== 'idle';
-  const merged = stage === 'moon';
-  const EASE = 'cubic-bezier(0.16,1,0.3,1)';
-  const EASE_FLIGHT = 'cubic-bezier(0.65,0,0.2,1)';
-  // the name is written out left to right as it loads (a soft-edged wipe, the ink
-  // still going on at its leading edge), done a little before the moons are
-  const written = Math.max(0, Math.min(1, (pct - 8) / 80));
-  const wipe = `linear-gradient(90deg, #000 ${(written * 112 - 12).toFixed(1)}%, transparent ${(written * 112).toFixed(1)}%)`;
-  const writing: React.CSSProperties = { WebkitMaskImage: wipe, maskImage: wipe };
+  const lift = leaving && !reduce;
   return (
     <div
       aria-hidden
-      className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
+      className="fixed inset-x-0 top-0 -bottom-12 z-[200] will-change-transform"
       style={{
         pointerEvents: leaving ? 'none' : undefined,
-        // reduced motion (or no target to fly to): a simple quick fade
-        opacity: leaving && !flying ? 0 : 1,
-        transition: leaving && !flying ? 'opacity 380ms ease' : undefined,
+        transform: lift ? 'translate3d(0, calc(-100% - 40px), 0) rotate(-0.6deg)' : 'none',
+        transformOrigin: '30% 100%',
+        opacity: leaving && reduce ? 0 : 1,
+        transition: lift
+          ? `transform ${LIFT_MS}ms cubic-bezier(0.6, 0, 0.25, 1)`
+          : leaving ? 'opacity 380ms ease' : undefined,
       }}
     >
-      {/* the hero's own night sky — identical to the page's, so it can cross-fade
-          away underneath the flying moon without the stars ever jumping */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: '#0b0924',
-          opacity: flying ? 0 : 1,
-          transition: flying ? 'opacity 900ms cubic-bezier(0.4,0,0.2,1) 260ms' : undefined,
-        }}
-      >
-        <Background />
-        {/* soft violet bloom that warms up when the full moon forms */}
-        <div aria-hidden className="absolute left-1/2 top-[43%] h-[24rem] w-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(circle, rgba(226,160,206,0.26) 0%, rgba(160,120,210,0.14) 40%, rgba(160,120,210,0) 68%)', opacity: flying ? 0 : merged ? 1 : 0.3, transition: flying ? 'opacity 500ms ease' : 'opacity 1200ms ease' }} />
+      {/* the sheet's soft shadow on the sky just under its torn edge, then the sheet */}
+      <div className="absolute inset-x-0 -bottom-3 h-16 [filter:blur(7px)]" style={{ background: 'rgba(6,4,20,0.45)', opacity: lift ? 1 : 0, transition: 'opacity 300ms ease' }} />
+      <TornPaper edge="bottom" />
+
+      {/* the drawing, in the middle of the screen (the sheet runs 3rem past its bottom) */}
+      <div className="absolute inset-x-0 top-0 h-[calc(100%-3rem)] grid place-items-center px-8">
+        <CardDrawing
+          progress={pct / 100}
+          className="h-[min(58vh,26rem)] w-auto"
+        />
       </div>
-
-      <div className="relative flex flex-col items-center">
-        <div className="relative w-14 h-14 md:w-16 md:h-16">
-          {/* THE DIVIDER — hairlines drawn outward with progress, and the row of moons
-              waxing pair by pair (outer pair first, full moon last); at 100% the
-              row glides into the centre and dissolves into the full moon */}
-          {(['left', 'right'] as const).map((side) => (
-            <span
-              key={side}
-              className="absolute top-1/2 flex items-center"
-              style={{
-                [side === 'left' ? 'right' : 'left']: `calc(50% + ${(ROW_GAP_REM * 3.5).toFixed(2)}rem)`,
-                width: merged || flying ? 0 : `${(Math.min(pct, 100) / 100) * 24}vw`,
-                justifyContent: side === 'left' ? 'flex-end' : 'flex-start',
-                opacity: showing ? 1 : 0,
-                transition: merged || flying ? 'width 600ms ease, opacity 600ms ease' : 'opacity 600ms ease',
-              } as React.CSSProperties}
-            >
-              {/* the site's pencil line, drawn out from the row as it loads */}
-              <PencilRule fade={side === 'left' ? 'start' : 'end'} className="w-full text-[#C9B8E8]/60" />
-            </span>
-          ))}
-          {DIVIDER_PHASES.map((ph, i) => {
-            const slot = i - (DIVIDER_PHASES.length - 1) / 2; // -3 … 3
-            const ring = 3 - Math.abs(slot);                  // 0 = outer pair … 3 = full moon
-            const fill = Math.max(0, Math.min(1, (pct - ring * 25) / 25)); // this pair's share of the progress
-            const center = slot === 0;
-            return (
-              <div
-                key={i}
-                className={`absolute left-1/2 top-1/2 ${center ? 'w-5 h-5 md:w-[1.4rem] md:h-[1.4rem]' : 'w-3.5 h-3.5 md:w-4 md:h-4'}`}
-                style={{
-                  transform: `translate(-50%, -50%) translateX(${merged || flying ? 0 : slot * ROW_GAP_REM}rem) scale(${merged || flying ? 1.6 : 0.86 + fill * 0.14}) ${ph.waning ? 'scaleX(-1)' : ''}`,
-                  opacity: merged || flying ? 0 : !showing ? 0 : 1,
-                  transition: merged || flying
-                    ? `transform 900ms ${EASE} ${Math.abs(slot) * 40}ms, opacity 700ms ease ${180 + Math.abs(slot) * 40}ms`
-                    : undefined,
-                }}
-              >
-                <DrawnPhase p={ph.p} fill={fill} />
-              </div>
-            );
-          })}
-
-          {/* the full moon — forms as the phases merge; on exit it flies to the hero
-              crescent, shrinking and waning until it IS the crescent */}
-          <div
-            ref={moonRef}
-            className="relative w-full h-full rounded-full overflow-hidden will-change-transform"
-            style={{
-              transform: flying ? flight! : merged ? 'scale(1)' : 'scale(0.25)',
-              opacity: flying ? 0 : merged ? 1 : 0,
-              boxShadow: flying
-                ? '0 0 20px 2px rgba(240,206,230,0.1)'
-                : merged ? '0 0 50px 10px rgba(214,150,206,0.16)' : '0 0 0 0 rgba(240,206,230,0)',
-              transition: flying
-                ? `transform ${REVEAL_FLIGHT_MS}ms ${EASE_FLIGHT}, box-shadow ${REVEAL_FLIGHT_MS}ms ease, opacity 320ms ease ${REVEAL_FLIGHT_MS - 120}ms`
-                : `opacity 700ms ease 120ms, transform 1100ms ${EASE}, box-shadow 1400ms ease`,
-            }}
-          >
-            <Face
-              offset={flying ? 40 : 104}
-              shadowStyle={{ transition: flying ? `transform ${REVEAL_FLIGHT_MS - 150}ms cubic-bezier(0.45,0,0.2,1) 120ms` : 'none' }}
-            />
-          </div>
-        </div>
-
-        {/* wordmark slot (the real wordmark is the fixed layer below) + the label */}
-        <div ref={slotRef} className="mt-10 h-[1.35rem] w-44 grid place-items-center">
-          {!word && (
-            <span className="font-serif font-medium uppercase whitespace-nowrap tracking-[-0.01em] text-cream" style={{ fontSize: WORDMARK_PX, opacity: showing && !leaving ? 1 : 0, transition: 'opacity 700ms ease', ...writing }}>Mayanov Tarot</span>
-          )}
-        </div>
-        <div
-          className="mt-3 text-[11px] uppercase tracking-[0.28em] text-cream/40"
-          style={{ opacity: leaving ? 0 : showing ? 1 : 0, transition: leaving ? 'opacity 300ms ease' : 'opacity 900ms ease 300ms' }}
-        >
-          Loading <span className="tabular-nums text-cream/60">{Math.floor(pct)}%</span>
-        </div>
-      </div>
-
-      {/* THE WORDMARK — sits at the hero title's exact size and spot, scaled down into
-          its slot; on hand-off it glides up and grows into the hero title */}
-      {word && (
-        <div
-          className="fixed flex items-center justify-center font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-cream [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] will-change-transform"
-          style={{
-            left: word.left, top: word.top, width: word.width, height: word.height, fontSize: word.fontSize,
-            transformOrigin: '50% 50%',
-            transform: flying ? 'none' : word.rest,
-            opacity: flying ? 0 : leaving ? 0 : showing ? 1 : 0,
-            ...(written < 1 ? writing : null),
-            transition: flying
-              ? `transform ${REVEAL_FLIGHT_MS}ms cubic-bezier(0.65,0,0.2,1) 40ms, opacity 240ms ease ${REVEAL_FLIGHT_MS + 40}ms`
-              : leaving ? 'opacity 300ms ease' : 'opacity 900ms ease 300ms',
-          }}
-        >
-          Mayanov Tarot
-        </div>
-      )}
     </div>
   );
 };
