@@ -29,39 +29,6 @@ const CAT_WASH = DECK_WASH;
 const CAT_ACCENT = ['#262f6a', '#55246e', '#b04f74', '#c4604e', '#a26a30'];
 const CAT_MARKS = ['constellation', 'star', 'sparkle', 'crescent', 'sun'] as const;
 
-// Stars flicked onto each face in white gouache (a loaded brush tapped over the card):
-// mostly fine specks, a few fuller drops, none perfectly round. One pattern per card.
-const sMul = (seed: number) => () => {
-  seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
-  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-};
-const spatter = (seed: number, count: number) => {
-  const r = sMul(seed);
-  return Array.from({ length: count }, () => {
-    const big = r() < 0.12;
-    return { x: r() * 100, y: r() * 100, r: big ? 1.4 + r() * 1.2 : 0.45 + r() * 0.7, o: big ? 0.55 + r() * 0.3 : 0.3 + r() * 0.5 };
-  });
-};
-const CAT_STARS = [0, 1, 2, 3, 4].map((k) => spatter(90210 + k * 7777, 8));
-
-const Spatter: React.FC<{ k: number }> = ({ k }) => {
-  const id = React.useId().replace(/:/g, '');
-  return (
-    <svg aria-hidden className="absolute inset-0 h-full w-full">
-      <filter id={`${id}s`} x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="1" seed={k + 3} />
-        <feDisplacementMap in="SourceGraphic" scale="1.6" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-      <g filter={`url(#${id}s)`} fill="#fbf7ee">
-        {CAT_STARS[k % CAT_STARS.length].map((d, j) => (
-          <circle key={j} cx={`${d.x.toFixed(2)}%`} cy={`${d.y.toFixed(2)}%`} r={d.r.toFixed(2)} opacity={d.o.toFixed(2)} />
-        ))}
-      </g>
-    </svg>
-  );
-};
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
 // Cheapest single price in a category (for the card's "from" line — not a range).
@@ -115,7 +82,6 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                 style={paperCut(11 + k * 23)}
             >
                 <CardWash colors={CAT_WASH[k % CAT_WASH.length]} />
-                <Spatter k={k} />
                 {/* ornamental inner frame */}
                 <div aria-hidden className="print-ink absolute ring-1 ring-white/[0.16]" style={{ inset: cq(10.4), borderRadius: cq(13.6) }} />
 
@@ -283,7 +249,6 @@ const CardBack: React.FC<{ seed?: number }> = ({ seed = 5 }) => (
     <PaperShadow />
     <div className="absolute inset-0 overflow-hidden rounded-[1.15rem]" style={paperCut(seed)}>
         <CardWash colors={['#4a2e6e', '#241638', '#150c24']} />
-        <span className="absolute inset-0 opacity-80"><Spatter k={1} /></span>
         <div aria-hidden className="print-ink absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-[#C9B8E8]/25" />
         <div aria-hidden className="print-ink absolute inset-[1.15rem] rounded-[0.6rem] ring-1 ring-[#C9B8E8]/10" />
         <div className="absolute inset-0 grid place-items-center">
