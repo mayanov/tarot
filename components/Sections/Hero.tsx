@@ -10,7 +10,8 @@ interface HeroProps {
   isIndonesian?: boolean;
 }
 
-const EASE = 'cubic-bezier(0.16,1,0.3,1)';
+// a long, soft settle: the content drifts up into place rather than snapping
+const EASE = 'cubic-bezier(0.22,1,0.36,1)';
 
 // Soft fade-and-rise for each hero piece — opacity + transform only, so it's fully
 // GPU-composited. Defined OUTSIDE Hero so it isn't re-created (and remounted, which
@@ -20,8 +21,8 @@ const Rise: React.FC<{ shown: boolean; children: React.ReactNode; delay?: number
     className={className}
     style={{
       opacity: shown ? 1 : 0,
-      transform: shown ? 'translateY(0)' : 'translateY(22px)',
-      transition: `opacity 1s ease ${delay}ms, transform 1.1s ${EASE} ${delay}ms`,
+      transform: shown ? 'translateY(0)' : 'translateY(14px)',
+      transition: `opacity 1.4s cubic-bezier(0.4,0,0.2,1) ${delay}ms, transform 1.8s ${EASE} ${delay}ms`,
       willChange: 'opacity, transform',
     }}
   >
@@ -114,7 +115,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       {/* MASTHEAD — a calm, centered stack under a quiet crescent moon. */}
       <div ref={contentRef} className="relative z-10 w-full mx-auto px-8 flex flex-col items-center">
         {/* the crescent takes over from the loader's moon as it lands here */}
-        <div style={{ opacity: shown ? 1 : 0, transition: `opacity 300ms ease ${REVEAL_FLIGHT_MS - 120}ms` }}>
+        <div style={{ opacity: shown ? 1 : 0, transition: `opacity 700ms ease ${REVEAL_FLIGHT_MS - 300}ms` }}>
           <div ref={moonRef} data-hero-moon className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '35vh', ['--speed' as string]: 0.45 }}>
           <CelestialMark name="crescent" className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
           </div>
@@ -127,15 +128,15 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
             className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] text-cream"
             style={{
               opacity: shown ? 1 : 0,
-              transform: shown ? 'none' : 'translateY(16px)',
-              transition: `opacity 1s ease ${REVEAL_FLIGHT_MS - 650}ms, transform 1.1s cubic-bezier(0.16,1,0.3,1) ${REVEAL_FLIGHT_MS - 650}ms`,
+              transform: shown ? 'none' : 'translateY(14px)',
+              transition: `opacity 1.4s cubic-bezier(0.4,0,0.2,1) ${REVEAL_FLIGHT_MS - 850}ms, transform 1.8s ${EASE} ${REVEAL_FLIGHT_MS - 850}ms`,
             }}
           >
             Mayanov Tarot
           </h1>
         </div>
 
-        <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 100}>
+        <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 550}>
           <div ref={subRef} className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '42vh', ['--speed' as string]: 0.22 }}>
           <p className="mt-7 md:mt-9 font-elegant font-medium leading-[1.2] md:leading-[1.14] tracking-[-0.01em] text-[1.3rem] sm:text-[1.6rem] md:text-[1.95rem] lg:text-[2.2rem] xl:text-[2.45rem] text-cream max-w-[20ch] md:max-w-none md:whitespace-nowrap [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
             {isIndonesian ? (
@@ -147,7 +148,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           </div>
         </Rise>
 
-        <Rise shown={shown} delay={REVEAL_FLIGHT_MS + 80}>
+        <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 300}>
           <div ref={ctaRef} className={`mt-8 md:mt-9 will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '38vh', ['--speed' as string]: 0.15 }}>
             <a
               href="#services"

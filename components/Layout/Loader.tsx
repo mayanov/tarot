@@ -20,7 +20,7 @@ interface LoaderProps {
 // wanes into the hero's crescent.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
-const CLEAR_MS = 1300;                // the paper turns see-through and goes
+const CLEAR_MS = 1600;                // the paper turns see-through and goes
 const CARRY_DELAY_MS = 250;           // the moon lifts off as the paper starts to clear
 const CARRY_MS = 1150;                // the moon reaches the hero's crescent
 // when the moon has landed (from mt:reveal): the hero's crescent takes over then
@@ -188,8 +188,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
       setLeaving(true);
       // tell the hero to play its entrance as the paper clears
       try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
-      at(reduce ? 0 : REVEAL_FLIGHT_MS, () => setLanded(true));
-      at(reduce ? 400 : Math.max(CLEAR_MS, REVEAL_FLIGHT_MS + 350), () => setGone(true));
+      at(reduce ? 0 : REVEAL_FLIGHT_MS - 300, () => setLanded(true)); // (crossfades with the hero's crescent)
+      at(reduce ? 400 : Math.max(CLEAR_MS, REVEAL_FLIGHT_MS + 500), () => setGone(true));
     });
     return () => timers.forEach(clearTimeout);
   }, [complete, reduce]);
@@ -207,7 +207,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   // the moon's flight: up off the paper and onto the hero's crescent
   const flight: React.CSSProperties = clearing && carry ? {
     transform: carry,
-    transition: `transform ${CARRY_MS}ms cubic-bezier(0.6, 0, 0.2, 1) ${CARRY_DELAY_MS}ms, color 700ms ease ${CARRY_DELAY_MS}ms, opacity 300ms ease`,
+    transition: `transform ${CARRY_MS}ms cubic-bezier(0.6, 0, 0.2, 1) ${CARRY_DELAY_MS}ms, color 700ms ease ${CARRY_DELAY_MS}ms, opacity 700ms ease`,
   } : {};
   // each pair of moons draws in its quarter of the progress, outer pair first
   const drawOf = (i: number) => {
