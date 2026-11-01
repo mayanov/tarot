@@ -10,16 +10,14 @@ interface InterludeProps {
 }
 
 // what people actually come with, for the visitor who's just seen the prices and
-// doesn't know what they'd ask; each under the part of life it's about
-const QUESTIONS: { topic: [string, string]; q: [string, string] }[] = [
-  { topic: ['karier', 'career'], q: ['Apakah aku harus pindah kerja tahun ini?', 'Should I change jobs this year?'] },
-  { topic: ['hubungan', 'love'], q: ['Ke mana arah hubunganku sama dia?', 'Where is this relationship going?'] },
-  { topic: ['diri', 'self'], q: ['Kenapa aku merasa stuck akhir-akhir ini?', 'Why do I feel so stuck lately?'] },
-  { topic: ['keputusan', 'choices'], q: ['Pilihan mana yang paling selaras untukku?', 'Which choice sits right with me?'] },
-  { topic: ['melepaskan', 'letting go'], q: ['Apa yang perlu aku lepaskan?', 'What do I need to let go of?'] },
+// doesn't know what they'd ask
+const QUESTIONS: { q: [string, string] }[] = [
+  { q: ['Apakah aku harus pindah kerja tahun ini?', 'Should I change jobs this year?'] },
+  { q: ['Ke mana arah hubunganku sama dia?', 'Where is this relationship going?'] },
+  { q: ['Kenapa aku merasa stuck akhir-akhir ini?', 'Why do I feel so stuck lately?'] },
+  { q: ['Pilihan mana yang paling selaras untukku?', 'Which choice sits right with me?'] },
+  { q: ['Apa yang perlu aku lepaskan?', 'What do I need to let go of?'] },
 ];
-
-const ROMAN = ['i', 'ii', 'iii', 'iv', 'v'];
 
 // the booking form (BookingModal) opens on this event
 const openBooking = () => window.dispatchEvent(new CustomEvent('open-booking'));
@@ -28,8 +26,7 @@ const openBooking = () => window.dispatchEvent(new CustomEvent('open-booking'));
  * A break of night sky between the pricelist and "why Mayanov", for whoever's
  * hovering over the prices without knowing what they'd even ask. Set like a page
  * of a book: the question and its reassurance on the left; on the right a short
- * numbered list of the questions people bring, each under the part of life it's
- * about, ruled off in pencil.
+ * list of the questions people bring, ruled off in pencil.
  */
 const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
   const t = (pair: [string, string]) => (isIndonesian ? pair[0] : pair[1]);
@@ -58,21 +55,15 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
           </p>
         </FadeIn>
 
-        {/* the questions, numbered like a contents page and ruled off in pencil */}
+        {/* the questions, ruled off in pencil */}
         <ol className="lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
           {QUESTIONS.map((item, i) => (
             <li key={item.q[0]}>
               <FadeIn delay={i * 110} dir="up" distance={0.5}>
                 {i > 0 && <PencilRule weight="fine" className="text-cream/40" />}
-                <div className="grid grid-cols-[2.75rem_minmax(0,1fr)] md:grid-cols-[3.5rem_minmax(0,1fr)] items-baseline py-6 md:py-7">
-                  <span className="letterpress font-elegant italic text-cream/70 text-xl md:text-2xl">{ROMAN[i]}.</span>
-                  <div>
-                    <span className="letterpress block font-elegant italic lowercase text-cream/75 text-base md:text-lg">{t(item.topic)}</span>
-                    <p className="letterpress-lg mt-1 font-elegant text-cream text-[1.35rem] sm:text-[1.5rem] md:text-[1.75rem] leading-[1.25] tracking-[-0.01em] [text-wrap:pretty]">
-                      &ldquo;{t(item.q)}&rdquo;
-                    </p>
-                  </div>
-                </div>
+                <p className="letterpress-lg py-6 md:py-7 font-elegant text-cream text-[1.35rem] sm:text-[1.5rem] md:text-[1.75rem] leading-[1.25] tracking-[-0.01em] [text-wrap:pretty]">
+                  &ldquo;{t(item.q)}&rdquo;
+                </p>
               </FadeIn>
             </li>
           ))}
