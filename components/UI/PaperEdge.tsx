@@ -162,15 +162,19 @@ const SLIP = maskOf(slip(3));
 const SLIP_RIM = maskOf(slip(6, 5));
 
 /** a torn slip of the paper filling its box (put it behind the text, in a relative
-    parent), with the shadow it casts lying a little off whatever is under it */
-export const TornSlip: React.FC<{ className?: string }> = ({ className = '' }) => (
+    parent), with the shadow it casts lying a little off whatever is under it. On a
+    paper section, `onPaper` makes it a paler, heavier stock with a lighter shadow, so
+    it reads as a second sheet laid on the first */
+export const TornSlip: React.FC<{ className?: string; onPaper?: boolean }> = ({ className = '', onPaper = false }) => (
   <span aria-hidden className={`pointer-events-none absolute -z-10 ${className}`}>
     {/* the shadow: the slip's shape, blurred (the blur goes on a wrapper, since a
         mask is applied after an element's own filter) */}
-    <span className="absolute inset-0" style={{ filter: 'blur(6px)', transform: 'translate(2px,7px)' }}>
-      <span className="absolute inset-0 bg-[rgba(8,5,20,0.5)]" style={SLIP} />
+    <span className="absolute inset-0" style={onPaper ? { filter: 'blur(5px)', transform: 'translate(2px,5px)' } : { filter: 'blur(6px)', transform: 'translate(2px,7px)' }}>
+      <span className="absolute inset-0" style={{ ...SLIP, background: onPaper ? 'rgba(46,30,52,0.3)' : 'rgba(8,5,20,0.5)' }} />
     </span>
-    <span className="absolute inset-0 bg-[#fbfaf7]" style={SLIP_RIM} />
+    <span className="absolute inset-0 bg-[#fdfcf9]" style={SLIP_RIM} />
     <span className="absolute inset-0 bg-paper" style={SLIP} />
+    {/* the paler stock: a cream veil over the grain */}
+    {onPaper && <span className="absolute inset-0 bg-[#fbf8f1]/70" style={SLIP} />}
   </span>
 );
