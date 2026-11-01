@@ -24,16 +24,19 @@ const Background: React.FC = () => {
       {/* the sky itself, painted in watercolour (blue up the left, a violet heart, a
           rose bloom upper-right, teal lower-right), drifting very slowly */}
       <WatercolorSky palette={TWILIGHT} stars={false} className="absolute inset-0" />
+      {/* a thin lavender veil over it, lifting the whole sky a touch (a plain overlay:
+          blend modes are unreliable on iPhones) */}
+      <div className="absolute inset-0" style={{ background: 'rgba(196,178,236,0.07)' }} />
 
       {/* legibility: a soft central pool + bottom scrim so the cream wordmark/CTA
           stay readable over the glow */}
       <div
         className="absolute inset-0"
-        style={{ background: 'radial-gradient(68% 54% at 50% 44%, rgba(9,7,22,0.44) 0%, transparent 74%)' }}
+        style={{ background: 'radial-gradient(68% 54% at 50% 44%, rgba(9,7,22,0.32) 0%, transparent 74%)' }}
       />
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, transparent 0%, transparent 60%, rgba(9,7,22,0.5) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, transparent 0%, transparent 60%, rgba(9,7,22,0.38) 100%)' }}
       />
     </div>
   );
