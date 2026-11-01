@@ -1,8 +1,7 @@
 import React from 'react';
 import FadeIn from '../UI/FadeIn';
-import CelestialMark from '../UI/CelestialMark';
 import PencilRule from '../UI/PencilRule';
-import WatercolorSky, { MIDNIGHT } from '../Layout/WatercolorSky';
+import WatercolorSky, { EVENING } from '../Layout/WatercolorSky';
 
 interface InterludeProps {
   isIndonesian?: boolean;
@@ -34,16 +33,16 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       id="interlude"
       className="relative overflow-hidden isolate text-cream py-24 md:py-32"
     >
-      {/* a watercolour night sky — the footer's painting in a midnight palette */}
-      <WatercolorSky palette={MIDNIGHT} className="absolute inset-0 -z-10" />
-      {/* a light veil so the cream type keeps its contrast over the paler washes */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg, rgba(8,12,34,0.12) 0%, rgba(8,12,34,0.22) 100%)' }} />
+      {/* a watercolour evening sky, lighter than the hero's twilight */}
+      <WatercolorSky palette={EVENING} className="absolute inset-0 -z-10" />
+      {/* a soft shade behind each column only, so the cream type keeps its contrast
+          over the pale washes without darkening the whole sky */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(60% 70% at 28% 50%, rgba(30,20,70,0.22), transparent 70%), radial-gradient(55% 75% at 70% 50%, rgba(30,20,70,0.2), transparent 70%)' }} />
 
       <div className="relative z-10 mx-auto px-8 max-w-6xl grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-24 gap-y-14 lg:gap-y-10">
         {/* the question, and the reassurance */}
         <FadeIn dir="left" className="lg:self-end">
-          <CelestialMark name="sun" className="w-9 md:w-11 text-cream/75 [filter:drop-shadow(0_4px_28px_rgba(6,4,14,0.5))]" />
-          <h2 className="mt-7 md:mt-9 [text-wrap:balance] font-elegant italic font-bold text-cream text-[2.5rem] sm:text-[3.2rem] md:text-[3.8rem] lg:text-[4.2rem] leading-[1.02] tracking-[-0.02em] [text-shadow:0_4px_30px_rgba(6,4,14,0.45)]">
+          <h2 className="[text-wrap:balance] font-elegant italic font-bold text-cream text-[2.5rem] sm:text-[3.2rem] md:text-[3.8rem] lg:text-[4.2rem] leading-[1.02] tracking-[-0.02em] [text-shadow:0_4px_30px_rgba(6,4,14,0.45)]">
             {isIndonesian ? 'Bingung mau tanya apa?' : 'Not sure what to ask?'}
           </h2>
           <p className="mt-6 md:mt-7 max-w-[34ch] font-elegant text-cream/80 text-lg md:text-[1.35rem] leading-[1.5]">
@@ -58,11 +57,11 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
           {QUESTIONS.map((item, i) => (
             <li key={item.q[0]}>
               <FadeIn delay={i * 110} dir="up" distance={0.5}>
-                {i > 0 && <PencilRule weight="fine" className="text-cream/25" />}
+                {i > 0 && <PencilRule weight="fine" className="text-cream/40" />}
                 <div className="grid grid-cols-[2.75rem_minmax(0,1fr)] md:grid-cols-[3.5rem_minmax(0,1fr)] items-baseline py-6 md:py-7">
-                  <span className="font-elegant italic text-[#C9B8E8]/80 text-xl md:text-2xl">{ROMAN[i]}.</span>
+                  <span className="font-elegant italic text-cream/70 text-xl md:text-2xl [text-shadow:0_2px_16px_rgba(30,20,70,0.45)]">{ROMAN[i]}.</span>
                   <div>
-                    <span className="block font-elegant italic lowercase text-[#C9B8E8]/80 text-base md:text-lg">{t(item.topic)}</span>
+                    <span className="block font-elegant italic lowercase text-cream/75 text-base md:text-lg [text-shadow:0_2px_16px_rgba(30,20,70,0.45)]">{t(item.topic)}</span>
                     <p className="mt-1 font-elegant text-cream text-[1.35rem] sm:text-[1.5rem] md:text-[1.75rem] leading-[1.25] tracking-[-0.01em] [text-wrap:pretty] [text-shadow:0_3px_24px_rgba(6,4,14,0.45)]">
                       &ldquo;{t(item.q)}&rdquo;
                     </p>

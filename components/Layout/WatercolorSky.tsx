@@ -252,6 +252,19 @@ export const MIDNIGHT: SkyPalette = {
   glow: ['rgba(255,190,220,0.6)', 'rgba(150,210,240,0.5)'],
 };
 
+// evening: the interlude — the hour before the hero's twilight, a soft lit sky: a
+// periwinkle-violet overhead into lilac and a warm rose-peach haze low down, with
+// cool blue washes and a pale lavender bloom
+export const EVENING: SkyPalette = {
+  ground: '#4a3f8c',
+  base: ['#33307a', '#4a4194', '#6c56a8', '#9a72b4', '#c99ab8'],
+  back: ['#2e2c74', '#4a52a8', '#8a5aa6', '#5c4a9e', '#7e5cb0', '#5a8ab8'],
+  front: ['#c6a2cc', '#9ea6dc', '#e2b0c6', '#b49ad8', '#a6c4dc'],
+  bloom: '#efe6fa',
+  glow: ['rgba(240,180,206,0.6)', 'rgba(160,200,236,0.5)'],
+  clear: true,
+};
+
 // twilight: the hero and loader — a clear sky just after dusk: deep navy overhead
 // lightening to a luminous violet-rose horizon, blue up the left, a magenta bloom
 // upper-right, teal lower-right, and a few thin lit wisps low down
