@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
-import { TornPaper } from '../UI/PaperEdge';
+import Background from './Background';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -13,13 +13,17 @@ interface LoaderProps {
 // loads, a tarot card is drawn onto it in pencil, stroke by stroke as the loading
 // progresses: the card's edges ruled in, a crescent moon outlined and hatched in
 // coloured pencil, a few stars, the moon phases along its foot, and the name pressed
-// in last. Once everything is in, the sheet is lifted off upward, its torn bottom edge
-// and soft shadow passing over the night sky, uncovering the hero, the same gesture
-// as the About sheet sliding over the sky when the page scrolls.
+// in last. Once everything is in, the card is picked up and turned over: its back is
+// the night sky, which opens out to fill the screen and becomes the hero.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
-export const REVEAL_FLIGHT_MS = 700;  // the sheet has cleared the middle of the screen
-const LIFT_MS = 1150;                 // the sheet is off the screen
+const LIFT_PICK_MS = 420;   // the card is picked up off the sheet
+const TURN_HALF_MS = 380;   // turned edge-on
+const OPEN_MS = 950;        // its back, the night sky, opens out to fill the screen
+const LIFT_SCALE = 1.04;
+const TILT = -2;            // degrees, the card held a little askew
+// when the hero starts its entrance, counted from mt:reveal (fired as the sky opens out)
+export const REVEAL_FLIGHT_MS = 560;
 // Scrolling stays locked until the hero's entrance (and the About sheet rising under
 // it) has finished, so an early scroll can't catch the page mid-animation.
 const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
@@ -133,6 +137,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const [complete, setComplete] = useState(false);
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [leaving, setLeaving] = useState(false);
+  const [phase, setPhase] = useState<'draw' | 'lift' | 'turn' | 'open'>('draw');
   const [gone, setGone] = useState(false);
   const [unlocked, setUnlocked] = useState(false); // page may scroll again
 
@@ -230,19 +235,42 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     return () => clearInterval(iv);
   }, [reduce]);
 
-  // ---- the hand-off: the finished drawing holds a beat, then the sheet is lifted off ----
+  // ---- the hand-off: the card is turned over ----
+  // The finished card is picked up off the sheet (it lifts, tilts, its shadow falls on
+  // the paper), turned over, and its back, the night sky, grows to fill the screen and
+  // becomes the hero's own sky (the same Background), where the title then rises in.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [turnFrom, setTurnFrom] = useState('');
   useEffect(() => {
     if (!complete) return;
-    const t = window.setTimeout(() => {
-      setLeaving(true);
-      // tell the hero to play its entrance as the sheet uncovers it
-      try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
-      window.setTimeout(() => setGone(true), reduce ? 400 : LIFT_MS + 50);
-    }, reduce ? 0 : SETTLE_MS);
-    return () => clearTimeout(t);
+    const timers: number[] = [];
+    const at = (ms: number, f: () => void) => timers.push(window.setTimeout(f, ms));
+    at(reduce ? 0 : SETTLE_MS, () => {
+      if (reduce) {
+        setLeaving(true);
+        window.dispatchEvent(new CustomEvent('mt:reveal'));
+        at(400, () => setGone(true));
+        return;
+      }
+      // the sky starts as the card's back, at the card's size and tilt, edge-on
+      const r = cardRef.current?.getBoundingClientRect();
+      const sx = r ? (r.width * LIFT_SCALE) / window.innerWidth : 0.3;
+      const sy = r ? (r.height * LIFT_SCALE) / window.innerHeight : 0.5;
+      setTurnFrom(`perspective(1400px) translateY(-8px) scale(${sx.toFixed(4)}, ${sy.toFixed(4)}) rotate(${TILT}deg) rotateY(-90deg)`);
+      setPhase('lift');
+      at(LIFT_PICK_MS, () => setPhase('turn'));
+      at(LIFT_PICK_MS + TURN_HALF_MS, () => {
+        setPhase('open');
+        setLeaving(true);
+        // tell the hero to play its entrance as the sky opens out
+        window.dispatchEvent(new CustomEvent('mt:reveal'));
+      });
+      at(LIFT_PICK_MS + TURN_HALF_MS + OPEN_MS + 60, () => setGone(true));
+    });
+    return () => timers.forEach(clearTimeout);
   }, [complete, reduce]);
 
-  // the page under the sheet shows the paper's colour until the sheet is up (index.html
+  // the page under the sheet shows the paper's colour until the sky has opened (index.html
   // sets html.booting, so the first frame before React isn't the night sky)
   useEffect(() => {
     if (leaving) document.documentElement.classList.remove('booting');
@@ -250,32 +278,59 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
 
   if (gone) return null;
 
-  const lift = leaving && !reduce;
+  const lifted = phase !== 'draw';
+  const turned = phase === 'turn' || phase === 'open';
+  const open = phase === 'open';
   return (
     <div
       aria-hidden
-      className="fixed inset-x-0 top-0 -bottom-12 z-[200] will-change-transform"
+      className="fixed inset-0 z-[200] bg-paper"
       style={{
         pointerEvents: leaving ? 'none' : undefined,
-        transform: lift ? 'translate3d(0, calc(-100% - 40px), 0) rotate(-0.6deg)' : 'none',
-        transformOrigin: '30% 100%',
         opacity: leaving && reduce ? 0 : 1,
-        transition: lift
-          ? `transform ${LIFT_MS}ms cubic-bezier(0.6, 0, 0.25, 1)`
-          : leaving ? 'opacity 380ms ease' : undefined,
+        transition: reduce ? 'opacity 380ms ease' : undefined,
       }}
     >
-      {/* the sheet's soft shadow on the sky just under its torn edge, then the sheet */}
-      <div className="absolute inset-x-0 -bottom-3 h-16 [filter:blur(7px)]" style={{ background: 'rgba(6,4,20,0.45)', opacity: lift ? 1 : 0, transition: 'opacity 300ms ease' }} />
-      <TornPaper edge="bottom" />
-
-      {/* the drawing, in the middle of the screen (the sheet runs 3rem past its bottom) */}
-      <div className="absolute inset-x-0 top-0 h-[calc(100%-3rem)] grid place-items-center px-8">
-        <CardDrawing
-          progress={pct / 100}
-          className="h-[min(58vh,26rem)] w-auto"
-        />
+      {/* the card, drawn on the sheet; picked up, then turned over */}
+      <div className="absolute inset-0 grid place-items-center px-8 [perspective:1400px]">
+        <div
+          ref={cardRef}
+          style={{
+            transform: turned
+              ? `translateY(-8px) scale(${LIFT_SCALE + 0.12}) rotate(${TILT}deg) rotateY(90deg)`
+              : lifted ? `translateY(-8px) scale(${LIFT_SCALE}) rotate(${TILT}deg)` : 'none',
+            filter: lifted ? 'drop-shadow(0 22px 22px rgba(34,29,60,0.2)) drop-shadow(0 3px 4px rgba(34,29,60,0.14))' : 'none',
+            transition: turned
+              ? `transform ${TURN_HALF_MS}ms cubic-bezier(0.55, 0, 0.9, 0.45)`
+              : `transform ${LIFT_PICK_MS}ms cubic-bezier(0.2, 0.7, 0.3, 1), filter ${LIFT_PICK_MS}ms ease`,
+          }}
+        >
+          {/* the card's paper, so its shadow has a shape to cast */}
+          <div className="bg-paper">
+            <CardDrawing progress={pct / 100} className="block h-[min(58vh,26rem)] w-auto" />
+          </div>
+        </div>
       </div>
+
+      {/* the card's back: the hero's own night sky, opening out to fill the screen */}
+      {turnFrom && (
+        <div
+          className="absolute inset-0 overflow-hidden"
+          style={{
+            transform: open ? 'perspective(1400px) translateY(0px) scale(1, 1) rotate(0deg) rotateY(0deg)' : turnFrom,
+            borderRadius: open ? 0 : 28,
+            visibility: open ? 'visible' : 'hidden',
+            transition: open ? `transform ${OPEN_MS}ms cubic-bezier(0.2, 0.75, 0.25, 1), border-radius ${OPEN_MS}ms ease` : undefined,
+          }}
+        >
+          <Background />
+          {/* the back's design, as on a deck: a double ruled border, fading as it opens out */}
+          <div className="absolute inset-0" style={{ opacity: open ? 0 : 1, transition: `opacity ${OPEN_MS * 0.55}ms ease` }}>
+            <div className="absolute inset-[3.5%] rounded-[16px] border-[1.5px] border-cream/55" />
+            <div className="absolute inset-[5.5%] rounded-[12px] border border-cream/30" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
