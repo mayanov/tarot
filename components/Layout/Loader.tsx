@@ -130,6 +130,11 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
       startLenis();
     };
   }, [unlocked]);
+  // tell the page scrolling is free again (runs after the lock above is released), so
+  // App can take a held #section link there
+  useEffect(() => {
+    if (unlocked) window.dispatchEvent(new CustomEvent('mt:unlocked'));
+  }, [unlocked]);
 
   // ---- the real loading tasks ----
   const mark = (task: string) => setDone((d) => (d[task] ? d : { ...d, [task]: true }));

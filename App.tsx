@@ -254,15 +254,20 @@ function App() {
     return () => { destroyLenis(); destroyParallax(); };
   }, []);
 
-  // Handle Hash Navigation after Loading
+  // A link to a section (#faq): index.html holds the hash back so the loader can hand
+  // off to the hero first; once the hero's entrance is done (the loader unlocks
+  // scrolling), glide down to that section.
   useEffect(() => {
-    if (!isLoading && window.location.hash) {
-      setTimeout(() => {
-        const id = window.location.hash.substring(1);
-        smoothScrollToId(id, 80);
-      }, 500);
-    }
-  }, [isLoading]);
+    const id = (window as any).__startHash as string | undefined;
+    if (!id) return;
+    const go = () => {
+      (window as any).__startHash = undefined;
+      history.replaceState(history.state, '', `${location.pathname}${location.search}#${id}`);
+      smoothScrollToId(id, 80);
+    };
+    window.addEventListener('mt:unlocked', go, { once: true });
+    return () => window.removeEventListener('mt:unlocked', go);
+  }, []);
 
   const scrollToTop = () => {
     smoothScrollTo(0);

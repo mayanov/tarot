@@ -57,6 +57,12 @@
     // print trial: ?print=riso|offset swaps the .letterpress filter (index.css)
     var __print = new URLSearchParams(location.search).get('print');
     if (__print) document.documentElement.dataset.print = __print;
+    // a link to a section (#faq): hold it until the intro has played on the hero, so
+    // the browser doesn't jump there behind the loader (App scrolls there after)
+    if (location.hash.length > 1) {
+      window.__startHash = decodeURIComponent(location.hash.slice(1));
+      history.replaceState(history.state, '', location.pathname + location.search);
+    }
   </script>
   <script>
     window.__analyticsOn = !/^(localhost|127\.0\.0\.1|\[::1\]|.+\.local)$/.test(location.hostname);
