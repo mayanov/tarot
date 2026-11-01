@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
-import PencilRule from '../UI/PencilRule';
 import { TornPaper } from '../UI/PaperEdge';
 
 interface LoaderProps {
@@ -11,11 +10,12 @@ interface LoaderProps {
 }
 
 // The loader is a cover sheet of the site's paper laid over the hero. While the page
-// loads, the moon-phase divider is pencilled onto it, the rules drawn outward and the
-// moons outlined and shaded in pair by pair (the outer pair first, the full moon last).
-// Once everything is in, the sheet is lifted off upward, its torn bottom edge and soft
-// shadow passing over the night sky, uncovering the hero, the same gesture as the
-// About sheet sliding over the sky when the page scrolls.
+// loads, a tarot card is drawn onto it in pencil, stroke by stroke as the loading
+// progresses: the card's edges ruled in, a crescent moon outlined and hatched in
+// coloured pencil, a few stars, the moon phases along its foot, and the name pressed
+// in last. Once everything is in, the sheet is lifted off upward, its torn bottom edge
+// and soft shadow passing over the night sky, uncovering the hero, the same gesture
+// as the About sheet sliding over the sky when the page scrolls.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
 export const REVEAL_FLIGHT_MS = 700;  // the sheet has cleared the middle of the screen
@@ -26,36 +26,109 @@ const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
 
 // Loading is REAL: progress comes from the work the page actually waits on.
 const TASKS = ['fonts', 'paper', 'app', 'page'] as const;
-const MIN_CLIMB_MS = 1600;    // even on a fast connection the drawing takes this long (no flash)
+const MIN_CLIMB_MS = 2600;    // even on a fast connection the drawing takes this long to draw
 const SETTLE_MS = 450;        // the finished drawing holds a beat before the sheet lifts
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
 
-// One moon pencilled in: its outline drawn round as `draw` goes 0 → 1, then its lit part
-// shaded in. Same geometry as the divider's Phase (MoonPhaseDivider).
-const DrawnPhase: React.FC<{ p: number; waning?: boolean; size: number; draw: number }> = ({ p, waning = false, size, draw }) => {
-  const r = 7, c = 8;
+// ---- the drawing ----
+// A card in a 200 × 320 box. Each stroke is drawn along its length (a dash pulled
+// along the path) in its turn; `w` is its share of the time, roughly its length.
+type Stroke = { d: string; w: number; tone: 'graphite' | 'violet'; width: number; opacity?: number; hatch?: boolean };
+
+// the crescent: an outer arc round the left and the terminator's shallower arc
+const CRESCENT = 'M112 93.5 A48 48 0 1 0 112 186.5 A52 52 0 0 1 112 93.5 Z';
+const cross = (x: number, y: number, s: number): Stroke[] => [
+  { d: `M${x - s} ${y + 0.4} L${x + s} ${y - 0.3}`, w: 0.35, tone: 'graphite', width: 0.9 },
+  { d: `M${x + 0.3} ${y - s} L${x - 0.2} ${y + s}`, w: 0.35, tone: 'graphite', width: 0.9 },
+];
+const STROKES: Stroke[] = [
+  // the card's edges, each ruled a little past the corners
+  { d: 'M4 12 C 60 10.5, 140 11.6, 196 10.8', w: 2, tone: 'graphite', width: 1.3 },
+  { d: 'M189.4 4 C 190.6 100, 189.2 220, 190 316', w: 2.6, tone: 'graphite', width: 1.3 },
+  { d: 'M196 309.4 C 130 310.6, 70 308.8, 4 309.8', w: 2, tone: 'graphite', width: 1.3 },
+  { d: 'M10.8 316 C 9.6 210, 11.3 100, 10.4 4', w: 2.6, tone: 'graphite', width: 1.3 },
+  // a finer inner border
+  { d: 'M21 25 Q21 21 25 21 L175 21 Q179 21 179 25 L179 295 Q179 299 175 299 L25 299 Q21 299 21 295 Z', w: 4, tone: 'graphite', width: 0.6, opacity: 0.55 },
+  // the crescent, outlined in coloured pencil, then gone over again more lightly
+  { d: 'M112 93.5 A48 48 0 1 0 112 186.5', w: 2.4, tone: 'violet', width: 1.5 },
+  { d: 'M112 186.5 A52 52 0 0 1 112 93.5', w: 1.6, tone: 'violet', width: 1.2 },
+  { d: 'M108 95.5 A46.5 46.5 0 1 0 110 185', w: 1.4, tone: 'violet', width: 0.6, opacity: 0.45 },
+  // hatched in, short diagonal strokes across the lit part (clipped to it)
+  ...Array.from({ length: 13 }, (_, i): Stroke => ({
+    d: `M${40 + i * 6.5} ${196} L${78 + i * 6.5} ${86}`, w: 0.42, tone: 'violet', width: 0.75, opacity: 0.6, hatch: true,
+  })),
+  // stars, a few crosses and pinpoints
+  ...cross(52, 64, 4.5), ...cross(150, 58, 3.5), ...cross(158, 206, 4), ...cross(48, 226, 3),
+  { d: 'M140 112 l0.1 0.1', w: 0.15, tone: 'graphite', width: 2.2 },
+  { d: 'M70 196 l0.1 0.1', w: 0.15, tone: 'graphite', width: 1.8 },
+  { d: 'M166 140 l0.1 0.1', w: 0.15, tone: 'graphite', width: 1.6 },
+  // a rule above the card's foot
+  { d: 'M42 246 C 80 245.2, 120 246.6, 158 245.6', w: 1.4, tone: 'graphite', width: 0.7, opacity: 0.6 },
+];
+const PHASE_W = 0.5; // each moon of the row along the foot
+const TOTAL_W = STROKES.reduce((n, s) => n + s.w, 0) + PHASES.length * PHASE_W;
+
+// one moon of the row, outlined round then shaded in (same geometry as the divider's Phase)
+const DrawnPhase: React.FC<{ p: number; waning?: boolean; x: number; y: number; r: number; draw: number }> = ({ p, waning = false, x, y, r, draw }) => {
   const rx = Math.abs(1 - 2 * p) * r;
-  const lit = `M ${c} ${c - r} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${rx} ${r} 0 0 ${p > 0.5 ? 1 : 0} ${c} ${c - r} Z`;
-  const outline = Math.min(1, draw / 0.6);         // the first 60%: the outline
-  const shade = Math.max(0, (draw - 0.5) / 0.5);    // then the shading
+  const lit = `M ${x} ${y - r} A ${r} ${r} 0 0 1 ${x} ${y + r} A ${rx} ${r} 0 0 ${p > 0.5 ? 1 : 0} ${x} ${y - r} Z`;
+  const outline = Math.min(1, draw / 0.6);
+  const shade = Math.max(0, (draw - 0.5) / 0.5);
   return (
-    <svg viewBox="0 0 16 16" width={size} height={size} className="shrink-0 overflow-visible" style={waning ? { transform: 'scaleX(-1)' } : undefined}>
-      <circle
-        cx={c} cy={c} r={r} fill="none" stroke="currentColor" strokeOpacity={0.55} strokeWidth={0.9}
-        pathLength={1} strokeDasharray="1" strokeDashoffset={1 - outline}
-        transform={`rotate(-90 ${c} ${c})`} strokeLinecap="round"
-      />
-      {p >= 1
-        ? <circle cx={c} cy={c} r={r} fill="currentColor" opacity={shade} />
-        : <path d={lit} fill="currentColor" opacity={shade} />}
+    <g transform={waning ? `translate(${2 * x} 0) scale(-1 1)` : undefined}>
+      <circle cx={x} cy={y} r={r} fill="none" stroke="currentColor" strokeOpacity={0.6} strokeWidth={0.6}
+        pathLength={1} strokeDasharray="1" strokeDashoffset={1 - outline} transform={`rotate(-90 ${x} ${y})`} strokeLinecap="round" />
+      {p >= 1 ? <circle cx={x} cy={y} r={r} fill="currentColor" opacity={shade * 0.85} /> : <path d={lit} fill="currentColor" opacity={shade * 0.85} />}
+    </g>
+  );
+};
+
+const CardDrawing: React.FC<{ progress: number; className?: string }> = ({ progress, className = '' }) => {
+  const id = React.useId().replace(/:/g, '');
+  let at = progress * TOTAL_W; // how far along the drawing the hand has got
+  const take = (w: number) => { const v = Math.max(0, Math.min(1, at / w)); at -= w; return v; };
+  const strokes = STROKES.map((s) => ({ ...s, t: take(s.w) }));
+  const phases = PHASES.map((ph) => ({ ...ph, t: take(PHASE_W) }));
+  const named = Math.max(0, Math.min(1, progress * 6 - 5)); // the name presses in over the last sixth
+  return (
+    <svg viewBox="0 0 200 320" className={`overflow-visible ${className}`} fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <defs>
+        <clipPath id={`${id}c`}><path d={CRESCENT} /></clipPath>
+      </defs>
+      <g style={{ filter: 'url(#pencil-icon)' }}>
+        {strokes.map((s, i) => s.t > 0 && (
+          <path
+            key={i}
+            d={s.d}
+            pathLength={1}
+            strokeDasharray="1"
+            strokeDashoffset={1 - s.t}
+            stroke={s.tone === 'violet' ? '#6B3FA0' : '#221D3C'}
+            strokeWidth={s.width}
+            strokeOpacity={s.opacity ?? 0.82}
+            clipPath={s.hatch ? `url(#${id}c)` : undefined}
+          />
+        ))}
+        <g className="text-moon">
+          {phases.map((ph, i) => (
+            <DrawnPhase key={i} p={ph.p} waning={ph.waning} x={64 + i * 12} y={268} r={ph.p === 1 ? 4.6 : 3.6} draw={ph.t} />
+          ))}
+        </g>
+      </g>
+      <text
+        x="100" y="292" textAnchor="middle"
+        className="letterpress font-serif font-medium uppercase"
+        style={{ fontSize: 11.5, letterSpacing: '0.2em', fill: '#221D3C', opacity: named }}
+      >
+        Mayanov Tarot
+      </text>
     </svg>
   );
 };
 
 const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const [shown, setShown] = useState(false);      // the drawing has started
   const [pct, setPct] = useState(0);              // progress, 0–100
   const [complete, setComplete] = useState(false);
   const [done, setDone] = useState<Record<string, boolean>>({});
@@ -140,7 +213,6 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     const climb = reduce ? 1 : MIN_CLIMB_MS;
     const t0 = performance.now();
     let p = 0;
-    setShown(true);
     // a ~30fps timer rather than rAF, so progress keeps moving even in a background tab
     const tick = () => {
       const now = performance.now();
@@ -179,13 +251,6 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   if (gone) return null;
 
   const lift = leaving && !reduce;
-  // each pair of moons draws in its quarter of the progress, outer pair first
-  const drawOf = (i: number) => {
-    const ring = 3 - Math.abs(i - (PHASES.length - 1) / 2); // 0 = outer pair … 3 = full moon
-    return Math.max(0, Math.min(1, (pct - ring * 25) / 25));
-  };
-  // the rules are drawn outward from the moons as the whole drawing progresses
-  const rule = Math.min(1, pct / 100);
   return (
     <div
       aria-hidden
@@ -205,27 +270,11 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
       <TornPaper edge="bottom" />
 
       {/* the drawing, in the middle of the screen (the sheet runs 3rem past its bottom) */}
-      <div className="absolute inset-x-0 top-0 h-[calc(100%-3rem)] flex flex-col items-center justify-center px-8 text-ink">
-        <div
-          className="letterpress-lg font-serif font-medium uppercase whitespace-nowrap tracking-[0.02em] text-[1.45rem] md:text-[1.8rem] leading-none pb-[0.14em] -mb-[0.14em]"
-          style={{ opacity: shown ? 1 : 0, transition: 'opacity 900ms ease' }}
-        >
-          Mayanov Tarot
-        </div>
-
-        <div className="mt-7 md:mt-8 w-full max-w-[34rem] flex items-center gap-4 md:gap-5 text-moon">
-          <div className="flex-1 min-w-0" style={{ clipPath: `inset(-8px 0 -8px ${(1 - rule) * 100}%)` }}>
-            <PencilRule fade="start" className="w-full text-moon/70" />
-          </div>
-          <div className="print-ink [filter:url(#pencil-icon)] flex items-center gap-2.5 md:gap-3">
-            {PHASES.map((ph, i) => (
-              <DrawnPhase key={i} p={ph.p} waning={ph.waning} size={ph.p === 1 ? 18 : 13} draw={drawOf(i)} />
-            ))}
-          </div>
-          <div className="flex-1 min-w-0" style={{ clipPath: `inset(-8px ${(1 - rule) * 100}% -8px 0)` }}>
-            <PencilRule fade="end" className="w-full text-moon/70" />
-          </div>
-        </div>
+      <div className="absolute inset-x-0 top-0 h-[calc(100%-3rem)] grid place-items-center px-8">
+        <CardDrawing
+          progress={pct / 100}
+          className="h-[min(58vh,26rem)] w-auto"
+        />
       </div>
     </div>
   );
