@@ -242,7 +242,14 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   // still going on at its leading edge), done a little before the moons are
   const written = Math.max(0, Math.min(1, (pct - 8) / 80));
   const wipe = `linear-gradient(90deg, #000 ${(written * 112 - 12).toFixed(1)}%, transparent ${(written * 112).toFixed(1)}%)`;
+  // ...first only its letters' outlines, sketched, then filled in once they're down
+  const inked = Math.max(0, Math.min(1, (pct - 62) / 38));
   const writing: React.CSSProperties = { WebkitMaskImage: wipe, maskImage: wipe };
+  const sketched: React.CSSProperties = {
+    color: `rgba(243, 241, 236, ${inked.toFixed(3)})`,
+    WebkitTextStroke: `0.04em rgba(243, 241, 236, ${(0.85 - inked * 0.6).toFixed(3)})`,
+    filter: 'url(#pencil-icon)',
+  };
   return (
     <div
       aria-hidden
@@ -294,18 +301,22 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
                   <stop offset="1" stopColor="#C9B8E8" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              <path
-                d="M0 2 C 30 1.6, 62 2.5, 100 1.9"
-                pathLength={1}
-                strokeDasharray="1"
-                strokeDashoffset={1 - Math.min(pct, 100) / 100}
-                fill="none"
-                stroke={`url(#rule-${side})`}
-                strokeWidth={1}
-                vectorEffect="non-scaling-stroke"
-                strokeLinecap="round"
-                style={{ filter: 'url(#pencil-icon)' }}
-              />
+              {/* two loose passes, the second a little behind and off the first */}
+              {[{ d: 'M-2 2 C 30 1.6, 62 2.5, 100 1.9', w: 1.1, lag: 0 }, { d: 'M3 2.9 C 28 2.2, 58 1.4, 84 2.4', w: 0.7, lag: 12 }].map((l, k) => (
+                <path
+                  key={k}
+                  d={l.d}
+                  pathLength={1}
+                  strokeDasharray="1"
+                  strokeDashoffset={1 - Math.max(0, Math.min(pct - l.lag, 100 - l.lag)) / (100 - l.lag)}
+                  fill="none"
+                  stroke={`url(#rule-${side})`}
+                  strokeWidth={l.w}
+                  vectorEffect="non-scaling-stroke"
+                  strokeLinecap="round"
+                  style={{ filter: 'url(#pencil-icon)' }}
+                />
+              ))}
             </svg>
           ))}
           {DIVIDER_PHASES.map((ph, i) => {
@@ -332,13 +343,20 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
                 <div className="absolute inset-0" style={{ opacity: Math.max(0, Math.min(1, (fill - 0.3) / 0.7)) }}>
                   <Face offset={ph.p * fill * 104} layers={2} />
                 </div>
-                {/* its outline, pencilled round first */}
+                {/* its outline, sketched round first in two loose passes that don't
+                    quite meet, and left in once it's shaded */}
                 <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full overflow-visible" style={{ filter: 'url(#pencil-icon)' }}>
-                  <circle
-                    cx="50" cy="50" r="46" fill="none" stroke="#E9E0F5" strokeWidth={4} strokeLinecap="round"
-                    strokeOpacity={0.75 - Math.max(0, fill - 0.5) * 0.8}
-                    pathLength={1} strokeDasharray="1" strokeDashoffset={1 - Math.min(1, fill / 0.45)}
+                  <ellipse
+                    cx="50" cy="50" rx="46" ry="44.5" fill="none" stroke="#E9E0F5" strokeWidth={4.5} strokeLinecap="round"
+                    strokeOpacity={0.8 - Math.max(0, fill - 0.5) * 0.5}
+                    pathLength={1} strokeDasharray="0.94 1" strokeDashoffset={1 - Math.min(1, fill / 0.4)}
                     transform="rotate(-100 50 50)"
+                  />
+                  <ellipse
+                    cx="51" cy="49" rx="44" ry="46.5" fill="none" stroke="#E9E0F5" strokeWidth={3} strokeLinecap="round"
+                    strokeOpacity={0.5 - Math.max(0, fill - 0.5) * 0.3}
+                    pathLength={1} strokeDasharray="0.9 1" strokeDashoffset={1 - Math.max(0, Math.min(1, (fill - 0.15) / 0.4))}
+                    transform="rotate(130 50 50)"
                   />
                 </svg>
               </div>
@@ -371,7 +389,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
         {/* wordmark slot (the real wordmark is the fixed layer below) + the label */}
         <div ref={slotRef} className="mt-10 h-[1.35rem] w-44 grid place-items-center">
           {!word && (
-            <span className="font-serif font-medium uppercase whitespace-nowrap tracking-[-0.01em] text-cream" style={{ fontSize: WORDMARK_PX, opacity: showing && !leaving ? 1 : 0, transition: 'opacity 700ms ease', ...writing }}>Mayanov Tarot</span>
+            <span className="font-serif font-medium uppercase whitespace-nowrap tracking-[-0.01em] text-cream" style={{ fontSize: WORDMARK_PX, opacity: showing && !leaving ? 1 : 0, transition: 'opacity 700ms ease', ...writing, ...sketched }}>Mayanov Tarot</span>
           )}
         </div>
         <div
@@ -393,6 +411,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
             transform: flying ? 'none' : word.rest,
             opacity: flying ? 0 : leaving ? 0 : showing ? 1 : 0,
             ...(written < 1 ? writing : null),
+            ...(leaving ? null : sketched),
             transition: flying
               ? `transform ${REVEAL_FLIGHT_MS}ms cubic-bezier(0.65,0,0.2,1) 40ms, opacity 240ms ease ${REVEAL_FLIGHT_MS + 40}ms`
               : leaving ? 'opacity 300ms ease' : 'opacity 900ms ease 300ms',
