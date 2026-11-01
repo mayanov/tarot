@@ -41,16 +41,17 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
       {/* a watercolour evening sky, lighter than the hero's twilight */}
       <WatercolorSky palette={EVENING} className="absolute inset-0 -z-10" />
       {/* a soft shade behind each column only, so the cream type keeps its contrast
-          over the pale washes without darkening the whole sky */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(60% 70% at 28% 50%, rgba(30,20,70,0.22), transparent 70%), radial-gradient(55% 75% at 70% 50%, rgba(30,20,70,0.2), transparent 70%)' }} />
+          over the pale washes without darkening the whole sky (the type is pressed
+          like the rest of the site's, so it carries no glow of its own) */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(60% 70% at 28% 50%, rgba(30,20,70,0.3), transparent 72%), radial-gradient(55% 75% at 70% 50%, rgba(30,20,70,0.28), transparent 70%)' }} />
 
       <div className="relative z-10 mx-auto px-8 max-w-6xl grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-24 gap-y-14 lg:gap-y-10">
         {/* the question, and the reassurance */}
         <FadeIn dir="left" className="lg:self-end">
-          <h2 className="[text-wrap:balance] font-elegant italic font-bold text-cream text-[2.5rem] sm:text-[3.2rem] md:text-[3.8rem] lg:text-[4.2rem] leading-[1.02] tracking-[-0.02em] [text-shadow:0_4px_30px_rgba(6,4,14,0.45)]">
+          <h2 className="letterpress-lg pb-[0.14em] -mb-[0.14em] [text-wrap:balance] font-elegant italic font-bold text-cream text-[2.5rem] sm:text-[3.2rem] md:text-[3.8rem] lg:text-[4.2rem] leading-[1.02] tracking-[-0.02em]">
             {isIndonesian ? 'Bingung mau tanya apa?' : 'Not sure what to ask?'}
           </h2>
-          <p className="mt-6 md:mt-7 max-w-[34ch] font-elegant text-cream/80 text-lg md:text-[1.35rem] leading-[1.5]">
+          <p className="letterpress mt-6 md:mt-7 max-w-[34ch] font-elegant text-cream/80 text-lg md:text-[1.35rem] leading-[1.5]">
             {isIndonesian
               ? 'Kamu nggak perlu datang dengan pertanyaan yang sempurna. Ini beberapa yang sering dibawa ke meja, atau cukup cerita, kita cari pertanyaannya bareng.'
               : 'You don’t need the perfect question. Here are a few that often come to the table, or just tell me what’s going on and we’ll find it together.'}
@@ -64,10 +65,10 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
               <FadeIn delay={i * 110} dir="up" distance={0.5}>
                 {i > 0 && <PencilRule weight="fine" className="text-cream/40" />}
                 <div className="grid grid-cols-[2.75rem_minmax(0,1fr)] md:grid-cols-[3.5rem_minmax(0,1fr)] items-baseline py-6 md:py-7">
-                  <span className="font-elegant italic text-cream/70 text-xl md:text-2xl [text-shadow:0_2px_16px_rgba(30,20,70,0.45)]">{ROMAN[i]}.</span>
+                  <span className="letterpress font-elegant italic text-cream/70 text-xl md:text-2xl">{ROMAN[i]}.</span>
                   <div>
-                    <span className="block font-elegant italic lowercase text-cream/75 text-base md:text-lg [text-shadow:0_2px_16px_rgba(30,20,70,0.45)]">{t(item.topic)}</span>
-                    <p className="mt-1 font-elegant text-cream text-[1.35rem] sm:text-[1.5rem] md:text-[1.75rem] leading-[1.25] tracking-[-0.01em] [text-wrap:pretty] [text-shadow:0_3px_24px_rgba(6,4,14,0.45)]">
+                    <span className="letterpress block font-elegant italic lowercase text-cream/75 text-base md:text-lg">{t(item.topic)}</span>
+                    <p className="letterpress-lg mt-1 font-elegant text-cream text-[1.35rem] sm:text-[1.5rem] md:text-[1.75rem] leading-[1.25] tracking-[-0.01em] [text-wrap:pretty]">
                       &ldquo;{t(item.q)}&rdquo;
                     </p>
                   </div>
