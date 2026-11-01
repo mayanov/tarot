@@ -27,8 +27,8 @@ export default {
         'coral-deep': 'rgb(var(--adm-pending-text) / <alpha-value>)',
         // --- Accent: a single violet (plum family) for the whole public site ---
         moon: '#6B3FA0',
-        // felt-tip ink: a deep blue-black, used a little see-through (.marker-ink)
-        marker: '#221D3C',
+        // letterpress ink: a flat deep blue-black (.letterpress)
+        press: '#221D3C',
         sage: 'rgb(var(--adm-confirmed) / <alpha-value>)',
         // --- The one light surface for the whole public site ---
         cream: '#F3F1EC',

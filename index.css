@@ -571,9 +571,8 @@ select.pencil-field { appearance: auto; }
   filter: none;
 }
 
-/* text written on the sheet with a felt-tip pen (#marker-ink, index.html). Give it
-   a slightly see-through ink colour (text-marker/…), so the edges where the ink
-   pooled read darker */
-.marker-ink {
-  filter: url(#marker-ink);
+/* text letterpressed into the sheet (#letterpress, index.html), in a flat deep ink
+   (text-press) */
+.letterpress {
+  filter: url(#letterpress);
 }

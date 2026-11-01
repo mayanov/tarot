@@ -114,25 +114,34 @@
       <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.7 1.8" result="ga" />
       <feComposite in="d" in2="ga" operator="in" />
     </filter>
-    <!-- felt-tip (spidol) ink for text (.marker-ink, index.css), the type's own shapes
-         kept: corners and stroke ends rounded off by the soft tip, the edge feathered
-         into the paper's fibres, the ink pooled darker along each stroke's edge, and
-         laid down a little unevenly (lighter where the pen ran drier) -->
-    <filter id="marker-ink" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="0.3" result="b" />
-      <feColorMatrix in="b" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 2.2 -0.4" result="shape" />
-      <feComposite in="SourceGraphic" in2="shape" operator="in" result="r" />
-      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="8" result="n" />
-      <feDisplacementMap in="r" in2="n" scale="0.9" xChannelSelector="R" yChannelSelector="G" result="d" />
-      <feMorphology in="d" operator="erode" radius="0.5" result="e" />
+    <!-- letterpress (.letterpress, index.css): the type pressed into the card — its
+         edge a touch rough, ink squeezed out darker along each letter's edge, a few
+         specks where the ink didn't take, a faint shadow inside the top/left edges of
+         the impression and the paper catching the light just past its bottom/right -->
+    <filter id="letterpress" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="n" />
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.7" xChannelSelector="R" yChannelSelector="G" result="d" />
+      <feMorphology in="d" operator="erode" radius="0.6" result="e" />
       <feComposite in="d" in2="e" operator="out" result="rim" />
-      <feMerge result="m">
-        <feMergeNode in="d" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" seed="12" result="g" />
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1.3 0 0 0 1.55" result="ga" />
+      <feComposite in="d" in2="ga" operator="in" result="inked" />
+      <feMerge result="ink">
+        <feMergeNode in="inked" />
         <feMergeNode in="rim" />
       </feMerge>
-      <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="3" result="u" />
-      <feColorMatrix in="u" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.35 0 0 0 1.12" result="ua" />
-      <feComposite in="m" in2="ua" operator="in" />
+      <feOffset in="SourceAlpha" dx="0.9" dy="0.9" result="off" />
+      <feComposite in="SourceAlpha" in2="off" operator="out" result="inner" />
+      <feFlood flood-color="#000" flood-opacity="0.3" />
+      <feComposite in2="inner" operator="in" result="innerShadow" />
+      <feComposite in="off" in2="SourceAlpha" operator="out" result="outer" />
+      <feFlood flood-color="#fff" flood-opacity="0.75" />
+      <feComposite in2="outer" operator="in" result="lightRim" />
+      <feMerge>
+        <feMergeNode in="lightRim" />
+        <feMergeNode in="ink" />
+        <feMergeNode in="innerShadow" />
+      </feMerge>
     </filter>
   </svg>
   <div id="root"></div>
