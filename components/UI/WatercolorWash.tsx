@@ -7,10 +7,8 @@ interface WatercolorWashProps {
    * 'panel' (default): a madder-rose wash over a block of text, roughly its shape.
    * 'stroke': one broad brushstroke swept across the page, streaked where the
    * bristles ran dry — cooler (blue-lilac), for a single line of content like a quote.
-   * 'pool': a loose, rounded patch of violet laid wet, a rose bloom run into one side
-   * and a cooler one into the other; stronger than the panel, for a pull quote.
    */
-  variant?: 'panel' | 'stroke' | 'pool';
+  variant?: 'panel' | 'stroke';
 }
 
 /**
@@ -98,34 +96,6 @@ const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '', variant
           <ellipse cx="6%" cy="46%" rx="7%" ry="26%" fill="#b48ad6" fillOpacity="0.12" />
           <ellipse cx="88%" cy="34%" rx="9%" ry="18%" fill="#e3a0c4" fillOpacity="0.1" />
           <ellipse cx="22%" cy="76%" rx="9%" ry="16%" fill="#6fb0c4" fillOpacity="0.09" />
-        </g>
-      </svg>
-      </Baked>
-    );
-  }
-  if (variant === 'pool') {
-    return (
-      <Baked className={className} bleed={90}>
-      <svg aria-hidden className="absolute inset-0 h-full w-full overflow-visible">
-        <defs>
-          {washFilter(`${id}a`, 7, '0.004 0.006', 120)}
-          {washFilter(`${id}b`, 17, '0.005 0.007', 90)}
-          <filter id={`${id}p`} x="-40%" y="-40%" width="180%" height="180%" colorInterpolationFilters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="21" result="n" />
-            <feDisplacementMap in="SourceGraphic" in2="n" scale="90" xChannelSelector="R" yChannelSelector="G" result="d" />
-            <feGaussianBlur in="d" stdDeviation="18" />
-          </filter>
-        </defs>
-
-        {/* the patch, laid on loosely (rounder than the panel, no straight sides),
-            then a second, smaller pass off-centre so the edges double up unevenly */}
-        <rect x="-2%" y="0%" width="102%" height="100%" rx="22%" ry="46%" fill="#7a52b4" fillOpacity="0.085" filter={`url(#${id}a)`} />
-        <rect x="8%" y="10%" width="80%" height="78%" rx="22%" ry="46%" fill="#8a5cc0" fillOpacity="0.05" filter={`url(#${id}b)`} />
-        {/* blooms run into it while wet: rose to the right, a cool blue-green low left */}
-        <g filter={`url(#${id}p)`}>
-          <ellipse cx="82%" cy="30%" rx="18%" ry="30%" fill="#d77fa6" fillOpacity="0.13" />
-          <ellipse cx="14%" cy="72%" rx="16%" ry="26%" fill="#6fa0c8" fillOpacity="0.1" />
-          <ellipse cx="44%" cy="20%" rx="14%" ry="18%" fill="#b48ad6" fillOpacity="0.1" />
         </g>
       </svg>
       </Baked>

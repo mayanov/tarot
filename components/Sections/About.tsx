@@ -7,7 +7,6 @@ import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
 import { PaperShadow, paperCut, tornTop, TornPaper } from '../UI/PaperEdge';
-import WatercolorWash from '../UI/WatercolorWash';
 import { Phase } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import { moonNow } from '../Layout/MenuMoon';
@@ -204,12 +203,11 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
 
           {/* goal — the closing statement, set as a pull quote: a large opening mark hangs in
               its own indent beside the first line, the key word is picked out in purple
-              italic, and it's signed by hand; a loose violet wash is painted in behind it */}
-          <figure className="relative isolate mt-12 md:mt-16 -mx-3 md:mx-0 pl-[4.25rem] md:pl-24 pr-7 md:pr-12 pt-8 md:pt-10 pb-6 md:pb-8">
-            <WatercolorWash variant="pool" className="-z-10" />
+              italic, and it's signed by hand */}
+          <figure className="relative mt-12 md:mt-16 pl-12 md:pl-16">
             {/* (the ink texture sits on an inner box with room round the glyph — a mask clips
                 to its box) */}
-            <span aria-hidden className="absolute left-5 md:left-8 top-[calc(2rem-0.14em)] md:top-[calc(2.5rem-0.14em)] font-elegant font-semibold text-moon/80 text-[4.5rem] md:text-[5.75rem] leading-none select-none">
+            <span aria-hidden className="absolute left-0 -top-[0.14em] font-elegant font-semibold text-moon/80 text-[4.5rem] md:text-[5.75rem] leading-none select-none">
               <span className="letterpress-lg mix-blend-multiply inline-block py-[0.2em] -my-[0.2em] pr-[0.1em]">“</span>
             </span>
             <blockquote className="letterpress-lg font-elegant text-press text-[1.6rem] md:text-[2.1rem] leading-[1.2] tracking-[-0.02em]">
