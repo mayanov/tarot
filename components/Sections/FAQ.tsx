@@ -248,7 +248,10 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               className="group mt-3 inline-flex items-center gap-3 font-elegant font-semibold text-ink text-[1.8rem] md:text-[2.6rem] leading-tight tracking-[-0.02em] hover:text-moon transition-colors duration-300"
             >
               <span className="letterpress-lg pb-[0.14em] -mb-[0.14em]">{isIndonesian ? 'Tanya langsung via WhatsApp' : 'Ask me on WhatsApp'}</span>
-              <PencilArrow strokeWidth={1.9} className="print-ink w-6 h-6 md:w-7 md:h-7 text-moon transition-transform duration-500 group-hover:translate-x-1.5" />
+              {/* drawn as heavy as the words and pressed with them, in the same ink */}
+              <span className="letterpress-lg inline-flex transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1">
+                <PencilArrow dir="up-right" strokeWidth={2.6} className="w-7 h-7 md:w-9 md:h-9" />
+              </span>
             </a>
           </div>
         </FadeIn>
