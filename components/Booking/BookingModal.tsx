@@ -123,6 +123,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const [dob, setDob] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [email, setEmail] = useState('');
+  // what they'd like to ask (optional); can arrive filled in from an example question
+  const [question, setQuestion] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [showPay, setShowPay] = useState(false); // reveal payment details on the success step
@@ -150,7 +152,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
   const reset = useCallback(() => {
     setStep(0); setService(null); setDate(undefined); setTime(null); setPkg(null);
-    setName(''); setDob(''); setDobDay(''); setDobMonth(''); setDobYear(''); setWhatsapp(''); setEmail(''); setError(''); setSubmitting(false); setShowPay(false); setPayTab('qris'); setCopied(false);
+    setName(''); setDob(''); setDobDay(''); setDobMonth(''); setDobYear(''); setWhatsapp(''); setEmail(''); setQuestion(''); setError(''); setSubmitting(false); setShowPay(false); setPayTab('qris'); setCopied(false);
   }, []);
 
   // opened from a pricelist card (still open underneath): closing the form closes that too
@@ -205,7 +207,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   useEffect(() => {
     const onOpen = (e: Event) => {
       reset();
-      const detail = (e as CustomEvent<{ serviceId?: string; returnToCard?: number }>).detail;
+      const detail = (e as CustomEvent<{ serviceId?: string; returnToCard?: number; question?: string }>).detail;
+      if (detail?.question) setQuestion(detail.question);
       returnToCard.current = typeof detail?.returnToCard === 'number' ? detail.returnToCard : null;
       setSeamless(returnToCard.current !== null);
       // from a card: wait edge-on while the card turns away, then turn in
@@ -263,7 +266,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
         name: name.trim(),
         dob: dob,
         contact: [whatsapp.trim() && `WA: ${whatsapp.trim()}`, email.trim() && `Email: ${email.trim()}`].filter(Boolean).join(' · '),
-        question: '',
+        question: question.trim(),
         market: isIndonesian ? 'ID' : 'Global',
       });
       const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
@@ -688,6 +691,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     <span className="block mt-1.5 text-xs text-ink/70">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
                   )}
                 </label>
+                <label className="block">
+                  <span className={label}>{t('Pertanyaanmu', 'Your question')} <span className="text-ink/40 font-normal">({t('opsional', 'optional')})</span></span>
+                  <textarea value={question} onChange={(e) => setQuestion(e.target.value.slice(0, 2000))} rows={2} className={`${field} resize-none`} placeholder={t('Boleh dikosongkan, kita bisa cari bareng saat sesi.', 'You can leave this blank; we can find it together in the session.')} />
+                </label>
               </div>
 
               {bottomBar(
@@ -713,6 +720,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 {row(t('Tanggal lahir', 'Date of birth'), fmtLongDate(dob, isIndonesian ? 'id' : 'en'))}
                 {row('WhatsApp', whatsapp)}
                 {email.trim() && row('Email', email)}
+                {question.trim() && row(t('Pertanyaan', 'Question'), question.trim())}
                 {rule}
               </div>
 
