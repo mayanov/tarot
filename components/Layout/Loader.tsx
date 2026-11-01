@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Background from './Background';
 import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES as DIVIDER_PHASES } from '../UI/MoonPhaseDivider';
+import PencilRule from '../UI/PencilRule';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -20,37 +21,46 @@ const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
 const WORDMARK_PX = 20;               // the wordmark's size while loading
 
 // Loading is REAL: progress comes from the work the page actually waits on (fonts, the
-// moon image, the location check, and the page itself). It's shown as the site's
-// moon-phase divider being drawn: hairlines grow outward from the centre while seven
-// small photo moons (crescent, half, gibbous, FULL, gibbous, half, crescent) brighten
-// and wax into their phases, the outer pair first and the full moon last — plus a live
-// percentage. It's put down by hand as it loads: the rules are pencilled outward,
-// each moon is outlined round before it's shaded in, and the name is written out
-// along beneath, left to right. At 100% the row glides into the centre and becomes
-// the full moon, which then flies up and wanes into the crescent above the hero title.
-const ROW_GAP_REM = 2.4;     // distance between moons in the row
-const TASKS = ['fonts', 'moon', 'app', 'page'] as const;
+// location check, and the page itself). It's shown as the site's moon-phase divider,
+// drawn in by hand as it loads, in the same pencil and flat moons as on the page: the
+// pencil lines are drawn outward from the centre, and the seven moons (crescent, half,
+// gibbous, FULL, gibbous, half, crescent) are each ringed round, then filled in, the
+// outer pair first and the full moon last, while the name is written out beneath, left
+// to right. At 100% the row glides into the centre and becomes the full moon, which
+// then flies up and wanes into the crescent above the hero title.
+const ROW_GAP_REM = 1.7;     // distance between moons in the row
+const TASKS = ['fonts', 'app', 'page'] as const;
 const MIN_CLIMB_MS = 1600;   // even on a fast connection, the bar takes this long to fill (no flash)
 const SETTLE_MS = 850;       // the merged full moon holds a beat before the hand-off
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 
-// One moon face with its shadow parked at `offset` (0 = new, 104 = full). Defined
-// outside Loader so re-renders don't remount it (that would skip the shadow's slide).
-const MOON_IMG = `${import.meta.env.BASE_URL}moon-sketch.webp`;
-const NIGHT_IMG = `${import.meta.env.BASE_URL}moon-night.webp`;
-// The moon is DRAWN: cream pencil on dark paper, made from the moon photo (smudged tone,
-// loose outlines of the maria, a sketched rim — scripts/sketch_moon.py). The night side is the sky,
-// lightly hatched over (moon-night.webp); it slides across to set the phase, while
-// the hatching inside it stays put on the paper.
-// At the row's tiny size the hatching averages out faint, so small moons stack the
-// drawing (`layers`) to keep the same weight of pencil as the big one.
-const Face: React.FC<{ offset: number; shadowStyle?: React.CSSProperties; layers?: number }> = ({ offset, shadowStyle, layers = 1 }) => (
+// The moons are drawn as the site draws them (the divider's Phase glyphs, the hero's
+// crescent): flat shapes in the cream ink, with a faint pencilled ring round each.
+const INK = 'rgba(243,241,236,0.85)';
+
+// One of the row's moons, drawn in as its share of the progress fills: the ring goes
+// round first, then the lit part is filled in (waning moons are mirrored)
+const DrawnPhase: React.FC<{ p: number; fill: number }> = ({ p, fill }) => {
+  const r = 7, c = 8;
+  const rx = Math.abs(1 - 2 * p) * r;
+  const lit = `M ${c} ${c - r} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${rx} ${r} 0 0 ${p > 0.5 ? 1 : 0} ${c} ${c - r} Z`;
+  const ring = Math.min(1, fill / 0.5);
+  const shade = Math.max(0, Math.min(1, (fill - 0.4) / 0.6));
+  return (
+    <svg viewBox="0 0 16 16" className="absolute inset-0 h-full w-full overflow-visible">
+      <circle cx={c} cy={c} r={r} fill="none" stroke={INK} strokeOpacity={0.45} strokeWidth={1} strokeLinecap="round"
+        pathLength={1} strokeDasharray="1" strokeDashoffset={1 - ring} transform={`rotate(-90 ${c} ${c})`} />
+      {p >= 1 ? <circle cx={c} cy={c} r={r} fill={INK} opacity={shade} /> : <path d={lit} fill={INK} opacity={shade} />}
+    </svg>
+  );
+};
+
+// The full moon the row becomes: the cream disc, with the sky's shadow parked at
+// `offset` (0 = new, 104 = full) sliding across it as it wanes into the crescent.
+const Face: React.FC<{ offset: number; shadowStyle?: React.CSSProperties }> = ({ offset, shadowStyle }) => (
   <>
-    {Array.from({ length: layers }, (_, i) => <img key={i} src={MOON_IMG} alt="" className="absolute inset-0 w-full h-full" draggable={false} />)}
-    <div className="absolute -inset-px rounded-full overflow-hidden" style={{ transform: `translateX(${offset}%)`, filter: 'blur(0.6px)', ...shadowStyle }}>
-      <div className="absolute inset-0" style={{ background: '#1c1c50' }} />
-      <img src={NIGHT_IMG} alt="" className="absolute inset-px w-[calc(100%-2px)] h-[calc(100%-2px)]" style={{ transform: `translateX(${-offset}%)`, transition: shadowStyle?.transition }} draggable={false} />
-    </div>
+    <div className="absolute inset-0 rounded-full" style={{ background: INK }} />
+    <div className="absolute -inset-px rounded-full" style={{ transform: `translateX(${offset}%)`, background: '#1c1c50', filter: 'blur(0.6px)', ...shadowStyle }} />
   </>
 );
 
@@ -147,18 +157,6 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     // fonts (the title's size depends on them)
     const fonts = (document as any).fonts;
     if (fonts?.ready) fonts.ready.then(safe('fonts')).catch(safe('fonts')); else safe('fonts')();
-    // images: ready once downloaded (the real wait); also decode them in the background
-    // so nothing decodes on the reveal frame — but don't wait on decode(), which some
-    // browsers hold back in background tabs
-    const decode = (src: string, task: string) => {
-      const img = new Image();
-      img.onload = () => { safe(task)(); if (typeof img.decode === 'function') img.decode().catch(() => {}); };
-      img.onerror = safe(task);
-      img.src = src;
-      if (img.complete && img.naturalWidth) safe(task)();
-    };
-    decode(MOON_IMG, 'moon');
-    new Image().src = NIGHT_IMG;
     // the page itself (scripts, styles, images in the document)
     if (document.readyState === 'complete') safe('page')();
     else window.addEventListener('load', safe('page'), { once: true });
@@ -242,14 +240,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   // still going on at its leading edge), done a little before the moons are
   const written = Math.max(0, Math.min(1, (pct - 8) / 80));
   const wipe = `linear-gradient(90deg, #000 ${(written * 112 - 12).toFixed(1)}%, transparent ${(written * 112).toFixed(1)}%)`;
-  // ...first only its letters' outlines, sketched, then filled in once they're down
-  const inked = Math.max(0, Math.min(1, (pct - 62) / 38));
   const writing: React.CSSProperties = { WebkitMaskImage: wipe, maskImage: wipe };
-  const sketched: React.CSSProperties = {
-    color: `rgba(243, 241, 236, ${inked.toFixed(3)})`,
-    WebkitTextStroke: `0.04em rgba(243, 241, 236, ${(0.85 - inked * 0.6).toFixed(3)})`,
-    filter: 'url(#pencil-icon)',
-  };
   return (
     <div
       aria-hidden
@@ -277,88 +268,44 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
       </div>
 
       <div className="relative flex flex-col items-center">
-        <div className="relative w-32 h-32 md:w-36 md:h-36">
+        <div className="relative w-14 h-14 md:w-16 md:h-16">
           {/* THE DIVIDER — hairlines drawn outward with progress, and the row of moons
               waxing pair by pair (outer pair first, full moon last); at 100% the
               row glides into the centre and dissolves into the full moon */}
           {(['left', 'right'] as const).map((side) => (
-            <svg
+            <span
               key={side}
-              viewBox="0 0 100 4"
-              preserveAspectRatio="none"
-              className="absolute top-1/2 h-1 w-[24vw] -translate-y-1/2 overflow-visible"
+              className="absolute top-1/2 flex items-center"
               style={{
                 [side === 'left' ? 'right' : 'left']: `calc(50% + ${(ROW_GAP_REM * 3.5).toFixed(2)}rem)`,
-                transform: side === 'left' ? 'translateY(-50%) scaleX(-1)' : undefined,
-                opacity: merged || flying ? 0 : showing ? 1 : 0,
-                transition: 'opacity 600ms ease',
+                width: merged || flying ? 0 : `${(Math.min(pct, 100) / 100) * 24}vw`,
+                justifyContent: side === 'left' ? 'flex-end' : 'flex-start',
+                opacity: showing ? 1 : 0,
+                transition: merged || flying ? 'width 600ms ease, opacity 600ms ease' : 'opacity 600ms ease',
               } as React.CSSProperties}
             >
-              {/* drawn out from the row, the pencil easing off toward its end */}
-              <defs>
-                <linearGradient id={`rule-${side}`} x1="0" x2="1" y1="0" y2="0">
-                  <stop offset="0" stopColor="#C9B8E8" stopOpacity="0.55" />
-                  <stop offset="1" stopColor="#C9B8E8" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              {/* two loose passes, the second a little behind and off the first */}
-              {[{ d: 'M-2 2 C 30 1.6, 62 2.5, 100 1.9', w: 1.1, lag: 0 }, { d: 'M3 2.9 C 28 2.2, 58 1.4, 84 2.4', w: 0.7, lag: 12 }].map((l, k) => (
-                <path
-                  key={k}
-                  d={l.d}
-                  pathLength={1}
-                  strokeDasharray="1"
-                  strokeDashoffset={1 - Math.max(0, Math.min(pct - l.lag, 100 - l.lag)) / (100 - l.lag)}
-                  fill="none"
-                  stroke={`url(#rule-${side})`}
-                  strokeWidth={l.w}
-                  vectorEffect="non-scaling-stroke"
-                  strokeLinecap="round"
-                  style={{ filter: 'url(#pencil-icon)' }}
-                />
-              ))}
-            </svg>
+              {/* the site's pencil line, drawn out from the row as it loads */}
+              <PencilRule fade={side === 'left' ? 'start' : 'end'} className="w-full text-[#C9B8E8]/60" />
+            </span>
           ))}
           {DIVIDER_PHASES.map((ph, i) => {
             const slot = i - (DIVIDER_PHASES.length - 1) / 2; // -3 … 3
             const ring = 3 - Math.abs(slot);                  // 0 = outer pair … 3 = full moon
             const fill = Math.max(0, Math.min(1, (pct - ring * 25) / 25)); // this pair's share of the progress
             const center = slot === 0;
-            const on = fill >= 1;
             return (
               <div
                 key={i}
-                className={`absolute left-1/2 top-1/2 rounded-full overflow-hidden ${center ? 'w-8 h-8 md:w-9 md:h-9' : 'w-6 h-6 md:w-7 md:h-7'}`}
+                className={`absolute left-1/2 top-1/2 ${center ? 'w-5 h-5 md:w-[1.4rem] md:h-[1.4rem]' : 'w-3.5 h-3.5 md:w-4 md:h-4'}`}
                 style={{
                   transform: `translate(-50%, -50%) translateX(${merged || flying ? 0 : slot * ROW_GAP_REM}rem) scale(${merged || flying ? 1.6 : 0.86 + fill * 0.14}) ${ph.waning ? 'scaleX(-1)' : ''}`,
                   opacity: merged || flying ? 0 : !showing ? 0 : 1,
-                  boxShadow: on ? '0 0 14px 1px rgba(240,200,228,0.16)' : 'none',
                   transition: merged || flying
                     ? `transform 900ms ${EASE} ${Math.abs(slot) * 40}ms, opacity 700ms ease ${180 + Math.abs(slot) * 40}ms`
-                    : 'box-shadow 600ms ease',
+                    : undefined,
                 }}
               >
-                {/* a real moon photo, waxing from new to its own phase as its share fills
-                    (waning moons are mirrored so their lit side faces the other way) */}
-                <div className="absolute inset-0" style={{ opacity: Math.max(0, Math.min(1, (fill - 0.3) / 0.7)) }}>
-                  <Face offset={ph.p * fill * 104} layers={2} />
-                </div>
-                {/* its outline, sketched round first in two loose passes that don't
-                    quite meet, and left in once it's shaded */}
-                <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full overflow-visible" style={{ filter: 'url(#pencil-icon)' }}>
-                  <ellipse
-                    cx="50" cy="50" rx="46" ry="44.5" fill="none" stroke="#E9E0F5" strokeWidth={4.5} strokeLinecap="round"
-                    strokeOpacity={0.8 - Math.max(0, fill - 0.5) * 0.5}
-                    pathLength={1} strokeDasharray="0.94 1" strokeDashoffset={1 - Math.min(1, fill / 0.4)}
-                    transform="rotate(-100 50 50)"
-                  />
-                  <ellipse
-                    cx="51" cy="49" rx="44" ry="46.5" fill="none" stroke="#E9E0F5" strokeWidth={3} strokeLinecap="round"
-                    strokeOpacity={0.5 - Math.max(0, fill - 0.5) * 0.3}
-                    pathLength={1} strokeDasharray="0.9 1" strokeDashoffset={1 - Math.max(0, Math.min(1, (fill - 0.15) / 0.4))}
-                    transform="rotate(130 50 50)"
-                  />
-                </svg>
+                <DrawnPhase p={ph.p} fill={fill} />
               </div>
             );
           })}
@@ -373,7 +320,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
               opacity: flying ? 0 : merged ? 1 : 0,
               boxShadow: flying
                 ? '0 0 20px 2px rgba(240,206,230,0.1)'
-                : merged ? '0 0 90px 18px rgba(214,150,206,0.16)' : '0 0 0 0 rgba(240,206,230,0)',
+                : merged ? '0 0 50px 10px rgba(214,150,206,0.16)' : '0 0 0 0 rgba(240,206,230,0)',
               transition: flying
                 ? `transform ${REVEAL_FLIGHT_MS}ms ${EASE_FLIGHT}, box-shadow ${REVEAL_FLIGHT_MS}ms ease, opacity 320ms ease ${REVEAL_FLIGHT_MS - 120}ms`
                 : `opacity 700ms ease 120ms, transform 1100ms ${EASE}, box-shadow 1400ms ease`,
@@ -389,7 +336,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
         {/* wordmark slot (the real wordmark is the fixed layer below) + the label */}
         <div ref={slotRef} className="mt-10 h-[1.35rem] w-44 grid place-items-center">
           {!word && (
-            <span className="font-serif font-medium uppercase whitespace-nowrap tracking-[-0.01em] text-cream" style={{ fontSize: WORDMARK_PX, opacity: showing && !leaving ? 1 : 0, transition: 'opacity 700ms ease', ...writing, ...sketched }}>Mayanov Tarot</span>
+            <span className="font-serif font-medium uppercase whitespace-nowrap tracking-[-0.01em] text-cream" style={{ fontSize: WORDMARK_PX, opacity: showing && !leaving ? 1 : 0, transition: 'opacity 700ms ease', ...writing }}>Mayanov Tarot</span>
           )}
         </div>
         <div
@@ -411,7 +358,6 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
             transform: flying ? 'none' : word.rest,
             opacity: flying ? 0 : leaving ? 0 : showing ? 1 : 0,
             ...(written < 1 ? writing : null),
-            ...(leaving ? null : sketched),
             transition: flying
               ? `transform ${REVEAL_FLIGHT_MS}ms cubic-bezier(0.65,0,0.2,1) 40ms, opacity 240ms ease ${REVEAL_FLIGHT_MS + 40}ms`
               : leaving ? 'opacity 300ms ease' : 'opacity 900ms ease 300ms',
