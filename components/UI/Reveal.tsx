@@ -57,6 +57,15 @@ export const ImageReveal: React.FC<ImageRevealProps> = ({ src, alt, className = 
   // Only unveil once the photo is actually there — otherwise the reveal plays over
   // an empty tile and the photo pops in afterwards. If it's slow, it simply waits.
   const shown = inView && loaded;
+  // once unveiled the photo lets go of its own layer: kept, it holds a separate GPU
+  // texture, and on iPhones blend modes laid over it (the card's tint and coating)
+  // stop blending with it and show as a flat film
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!shown) return;
+    const t = setTimeout(() => setSettled(true), delay + 1600);
+    return () => clearTimeout(t);
+  }, [shown, delay]);
 
   return (
     <div ref={ref} className={`overflow-hidden ${className}`}>
@@ -69,7 +78,7 @@ export const ImageReveal: React.FC<ImageRevealProps> = ({ src, alt, className = 
         onLoad={() => setLoaded(true)}
         onError={() => setLoaded(true)}
         className={imgClassName}
-        style={reduce ? undefined : {
+        style={reduce || settled ? undefined : {
           clipPath: shown ? 'inset(0 0 0 0)' : 'inset(0 0 100% 0)',
           transform: shown ? 'scale(1)' : 'scale(1.14)',
           transition: `clip-path 1.1s ${EASE} ${delay}ms, transform 1.5s ${EASE} ${delay}ms`,

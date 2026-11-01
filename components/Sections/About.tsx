@@ -108,8 +108,9 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
                 imgClassName="w-full h-full object-cover object-[45%_28%]"
                 loading="eager"
               />
-              {/* flat plum tint (no directional gradient) to cohere with the palette */}
-              <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
+              {/* flat plum tint (no directional gradient) to cohere with the palette; laid
+                  on plainly, not multiplied: iPhones drop the blend and showed a film */}
+              <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'rgba(42,24,57,0.12)' }} />
               <div aria-hidden className="print-ink pointer-events-none absolute inset-0 rounded-[0.45rem] ring-1 ring-inset ring-white/10" />
             </div>
             <figcaption className="pt-3 flex flex-col items-center gap-1 text-center">

@@ -632,3 +632,13 @@ html[data-print='offset'] .letterpress-lg { filter: url(#offset-lg); }
   }
   @keyframes footerSky { from { transform: scale(1.1) translateY(-26px); } to { transform: scale(1.1); } }
 }
+
+/* Phones: the card stock's satin coating is laid on in soft-light, which iPhones
+   often don't blend (it shows as a pale film over the photo and the card), and the
+   finest print wear (.print-text, .print-body) is too fine to see at that size but
+   still costs a masked layer per line. Both are left out on touch screens. */
+@media (pointer: coarse) {
+  .card-stock { display: none; }
+  .print-text,
+  .print-body { -webkit-mask-image: none; mask-image: none; }
+}

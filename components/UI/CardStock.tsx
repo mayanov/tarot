@@ -16,7 +16,7 @@ const CardStock: React.FC<{ tone?: 'dark' | 'light'; className?: string }> = ({ 
   const seed = [...raw].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 997, 7);
   const dark = tone === 'dark';
   return (
-    <span aria-hidden className={`pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] ${className}`}>
+    <span aria-hidden className={`card-stock pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] ${className}`}>
       {/* painted once into a picture (the lit grain is costly to redraw), then laid
           over the face in soft-light as the layers were */}
       <Baked bleed={0} blend="soft-light">
