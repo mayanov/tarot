@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import PencilArrow from '../UI/PencilArrow';
 import FadeIn from '../UI/FadeIn';
 import WatercolorWash from '../UI/WatercolorWash';
 import { btnSecondaryLight } from '../UI/buttons';
@@ -286,7 +286,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
           className="absolute left-2 md:left-6 lg:left-10 xl:left-4 top-1/2 -translate-y-1/2 z-10 p-2 text-moon hover:text-moon/60 transition-colors duration-500"
         >
-          <ChevronLeft className="print-ink [filter:url(#pencil-icon)] w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
+          <PencilArrow dir="left" className="print-ink w-5 h-5 md:w-6 md:h-6" />
         </button>
         <button
           type="button"
@@ -294,7 +294,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
           className="absolute right-2 md:right-6 lg:right-10 xl:right-4 top-1/2 -translate-y-1/2 z-10 p-2 text-moon hover:text-moon/60 transition-colors duration-500"
         >
-          <ChevronRight className="print-ink [filter:url(#pencil-icon)] w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
+          <PencilArrow className="print-ink w-5 h-5 md:w-6 md:h-6" />
         </button>
       </div>
 

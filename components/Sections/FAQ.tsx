@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, ArrowUpRight, ArrowRight } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import PencilArrow from '../UI/PencilArrow';
 import FadeIn from '../UI/FadeIn';
 import PencilRule from '../UI/PencilRule';
 
@@ -199,7 +200,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                     {/* a bare + that turns into × when open — no container */}
                     <Plus aria-hidden className={`print-ink [filter:url(#pencil-icon)] lg:hidden self-center w-5 h-5 transition-[transform,color] duration-500 ${open ? 'rotate-45 text-moon' : 'text-ink/40 group-hover:text-moon'}`} strokeWidth={1.5} />
                     {/* desktop: an arrow pointing to the answer on the right */}
-                    <ArrowRight aria-hidden className={`print-ink [filter:url(#pencil-icon)] hidden lg:block self-center w-5 h-5 transition-[transform,opacity,color] duration-500 ${current === faq ? 'opacity-100 text-moon' : 'opacity-0 -translate-x-2 text-ink/40 group-hover:opacity-100 group-hover:translate-x-0'}`} strokeWidth={1.5} />
+                    <PencilArrow className={`print-ink hidden lg:block self-center w-5 h-5 transition-[transform,opacity,color] duration-500 ${current === faq ? 'opacity-100 text-moon' : 'opacity-0 -translate-x-2 text-ink/40 group-hover:opacity-100 group-hover:translate-x-0'}`} />
                   </button>
 
                   <div className={`lg:hidden grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
@@ -247,7 +248,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               className="group mt-3 inline-flex items-center gap-3 font-elegant font-semibold text-ink text-[1.8rem] md:text-[2.6rem] leading-tight tracking-[-0.02em] hover:text-moon transition-colors duration-300"
             >
               <span className="letterpress pb-[0.14em] -mb-[0.14em]">{isIndonesian ? 'Tanya langsung via WhatsApp' : 'Ask me on WhatsApp'}</span>
-              <ArrowUpRight className="[filter:url(#pencil-icon)] w-7 h-7 md:w-9 md:h-9 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1" strokeWidth={1.5} />
+              <PencilArrow dir="up-right" className="w-7 h-7 md:w-9 md:h-9 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1" />
             </a>
           </div>
         </FadeIn>

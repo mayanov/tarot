@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ArrowRight, Instagram } from 'lucide-react';
+import { Instagram } from 'lucide-react';
+import PencilArrow from '../UI/PencilArrow';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
@@ -68,7 +69,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     >
                       <ButtonInk kind="primary" tone="dark">
                         {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <PencilArrow className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </ButtonInk>
                     </a>
                 </div>

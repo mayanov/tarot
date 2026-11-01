@@ -16,7 +16,8 @@ import ButtonInk, { PaintSwatch } from './components/UI/ButtonInk';
 import CelestialMark from './components/UI/CelestialMark';
 import PencilRule from './components/UI/PencilRule';
 import { btnPrimaryLight } from './components/UI/buttons';
-import { ArrowUp, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import PencilArrow from './components/UI/PencilArrow';
 import { FaWhatsapp } from 'react-icons/fa';
 
 // Lazy Load below-the-fold components
@@ -470,7 +471,7 @@ function App() {
             title="Back to Top"
           >
             <PaintSwatch round className="transition-colors duration-300 text-[#1c1a4c] group-hover/btn:text-moon" />
-            <ArrowUp className="w-5 h-5 [filter:url(#pencil-icon)]" strokeWidth={1.6} />
+            <PencilArrow dir="up" className="w-5 h-5" />
           </button>
         )}
 

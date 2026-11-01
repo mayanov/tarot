@@ -5,7 +5,8 @@ import React from 'react';
 // (those make it `relative isolate group/btn`) in one: the face sits behind the
 // label, and the label gets the same print wear as the headings.
 //   primary   → a painted swatch (gouache, ragged edges, pooled rim, paper grain),
-//               ruled round in felt-tip marker
+//               ruled round in felt-tip marker; on a dark ground, a scrap of the
+//               paper instead (painted on hover)
 //   secondary → a box ruled round it in felt-tip marker;
 //               on hover the swatch is painted in behind it
 
@@ -15,9 +16,13 @@ const useInkId = () => {
   return { id: raw.replace(/:/g, ''), seed };
 };
 
+const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
+
 /** a flat-ish patch of paint in currentColor, filling its box; `round` makes it a
-    drop of ink, its edge a little less even */
-export const PaintSwatch: React.FC<{ className?: string; round?: boolean }> = ({ className = '', round = false }) => {
+    drop of ink, its edge a little less even. `paper` lays a scrap of the site's paper
+    (its grain, edged like the paint) under it, for a swatch that sits on a dark
+    ground: there the paint's skips show paper, as they do on the paper sections */
+export const PaintSwatch: React.FC<{ className?: string; round?: boolean; paper?: boolean }> = ({ className = '', round = false, paper = false }) => {
   const { id, seed } = useInkId();
   return (
     <span aria-hidden className={`pointer-events-none absolute inset-0 -z-10 ${className}`}>
@@ -48,7 +53,21 @@ export const PaintSwatch: React.FC<{ className?: string; round?: boolean }> = ({
             <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.4 1.28" result="ga" />
             <feComposite in="m" in2="ga" operator="in" />
           </filter>
+          {paper && (
+            <>
+              <pattern id={`${id}g`} patternUnits="userSpaceOnUse" width="600" height="600">
+                <rect width="600" height="600" fill="#f3f1ec" />
+                <image href={PAPER_IMG} width="600" height="600" />
+              </pattern>
+              {/* the scrap's edge frays like the paint's, without the skips */}
+              <filter id={`${id}e`} x="-15%" y="-40%" width="130%" height="180%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.22 0.3" numOctaves="1" seed={seed} result="n" />
+                <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+            </>
+          )}
         </defs>
+        {paper && <rect width="100%" height="100%" rx={4} ry={4} fill={`url(#${id}g)`} filter={`url(#${id}e)`} />}
         <rect width="100%" height="100%" rx={round ? '50%' : 4} ry={round ? '50%' : 4} fill="currentColor" filter={`url(#${id}s)`} />
       </svg>
     </span>
@@ -152,13 +171,15 @@ const ButtonInk: React.FC<React.PropsWithChildren<ButtonInkProps>> = ({ kind, to
   const face = kind === 'primary'
     ? (
       <>
-        <PaintSwatch className={`${fade} ${tone === 'light' ? 'text-moon group-hover/btn:text-plum' : 'text-cream group-hover/btn:text-moon'}`} />
+        {/* on a dark ground the face is a scrap of the paper itself (its grain showing),
+            painted over in the moon purple on hover */}
+        <PaintSwatch paper={tone === 'dark'} className={`${fade} ${tone === 'light' ? 'text-moon group-hover/btn:text-plum' : 'text-cream/0 group-hover/btn:text-moon'}`} />
         <MarkerFrame className={`${fade} ${tone === 'light' ? 'text-plum group-hover/btn:text-ink' : 'text-moon group-hover/btn:text-cream'}`} />
       </>
     )
     : (
       <>
-        <PaintSwatch className={`${fade} opacity-0 group-hover/btn:opacity-100 ${tone === 'light' ? 'text-plum' : 'text-cream'}`} />
+        <PaintSwatch paper={tone === 'dark'} className={`${fade} opacity-0 group-hover/btn:opacity-100 ${tone === 'light' ? 'text-plum' : 'text-cream/0'}`} />
         <MarkerFrame className={`${fade} ${tone === 'light' ? 'text-plum group-hover/btn:text-ink' : 'text-cream group-hover/btn:text-moon'}`} />
       </>
     );

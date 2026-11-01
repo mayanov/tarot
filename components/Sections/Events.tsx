@@ -4,7 +4,7 @@ import FadeIn from '../UI/FadeIn';
 import PencilRule from '../UI/PencilRule';
 import MaskReveal from '../UI/MaskReveal';
 import EventGallery from './EventGallery';
-import { ChevronDown } from 'lucide-react';
+import PencilArrow from '../UI/PencilArrow';
 import { smoothScrollToId } from '../UI/scroll';
 import { btnPrimaryLight, btnSecondaryLight } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
@@ -113,7 +113,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 >
                   <ButtonInk kind="secondary" tone="light">
                     {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
-                    <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
+                    <PencilArrow dir="down" className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
                   </ButtonInk>
                 </button>
               );
