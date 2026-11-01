@@ -464,8 +464,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           <div className="flex items-center justify-between gap-4 px-5 md:px-6 pt-4 pb-3">
             <div className="flex items-center gap-3 min-w-0">
               {(step === 1 || step === 2 || step === 3) && (
-                <button onClick={goBack} aria-label="Back" className="shrink-0 text-ink/50 hover:text-ink transition-colors">
-                  <PencilArrow dir="left" className="w-5 h-5" />
+                <button onClick={goBack} aria-label="Back" className="shrink-0 text-ink hover:text-moon transition-colors">
+                  <PencilArrow dir="left" weight="semibold" className="w-5 h-5" />
                 </button>
               )}
               <div className="letterpress font-serif font-semibold text-ink text-[1.2rem] md:text-[1.3rem] leading-tight truncate">
@@ -517,7 +517,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                       <span className="block text-[11px] text-ink/45 leading-none">{s.packages?.length ? t('mulai', 'from') : ' '}</span>
                       <span className="block mt-1 font-serif font-semibold text-ink leading-none">{fromPrice(s)}</span>
                     </span>
-                    <PencilArrow className="w-4 h-4 text-ink/35 group-hover:text-moon group-hover:translate-x-0.5 transition-all" />
+                    <PencilArrow weight="semibold" className="w-4 h-4 text-ink group-hover:text-moon group-hover:translate-x-0.5 transition-all" />
                   </button>
                   </React.Fragment>
                 );
@@ -551,7 +551,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                         ? [{ before: new Date() }, { dayOfWeek: DISABLED_DOWS[service.id] }]
                         : { before: new Date() }}
                       weekStartsOn={1}
-                      components={{ Chevron: ({ orientation }) => <PencilArrow dir={orientation ?? 'right'} className="w-4 h-4 text-ink" /> }}
+                      components={{ Chevron: ({ orientation }) => <PencilArrow dir={orientation ?? 'right'} weight="medium" className="w-4 h-4 text-ink" /> }}
                     />
                   </div>
                 </div>
@@ -618,7 +618,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {bottomBar(
                 <button onClick={() => setStep(2)} disabled={!date || !time || (needsPackage && !pkg)} className={primaryBtn}>
                   {swatch}
-                  {t('Lanjut', 'Continue')} <PencilArrow className="w-4 h-4" />
+                  {t('Lanjut', 'Continue')} <PencilArrow press="inherit" weight="semibold" className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -666,7 +666,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                         <option value="">{t('Bulan', 'Month')}</option>
                         {(isIndonesian ? MONTHS_ID : MONTHS_EN).map((m, i) => <option key={m} value={String(i + 1)} className="text-ink">{m}</option>)}
                       </select>
-                      <PencilArrow dir="down" className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink/45" />
+                      <PencilArrow dir="down" className={`pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${dobMonth ? 'text-ink' : 'text-ink/35'}`} />
                     </div>
                     <input value={dobYear} onChange={(e) => setDobYear(e.target.value.replace(/\D/g, '').slice(0, 4))} inputMode="numeric" aria-label={t('Tahun', 'Year')} placeholder={t('Tahun', 'Year')} className={`${field} text-center`} />
                   </div>
@@ -693,7 +693,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {bottomBar(
                 <button onClick={() => setStep(3)} disabled={!detailsValid} className={primaryBtn}>
                   {swatch}
-                  {t('Lanjut', 'Continue')} <PencilArrow className="w-4 h-4" />
+                  {t('Lanjut', 'Continue')} <PencilArrow press="inherit" weight="semibold" className="w-4 h-4" />
                 </button>
               )}
             </div>

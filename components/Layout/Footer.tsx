@@ -69,7 +69,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     >
                       <ButtonInk kind="primary" tone="dark">
                         {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
-                        <PencilArrow className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <PencilArrow press="inherit" weight="semibold" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </ButtonInk>
                     </a>
                 </div>

@@ -284,17 +284,17 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           type="button"
           onClick={() => go(-1)}
           aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
-          className="absolute left-2 md:left-6 lg:left-10 xl:left-4 top-1/2 -translate-y-1/2 z-10 p-2 text-moon hover:text-moon/60 transition-colors duration-500"
+          className="absolute left-2 md:left-6 lg:left-10 xl:left-4 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/70 hover:text-moon transition-colors duration-500"
         >
-          <PencilArrow dir="left" className="print-ink w-5 h-5 md:w-6 md:h-6" />
+          <PencilArrow dir="left" weight="medium" className="w-5 h-5 md:w-6 md:h-6" />
         </button>
         <button
           type="button"
           onClick={() => go(1)}
           aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
-          className="absolute right-2 md:right-6 lg:right-10 xl:right-4 top-1/2 -translate-y-1/2 z-10 p-2 text-moon hover:text-moon/60 transition-colors duration-500"
+          className="absolute right-2 md:right-6 lg:right-10 xl:right-4 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/70 hover:text-moon transition-colors duration-500"
         >
-          <PencilArrow className="print-ink w-5 h-5 md:w-6 md:h-6" />
+          <PencilArrow weight="medium" className="w-5 h-5 md:w-6 md:h-6" />
         </button>
       </div>
 

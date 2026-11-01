@@ -471,7 +471,7 @@ function App() {
             title="Back to Top"
           >
             <PaintSwatch round className="transition-colors duration-300 text-[#1c1a4c] group-hover/btn:text-moon" />
-            <PencilArrow dir="up" className="w-5 h-5" />
+            <PencilArrow dir="up" press="pencil" weight="semibold" className="w-5 h-5" />
           </button>
         )}
 

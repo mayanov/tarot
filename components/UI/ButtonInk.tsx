@@ -188,8 +188,9 @@ const ButtonInk: React.FC<React.PropsWithChildren<ButtonInkProps>> = ({ kind, to
       {face}
       {/* the label is printed like the headings around it (a mask clips to its box,
           so the padding/negative margin keep the descenders); any line icon in it is
-          drawn in pencil, finer than the default stroke (#pencil-icon, index.html) */}
-      <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em] [&_svg]:[filter:url(#pencil-icon)] [&_svg]:[stroke-width:1.6]">{children}</span>
+          drawn in pencil, finer than the default stroke (#pencil-icon, index.html); an
+          arrow is printed with the words instead, as heavy as them (PencilArrow) */}
+      <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em] [&_svg:not(.pencil-arrow)]:[filter:url(#pencil-icon)] [&_svg:not(.pencil-arrow)]:[stroke-width:1.6]">{children}</span>
     </>
   );
 };

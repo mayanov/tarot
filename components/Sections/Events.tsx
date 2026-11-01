@@ -113,7 +113,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 >
                   <ButtonInk kind="secondary" tone="light">
                     {expanded ? (isIndonesian ? "Sembunyikan" : "Show less") : (isIndonesian ? "Lihat Semua" : "View All")}
-                    <PencilArrow dir="down" className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
+                    <PencilArrow dir="down" press="inherit" weight="semibold" className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
                   </ButtonInk>
                 </button>
               );
