@@ -632,9 +632,3 @@ html[data-print='offset'] .letterpress-lg { filter: url(#offset-lg); }
   }
   @keyframes footerSky { from { transform: scale(1.1) translateY(-26px); } to { transform: scale(1.1); } }
 }
-
-/* on a phone the star field goes without its grain mask: masked, its twinkling
-   layers were re-masked on every frame, and the grain doesn't show at that size */
-@media (pointer: coarse) {
-  .touch-unmask { -webkit-mask-image: none; mask-image: none; }
-}
