@@ -1,4 +1,5 @@
 import React from 'react';
+import Baked from './Baked';
 
 interface WatercolorWashProps {
   className?: string;
@@ -73,7 +74,8 @@ const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '', variant
   const id = React.useId().replace(/:/g, '');
   if (variant === 'stroke') {
     return (
-      <svg aria-hidden style={{ transform: 'rotate(-2.5deg)' }} className={`pointer-events-none absolute inset-0 h-full w-full overflow-visible ${className}`}>
+      <Baked className={className} bleed={90}>
+      <svg aria-hidden style={{ transform: 'rotate(-2.5deg)' }} className="absolute inset-0 h-full w-full overflow-visible">
         <defs>
           {brushFilter(`${id}a`, 5, 70)}
           {brushFilter(`${id}b`, 13, 50)}
@@ -96,10 +98,12 @@ const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '', variant
           <ellipse cx="22%" cy="76%" rx="9%" ry="16%" fill="#6fb0c4" fillOpacity="0.09" />
         </g>
       </svg>
+      </Baked>
     );
   }
   return (
-    <svg aria-hidden className={`pointer-events-none absolute inset-0 h-full w-full overflow-visible ${className}`}>
+    <Baked className={className} bleed={70}>
+    <svg aria-hidden className="absolute inset-0 h-full w-full overflow-visible">
       <defs>
         {washFilter(`${id}a`, 3, '0.0032 0.0045', 110)}
         {washFilter(`${id}b`, 11, '0.004 0.0055', 90)}
@@ -125,6 +129,7 @@ const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '', variant
         <ellipse cx="34%" cy="8%" rx="16%" ry="12%" fill="#e6a0a0" fillOpacity="0.1" />
       </g>
     </svg>
+    </Baked>
   );
 };
 

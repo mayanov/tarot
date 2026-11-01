@@ -1,4 +1,5 @@
 import React from 'react';
+import Baked from './Baked';
 
 /**
  * A card face painted in watercolour: the card's colour graded softly from a light
@@ -27,6 +28,7 @@ const CardWash: React.FC<{ colors: readonly [string, string, string]; className?
   return (
     <span aria-hidden className={`pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] ${className}`} style={{ background: `radial-gradient(135% 120% at 15% -15%, ${light} 0%, ${mid} 52%, ${deep} 100%)` }}>
       {/* drawn in a 100 x 160 box (the card's 5:8), stretched to fit */}
+      <Baked bleed={0}>
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 160" preserveAspectRatio="none">
         <defs>
           {/* a pool of paint: wandering edge, soft body, a darker rim where it dried */}
@@ -60,8 +62,10 @@ const CardWash: React.FC<{ colors: readonly [string, string, string]; className?
           <ellipse cx="76" cy="48" rx="20" ry="16" fill={light} opacity="0.1" />
         </g>
       </svg>
+      </Baked>
       {/* pigment settling into the tooth: fine dark specks across the wash (in pixel
           space, so the grain stays fine whatever the card's size) */}
+      <Baked bleed={0}>
       <svg className="absolute inset-0 h-full w-full">
         <filter id={`${id}g`} x="0" y="0" width="100%" height="100%">
           <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" seed={seed + 1} />
@@ -69,6 +73,7 @@ const CardWash: React.FC<{ colors: readonly [string, string, string]; className?
         </filter>
         <rect width="100%" height="100%" fill={deep} filter={`url(#${id}g)`} opacity="0.12" />
       </svg>
+      </Baked>
     </span>
   );
 };

@@ -47,6 +47,9 @@ html.lenis body {
 }
 
 /* ---- Living gradient drift (organic, clearly visible) ---- */
+/* a baked decoration (Baked.tsx) settling in once its picture is ready */
+@keyframes bakedIn { from { opacity: 0; } to { opacity: 1; } }
+
 @keyframes blobA {
   0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
   33%      { transform: translate3d(16%, -13%, 0) scale(1.28); }
