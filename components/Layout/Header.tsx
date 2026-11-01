@@ -4,7 +4,7 @@ import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
 import { trackEvent } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/scroll';
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
-import ButtonInk from '../UI/ButtonInk';
+import ButtonInk, { MarkerFrame } from '../UI/ButtonInk';
 import PencilRule from '../UI/PencilRule';
 import CelestialMark from '../UI/CelestialMark';
 import { MoonWatermark, moonNow } from './MenuMoon';
@@ -403,7 +403,8 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
               <p className="print-body font-elegant italic text-sm text-ink/45 mb-2">{isIndonesian ? 'Langsung pesan' : 'Book directly'}</p>
               <div className="flex flex-wrap gap-2">
                 {menuServices.map((sv) => (
-                  <button key={sv.id} type="button" onClick={() => showService(sv.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-ink/15 px-3 py-1.5 text-[13px] text-ink hover:border-moon hover:text-moon transition-colors">
+                  <button key={sv.id} type="button" onClick={() => showService(sv.id)} className="group/chip relative isolate inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-ink hover:text-moon transition-colors">
+                    <MarkerFrame className="text-ink/40 transition-colors group-hover/chip:text-moon/80" />
                     <CelestialMark name={sv.mark} className="print-ink w-3 text-moon" />
                     {sv.short}
                   </button>
@@ -420,12 +421,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
             <p className={`print-body font-elegant italic text-sm text-ink/45 ${rowAnim(LINE_IN_AT + 180, 60).className}`} style={rowAnim(LINE_IN_AT + 180, 60).style}>{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
             <ul className="mt-3 group/svs">
               {menuServices.map((sv, j) => (
-                <li key={sv.id} className={`border-t border-ink/10 last:border-b ${rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).className}`} style={rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).style}>
+                <li key={sv.id} className={`${rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).className}`} style={rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).style}>
+                  <PencilRule weight="fine" className="text-ink/30" />
                   <button type="button" onClick={() => showService(sv.id)} className="group/sv w-full flex items-baseline gap-3 py-3.5 text-left transition-[opacity,padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/svs:opacity-40 hover:!opacity-100 hover:pl-2">
                     <CelestialMark name={sv.mark} className="print-ink w-3.5 shrink-0 self-center text-ink/35 transition-colors duration-300 group-hover/sv:text-moon" />
                     <span className="print-text flex-1 min-w-0 font-elegant font-medium text-ink text-[1.45rem] leading-tight tracking-[-0.01em] transition-colors duration-300 group-hover/sv:text-moon">{sv.name}</span>
                     <span className="print-body shrink-0 font-elegant italic text-ink/50 text-[0.95rem] whitespace-nowrap">{isIndonesian ? 'mulai' : 'from'} {sv.price}</span>
                   </button>
+                  {j === menuServices.length - 1 && <PencilRule weight="fine" className="text-ink/30" />}
                 </li>
               ))}
             </ul>
@@ -433,7 +436,8 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion })
           </div>
 
           {/* Bottom — language toggle + socials + book */}
-          <div className={`shrink-0 pt-4 pb-5 md:py-6 border-t border-ink/10 flex flex-row items-center justify-between gap-5 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: closing ? '0ms' : `${LINE_IN_AT + navLinks.length * LINE_STEP + 80}ms` }}>
+          <div className={`relative shrink-0 pt-4 pb-5 md:py-6 flex flex-row items-center justify-between gap-5 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: closing ? '0ms' : `${LINE_IN_AT + navLinks.length * LINE_STEP + 80}ms` }}>
+            <PencilRule className="absolute inset-x-0 top-0 text-ink/30" />
             {onSwitchRegion ? (
               <div className="hidden sm:block">
                 <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />

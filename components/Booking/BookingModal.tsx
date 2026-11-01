@@ -5,6 +5,7 @@ import { X, Check, ChevronRight, ArrowLeft, CalendarDays, Clock, Copy } from 'lu
 import CelestialMark from '../UI/CelestialMark';
 import { PaintSwatch, PencilFrame, MarkerFrame } from '../UI/ButtonInk';
 import PencilRule from '../UI/PencilRule';
+import { paperCut, PaperShadow } from '../UI/PaperEdge';
 import { FaWhatsapp } from 'react-icons/fa';
 import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
 import { trackEvent, SERVICE_TRACK_NAME } from '../../services/analytics';
@@ -388,10 +389,14 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
       </div>
       {payTab === 'qris' ? (
         <div className="mt-4 flex flex-col items-center gap-2">
-          <div className="w-44 h-44 rounded-lg border border-ink/10 bg-white grid place-items-center overflow-hidden relative">
+          {/* the code, printed on a slip of white card laid on the sheet */}
+          <div className="relative isolate w-44 h-44">
+          <PaperShadow radius="0.5rem" />
+          <div className="relative w-full h-full rounded-lg bg-white grid place-items-center overflow-hidden" style={paperCut(37, 8, 12)}>
             <span className="text-[11px] text-ink/45 text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
             {/* hidden via state (not by removing the node), so switching tabs can't trip React */}
             {!qrMissing && <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={() => setQrMissing(true)} />}
+          </div>
           </div>
           <span className="text-xs text-ink/55">{t('Scan dengan aplikasi bank atau e-wallet', 'Scan with any banking or e-wallet app')}</span>
         </div>
@@ -424,10 +429,18 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     // underneath, so its backdrop serves for both
     <div className={`fixed inset-0 ${seamless ? 'z-[310]' : 'z-[200]'} flex items-end sm:items-center justify-center`}>
       {/* backdrop — same as the pricelist card reveal (none of its own over a card) */}
-      <div className={`absolute inset-0 ${seamless ? '' : 'bg-ink/55 backdrop-blur-xl'}`} style={{ animation: 'tarotFade 0.3s ease' }} onClick={close} />
+      {/* a night wash laid over the page, the paper's grain showing through it (no screen blur) */}
+      <div className="absolute inset-0" style={{ animation: 'tarotFade 0.3s ease' }} onClick={close}>
+        {!seamless && (
+          <>
+            <div className="absolute inset-0 opacity-[0.8]" style={{ background: 'radial-gradient(110% 80% at 18% 0%, #3b2c70 0%, #221747 50%, #120c28 100%)' }} />
+            <div className="absolute inset-0 bg-paper mix-blend-multiply opacity-40" />
+          </>
+        )}
+      </div>
 
       <div
-        className={`relative w-full max-h-[92vh] overflow-hidden rounded-t-2xl sm:rounded-2xl bg-paper text-ink shadow-[0_40px_120px_-24px_rgba(0,0,0,0.5)] animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${turn ? 'pointer-events-none' : ''} ${step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}
+        className={`relative isolate w-full max-h-[92vh] animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)] transition-[max-width] duration-300 ${turn ? 'pointer-events-none' : ''} ${step === 1 ? 'sm:max-w-xl md:max-w-2xl' : 'sm:max-w-md md:max-w-lg'}`}
         style={
           // over a card it never plays fade-up: it turns in / away instead
           turn === 'away' ? { transform: TURN_AWAY, animation: 'none', transition: 'none' }
@@ -436,6 +449,11 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           : seamless ? { animation: 'none' } : undefined
         }
       >
+        {/* the sheet lies on the table: tight along its edge, a soft shadow under it */}
+        <span aria-hidden className="pointer-events-none absolute -z-10 inset-[1px] rounded-[1.2rem] shadow-[0_1px_2px_rgba(20,12,38,0.5)]" />
+        <span aria-hidden className="pointer-events-none absolute -z-10 inset-[4%_3%_-1%_3%] rounded-[1.4rem] bg-[rgba(10,6,24,0.5)] blur-[26px] translate-y-3" />
+        {/* a sheet of the site's paper, its edge cut by hand */}
+        <div className="relative max-h-[92vh] overflow-hidden bg-paper text-ink rounded-[1.1rem]" style={paperCut(23, 20, 28)}>
 
         {/* scroll only the content (data-lenis-prevent lets this scroll natively) */}
         <div className="relative max-h-[92vh] overflow-y-auto overscroll-contain" data-lenis-prevent>
@@ -509,7 +527,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           {/* STEP 1 — date → duration → time */}
           {step === 1 && (
             <div>
-              {error && <div className="mb-4 text-sm text-ink bg-ink/[0.05] rounded-lg px-4 py-3">{error}</div>}
+              {error && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
 
               {(service?.id === 'meetup' || service?.id === 'call') && (
                 <p className="mb-4 flex items-center gap-2 text-[13px] text-ink/60">
@@ -679,7 +697,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           {/* STEP 3 — review: one summary list, payment tabs, one line of terms */}
           {step === 3 && (
             <div>
-              {error && <div className="mb-4 text-sm text-ink bg-ink/[0.05] rounded-lg px-4 py-3">{error}</div>}
+              {error && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
 
               <h3 className="font-serif font-semibold text-ink text-lg">{t('Ringkasan', 'Summary')}</h3>
               <div className="mt-2">
@@ -755,6 +773,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               </div>
             </div>
           )}
+        </div>
         </div>
         </div>
       </div>

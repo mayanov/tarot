@@ -5,7 +5,6 @@ import FadeIn from '../UI/FadeIn';
 import Disclaimer from './Disclaimer';
 import { btnPrimaryDark, btnSecondaryDark } from '../UI/buttons';
 import ButtonInk, { PaintSwatch, MarkerFrame } from '../UI/ButtonInk';
-import SoftAura from '../UI/SoftAura';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
 import PencilRule from '../UI/PencilRule';
@@ -142,14 +141,13 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
             {/* ===== BACK — the booking options ===== */}
             <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] bg-paper text-ink" style={paperCut(12 + k * 23)}>
                 <CardStock tone="light" />
-                {/* soft accent glow from the top for depth */}
-                <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-20" style={{ background: `radial-gradient(85% 100% at 50% 0%, ${accent}1f, transparent 72%)` }} />
 
                 <div className={`relative h-full flex flex-col ${tight ? 'p-3' : big ? 'p-5' : 'p-3.5'}`}>
-                    {/* FRAME — a tarot-style frame in the card's colour wrapping the content */}
-                    <div className={`relative flex-1 min-h-0 flex flex-col rounded-[0.9rem] border ${tight ? 'px-3.5 pt-3.5 pb-3' : big ? 'px-5 pt-5 pb-5' : 'px-4 pt-4 pb-4'}`} style={{ borderColor: accent }}>
-                        {/* inner keyline — the second frame line, in the card's colour */}
-                        <div aria-hidden className="pointer-events-none absolute inset-[5px] rounded-[0.72rem] border" style={{ borderColor: `${accent}33` }} />
+                    {/* FRAME — a tarot-style frame printed in the card's colour round the
+                        content: two lines, worn like the rest of the print */}
+                    <div className={`relative flex-1 min-h-0 flex flex-col ${tight ? 'px-3.5 pt-3.5 pb-3' : big ? 'px-5 pt-5 pb-5' : 'px-4 pt-4 pb-4'}`}>
+                        <span aria-hidden className="print-ink pointer-events-none absolute inset-0 rounded-[0.9rem] border" style={{ borderColor: accent }} />
+                        <span aria-hidden className="print-ink pointer-events-none absolute inset-[5px] rounded-[0.72rem] border" style={{ borderColor: `${accent}40` }} />
 
                         {/* crest — the card's mark at the top of the frame */}
                         <div className="relative flex justify-center" style={{ color: accent }}>
@@ -172,7 +170,9 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                             {/* details — two tabs so both fit without scrolling: how this service
                                 works, step by step (shown first), and what it includes */}
                             {big && (hasSteps || hasPoints) && (
-                                <div className={`rounded-[0.7rem] ${tight ? 'mt-3.5 px-3 py-2.5' : 'mt-4 px-4 py-3'}`} style={{ backgroundColor: `${accent}0d` }}>
+                                <div className={`relative ${tight ? 'mt-3.5 pt-3' : 'mt-4 pt-3.5'}`}>
+                                    {/* set off from the prices by a printed rule in the card's colour */}
+                                    <span aria-hidden className="print-ink absolute inset-x-0 top-0 border-t" style={{ borderColor: `${accent}40` }} />
                                     <div className={`flex ${tight ? 'gap-3' : 'gap-4'}`} role="tablist">
                                         {([['steps', isIndonesian ? 'Cara kerjanya' : 'How it works', hasSteps], ['points', isIndonesian ? 'Yang kamu dapat' : 'What you get', hasPoints]] as const)
                                             .filter(([, , has]) => has)
@@ -237,6 +237,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                             >
                                 {/* painted onto the card in its colour, like the site's buttons */}
                                 <PaintSwatch />
+                                <MarkerFrame className="text-plum" />
                                 <span className="print-text text-cream">{g.cta.label}</span>
                             </a>
                         ) : (
@@ -247,6 +248,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                                 className={`group/btn relative isolate w-full inline-flex items-center justify-center font-medium transition-[filter] duration-300 hover:brightness-110 ${tight ? 'py-2.5 text-[13px]' : big ? 'py-3 text-sm' : 'py-2.5 text-[13px]'}`}
                             >
                                 <PaintSwatch />
+                                <MarkerFrame className="text-plum" />
                                 <span className="print-text text-cream">{isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}</span>
                             </button>
                         )}
@@ -979,7 +981,6 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
 
     return (
         <section id="services" className="bg-paper relative isolate overflow-hidden text-ink">
-            <SoftAura />
             {/* HEADER — transparent over the sky */}
             <div className="mx-auto px-8 pt-14 md:pt-20 pb-6 md:pb-10">
                 <FadeIn>
