@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
-import { TornPaper } from '../UI/PaperEdge';
+import Background from './Background';
 import CelestialMark from '../UI/CelestialMark';
 
 interface LoaderProps {
@@ -11,17 +11,16 @@ interface LoaderProps {
   isIndonesian?: boolean;
 }
 
-// The loader is a cover sheet of the site's paper laid over the hero. While the page
-// loads, the moon-phase divider is pencilled onto it, the rules drawn outward and the
-// moons outlined and shaded in pair by pair (the outer pair first, the full moon last).
-// Once everything is in, the sheet goes the way tracing paper does when it's lifted
-// off: it turns see-through, the night sky coming up through it, and then it's gone,
-// taking the drawing with it. All but the full moon, which rises off the paper and
-// wanes into the hero's crescent.
+// The loader is the hero's own night sky, the same as the page's, so nothing has to be
+// uncovered when it's done. While the page loads, the moon-phase divider is pencilled
+// onto it in cream, the rules drawn outward and the moons outlined and shaded in pair
+// by pair (the outer pair first, the full moon last), under the name. Once everything
+// is in, the drawing fades from the sky, all but the full moon, which rises and wanes
+// into the hero's crescent while the hero's words come in around it.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
-const CLEAR_MS = 1600;                // the paper turns see-through and goes
-const CARRY_DELAY_MS = 250;           // the moon lifts off as the paper starts to clear
+const CLEAR_MS = 1300;                // the drawing fades from the sky
+const CARRY_DELAY_MS = 200;           // the moon lifts off as the drawing starts to fade
 const CARRY_MS = 1150;                // the moon reaches the hero's crescent
 // when the moon has landed (from mt:reveal): the hero's crescent takes over then
 export const REVEAL_FLIGHT_MS = CARRY_DELAY_MS + CARRY_MS;
@@ -117,7 +116,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     // fonts (the hero title's size depends on them)
     const fonts = (document as any).fonts;
     if (fonts?.ready) fonts.ready.then(safe('fonts')).catch(safe('fonts')); else safe('fonts')();
-    // the paper's grain: the sheet itself and every light section are printed on it
+    // the paper's grain: every light section under the hero is printed on it
     const img = new Image();
     img.onload = safe('paper');
     img.onerror = safe('paper');
@@ -194,8 +193,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     return () => timers.forEach(clearTimeout);
   }, [complete, reduce]);
 
-  // the page under the sheet shows the paper's colour until the sheet is up (index.html
-  // sets html.booting, so the first frame before React isn't the night sky)
+  // the page shows the sky's colour until the loader's done (index.html sets
+  // html.booting, so the first frame before React is already the night)
   useEffect(() => {
     if (leaving) document.documentElement.classList.remove('booting');
   }, [leaving]);
@@ -204,10 +203,10 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
 
   const clearing = leaving && !reduce;
   const CLEAR_EASE = 'cubic-bezier(0.45, 0, 0.25, 1)';
-  // the moon's flight: up off the paper and onto the hero's crescent
+  // the moon's flight: up onto the hero's crescent
   const flight: React.CSSProperties = clearing && carry ? {
     transform: carry,
-    transition: `transform ${CARRY_MS}ms cubic-bezier(0.6, 0, 0.2, 1) ${CARRY_DELAY_MS}ms, color 700ms ease ${CARRY_DELAY_MS}ms, opacity 700ms ease`,
+    transition: `transform ${CARRY_MS}ms cubic-bezier(0.6, 0, 0.2, 1) ${CARRY_DELAY_MS}ms, opacity 700ms ease`,
   } : {};
   // each pair of moons draws in its quarter of the progress, outer pair first
   const drawOf = (i: number) => {
@@ -216,8 +215,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   };
   // the rules are drawn outward from the moons as the whole drawing progresses
   const rule = Math.min(1, pct / 100);
-  // the rest of the drawing goes with the paper (a little ahead of it, as the
-  // pencil's the faintest thing on the sheet)
+  // the rest of the drawing fades from the sky
   const fades: React.CSSProperties = clearing ? { opacity: 0, transition: `opacity ${CLEAR_MS * 0.75}ms ${CLEAR_EASE}` } : {};
   return (
     <div
@@ -229,34 +227,29 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
         transition: leaving && reduce ? 'opacity 380ms ease' : undefined,
       }}
     >
-      {/* the sheet, turning see-through as it's lifted off; its grain stays a moment
-          longer over the sky, as tracing paper's does */}
-      <div className="absolute inset-0" style={{ opacity: clearing ? 0 : 1, transition: clearing ? `opacity ${CLEAR_MS}ms ${CLEAR_EASE}` : undefined }}>
-        <TornPaper edge="bottom" />
+      {/* the hero's sky, the same as the page's under it: it's let go of straight away
+          (softly, so the two skies' drift can't show a seam), so the hero's words can
+          come in under the fading drawing */}
+      <div className="absolute inset-0" style={{ background: '#0b0924', opacity: clearing ? 0 : 1, transition: clearing ? 'opacity 500ms ease' : undefined }}>
+        <Background />
       </div>
-      {clearing && (
-        <div
-          className="absolute inset-0 mix-blend-soft-light"
-          style={{ backgroundImage: `url(${PAPER_IMG})`, backgroundSize: '600px 600px', backgroundPosition: 'center top', animation: `grainOut ${CLEAR_MS * 1.3}ms ${CLEAR_EASE} both` }}
-        />
-      )}
 
-      {/* the drawing, in the middle of the screen (the sheet runs 3rem past its bottom) */}
-      <div className="absolute inset-x-0 top-0 h-[calc(100%-3rem)] flex flex-col items-center justify-center px-8 text-ink">
+      {/* the drawing, in the middle of the screen (the loader runs 3rem past its bottom) */}
+      <div className="absolute inset-x-0 top-0 h-[calc(100%-3rem)] flex flex-col items-center justify-center px-8 text-cream">
         <div
-          className="letterpress-lg font-serif font-medium uppercase whitespace-nowrap tracking-[0.02em] text-[1.45rem] md:text-[1.8rem] leading-none pb-[0.14em] -mb-[0.14em]"
+          className="font-serif font-medium uppercase whitespace-nowrap tracking-[0.02em] text-[1.45rem] md:text-[1.8rem] leading-none pb-[0.14em] -mb-[0.14em] [text-shadow:0_6px_40px_rgba(6,4,14,0.5)]"
           style={{ opacity: shown ? 1 : 0, transition: 'opacity 900ms ease', ...fades }}
         >
           Mayanov Tarot
         </div>
 
-        <div className="mt-7 md:mt-8 w-full max-w-[34rem] flex items-center gap-4 md:gap-5 text-moon">
+        <div className="mt-7 md:mt-8 w-full max-w-[34rem] flex items-center gap-4 md:gap-5 text-cream/85">
           <div className="flex-1 min-w-0" style={{ clipPath: `inset(-8px 0 -8px ${(1 - rule) * 100}%)`, ...fades }}>
-            <PencilRule fade="start" className="w-full text-moon/70" />
+            <PencilRule fade="start" className="w-full text-cream/45" />
           </div>
-          {/* (the pencil's filter and print mask are let go of as the moon moves off,
-              or they'd clip it to the row) */}
-          <div className={`${clearing ? '' : 'print-ink [filter:url(#pencil-icon)]'} flex items-center gap-2.5 md:gap-3`}>
+          {/* (the pencil's filter is let go of as the moon moves off, or it'd clip it
+              to the row) */}
+          <div className={`${clearing ? '' : '[filter:url(#pencil-icon)]'} flex items-center gap-2.5 md:gap-3`}>
             {PHASES.map((ph, i) => {
               const full = ph.p === 1;
               return (
@@ -265,7 +258,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
                   ref={full ? moonRef : undefined}
                   className={full ? 'relative' : undefined}
                   style={full
-                    ? { opacity: landed ? 0 : 1, ...flight, ...(clearing ? { color: 'rgba(243,241,236,0.85)' } : null) }
+                    ? { opacity: landed ? 0 : 1, ...flight }
                     : fades}
                 >
                   <div style={full ? { opacity: clearing ? 0 : 1, transition: `opacity ${CARRY_MS * 0.6}ms ease ${CARRY_DELAY_MS + CARRY_MS * 0.2}ms` } : undefined}>
@@ -289,7 +282,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
             })}
           </div>
           <div className="flex-1 min-w-0" style={{ clipPath: `inset(-8px ${(1 - rule) * 100}% -8px 0)`, ...fades }}>
-            <PencilRule fade="end" className="w-full text-moon/70" />
+            <PencilRule fade="end" className="w-full text-cream/45" />
           </div>
         </div>
       </div>
