@@ -575,5 +575,11 @@ html[data-print='riso'] .letterpress { filter: url(#riso); }
 html[data-print='offset'] .letterpress { filter: url(#offset); }
 /* display type (headings, quotes, big numbers) gets versions sized to big letters */
 .letterpress-lg { filter: url(#letterpress-lg); }
+/* on touch screens the impression without its noise (index.html): the noisy one,
+   on every line of text at 3× pixels, makes a phone stall while it scrolls */
+@media (pointer: coarse) {
+  .letterpress { filter: url(#letterpress-m); }
+  .letterpress-lg { filter: url(#letterpress-lg-m); }
+}
 html[data-print='riso'] .letterpress-lg { filter: url(#riso-lg); }
 html[data-print='offset'] .letterpress-lg { filter: url(#offset-lg); }

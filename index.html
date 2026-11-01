@@ -201,6 +201,30 @@
       <feComposite in2="SourceAlpha" operator="in" result="innerShadow" />
       <feMerge><feMergeNode in="ink" /><feMergeNode in="innerShadow" /></feMerge>
     </filter>
+    <!-- the same impressions for phones (index.css swaps them in on touch screens):
+         only the shadow inside the letter and the light rim past it, no noise, so a
+         page of type paints quickly at 3× pixels -->
+    <filter id="letterpress-m" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
+      <feOffset in="SourceAlpha" dx="0.9" dy="0.9" result="off" />
+      <feComposite in="SourceAlpha" in2="off" operator="out" result="inner" />
+      <feFlood flood-color="#000" flood-opacity="0.3" />
+      <feComposite in2="inner" operator="in" result="innerShadow" />
+      <feComposite in="off" in2="SourceAlpha" operator="out" result="outer" />
+      <feFlood flood-color="#fff" flood-opacity="0.75" />
+      <feComposite in2="outer" operator="in" result="lightRim" />
+      <feMerge>
+        <feMergeNode in="lightRim" />
+        <feMergeNode in="SourceGraphic" />
+        <feMergeNode in="innerShadow" />
+      </feMerge>
+    </filter>
+    <filter id="letterpress-lg-m" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
+      <feOffset in="SourceAlpha" dx="1.2" dy="1.2" result="off" />
+      <feComposite in="SourceAlpha" in2="off" operator="out" result="inner" />
+      <feFlood flood-color="#000" flood-opacity="0.16" />
+      <feComposite in2="inner" operator="in" result="innerShadow" />
+      <feMerge><feMergeNode in="SourceGraphic" /><feMergeNode in="innerShadow" /></feMerge>
+    </filter>
     <filter id="riso-lg" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
       <feOffset in="SourceAlpha" dx="2.4" dy="-1.4" result="o" />
       <feFlood flood-color="#b07ad8" flood-opacity="0.45" />

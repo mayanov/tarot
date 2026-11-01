@@ -260,10 +260,13 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                 style={{
                   gridArea: '1 / 1',
                   opacity: active ? 1 : 0,
-                  filter: active ? 'blur(0px)' : 'blur(5px)',
+                  filter: active ? 'none' : 'blur(5px)',
+                  // once faded out a quote isn't drawn at all: twenty blurred copies
+                  // stacked under the shown one were each kept as a layer on phones
+                  visibility: active ? 'visible' : 'hidden',
                   // gentle simultaneous crossfade with a soft defocus, so the brief
                   // overlap reads as a dreamy blur rather than sharp double text.
-                  transition: 'opacity 700ms cubic-bezier(0.16,1,0.3,1), filter 700ms cubic-bezier(0.16,1,0.3,1)',
+                  transition: `opacity 700ms cubic-bezier(0.16,1,0.3,1), filter 700ms cubic-bezier(0.16,1,0.3,1), visibility 0s linear ${active ? 0 : 700}ms`,
                 }}
                 className={`flex flex-col items-center text-center ${active ? '' : 'pointer-events-none'}`}
               >

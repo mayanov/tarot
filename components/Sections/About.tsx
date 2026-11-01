@@ -6,7 +6,7 @@ import CountUp from '../UI/CountUp';
 import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
-import { PaperShadow, paperCut, tornTop } from '../UI/PaperEdge';
+import { PaperShadow, paperCut, tornTop, TornPaper } from '../UI/PaperEdge';
 import { Phase } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import { moonNow } from '../Layout/MenuMoon';
@@ -168,7 +168,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         <div className="absolute inset-x-0 top-0 h-14 [filter:blur(6px)]">
           <div className="h-full" style={{ ...tornTop, background: 'rgba(6,4,20,0.55)' }} />
         </div>
-        <div className="absolute inset-0 bg-paper" style={tornTop} />
+        <TornPaper edge="top" />
       </div>
       {/* portrait and text side by side on desktop (portrait first on phones) */}
       <div className="relative mx-auto px-8 pt-14 md:pt-20 pb-14 md:pb-20 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)] lg:gap-16 xl:gap-24 lg:items-start">

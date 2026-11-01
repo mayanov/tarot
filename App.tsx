@@ -11,7 +11,7 @@ import BookingModal from './components/Booking/BookingModal';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
 import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
 import MoonPhaseDivider from './components/UI/MoonPhaseDivider';
-import { tornBottom, paperCut } from './components/UI/PaperEdge';
+import { tornBottom, paperCut, TornPaper } from './components/UI/PaperEdge';
 import ButtonInk, { PaintSwatch } from './components/UI/ButtonInk';
 import CelestialMark from './components/UI/CelestialMark';
 import PencilRule from './components/UI/PencilRule';
@@ -411,7 +411,7 @@ function App() {
           <div className="absolute inset-x-0 bottom-[-3px] h-14 [filter:blur(5px)]">
             <div className="h-full" style={{ ...tornBottom, background: 'rgba(6,4,20,0.5)' }} />
           </div>
-          <div className="absolute inset-0 bg-paper" style={tornBottom} />
+          <TornPaper edge="bottom" />
         </div>
         <Hero isIndonesian={isIndonesian} />
         <About isIndonesian={isIndonesian} />

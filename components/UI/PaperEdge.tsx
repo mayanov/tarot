@@ -84,6 +84,29 @@ export const tornTop: React.CSSProperties = {
   maskPosition: '0 0, 0 46px',
 };
 
+/** a sheet of the paper (.bg-paper) filling its box, one edge torn. Only the 48px
+    band along the tear is masked: a mask over a whole tall sheet makes the browser
+    keep a masked copy of all of it, which on a phone (3× pixels) runs to hundreds of
+    MB and gets the tab killed. The grain lines up across the seam. */
+export const TornPaper: React.FC<{ edge: 'top' | 'bottom' }> = ({ edge }) => {
+  const top = edge === 'top';
+  const tear = top ? TEAR : TEAR_BOTTOM;
+  const strip: React.CSSProperties = {
+    WebkitMaskImage: tear,
+    maskImage: tear,
+    WebkitMaskSize: '100% 100%',
+    maskSize: '100% 100%',
+    // the band's grain continues the sheet's, which starts where the band ends
+    backgroundPosition: top ? 'center top 46px' : 'center bottom 46px',
+  };
+  return (
+    <>
+      <div className="absolute inset-x-0 bg-paper" style={top ? { top: 46, bottom: 0 } : { top: 0, bottom: 46, backgroundPosition: 'center bottom' }} />
+      <div className={`absolute inset-x-0 h-12 bg-paper ${top ? 'top-0' : 'bottom-0'}`} style={strip} />
+    </>
+  );
+};
+
 /** mask for a sheet whose bottom edge is torn (the 48px band at the bottom), solid above */
 export const tornBottom: React.CSSProperties = {
   WebkitMaskImage: `${TEAR_BOTTOM}, linear-gradient(#000, #000)`,

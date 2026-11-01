@@ -31,6 +31,10 @@ const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 // siblings; `distance` scales the travel. Respects prefers-reduced-motion.
 const FadeIn: React.FC<Props> = ({ children, delay = 0, className = '', dir = 'up', distance = 1, duration = 1.05 }) => {
   const [isVisible, setIsVisible] = useState(false);
+  // once the entrance has played, the wrapper lets go of its own layer (will-change,
+  // the 0px blur): kept, every revealed block stays a separate GPU texture, and on a
+  // phone those add up until the tab is killed
+  const [settled, setSettled] = useState(false);
   const domRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,6 +53,12 @@ const FadeIn: React.FC<Props> = ({ children, delay = 0, className = '', dir = 'u
     return () => { if (el) observer.unobserve(el); };
   }, []);
 
+  useEffect(() => {
+    if (!isVisible) return;
+    const t = setTimeout(() => setSettled(true), delay + duration * 1000 + 100);
+    return () => clearTimeout(t);
+  }, [isVisible, delay, duration]);
+
   const v = VARIANT[dir];
   // scale the translate distance when requested (leaves scale()-only variants alone)
   const hidden = distance !== 1 && v.t.startsWith('translate3d')
@@ -62,11 +72,11 @@ const FadeIn: React.FC<Props> = ({ children, delay = 0, className = '', dir = 'u
       style={{
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'none' : hidden,
-        filter: v.blur ? (isVisible ? 'blur(0px)' : `blur(${v.blur}px)`) : undefined,
+        filter: v.blur && !settled ? (isVisible ? 'blur(0px)' : `blur(${v.blur}px)`) : undefined,
         transition:
           `opacity ${(duration * 0.85).toFixed(2)}s ease ${delay}ms, transform ${duration}s ${EASE} ${delay}ms` +
           (v.blur ? `, filter ${(duration * 0.8).toFixed(2)}s ease ${delay}ms` : ''),
-        willChange: 'opacity, transform',
+        willChange: settled ? undefined : 'opacity, transform',
       }}
     >
       {children}
