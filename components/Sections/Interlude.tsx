@@ -62,9 +62,8 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
             <li key={item.q[0]}>
               <FadeIn delay={i * 110} dir="up" distance={0.5}>
                 {i > 0 && <PencilRule weight="fine" className="text-cream/40" />}
-                {/* numbered and labelled by hand in pencil, like notes in the margin */}
-                <div className="grid grid-cols-[2.75rem_minmax(0,1fr)] md:grid-cols-[3.5rem_minmax(0,1fr)] items-baseline py-6 md:py-7">
-                  <span className="inline-block -rotate-3 font-['Reenie_Beanie',cursive] text-cream/90 text-[2.4rem] md:text-[2.9rem] leading-none [filter:url(#pencil-icon)]">{i + 1}.</span>
+                {/* labelled by hand in pencil, like a note in the margin */}
+                <div className="py-6 md:py-7">
                   <div>
                     <span className="inline-block -rotate-2 font-['Reenie_Beanie',cursive] text-cream/90 text-[1.75rem] md:text-[2.05rem] leading-none [filter:url(#pencil-icon)]">{t(item.topic)}</span>
                     <p className="letterpress-lg mt-1 font-elegant text-cream text-[1.35rem] sm:text-[1.5rem] md:text-[1.75rem] leading-[1.25] tracking-[-0.01em] [text-wrap:pretty]">
