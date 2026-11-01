@@ -10,12 +10,15 @@ const mulberry32 = (seed: number) => () => {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
 
-// Real stars aren't pure white — a spread of temperatures makes the field read as
-// sky rather than UI dots. Weighted toward white, with some cool-blue and warm.
+// The stars are white paint flicked onto the painted sky with a brush — not points of
+// light: specks and drops with ragged edges (a mix of cool and warm whites, as the
+// paint picked up the wash under it), a few bigger drops with a satellite fleck, and a
+// handful of four-point stars painted in with a fine brush. No glow, no twinkle — paint
+// doesn't shine; the paper's grain breaks them up like everything else on the sheet.
 const COLORS = [
-  '255,255,255', '255,255,255', '255,255,255', '255,255,255',
-  '198,214,255', '208,222,255', // cool
-  '255,232,205', '255,224,196', // warm
+  '250,246,238', '250,246,238', '250,246,238', '246,242,236',
+  '226,232,252', // cool, picked up from the blue
+  '255,236,218', // warm
 ];
 
 type Dot = [number, number, number, number, number]; // [x%, y%, radius px, opacity, colorIdx]
@@ -23,7 +26,7 @@ type Dot = [number, number, number, number, number]; // [x%, y%, radius px, opac
 const clamp = (n: number) => Math.min(Math.max(n, 0), 100);
 const pick = (rng: () => number) => Math.floor(rng() * COLORS.length);
 
-// Scatter stars across the whole sky.
+// Scatter across the whole sky.
 const field = (rng: () => number, count: number, rMin: number, rMax: number, oMin: number, oMax: number): Dot[] =>
   Array.from({ length: count }, () => [
     +(rng() * 100).toFixed(2),
@@ -33,51 +36,72 @@ const field = (rng: () => number, count: number, rMin: number, rMax: number, oMi
     pick(rng),
   ]);
 
-// Cluster stars along a diagonal to suggest a Milky-Way band (upper-left → lower-right).
+// The flick of the brush runs along a diagonal (upper-left → lower-right), so the
+// spatter is densest there — a Milky-Way band.
 const band = (rng: () => number, count: number): Dot[] =>
   Array.from({ length: count }, () => {
     const t = rng();
     return [
       +clamp(6 + t * 90 + (rng() - 0.5) * 12).toFixed(2),
       +clamp(16 + t * 42 + (rng() - 0.5) * 16).toFixed(2),
-      +(0.5 + rng() * 0.9).toFixed(2),
-      +(0.3 + rng() * 0.45).toFixed(2),
+      +(0.45 + rng() * 0.7).toFixed(2),
+      +(0.35 + rng() * 0.45).toFixed(2),
       pick(rng),
     ];
   });
 
 const rng = mulberry32(20090217);
-// base density: a faint full-sky dusting plus a denser diagonal band
-const STATIC_DOTS: Dot[] = [...field(rng, 330, 0.4, 1.1, 0.26, 0.62), ...band(rng, 210)];
-// twinkling layers at different speeds for depth (more, faster, livelier)
-const TWINKLE_LAYERS: { dur: number; delay: number; drift: boolean; dots: Dot[] }[] = [
-  { dur: 3.6, delay: 0,   drift: true,  dots: field(rng, 86, 0.9, 1.6, 0.6, 0.95) },
-  { dur: 5,   delay: 0.7, drift: false, dots: [...field(rng, 62, 0.8, 1.3, 0.5, 0.88), ...band(rng, 56)] },
-  { dur: 6.5, delay: 1.6, drift: true,  dots: field(rng, 68, 0.7, 1.1, 0.45, 0.78) },
-  { dur: 8.5, delay: 2.6, drift: false, dots: field(rng, 58, 0.5, 0.95, 0.35, 0.62) },
-];
-// bright accent stars that pulse harder and carry a soft glow
-const ACCENTS: Dot[] = field(rng, 28, 1.4, 2.3, 0.9, 1);
+const SPECKS: Dot[] = field(rng, 280, 0.55, 1.3, 0.3, 0.75);
+const BAND: Dot[] = band(rng, 190);
+const DROPS: Dot[] = field(rng, 42, 1.5, 3, 0.7, 0.92);
+const STARS: Dot[] = field(rng, 10, 6, 10, 0.85, 0.95);
 
-// Solid-core dot with a soft falloff.
-const toGradients = (dots: Dot[]): string =>
-  dots
-    .map(([x, y, r, o, c]) => `radial-gradient(${r}px ${r}px at ${x}% ${y}%, rgba(${COLORS[c]},${o}) 0%, rgba(${COLORS[c]},0) 60%)`)
-    .join(',');
+// a drop of paint: a round-ish blob whose edge wobbles (each drop its own shape)
+const blob = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rnd: () => number) => {
+  const n = 9;
+  const pts = Array.from({ length: n }, (_, i) => {
+    const a = (i / n) * Math.PI * 2 + rnd() * 0.4;
+    const rr = r * (0.72 + rnd() * 0.5);
+    return [x + Math.cos(a) * rr, y + Math.sin(a) * rr * (0.85 + rnd() * 0.25)];
+  });
+  ctx.beginPath();
+  const mid = (i: number) => {
+    const [ax, ay] = pts[i % n], [bx, by] = pts[(i + 1) % n];
+    return [(ax + bx) / 2, (ay + by) / 2];
+  };
+  const [sx, sy] = mid(n - 1);
+  ctx.moveTo(sx, sy);
+  for (let i = 0; i < n; i++) {
+    const [mx, my] = mid(i);
+    ctx.quadraticCurveTo(pts[i][0], pts[i][1], mx, my);
+  }
+  ctx.fill();
+};
 
-// Wider, two-stop glow for the bright accent stars so they bloom a little.
-const toGlows = (dots: Dot[]): string =>
-  dots
-    .map(([x, y, r, o, c]) =>
-      `radial-gradient(${(r * 3).toFixed(1)}px ${(r * 3).toFixed(1)}px at ${x}% ${y}%, rgba(${COLORS[c]},${o}) 0%, rgba(${COLORS[c]},${(o * 0.35).toFixed(2)}) 22%, rgba(${COLORS[c]},0) 70%)`)
-    .join(',');
+// a four-point star painted with a fine brush: four tapering strokes, slightly
+// uneven, the two arms of one axis a touch longer
+const sparkle = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rnd: () => number) => {
+  const tilt = (rnd() - 0.5) * 0.35;
+  const w = r * 0.2;
+  ctx.beginPath();
+  for (let i = 0; i < 4; i++) {
+    const a = tilt + (i * Math.PI) / 2;
+    const len = r * (i % 2 ? 0.72 + rnd() * 0.12 : 0.95 + rnd() * 0.1);
+    const tx = x + Math.cos(a) * len, ty = y + Math.sin(a) * len;
+    const a1 = a + Math.PI / 4, a2 = a - Math.PI / 4;
+    if (i === 0) ctx.moveTo(x + Math.cos(a2) * w, y + Math.sin(a2) * w);
+    ctx.quadraticCurveTo(x + Math.cos(a) * w * 1.3, y + Math.sin(a) * w * 1.3, tx, ty);
+    ctx.quadraticCurveTo(x + Math.cos(a) * w * 1.3, y + Math.sin(a) * w * 1.3, x + Math.cos(a1) * w, y + Math.sin(a1) * w);
+  }
+  ctx.closePath();
+  ctx.fill();
+  // where the brush loaded the centre, a small round drop
+  blob(ctx, x, y, w * 1.4, rnd);
+};
 
-// Render a set of star dots into a <canvas> ONCE (and on resize) instead of as
-// hundreds of live CSS radial-gradients. 900+ gradients across the hero were being
-// re-rasterized by the GPU on scroll and after idle — the scroll lag. As a canvas
-// bitmap each layer rasters once and then only composites (cheap), and the twinkle
-// animation still works because opacity/transform on the <canvas> is compositor-only.
-const StarCanvas: React.FC<{ dots: Dot[]; glow?: boolean; className?: string; style?: React.CSSProperties }> = ({ dots, glow, className, style }) => {
+// Paint a set of marks into a <canvas> ONCE (and on resize): as a bitmap it rasters
+// once and then only composites on scroll (hundreds of live CSS gradients lagged).
+const StarCanvas: React.FC<{ dots: Dot[]; kind?: 'drop' | 'star'; seed: number; className?: string; style?: React.CSSProperties }> = ({ dots, kind = 'drop', seed, className, style }) => {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const cv = ref.current;
@@ -95,26 +119,26 @@ const StarCanvas: React.FC<{ dots: Dot[]; glow?: boolean; className?: string; st
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
+      const rnd = mulberry32(seed); // same shapes on every redraw
       for (const [x, y, r, o, c] of dots) {
         const px = (x / 100) * W;
         const py = (y / 100) * H;
-        const R = glow ? r * 3 : r;
-        const g = ctx.createRadialGradient(px, py, 0, px, py, Math.max(R, 0.4));
-        g.addColorStop(0, `rgba(${COLORS[c]},${o})`);
-        if (glow) g.addColorStop(0.22, `rgba(${COLORS[c]},${o * 0.35})`);
-        g.addColorStop(glow ? 0.7 : 0.6, `rgba(${COLORS[c]},0)`);
-        g.addColorStop(1, `rgba(${COLORS[c]},0)`);
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(px, py, Math.max(R, 0.4), 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillStyle = `rgba(${COLORS[c]},${o})`;
+        if (kind === 'star') { sparkle(ctx, px, py, r, rnd); continue; }
+        blob(ctx, px, py, Math.max(r, 0.45), rnd);
+        // the bigger drops threw a fleck off to one side
+        if (r > 2 && rnd() < 0.6) {
+          const a = rnd() * Math.PI * 2, d = r * (2.2 + rnd() * 2);
+          ctx.fillStyle = `rgba(${COLORS[c]},${o * 0.8})`;
+          blob(ctx, px + Math.cos(a) * d, py + Math.sin(a) * d, r * 0.35, rnd);
+        }
       }
     };
     draw();
     const ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); });
     ro.observe(parent);
     return () => { ro.disconnect(); cancelAnimationFrame(raf); };
-  }, [dots, glow]);
+  }, [dots, kind, seed]);
   return <canvas ref={ref} aria-hidden className={className} style={style} />;
 };
 
@@ -167,47 +191,23 @@ const Background: React.FC = () => {
     return () => io.disconnect();
   }, [reduce]);
 
-  const anim = (dur: number, delay: number, drift: boolean) =>
-    reduce ? undefined : `skyTwinkle ${dur}s ease-in-out ${delay}s infinite${drift ? `, skyDrift ${38 + dur * 3}s ease-in-out ${delay}s infinite` : ''}`;
-
   return (
     <div ref={rootRef} className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* 1 — the sky itself, painted in watercolour (blue up the left, a violet
           heart, a rose bloom upper-right, teal lower-right), drifting very slowly */}
       <WatercolorSky palette={TWILIGHT} stars={false} className="absolute inset-0" />
 
-      {/* 4 — the starfield: a fixed dusting (incl. the band cluster) plus twinkling
-          layers and bright accent stars, all drifting together a touch on scroll */}
-      <div ref={fieldRef} className="absolute -inset-y-[10%] inset-x-0 will-change-transform">
-        {/* far: the faint dusting */}
-        <StarCanvas dots={STATIC_DOTS} className="absolute inset-0 w-full h-full" />
-        {/* mid: the dimmer twinkle layers */}
+      {/* 4 — the stars, flicked on in white paint; the far specks, the band and the
+          near drops and painted stars drift apart a touch on scroll, and the paper's
+          grain (print-ink) breaks the paint up */}
+      <div ref={fieldRef} className="print-ink absolute -inset-y-[10%] inset-x-0 will-change-transform">
+        <StarCanvas dots={SPECKS} seed={11} className="absolute inset-0 w-full h-full" />
         <div ref={midRef} className="absolute inset-0 will-change-transform">
-          {TWINKLE_LAYERS.slice(2).map((layer, i) => (
-            <StarCanvas
-              key={i}
-              dots={layer.dots}
-              className="absolute inset-0 w-full h-full"
-              style={{ animation: anim(layer.dur, layer.delay, layer.drift) }}
-            />
-          ))}
+          <StarCanvas dots={BAND} seed={23} className="absolute inset-0 w-full h-full" />
         </div>
-        {/* near: the brighter twinkle layers and the glowing accent stars */}
         <div ref={nearRef} className="absolute inset-0 will-change-transform">
-          {TWINKLE_LAYERS.slice(0, 2).map((layer, i) => (
-            <StarCanvas
-              key={i}
-              dots={layer.dots}
-              className="absolute inset-0 w-full h-full"
-              style={{ animation: anim(layer.dur, layer.delay, layer.drift) }}
-            />
-          ))}
-          <StarCanvas
-            dots={ACCENTS}
-            glow
-            className="absolute inset-0 w-full h-full"
-            style={{ animation: reduce ? undefined : 'starPulse 3.6s ease-in-out infinite' }}
-          />
+          <StarCanvas dots={DROPS} seed={37} className="absolute inset-0 w-full h-full" />
+          <StarCanvas dots={STARS} kind="star" seed={41} className="absolute inset-0 w-full h-full" />
         </div>
       </div>
 

@@ -570,3 +570,9 @@ select.pencil-field { appearance: auto; }
 .admin-shell .lucide {
   filter: none;
 }
+
+/* lettering written with a felt-tip pen (font-marker): the ink bleeds into the
+   paper and pools along the strokes (#marker-ink, index.html) */
+.marker-ink {
+  filter: url(#marker-ink);
+}
