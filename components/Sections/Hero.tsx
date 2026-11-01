@@ -113,7 +113,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
       {/* MASTHEAD — a calm, centered stack under a quiet crescent moon. */}
       <div ref={contentRef} className="relative z-10 w-full mx-auto px-8 flex flex-col items-center">
-        {/* the crescent and the title take over from the loader's ink as it lands here */}
+        {/* the crescent takes over from the loader's moon as it lands here */}
         <div style={{ opacity: shown ? 1 : 0, transition: `opacity 300ms ease ${REVEAL_FLIGHT_MS - 120}ms` }}>
           <div ref={moonRef} data-hero-moon className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '35vh', ['--speed' as string]: 0.45 }}>
           <CelestialMark name="crescent" className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
@@ -127,7 +127,8 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
             className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] text-cream"
             style={{
               opacity: shown ? 1 : 0,
-              transition: `opacity 250ms ease ${REVEAL_FLIGHT_MS - 60}ms`,
+              transform: shown ? 'none' : 'translateY(16px)',
+              transition: `opacity 1s ease ${REVEAL_FLIGHT_MS - 650}ms, transform 1.1s cubic-bezier(0.16,1,0.3,1) ${REVEAL_FLIGHT_MS - 650}ms`,
             }}
           >
             Mayanov Tarot

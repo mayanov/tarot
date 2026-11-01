@@ -14,16 +14,16 @@ interface LoaderProps {
 // The loader is a cover sheet of the site's paper laid over the hero. While the page
 // loads, the moon-phase divider is pencilled onto it, the rules drawn outward and the
 // moons outlined and shaded in pair by pair (the outer pair first, the full moon last).
-// Once everything is in, the paper gives way: it wears through in patches, from the
-// edges in, the night sky showing where it's gone, while the ink stays where it was
-// put. The name lightens to cream and grows into the hero's title, and the full moon
-// goes up into the hero's crescent; the rest of the drawing goes with the paper.
+// Once everything is in, the sheet goes the way tracing paper does when it's lifted
+// off: it turns see-through, the night sky coming up through it, and then it's gone,
+// taking the drawing with it. All but the full moon, which rises off the paper and
+// wanes into the hero's crescent.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
-const DISSOLVE_MS = 1500;             // the paper wears away, the drawing's ground last
-const CARRY_DELAY_MS = 1150;           // the ink lets go of the paper as its ground goes
-const CARRY_MS = 1000;                // the name and the moon reach the hero's title and crescent
-// when the ink has landed (from mt:reveal): the hero's title and crescent take over then
+const CLEAR_MS = 1300;                // the paper turns see-through and goes
+const CARRY_DELAY_MS = 250;           // the moon lifts off as the paper starts to clear
+const CARRY_MS = 1150;                // the moon reaches the hero's crescent
+// when the moon has landed (from mt:reveal): the hero's crescent takes over then
 export const REVEAL_FLIGHT_MS = CARRY_DELAY_MS + CARRY_MS;
 // Scrolling stays locked until the hero's entrance (and the About sheet rising under
 // it) has finished, so an early scroll can't catch the page mid-animation.
@@ -56,44 +56,6 @@ const DrawnPhase: React.FC<{ p: number; waning?: boolean; size: number; draw: nu
         : <path d={lit} fill="currentColor" opacity={shade} />}
     </svg>
   );
-};
-
-// ---- the paper giving way ----
-// Smooth noise on a coarse grid (value noise: broad lobes, then finer and finer ragged
-// detail along their edges, the field a little warped so the holes don't look round),
-// with the middle of the sheet weighted to last: the paper goes from the edges in, in
-// uneven holes that run together, leaving the drawing on an island of paper that goes
-// last. Worked out once per hand-off, then thresholded a little further each frame.
-const wearMap = (w: number, h: number) => {
-  const grid = (n: number) => Array.from({ length: (n + 2) * (n + 2) }, () => Math.random());
-  const oct = (g: number[], n: number, x: number, y: number) => {
-    // (kept on the grid: a warped coordinate can stray just off it at the sheet's edge)
-    const gx = Math.min(n + 0.999, Math.max(0, x * n)), gy = Math.min(n + 0.999, Math.max(0, y * n));
-    const ix = Math.floor(gx), iy = Math.floor(gy), fx = gx - ix, fy = gy - iy;
-    const at = (i: number, j: number) => g[j * (n + 2) + i];
-    const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
-    const a = at(ix, iy) + (at(ix + 1, iy) - at(ix, iy)) * sx;
-    const b = at(ix, iy + 1) + (at(ix + 1, iy + 1) - at(ix, iy + 1)) * sx;
-    return a + (b - a) * sy;
-  };
-  const g1 = grid(5), g2 = grid(13), g3 = grid(41), gw = grid(4);
-  const out = new Float32Array(w * h);
-  const aspect = w / h, m = Math.max(w, h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    // the noise is laid out square (on the longer side), so it isn't stretched on a phone
-    let u = x / m, v = y / m;
-    u += (oct(gw, 4, u, v) - 0.5) * 0.06;
-    v += (oct(gw, 4, v, u) - 0.5) * 0.06;
-    // the island: wide and low round the name and the row of moons
-    const d = Math.min(1, Math.hypot((x / w - 0.5) * Math.min(aspect, 1.6) * 0.9, (y / h - 0.5) * 1.6) / 0.62);
-    // each layer of detail turned to its own angle, so none of them lines up with the grid
-    const r = (a: number, n: number, g: number[]) => {
-      const c = Math.cos(a), sn = Math.sin(a);
-      return oct(g, n, 0.15 + ((u - 0.5) * c - (v - 0.5) * sn) * 0.7 + 0.35, 0.15 + ((u - 0.5) * sn + (v - 0.5) * c) * 0.7 + 0.35);
-    };
-    out[y * w + x] = 0.34 * r(0.4, 5, g1) + 0.12 * r(1.1, 13, g2) + 0.06 * r(2.3, 41, g3) + 0.48 * (1 - d * d);
-  }
-  return out;
 };
 
 const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
@@ -202,106 +164,35 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   }, [reduce]);
 
   // ---- the hand-off: the paper gives way, the ink carries over to the hero ----
-  const wordRef = useRef<HTMLDivElement>(null);
   const moonRef = useRef<HTMLDivElement>(null);
-  const paperRef = useRef<HTMLCanvasElement>(null);
-  const [carry, setCarry] = useState<{ word: string; moon: string } | null>(null);
+  const [carry, setCarry] = useState<string | null>(null);
   const [landed, setLanded] = useState(false);
   useEffect(() => {
     if (!complete) return;
     const timers: number[] = [];
     const at = (ms: number, f: () => void) => timers.push(window.setTimeout(f, ms));
     at(reduce ? 0 : SETTLE_MS, () => {
-      // where the ink goes: the name onto the hero's title (scaled by the type's size),
-      // the full moon onto the lit disc of the hero's crescent (it sits at 41%, 50% of
-      // its icon and spans 62.5% of its width, see CelestialMark)
+      // where the full moon goes: onto the lit disc of the hero's crescent (it sits at
+      // 41%, 50% of its icon and spans 62.5% of its width, see CelestialMark)
       const move = (from?: DOMRect, to?: DOMRect, scale = 1) =>
         from && to
           ? `translate3d(${(to.left + to.width / 2 - (from.left + from.width / 2)).toFixed(1)}px, ${(to.top + to.height / 2 - (from.top + from.height / 2)).toFixed(1)}px, 0) scale(${scale.toFixed(4)})`
           : 'none';
-      const word = wordRef.current, title = document.querySelector<HTMLElement>('[data-hero-title]');
       const moon = moonRef.current?.getBoundingClientRect();
       const crescent = document.querySelector('[data-hero-moon] svg')?.getBoundingClientRect();
-      const fs = (el: Element | null | undefined) => parseFloat(el ? getComputedStyle(el).fontSize : '') || 1;
       if (!reduce) {
         const disc = crescent && new DOMRect(crescent.left + crescent.width * 0.414 - crescent.width * 0.3125, crescent.top + crescent.height / 2 - crescent.width * 0.3125, crescent.width * 0.625, crescent.width * 0.625);
-        setCarry({
-          word: move(word?.getBoundingClientRect(), title?.getBoundingClientRect(), fs(title) / fs(word)),
-          // the moon's disc is 14/16 of its glyph
-          moon: move(moon, disc, disc && moon ? disc.width / (moon.width * 14 / 16) : 1),
-        });
+        // (the moon's disc is 14/16 of its glyph)
+        setCarry(move(moon, disc, disc && moon ? disc.width / (moon.width * 14 / 16) : 1));
       }
       setLeaving(true);
-      // tell the hero to play its entrance as the ink carries over
+      // tell the hero to play its entrance as the paper clears
       try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
       at(reduce ? 0 : REVEAL_FLIGHT_MS, () => setLanded(true));
-      at(reduce ? 400 : Math.max(DISSOLVE_MS, REVEAL_FLIGHT_MS + 350), () => setGone(true));
+      at(reduce ? 400 : Math.max(CLEAR_MS, REVEAL_FLIGHT_MS + 350), () => setGone(true));
     });
     return () => timers.forEach(clearTimeout);
   }, [complete, reduce]);
-
-  // the paper wearing away, painted onto a canvas frame by frame: the sheet's colour and
-  // grain (lined up with the sheet it replaces), masked by the wear map
-  useEffect(() => {
-    const cv = paperRef.current;
-    if (!leaving || reduce || !cv) return;
-    const vw = window.innerWidth, vh = window.innerHeight;
-    const k = Math.min(window.devicePixelRatio || 1, 1.5);
-    cv.width = Math.round(vw * k); cv.height = Math.round(vh * k);
-    const ctx = cv.getContext('2d');
-    if (!ctx) return;
-    // the sheet is put together off screen, then laid on the sky with a soft shadow
-    // round its worn edges, so the paper has some thickness
-    const sheet = document.createElement('canvas');
-    sheet.width = cv.width; sheet.height = cv.height;
-    const sctx = sheet.getContext('2d')!;
-    const mw = Math.ceil(vw / 2), mh = Math.ceil(vh / 2);
-    const wear = wearMap(mw, mh);
-    const mask = document.createElement('canvas');
-    mask.width = mw; mask.height = mh;
-    const mctx = mask.getContext('2d')!;
-    const px = mctx.createImageData(mw, mh);
-    const img = new Image();
-    img.src = PAPER_IMG;
-    let pattern: CanvasPattern | null = null;
-    const t0 = performance.now();
-    let raf = 0;
-    const frame = () => {
-      const t = Math.min(1, (performance.now() - t0) / DISSOLVE_MS);
-      const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-      const th = e * 1.08 - 0.06; // where the paper has worn through
-      for (let i = 0; i < wear.length; i++) {
-        const a = Math.max(0, Math.min(1, (wear[i] - th) * 45));
-        px.data[i * 4 + 3] = a * 255;
-      }
-      mctx.putImageData(px, 0, 0);
-      sctx.setTransform(k, 0, 0, k, 0, 0);
-      sctx.globalCompositeOperation = 'source-over';
-      sctx.clearRect(0, 0, vw, vh);
-      sctx.fillStyle = '#f3f1ec';
-      sctx.fillRect(0, 0, vw, vh);
-      if (!pattern && img.complete && img.naturalWidth) pattern = sctx.createPattern(img, 'repeat');
-      if (pattern) {
-        // the sheet's grain: 600px tiles, centred, ending at its bottom edge (vh + 2)
-        pattern.setTransform(new DOMMatrix().translate((vw - 600) / 2, vh + 2 - 600).scale(600 / (img.naturalWidth || 600)));
-        sctx.fillStyle = pattern;
-        sctx.fillRect(0, 0, vw, vh);
-      }
-      sctx.globalCompositeOperation = 'destination-in';
-      sctx.imageSmoothingEnabled = true;
-      sctx.imageSmoothingQuality = 'high';
-      sctx.drawImage(mask, 0, 0, vw, vh);
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.clearRect(0, 0, cv.width, cv.height);
-      ctx.shadowColor = 'rgba(8, 5, 26, 0.38)';
-      ctx.shadowBlur = 10 * k;
-      ctx.shadowOffsetY = 2 * k;
-      ctx.drawImage(sheet, 0, 0);
-      if (t < 1) raf = requestAnimationFrame(frame);
-    };
-    frame();
-    return () => cancelAnimationFrame(raf);
-  }, [leaving, reduce]);
 
   // the page under the sheet shows the paper's colour until the sheet is up (index.html
   // sets html.booting, so the first frame before React isn't the night sky)
@@ -311,12 +202,13 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
 
   if (gone) return null;
 
-  const wearing = leaving && !reduce;
-  const INK_EASE = 'cubic-bezier(0.65, 0, 0.2, 1)';
-  const inkMove = (to: string | undefined): React.CSSProperties => (wearing && to ? {
-    transform: to,
-    transition: `transform ${CARRY_MS}ms ${INK_EASE} ${CARRY_DELAY_MS}ms, color 500ms ease ${CARRY_DELAY_MS - 60}ms, text-shadow ${CARRY_MS}ms ease ${CARRY_DELAY_MS + 200}ms, opacity 300ms ease`,
-  } : {});
+  const clearing = leaving && !reduce;
+  const CLEAR_EASE = 'cubic-bezier(0.45, 0, 0.25, 1)';
+  // the moon's flight: up off the paper and onto the hero's crescent
+  const flight: React.CSSProperties = clearing && carry ? {
+    transform: carry,
+    transition: `transform ${CARRY_MS}ms cubic-bezier(0.6, 0, 0.2, 1) ${CARRY_DELAY_MS}ms, color 700ms ease ${CARRY_DELAY_MS}ms, opacity 300ms ease`,
+  } : {};
   // each pair of moons draws in its quarter of the progress, outer pair first
   const drawOf = (i: number) => {
     const ring = 3 - Math.abs(i - (PHASES.length - 1) / 2); // 0 = outer pair … 3 = full moon
@@ -324,9 +216,9 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   };
   // the rules are drawn outward from the moons as the whole drawing progresses
   const rule = Math.min(1, pct / 100);
-  // the rest of the drawing goes with the paper
-  // (they sit on the island, so they go as it does)
-  const fades: React.CSSProperties = { opacity: wearing ? 0 : 1, transition: `opacity 500ms ease ${CARRY_DELAY_MS - 200}ms` };
+  // the rest of the drawing goes with the paper (a little ahead of it, as the
+  // pencil's the faintest thing on the sheet)
+  const fades: React.CSSProperties = clearing ? { opacity: 0, transition: `opacity ${CLEAR_MS * 0.75}ms ${CLEAR_EASE}` } : {};
   return (
     <div
       aria-hidden
@@ -337,21 +229,23 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
         transition: leaving && reduce ? 'opacity 380ms ease' : undefined,
       }}
     >
-      {/* the sheet: the paper itself while drawing, then a painting of it that wears away */}
-      {wearing ? <canvas ref={paperRef} className="absolute left-0 top-0 h-[100vh] w-[100vw]" /> : <TornPaper edge="bottom" />}
+      {/* the sheet, turning see-through as it's lifted off; its grain stays a moment
+          longer over the sky, as tracing paper's does */}
+      <div className="absolute inset-0" style={{ opacity: clearing ? 0 : 1, transition: clearing ? `opacity ${CLEAR_MS}ms ${CLEAR_EASE}` : undefined }}>
+        <TornPaper edge="bottom" />
+      </div>
+      {clearing && (
+        <div
+          className="absolute inset-0 mix-blend-soft-light"
+          style={{ backgroundImage: `url(${PAPER_IMG})`, backgroundSize: '600px 600px', backgroundPosition: 'center top', animation: `grainOut ${CLEAR_MS * 1.3}ms ${CLEAR_EASE} both` }}
+        />
+      )}
 
       {/* the drawing, in the middle of the screen (the sheet runs 3rem past its bottom) */}
       <div className="absolute inset-x-0 top-0 h-[calc(100%-3rem)] flex flex-col items-center justify-center px-8 text-ink">
         <div
-          ref={wordRef}
-          className={`${wearing ? '' : 'letterpress-lg'} font-serif font-medium uppercase whitespace-nowrap tracking-[0.02em] text-[1.45rem] md:text-[1.8rem] leading-none pb-[0.14em] -mb-[0.14em]`}
-          style={{
-            opacity: shown && !landed ? 1 : 0,
-            transition: 'opacity 900ms ease',
-            ...inkMove(carry?.word),
-            textShadow: wearing ? '0 8px 60px rgba(6,4,14,0.5)' : '0 8px 60px rgba(6,4,14,0)',
-            ...(wearing ? { color: '#F3F1EC' } : null),
-          }}
+          className="letterpress-lg font-serif font-medium uppercase whitespace-nowrap tracking-[0.02em] text-[1.45rem] md:text-[1.8rem] leading-none pb-[0.14em] -mb-[0.14em]"
+          style={{ opacity: shown ? 1 : 0, transition: 'opacity 900ms ease', ...fades }}
         >
           Mayanov Tarot
         </div>
@@ -362,7 +256,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
           </div>
           {/* (the pencil's filter and print mask are let go of as the moon moves off,
               or they'd clip it to the row) */}
-          <div className={`${wearing ? '' : 'print-ink [filter:url(#pencil-icon)]'} flex items-center gap-2.5 md:gap-3`}>
+          <div className={`${clearing ? '' : 'print-ink [filter:url(#pencil-icon)]'} flex items-center gap-2.5 md:gap-3`}>
             {PHASES.map((ph, i) => {
               const full = ph.p === 1;
               return (
@@ -371,15 +265,15 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
                   ref={full ? moonRef : undefined}
                   className={full ? 'relative' : undefined}
                   style={full
-                    ? { opacity: landed ? 0 : 1, ...inkMove(carry?.moon), ...(wearing ? { color: 'rgba(243,241,236,0.85)' } : null) }
+                    ? { opacity: landed ? 0 : 1, ...flight, ...(clearing ? { color: 'rgba(243,241,236,0.85)' } : null) }
                     : fades}
                 >
-                  <div style={full ? { opacity: wearing ? 0 : 1, transition: `opacity ${CARRY_MS * 0.6}ms ease ${CARRY_DELAY_MS + CARRY_MS * 0.2}ms` } : undefined}>
+                  <div style={full ? { opacity: clearing ? 0 : 1, transition: `opacity ${CARRY_MS * 0.6}ms ease ${CARRY_DELAY_MS + CARRY_MS * 0.2}ms` } : undefined}>
                     <DrawnPhase p={ph.p} waning={ph.waning} size={full ? 18 : 13} draw={drawOf(i)} />
                   </div>
                   {/* on its way up the full moon wanes into the hero's crescent (the same
                       mark, its lit disc laid over this one's: 62.5% of its width, at 41%) */}
-                  {full && wearing && (
+                  {full && clearing && (
                     <span
                       className="absolute"
                       style={{
