@@ -255,13 +255,15 @@ export const MIDNIGHT: SkyPalette = {
 // twilight: the hero and loader — a clear sky just after dusk: deep navy overhead
 // lightening to a luminous violet-rose horizon, blue up the left, a magenta bloom
 // upper-right, teal lower-right, and a few thin lit wisps low down
+// (an early dusk rather than the dead of night: the top a deep but lit indigo, the
+// gradient warming through periwinkle and violet into lavender-rose at the foot)
 export const TWILIGHT: SkyPalette = {
-  ground: '#1a1a48',
-  base: ['#060a28', '#101c52', '#22307c', '#4a4296', '#86609e'],
-  back: ['#050824', '#2a4eae', '#8a4a98', '#34389a', '#6448a4', '#2a7e98'],
-  front: ['#c890b8', '#8e9ad4', '#dca4bc', '#a284c8', '#80b6c8'],
-  bloom: '#dcd4f4',
-  glow: ['rgba(225,150,190,0.7)', 'rgba(110,190,215,0.55)'],
+  ground: '#2c2c6c',
+  base: ['#1a2460', '#2c4090', '#4a58b2', '#7c68ba', '#b886bc'],
+  back: ['#162060', '#3e68c6', '#a462ae', '#5054b8', '#8064be', '#3e96b0'],
+  front: ['#e0a8cc', '#aab6e8', '#f0bcd0', '#bea0dc', '#9acedc'],
+  bloom: '#eee6fc',
+  glow: ['rgba(238,170,208,0.75)', 'rgba(136,208,230,0.6)'],
   clear: true,
 };
 
