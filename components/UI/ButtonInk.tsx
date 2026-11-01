@@ -126,7 +126,7 @@ export const MarkerFrame: React.FC<{ className?: string }> = ({ className = '' }
             <feDisplacementMap in="d" in2="f" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="b" />
             <feGaussianBlur in="b" stdDeviation="0.35" result="s" />
             {/* the ink pools darker along both edges of the stroke as it soaks in */}
-            <feMorphology in="s" operator="erode" radius="0.7" result="er" />
+            <feMorphology in="s" operator="erode" radius="0.5" result="er" />
             <feComposite in="s" in2="er" operator="out" result="rim" />
             <feMerge result="m">
               <feMergeNode in="s" />
@@ -141,7 +141,7 @@ export const MarkerFrame: React.FC<{ className?: string }> = ({ className = '' }
         {/* the box sits 4px in from this svg's edge, so each stroke starts and ends
             ~3px past its corners; nested svgs shifted by a few px give the far edges
             without calc() */}
-        <g filter={`url(#${id}k)`} stroke="currentColor" strokeLinecap="round" fill="none" strokeWidth="2.4" strokeOpacity="0.72">
+        <g filter={`url(#${id}k)`} stroke="currentColor" strokeLinecap="round" fill="none" strokeWidth="1.7" strokeOpacity="0.72">
           <svg x="-1" overflow="visible">
             <line x1="2" y1="4.6" x2="100%" y2="3.7" />
           </svg>
