@@ -33,7 +33,7 @@ const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
 // Loading is REAL: progress comes from the work the page actually waits on.
 const TASKS = ['fonts', 'paper', 'app', 'page'] as const;
 const MIN_CLIMB_MS = 1600;    // even on a fast connection the drawing takes this long (no flash)
-const SETTLE_MS = 450;        // the finished drawing holds a beat before the sheet lifts
+const SETTLE_MS = 450;        // the finished drawing (at 100%) holds a beat before the hand-off
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
 
@@ -59,7 +59,7 @@ const DrawnPhase: React.FC<{ p: number; waning?: boolean; size: number; draw: nu
   );
 };
 
-const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
+const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const [shown, setShown] = useState(false);      // the drawing has started
   const [pct, setPct] = useState(0);              // progress, 0–100
@@ -258,6 +258,17 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
           }}
         >
           Mayanov Tarot
+        </div>
+      )}
+
+      {/* how far it's got, under the title where the hero's line will come in; it reads
+          100 only once everything's loaded, and the hand-off waits for that */}
+      {slots && (
+        <div
+          className="fixed inset-x-0 text-center text-xs md:text-[13px] uppercase tracking-[0.3em] text-cream/55"
+          style={{ top: slots.title.bottom + 28, opacity: shown ? 1 : 0, transition: 'opacity 900ms ease 200ms', ...fades }}
+        >
+          {isIndonesian ? 'Memuat' : 'Loading'} <span className="tabular-nums text-cream/80">{Math.floor(pct)}%</span>
         </div>
       )}
 
