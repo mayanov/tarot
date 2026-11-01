@@ -277,7 +277,6 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                 <footer className="mt-6 md:mt-8 flex items-center justify-center gap-3 font-elegant">
                   <span className="letterpress text-moon">&mdash;</span>
                   <span className="letterpress-lg inline-block py-[0.3em] -my-[0.3em] px-2 -mx-2 font-signature text-moon text-[2.2rem] md:text-[2.6rem] leading-none">{r.author}</span>
-                  <span className="letterpress text-ink/40 text-[0.78rem] tracking-wide">· {r.location}</span>
                 </footer>
               </blockquote>
             );
