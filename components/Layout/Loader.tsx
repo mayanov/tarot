@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
@@ -11,12 +11,13 @@ interface LoaderProps {
   isIndonesian?: boolean;
 }
 
-// The loader is the hero's own night sky, the same as the page's, so nothing has to be
-// uncovered when it's done. While the page loads, the moon-phase divider is pencilled
-// onto it in cream, the rules drawn outward and the moons outlined and shaded in pair
-// by pair (the outer pair first, the full moon last), under the name. Once everything
-// is in, the drawing fades from the sky, all but the full moon, which rises and wanes
-// into the hero's crescent while the hero's words come in around it.
+// The loader is the hero itself, before the rest of it has come in: the same night sky,
+// the name already in its place as the hero's title (same type, same spot), and where
+// the hero's crescent will be, the moon-phase divider pencilled on in cream as the page
+// loads, the rules drawn outward and the moons outlined and shaded in pair by pair (the
+// outer pair first, the full moon last, right where the crescent goes). Once everything
+// is in, nothing moves: the rest of the divider fades, the full moon wanes into the
+// crescent where it is, and the hero's words come in under the title.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
 const CLEAR_MS = 1300;                // the drawing fades from the sky
@@ -162,7 +163,25 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     return () => clearInterval(iv);
   }, [reduce]);
 
-  // ---- the hand-off: the paper gives way, the ink carries over to the hero ----
+  // ---- where the hero's title and crescent are, to draw the loader over them ----
+  const [slots, setSlots] = useState<{ title: DOMRect; titleFont: string; moonY: number; moonX: number } | null>(null);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const title = document.querySelector<HTMLElement>('[data-hero-title]');
+      const crescent = document.querySelector('[data-hero-moon] svg');
+      if (!title || !crescent) return;
+      const c = crescent.getBoundingClientRect();
+      // the crescent's lit disc sits at 41%, 50% of its icon (see CelestialMark)
+      setSlots({ title: title.getBoundingClientRect(), titleFont: getComputedStyle(title).fontSize, moonX: c.left + c.width * 0.414, moonY: c.top + c.height / 2 });
+    };
+    measure();
+    // the title's size depends on the web fonts, and the window may change
+    (document as any).fonts?.ready?.then(measure);
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  // ---- the hand-off: the full moon wanes into the crescent where it is ----
   const moonRef = useRef<HTMLDivElement>(null);
   const [carry, setCarry] = useState<string | null>(null);
   const [landed, setLanded] = useState(false);
@@ -185,7 +204,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
         setCarry(move(moon, disc, disc && moon ? disc.width / (moon.width * 14 / 16) : 1));
       }
       setLeaving(true);
-      // tell the hero to play its entrance as the paper clears
+      // tell the hero to take over (its title at once, under this one) and bring its words in
       try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
       at(reduce ? 0 : REVEAL_FLIGHT_MS - 300, () => setLanded(true)); // (crossfades with the hero's crescent)
       at(reduce ? 400 : Math.max(CLEAR_MS, REVEAL_FLIGHT_MS + 500), () => setGone(true));
@@ -234,16 +253,27 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
         <Background />
       </div>
 
-      {/* the drawing, in the middle of the screen (the loader runs 3rem past its bottom) */}
-      <div className="absolute inset-x-0 top-0 h-[calc(100%-3rem)] flex flex-col items-center justify-center px-8 text-cream">
+      {/* the name, exactly where (and as) the hero's title is */}
+      {slots && (
         <div
-          className="font-serif font-medium uppercase whitespace-nowrap tracking-[0.02em] text-[1.45rem] md:text-[1.8rem] leading-none pb-[0.14em] -mb-[0.14em] [text-shadow:0_6px_40px_rgba(6,4,14,0.5)]"
-          style={{ opacity: shown ? 1 : 0, transition: 'opacity 900ms ease', ...fades }}
+          className="fixed flex items-center justify-center font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] text-cream"
+          style={{
+            left: slots.title.left, top: slots.title.top, width: slots.title.width, height: slots.title.height, fontSize: slots.titleFont,
+            opacity: shown ? 1 : 0, transition: clearing ? 'opacity 400ms ease 300ms' : 'opacity 900ms ease',
+            ...(clearing ? { opacity: 0 } : null),
+          }}
         >
           Mayanov Tarot
         </div>
+      )}
 
-        <div className="mt-7 md:mt-8 w-full max-w-[34rem] flex items-center gap-4 md:gap-5 text-cream/85">
+      {/* the divider, its full moon where the hero's crescent will be */}
+      {slots && (
+        <div
+          className="fixed inset-x-0 px-8 flex justify-center text-cream/85"
+          style={{ top: slots.moonY, transform: 'translateY(-50%)', opacity: shown ? 1 : 0, transition: 'opacity 900ms ease' }}
+        >
+        <div className="w-full max-w-[34rem] flex items-center gap-4 md:gap-5" style={{ transform: `translateX(${(slots.moonX - window.innerWidth / 2).toFixed(1)}px)` }}>
           <div className="flex-1 min-w-0" style={{ clipPath: `inset(-8px 0 -8px ${(1 - rule) * 100}%)`, ...fades }}>
             <PencilRule fade="start" className="w-full text-cream/45" />
           </div>
@@ -285,7 +315,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
             <PencilRule fade="end" className="w-full text-cream/45" />
           </div>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

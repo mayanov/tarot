@@ -126,11 +126,9 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           <h1
             data-hero-title
             className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] text-cream"
-            style={{
-              opacity: shown ? 1 : 0,
-              transform: shown ? 'none' : 'translateY(14px)',
-              transition: `opacity 1.4s cubic-bezier(0.4,0,0.2,1) ${REVEAL_FLIGHT_MS - 850}ms, transform 1.8s ${EASE} ${REVEAL_FLIGHT_MS - 850}ms`,
-            }}
+            // shown at once when the loader hands over: its name is drawn right here,
+            // in the same type, so the title is already in place
+            style={{ opacity: shown ? 1 : 0 }}
           >
             Mayanov Tarot
           </h1>
