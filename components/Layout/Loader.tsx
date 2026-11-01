@@ -70,6 +70,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const slotRef = useRef<HTMLDivElement>(null);
   const [word, setWord] = useState<null | { left: number; top: number; width: number; height: number; fontSize: string; rest: string }>(null);
   const leavingRef = useRef(false);
+  const measureRef = useRef<() => void>(() => {});
   useLayoutEffect(() => {
     const measure = () => {
       if (leavingRef.current) return;
@@ -86,8 +87,10 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
         rest: `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${(WORDMARK_PX / fs).toFixed(4)})`,
       });
     };
+    measureRef.current = measure;
     measure();
     // web fonts can change the title's size after first paint — re-measure then too
+    // (and again just before the hand-off, in case anything moved the title since)
     (document as any).fonts?.ready?.then(measure);
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
@@ -192,7 +195,14 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   // ---- the hand-off: only once loading reached 100% and the full moon has settled ----
   useEffect(() => {
     if (stage !== 'moon') return;
+    let next = 0;
     const t = window.setTimeout(() => {
+      // re-measure the hero title where it is NOW, let that settle for a frame (the
+      // wordmark doesn't move: it's re-anchored, still scaled into its slot), then go
+      measureRef.current();
+      next = window.setTimeout(handOff, 40);
+    }, reduce ? 0 : SETTLE_MS);
+    const handOff = () => {
       // Aim the moon at the hero's crescent: the crescent's lit disc sits at
       // (41%, 50%) of its icon and spans 62.5% of its width (see CelestialMark).
       const from = moonRef.current?.getBoundingClientRect();
@@ -210,8 +220,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
       // tell the hero to play its entrance in step with the flight
       try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
       window.setTimeout(() => setGone(true), reduce ? 400 : REVEAL_TOTAL_MS);
-    }, reduce ? 0 : SETTLE_MS);
-    return () => clearTimeout(t);
+    };
+    return () => { clearTimeout(t); clearTimeout(next); };
   }, [stage, reduce]);
 
   if (gone) return null;
