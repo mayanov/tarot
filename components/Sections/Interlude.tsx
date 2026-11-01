@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import FadeIn from '../UI/FadeIn';
 import CelestialMark from '../UI/CelestialMark';
 import WatercolorSky, { MIDNIGHT } from '../Layout/WatercolorSky';
@@ -18,6 +18,96 @@ const QUESTIONS: { id: string; en: string; big?: boolean; y: number }[] = [
   { id: 'Gimana cara menghadapi keputusan ini?', en: 'How do I face this decision?', y: -8 },
   { id: 'Apa yang perlu aku lepaskan?', en: 'What do I need to let go of?', big: true, y: 4 },
 ];
+
+/**
+ * The questions as a constellation: each one hangs under its own star, and the stars
+ * along a row are joined in faint pencil, drawn in as the band comes into view (rows
+ * aren't joined to each other, so no line runs through the words). On a phone the
+ * questions stack, one star each, unjoined.
+ */
+const Constellation: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
+  const boxRef = useRef<HTMLUListElement>(null);
+  const starRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [lines, setLines] = useState<[number, number, number, number][]>([]);
+  const [drawn, setDrawn] = useState(false);
+
+  // join neighbouring stars that sit on the same row
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const measure = () => {
+      // laid-out positions (offsets, not the screen rect), so the fade-ins' own
+      // movement doesn't throw the lines off while they're still arriving
+      const pts = starRefs.current.map((el) => {
+        let x = el!.offsetWidth / 2, y = el!.offsetHeight / 2;
+        for (let n: HTMLElement | null = el; n && n !== box; n = n.offsetParent as HTMLElement | null) {
+          x += n.offsetLeft; y += n.offsetTop;
+        }
+        return { x, y };
+      });
+      const next: [number, number, number, number][] = [];
+      for (let i = 1; i < pts.length; i++) {
+        const a = pts[i - 1], c = pts[i];
+        if (Math.abs(a.y - c.y) < 40 && c.x > a.x) next.push([a.x, a.y, c.x, c.y]);
+      }
+      setLines(next);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(box);
+    document.fonts?.ready.then(measure);
+    return () => ro.disconnect();
+  }, [isIndonesian]);
+
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setDrawn(true); io.disconnect(); } }, { threshold: 0.35 });
+    io.observe(box);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <ul ref={boxRef} className="relative mt-10 md:mt-14 flex flex-col md:flex-row md:flex-wrap items-center justify-center gap-y-7 md:gap-y-12 md:gap-x-14">
+      {/* the lines between the stars, a little in from each so they don't touch it */}
+      <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full overflow-visible text-cream/30 [filter:url(#pencil-icon)]">
+        {lines.map(([x1, y1, x2, y2], i) => {
+          const len = Math.hypot(x2 - x1, y2 - y1), k = 14 / len;
+          return (
+            <line
+              key={i}
+              x1={x1 + (x2 - x1) * k} y1={y1 + (y2 - y1) * k}
+              x2={x2 - (x2 - x1) * k} y2={y2 - (y2 - y1) * k}
+              pathLength={1}
+              stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeDasharray="1"
+              style={{ strokeDashoffset: drawn ? 0 : 1, transition: `stroke-dashoffset 1400ms cubic-bezier(0.65,0,0.35,1) ${500 + i * 260}ms` }}
+            />
+          );
+        })}
+      </svg>
+      {QUESTIONS.map((q, i) => (
+        <li key={q.id} className="contents">
+          <FadeIn delay={120 + i * 110} dir="blur">
+            <span style={{ ['--y' as string]: `${q.y}px` }} className="relative flex flex-col items-center md:top-[var(--y)]">
+              <span ref={(el) => { starRefs.current[i] = el; }} className="relative mb-2.5">
+                <CelestialMark name="sparkle" className={`${q.big ? 'w-3.5 text-cream/85' : 'w-2.5 text-cream/55'} [filter:drop-shadow(0_0_6px_rgba(240,232,255,0.55))]`} />
+              </span>
+              <span
+                className={`block [text-wrap:balance] font-elegant italic leading-[1.2] tracking-[-0.01em] [text-shadow:0_3px_24px_rgba(6,4,14,0.5)] ${
+                  q.big
+                    ? 'text-cream text-[1.35rem] sm:text-[1.5rem] md:text-[1.75rem] lg:text-[2rem]'
+                    : 'text-cream/75 text-[1.15rem] sm:text-[1.3rem] md:text-[1.45rem] lg:text-[1.6rem]'
+                }`}
+              >
+                &ldquo;{isIndonesian ? q.id : q.en}&rdquo;
+              </span>
+            </span>
+          </FadeIn>
+        </li>
+      ))}
+    </ul>
+  );
+};
 
 /**
  * A break of night sky between the pricelist and "why Mayanov": for whoever's
@@ -48,25 +138,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
             </p>
           </FadeIn>
 
-          {/* the questions, one after another across the sky */}
-          <ul className="mt-10 md:mt-14 flex flex-col md:flex-row md:flex-wrap items-center justify-center gap-y-5 md:gap-y-9 md:gap-x-12">
-            {QUESTIONS.map((q, i) => (
-              <li key={q.id} className="contents">
-                <FadeIn delay={120 + i * 110} dir="blur">
-                  <span
-                    style={{ ['--y' as string]: `${q.y}px` }}
-                    className={`block [text-wrap:balance] md:[transform:translateY(var(--y))] font-elegant italic leading-[1.2] tracking-[-0.01em] [text-shadow:0_3px_24px_rgba(6,4,14,0.5)] ${
-                      q.big
-                        ? 'text-cream text-[1.35rem] sm:text-[1.5rem] md:text-[1.75rem] lg:text-[2rem]'
-                        : 'text-cream/75 text-[1.15rem] sm:text-[1.3rem] md:text-[1.45rem] lg:text-[1.6rem]'
-                    }`}
-                  >
-                    &ldquo;{isIndonesian ? q.id : q.en}&rdquo;
-                  </span>
-                </FadeIn>
-              </li>
-            ))}
-          </ul>
+          <Constellation isIndonesian={isIndonesian} />
 
           {/* and if none of those fit: just come and talk, signed by hand */}
           <FadeIn delay={200} className="mt-12 md:mt-16 flex flex-col items-center">
