@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
-import Background from './Background';
+import { TornPaper } from '../UI/PaperEdge';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -13,15 +13,14 @@ interface LoaderProps {
 // loads, a tarot card is drawn onto it in pencil, stroke by stroke as the loading
 // progresses: the card's edges ruled in, a crescent moon outlined and hatched in
 // coloured pencil, a few stars, the moon phases along its foot, and the name pressed
-// in last. Once everything is in, a drop of the night sky's paint lands on the
-// crescent and blooms out across the wet paper, its edge feathering and wandering
-// as watercolour does, until the whole sheet is the night sky: the hero.
+// in last. A pencil is seen doing it: its point follows each line as it's drawn, it
+// moves across to the next, and once the name is in it's set down off the sheet. Once everything is in, the sheet is lifted off upward, its torn bottom edge
+// and soft shadow passing over the night sky, uncovering the hero, the same gesture
+// as the About sheet sliding over the sky when the page scrolls.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
-const DROP_MS = 420;    // the drop lands on the crescent and soaks in a little
-const BLOOM_MS = 1700;  // the paint blooms out across the sheet
-// when the hero starts its entrance, counted from mt:reveal (fired as the bloom starts)
-export const REVEAL_FLIGHT_MS = 1150;
+export const REVEAL_FLIGHT_MS = 700;  // the sheet has cleared the middle of the screen
+const LIFT_MS = 1150;                 // the sheet is off the screen
 // Scrolling stays locked until the hero's entrance (and the About sheet rising under
 // it) has finished, so an early scroll can't catch the page mid-animation.
 const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
@@ -29,7 +28,7 @@ const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
 // Loading is REAL: progress comes from the work the page actually waits on.
 const TASKS = ['fonts', 'paper', 'app', 'page'] as const;
 const MIN_CLIMB_MS = 2600;    // even on a fast connection the drawing takes this long to draw
-const SETTLE_MS = 450;        // the finished drawing holds a beat before the paint drops
+const SETTLE_MS = 450;        // the finished drawing holds a beat before the sheet lifts
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
 
@@ -86,22 +85,66 @@ const DrawnPhase: React.FC<{ p: number; waning?: boolean; x: number; y: number; 
   );
 };
 
+// the pencil, lying along +x with its point at the origin: a graphite point, the
+// sharpened wood, a lacquered hexagonal body (its facets as two ruled lines), a
+// ferrule and an eraser; drawn in the same graphite line as the card
+const PENCIL_ANGLE = -62; // the hand holds it pointing down and to the left
+const Pencil: React.FC = () => (
+  <g strokeLinejoin="round">
+    <path d="M0 0 L6 -1.5 L6 1.5 Z" fill="#221D3C" />
+    <path d="M6 -1.5 L18 -4.2 L18 4.2 L6 1.5 Z" fill="#E7D9BC" stroke="#221D3C" strokeWidth={0.45} strokeOpacity={0.7} />
+    <path d="M18 -4.2 L92 -4.2 L92 4.2 L18 4.2 Z" fill="#4A2D63" stroke="#221D3C" strokeWidth={0.45} />
+    <path d="M18 -1.4 L92 -1.4 M18 1.4 L92 1.4" stroke="#F3F1EC" strokeOpacity={0.22} strokeWidth={0.5} />
+    <path d="M92 -4.4 L101 -4.4 L101 4.4 L92 4.4 Z" fill="#B9B2A4" stroke="#221D3C" strokeWidth={0.45} />
+    <path d="M95 -4.4 L95 4.4 M98 -4.4 L98 4.4" stroke="#221D3C" strokeOpacity={0.4} strokeWidth={0.4} />
+    <path d="M101 -4.2 L107 -4.2 Q110 -4.2 110 -1.5 L110 1.5 Q110 4.2 107 4.2 L101 4.2 Z" fill="#D9A3A0" stroke="#221D3C" strokeWidth={0.45} />
+  </g>
+);
+
 const CardDrawing: React.FC<{ progress: number; className?: string }> = ({ progress, className = '' }) => {
   const id = React.useId().replace(/:/g, '');
+  const pathRefs = useRef<(SVGPathElement | null)[]>([]);
+  const pencilRef = useRef<SVGGElement>(null);
   let at = progress * TOTAL_W; // how far along the drawing the hand has got
   const take = (w: number) => { const v = Math.max(0, Math.min(1, at / w)); at -= w; return v; };
   const strokes = STROKES.map((s) => ({ ...s, t: take(s.w) }));
   const phases = PHASES.map((ph) => ({ ...ph, t: take(PHASE_W) }));
   const named = Math.max(0, Math.min(1, progress * 6 - 5)); // the name presses in over the last sixth
+
+  // where the pencil's point is: the end of the line being drawn, or round the moon
+  // being outlined; once the drawing's done it's lifted away down to the right
+  useLayoutEffect(() => {
+    const g = pencilRef.current;
+    if (!g) return;
+    let x = 100, y = 160;
+    const i = strokes.findIndex((s) => s.t < 1);
+    const j = phases.findIndex((ph) => ph.t < 1);
+    const el = i >= 0 ? pathRefs.current[i] : null;
+    if (el) {
+      const pt = el.getPointAtLength(el.getTotalLength() * strokes[i].t);
+      x = pt.x; y = pt.y;
+    } else if (j >= 0) {
+      const ph = phases[j], r = ph.p === 1 ? 4.6 : 3.6;
+      const a = -Math.PI / 2 + Math.min(1, ph.t / 0.6) * Math.PI * 2 * (ph.waning ? -1 : 1);
+      x = 64 + j * 12 + r * Math.cos(a); y = 268 + r * Math.sin(a);
+    }
+    const away = i < 0 && j < 0;
+    if (away) { x = 250; y = 340; }
+    g.style.transform = `translate(${x}px, ${y}px) rotate(${PENCIL_ANGLE}deg)`;
+    g.style.transition = away ? 'transform 700ms cubic-bezier(0.3, 0, 0.2, 1), opacity 500ms ease 150ms' : 'transform 90ms linear';
+    g.style.opacity = away ? '0' : '1';
+  });
   return (
     <svg viewBox="0 0 200 320" className={`overflow-visible ${className}`} fill="none" strokeLinecap="round" strokeLinejoin="round">
       <defs>
         <clipPath id={`${id}c`}><path d={CRESCENT} /></clipPath>
       </defs>
       <g style={{ filter: 'url(#pencil-icon)' }}>
-        {strokes.map((s, i) => s.t > 0 && (
+        {strokes.map((s, i) => (
           <path
             key={i}
+            ref={(el) => { pathRefs.current[i] = el; }}
+            visibility={s.t > 0 ? undefined : 'hidden'}
             d={s.d}
             pathLength={1}
             strokeDasharray="1"
@@ -125,45 +168,14 @@ const CardDrawing: React.FC<{ progress: number; className?: string }> = ({ progr
       >
         Mayanov Tarot
       </text>
+      {/* the pencil, its shadow falling on the paper below and to the right */}
+      <g ref={pencilRef}>
+        <g transform="translate(5 7)" opacity={0.16} style={{ filter: 'blur(2.2px)' }}><Pencil /></g>
+        <Pencil />
+      </g>
     </svg>
   );
 };
-
-// ---- the paint ----
-// A blot of watercolour: a disc pushed about by broad and then fine noise (a wandering,
-// lobed edge that frays into the paper's fibres), softly feathered. Painted once into
-// a picture so it can be grown as a mask without its filters being worked out again.
-const BLOT_A = 3, BLOT_B = 11, BLOT_C = 23;
-// each blot: its size as it lands (px) and once spread (× the screen's longer side),
-// and where it sits from the drop
-const BLOT_LAYERS = [
-  { drop: 46, spread: 4.6, dx: 0, dy: 0 },
-  { drop: 30, spread: 3.4, dx: 0.12, dy: 0.22 },
-  { drop: 22, spread: 3, dx: -0.2, dy: -0.12 },
-];
-const paintBlot = (seed: number) => new Promise<string>((resolve) => {
-  const S = 512;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}">` +
-    `<filter id="f" x="-30%" y="-30%" width="160%" height="160%">` +
-    `<feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="2" seed="${seed}" result="n"/>` +
-    `<feDisplacementMap in="SourceGraphic" in2="n" scale="150" xChannelSelector="R" yChannelSelector="G" result="d"/>` +
-    `<feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="${seed + 1}" result="m"/>` +
-    `<feDisplacementMap in="d" in2="m" scale="14" xChannelSelector="R" yChannelSelector="G" result="e"/>` +
-    `<feGaussianBlur in="e" stdDeviation="2.2"/>` +
-    `</filter><circle cx="${S / 2}" cy="${S / 2}" r="${S * 0.3}" fill="#000" filter="url(#f)"/></svg>`;
-  const src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-  const img = new Image();
-  img.onload = () => {
-    try {
-      const c = document.createElement('canvas');
-      c.width = c.height = S;
-      c.getContext('2d')!.drawImage(img, 0, 0);
-      c.toBlob((b) => resolve(b ? URL.createObjectURL(b) : src), 'image/png');
-    } catch { resolve(src); }
-  };
-  img.onerror = () => resolve(src);
-  img.src = src;
-});
 
 const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -171,7 +183,6 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   const [complete, setComplete] = useState(false);
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [leaving, setLeaving] = useState(false);
-  const [phase, setPhase] = useState<'draw' | 'drop' | 'bloom'>('draw');
   const [gone, setGone] = useState(false);
   const [unlocked, setUnlocked] = useState(false); // page may scroll again
 
@@ -269,46 +280,19 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
     return () => clearInterval(iv);
   }, [reduce]);
 
-  // ---- the hand-off: the night sky blooms out from the crescent ----
-  // The sky above is the hero's own (the same Background), shown through a mask of a
-  // few watercolour blots (painted once into pictures: soft, wandering edges) that
-  // drop onto the crescent and spread until they cover the screen.
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [blots, setBlots] = useState<string[] | null>(null);
-  const [drop, setDrop] = useState<{ x: number; y: number } | null>(null);
+  // ---- the hand-off: the finished drawing holds a beat, then the sheet is lifted off ----
   useEffect(() => {
-    if (reduce) return;
-    let live = true;
-    Promise.all([BLOT_A, BLOT_B, BLOT_C].map(paintBlot)).then((b) => { if (live) setBlots(b); });
-    return () => { live = false; };
-  }, [reduce]);
-  useEffect(() => {
-    if (!complete || (!reduce && !blots)) return;
-    const timers: number[] = [];
-    const at = (ms: number, f: () => void) => timers.push(window.setTimeout(f, ms));
-    at(reduce ? 0 : SETTLE_MS, () => {
-      if (reduce) {
-        setLeaving(true);
-        window.dispatchEvent(new CustomEvent('mt:reveal'));
-        at(400, () => setGone(true));
-        return;
-      }
-      // the drop falls on the crescent (it sits at 44%, 44% of the card)
-      const r = cardRef.current?.getBoundingClientRect();
-      setDrop(r ? { x: r.left + r.width * 0.44, y: r.top + r.height * 0.44 } : { x: window.innerWidth / 2, y: window.innerHeight / 2 });
-      at(30, () => setPhase('drop'));
-      at(30 + DROP_MS, () => {
-        setPhase('bloom');
-        setLeaving(true);
-        // tell the hero to play its entrance as the sky spreads
-        window.dispatchEvent(new CustomEvent('mt:reveal'));
-      });
-      at(30 + DROP_MS + BLOOM_MS + 60, () => setGone(true));
-    });
-    return () => timers.forEach(clearTimeout);
-  }, [complete, reduce, blots]);
+    if (!complete) return;
+    const t = window.setTimeout(() => {
+      setLeaving(true);
+      // tell the hero to play its entrance as the sheet uncovers it
+      try { window.dispatchEvent(new CustomEvent('mt:reveal')); } catch { /* noop */ }
+      window.setTimeout(() => setGone(true), reduce ? 400 : LIFT_MS + 50);
+    }, reduce ? 0 : SETTLE_MS);
+    return () => clearTimeout(t);
+  }, [complete, reduce]);
 
-  // the page under the sheet shows the paper's colour until the sky has spread (index.html
+  // the page under the sheet shows the paper's colour until the sheet is up (index.html
   // sets html.booting, so the first frame before React isn't the night sky)
   useEffect(() => {
     if (leaving) document.documentElement.classList.remove('booting');
@@ -316,53 +300,32 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
 
   if (gone) return null;
 
-  // the blots: [size, offset from the drop] for each, as it lands and once spread
-  const spread = phase === 'bloom';
-  const vmax = Math.max(window.innerWidth, window.innerHeight);
-  const layers = BLOT_LAYERS.map((l) => {
-    const size = phase === 'draw' ? 0 : spread ? l.spread * vmax : l.drop;
-    const dx = spread ? l.dx * vmax : l.dx * l.drop, dy = spread ? l.dy * vmax : l.dy * l.drop;
-    return { size, x: (drop?.x ?? 0) + dx - size / 2, y: (drop?.y ?? 0) + dy - size / 2 };
-  });
-  const maskStyle: React.CSSProperties = blots ? {
-    WebkitMaskImage: blots.map((b) => `url(${b})`).join(', '),
-    maskImage: blots.map((b) => `url(${b})`).join(', '),
-    WebkitMaskRepeat: 'no-repeat',
-    maskRepeat: 'no-repeat',
-    WebkitMaskSize: layers.map((l) => `${l.size}px ${l.size}px`).join(', '),
-    maskSize: layers.map((l) => `${l.size}px ${l.size}px`).join(', '),
-    WebkitMaskPosition: layers.map((l) => `${l.x}px ${l.y}px`).join(', '),
-    maskPosition: layers.map((l) => `${l.x}px ${l.y}px`).join(', '),
-    transition: phase === 'drop'
-      ? `-webkit-mask-size ${DROP_MS}ms cubic-bezier(0.2, 0.8, 0.3, 1), mask-size ${DROP_MS}ms cubic-bezier(0.2, 0.8, 0.3, 1), -webkit-mask-position ${DROP_MS}ms cubic-bezier(0.2, 0.8, 0.3, 1), mask-position ${DROP_MS}ms cubic-bezier(0.2, 0.8, 0.3, 1)`
-      : spread
-        ? `-webkit-mask-size ${BLOOM_MS}ms cubic-bezier(0.55, 0.05, 0.35, 1), mask-size ${BLOOM_MS}ms cubic-bezier(0.55, 0.05, 0.35, 1), -webkit-mask-position ${BLOOM_MS}ms cubic-bezier(0.55, 0.05, 0.35, 1), mask-position ${BLOOM_MS}ms cubic-bezier(0.55, 0.05, 0.35, 1)`
-        : undefined,
-  } : {};
-
+  const lift = leaving && !reduce;
   return (
     <div
       aria-hidden
-      className="fixed inset-0 z-[200] bg-paper"
+      className="fixed inset-x-0 top-0 -bottom-12 z-[200] will-change-transform"
       style={{
         pointerEvents: leaving ? 'none' : undefined,
+        transform: lift ? 'translate3d(0, calc(-100% - 40px), 0) rotate(-0.6deg)' : 'none',
+        transformOrigin: '30% 100%',
         opacity: leaving && reduce ? 0 : 1,
-        transition: reduce ? 'opacity 380ms ease' : undefined,
+        transition: lift
+          ? `transform ${LIFT_MS}ms cubic-bezier(0.6, 0, 0.25, 1)`
+          : leaving ? 'opacity 380ms ease' : undefined,
       }}
     >
-      {/* the card, drawn on the sheet */}
-      <div className="absolute inset-0 grid place-items-center px-8">
-        <div ref={cardRef}>
-          <CardDrawing progress={pct / 100} className="block h-[min(58vh,26rem)] w-auto" />
-        </div>
-      </div>
+      {/* the sheet's soft shadow on the sky just under its torn edge, then the sheet */}
+      <div className="absolute inset-x-0 -bottom-3 h-16 [filter:blur(7px)]" style={{ background: 'rgba(6,4,20,0.45)', opacity: lift ? 1 : 0, transition: 'opacity 300ms ease' }} />
+      <TornPaper edge="bottom" />
 
-      {/* the night sky's paint, blooming out from the drop */}
-      {blots && drop && (
-        <div className="absolute inset-0" style={maskStyle}>
-          <Background />
-        </div>
-      )}
+      {/* the drawing, in the middle of the screen (the sheet runs 3rem past its bottom) */}
+      <div className="absolute inset-x-0 top-0 h-[calc(100%-3rem)] grid place-items-center px-8">
+        <CardDrawing
+          progress={pct / 100}
+          className="h-[min(58vh,26rem)] w-auto"
+        />
+      </div>
     </div>
   );
 };
