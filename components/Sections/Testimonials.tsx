@@ -273,9 +273,11 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                 <p className="letterpress-lg font-elegant text-ink text-[1.3rem] md:text-[1.9rem] leading-[1.42] tracking-[-0.005em]">
                   {r.text}
                 </p>
-                <footer className="letterpress mt-8 md:mt-10 font-elegant italic text-ink/75 text-base md:text-lg">
-                  <span className="not-italic text-moon mr-2">&mdash;</span>{r.author}
-                  <span className="not-italic text-ink/40 text-[0.78rem] ml-2 tracking-wide align-middle">· {r.location}</span>
+                {/* signed by hand, in the same script as Mayanov's signature in About */}
+                <footer className="mt-6 md:mt-8 flex items-center justify-center gap-3 font-elegant">
+                  <span className="letterpress text-moon">&mdash;</span>
+                  <span className="letterpress-lg inline-block py-[0.3em] -my-[0.3em] px-2 -mx-2 font-signature text-moon text-[2.2rem] md:text-[2.6rem] leading-none">{r.author}</span>
+                  <span className="letterpress text-ink/40 text-[0.78rem] tracking-wide">· {r.location}</span>
                 </footer>
               </blockquote>
             );
