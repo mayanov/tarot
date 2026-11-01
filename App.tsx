@@ -355,9 +355,9 @@ function App() {
       // painted button to try again
       <div className="min-h-screen flex flex-col items-center justify-center bg-paper text-ink px-6 text-center">
         <CelestialMark name="crescent" className="print-ink w-12 text-moon/80" />
-        <h2 className="print-text mt-5 font-elegant font-semibold text-ink text-[2rem] leading-tight tracking-[-0.01em]">Something went wrong</h2>
+        <h2 className="letterpress-lg mt-5 font-elegant font-semibold text-ink text-[2rem] leading-tight tracking-[-0.01em]">Something went wrong</h2>
         <PencilRule collapse={false} className="mt-3 w-14 text-moon/50" />
-        <p className="print-body mt-3 max-w-sm text-ink/65 leading-relaxed">
+        <p className="letterpress mt-3 max-w-sm text-ink/65 leading-relaxed">
           We couldn't load the page. Please check your connection and try again.
         </p>
         <button onClick={performLocationCheck} className={`${btnPrimaryLight} inline-flex mt-7 px-7 py-3 text-[1.05rem]`}>

@@ -149,12 +149,12 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
       <div className="mx-auto px-8">
         <FadeIn dir="blur" duration={1.15}>
           <div className="text-center">
-            <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+            <h2 className="letterpress-lg pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
               {isIndonesian ? 'Sering ditanyakan' : 'Frequently asked'}
             </h2>
 
             {/* category filter — a quiet row of words, the active one in purple italic */}
-            <p className="print-body mt-6 md:mt-8 text-[0.95rem] md:text-base text-ink/50 font-light">
+            <p className="letterpress mt-6 md:mt-8 text-[0.95rem] md:text-base text-ink/50 font-light">
               {categories.map((cat, ci) => {
                 const active = showAll ? cat === allLabel : cat === activeCat;
                 return (
@@ -190,10 +190,10 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                     aria-expanded={open}
                     className="group w-full grid grid-cols-[2rem_1fr_auto] md:grid-cols-[2.75rem_1fr_auto] items-baseline gap-x-3 md:gap-x-5 py-4 md:py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-moon/40 rounded-sm"
                   >
-                    <span aria-hidden className={`print-body font-elegant italic text-sm tabular-nums transition-colors duration-300 ${open ? 'text-moon' : 'text-ink/35'}`}>
+                    <span aria-hidden className={`letterpress font-elegant italic text-sm tabular-nums transition-colors duration-300 ${open ? 'text-moon' : 'text-ink/35'}`}>
                       {String(index + 1).padStart(2, '0')}
                     </span>
-                    <span className={`print-text font-elegant font-medium text-[1.1rem] md:text-[1.3rem] leading-snug tracking-[-0.01em] transition-[color,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'text-moon' : 'text-ink group-hover:translate-x-1.5 group-hover:text-moon'}`}>
+                    <span className={`letterpress font-elegant font-medium text-[1.1rem] md:text-[1.3rem] leading-snug tracking-[-0.01em] transition-[color,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'text-moon' : 'text-ink group-hover:translate-x-1.5 group-hover:text-moon'}`}>
                       {faq.question}
                     </span>
                     {/* a bare + that turns into × when open — no container */}
@@ -205,7 +205,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
                   <div className={`lg:hidden grid transition-all duration-500 ease-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                     <div className="overflow-hidden">
                       {/* the answer lines up under the question text, in a narrower column */}
-                      <p className="print-body pb-6 md:pb-7 pl-[2.75rem] md:pl-[4rem] pr-10 max-w-3xl text-ink/65 text-[0.95rem] md:text-base leading-[1.75] whitespace-pre-line font-light">
+                      <p className="letterpress pb-6 md:pb-7 pl-[2.75rem] md:pl-[4rem] pr-10 max-w-3xl text-ink/65 text-[0.95rem] md:text-base leading-[1.75] whitespace-pre-line font-light">
                         {faq.answer}
                       </p>
                     </div>
@@ -222,11 +222,11 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
           <div className="mb-6"><PencilRule weight="fine" className="text-ink/30" /></div>
           {current && (
             <div key={current.question} className="animate-[faqIn_500ms_cubic-bezier(0.16,1,0.3,1)]">
-              <p className="print-body font-elegant italic text-sm tabular-nums text-moon">{String(currentNo).padStart(2, '0')}</p>
-              <h3 className="print-text mt-2 font-elegant font-semibold text-ink text-[1.6rem] xl:text-[1.9rem] leading-[1.2] tracking-[-0.015em]">
+              <p className="letterpress font-elegant italic text-sm tabular-nums text-moon">{String(currentNo).padStart(2, '0')}</p>
+              <h3 className="letterpress-lg mt-2 font-elegant font-semibold text-ink text-[1.6rem] xl:text-[1.9rem] leading-[1.2] tracking-[-0.015em]">
                 {current.question}
               </h3>
-              <p className="print-body mt-5 text-ink/65 text-base leading-[1.8] whitespace-pre-line font-light">
+              <p className="letterpress mt-5 text-ink/65 text-base leading-[1.8] whitespace-pre-line font-light">
                 {current.answer}
               </p>
             </div>
@@ -237,7 +237,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
         {/* closing — ask directly */}
         <FadeIn dir="up">
           <div className="mt-16 md:mt-20 text-center">
-            <p className="print-text font-elegant italic text-ink/60 text-xl md:text-2xl">
+            <p className="letterpress-lg font-elegant italic text-ink/60 text-xl md:text-2xl">
               {isIndonesian ? 'Masih penasaran?' : 'Still curious?'}
             </p>
             <a
@@ -246,7 +246,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               rel="noopener noreferrer"
               className="group mt-3 inline-flex items-center gap-3 font-elegant font-semibold text-ink text-[1.8rem] md:text-[2.6rem] leading-tight tracking-[-0.02em] hover:text-moon transition-colors duration-300"
             >
-              <span className="print-text pb-[0.14em] -mb-[0.14em]">{isIndonesian ? 'Tanya langsung via WhatsApp' : 'Ask me on WhatsApp'}</span>
+              <span className="letterpress pb-[0.14em] -mb-[0.14em]">{isIndonesian ? 'Tanya langsung via WhatsApp' : 'Ask me on WhatsApp'}</span>
               <ArrowUpRight className="[filter:url(#pencil-icon)] w-7 h-7 md:w-9 md:h-9 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1" strokeWidth={1.5} />
             </a>
           </div>

@@ -61,7 +61,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
 
                     <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pb-5">
                         {/* the title carries the weight: large, in the brand purple */}
-                        <h2 className="print-text pb-[0.14em] -mb-[0.14em] flex items-center gap-3 font-elegant font-bold text-moon text-[2.2rem] sm:text-[2.6rem] md:text-[3.1rem] leading-none tracking-[-0.02em]">
+                        <h2 className="letterpress-lg pb-[0.14em] -mb-[0.14em] flex items-center gap-3 font-elegant font-bold text-moon text-[2.2rem] sm:text-[2.6rem] md:text-[3.1rem] leading-none tracking-[-0.02em]">
                             <CelestialMark name="sparkle" className="print-ink w-6 md:w-8 text-moon" />
                             Disclaimer
                         </h2>
@@ -78,7 +78,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                     {/* dividers drawn in pencil on the paper, not CSS borders */}
                     <PencilRule collapse={false} className="text-moon/70" />
 
-                    <div className="print-body mt-6 md:columns-2 md:gap-12">
+                    <div className="letterpress mt-6 md:columns-2 md:gap-12">
                         {items.map((it, index) => (
                             <p key={index} className="mb-4 break-inside-avoid text-[0.9rem] md:text-[0.95rem] leading-[1.7] text-ink/65 font-light">
                                 <span className="font-medium text-ink">{it.label}.</span> {it.text}
@@ -87,7 +87,7 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                     </div>
 
                     <PencilRule collapse={false} className="mt-2 text-moon/70" />
-                    <p className="print-text mt-4 font-elegant italic font-medium text-moon text-[1rem] md:text-[1.05rem]">
+                    <p className="letterpress mt-4 font-elegant italic font-medium text-moon text-[1rem] md:text-[1.05rem]">
                         {agreement}
                     </p>
                 </div>

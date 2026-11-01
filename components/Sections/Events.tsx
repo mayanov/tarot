@@ -58,7 +58,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               marooned up in the purple band */}
           <FadeIn>
             <div className="mb-6 md:mb-8 max-w-3xl">
-              <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+              <h2 className="letterpress-lg pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                 <MaskReveal>{isIndonesian ? "Event & collaboration" : "Community & events"}</MaskReveal>
               </h2>
             </div>
@@ -70,7 +70,7 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                 <PencilRule className="text-ink/30" />
                 <div className="grid md:grid-cols-[7rem_1fr] gap-y-3 md:gap-x-12 md:items-start pt-4 md:pt-5 pb-4 md:pb-5">
                   {/* year marker */}
-                  <div className="print-text pb-[0.14em] -mb-[0.14em] font-elegant italic text-moon text-2xl md:text-[1.9rem] leading-none tracking-tight md:pt-1.5">
+                  <div className="letterpress-lg pb-[0.14em] -mb-[0.14em] font-elegant italic text-moon text-2xl md:text-[1.9rem] leading-none tracking-tight md:pt-1.5">
                     {grp.year}
                   </div>
                   {/* that year's events */}
@@ -81,10 +81,10 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
                         className="group relative flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-x-6 gap-y-0.5 py-2 first:pt-0"
                       >
                         {ii > 0 && <PencilRule weight="fine" className="absolute inset-x-0 top-0 text-ink/25" />}
-                        <h3 className="print-body font-serif font-medium text-ink text-sm md:text-base leading-[1.25] transition-colors duration-500 group-hover:text-moon">
+                        <h3 className="letterpress font-serif font-medium text-ink text-sm md:text-base leading-[1.25] transition-colors duration-500 group-hover:text-moon">
                           {event.title}
                         </h3>
-                        <span className="print-body shrink-0 text-[0.8rem] md:text-[0.85rem] tracking-[0.01em] text-moon font-medium leading-snug sm:text-right">
+                        <span className="letterpress shrink-0 text-[0.8rem] md:text-[0.85rem] tracking-[0.01em] text-moon font-medium leading-snug sm:text-right">
                           {event.loc}
                         </span>
                       </li>

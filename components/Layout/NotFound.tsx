@@ -22,12 +22,12 @@ const NotFound: React.FC<NotFoundProps> = ({ isIndonesian = false }) => {
                     <CelestialMark name="crescent" className="print-ink w-14 text-moon/80" />
                     <span className="print-ink mt-4 font-elegant italic text-ink/45 tracking-[0.2em]">404</span>
 
-                    <h1 className="print-text mt-3 font-elegant font-semibold text-ink text-[2.4rem] md:text-[3rem] leading-[1.05] tracking-[-0.02em]">
+                    <h1 className="letterpress-lg mt-3 font-elegant font-semibold text-ink text-[2.4rem] md:text-[3rem] leading-[1.05] tracking-[-0.02em]">
                         {isIndonesian ? 'Halaman tidak ditemukan' : 'Page not found'}
                     </h1>
                     <PencilRule collapse={false} className="mt-4 w-16 text-moon/50" />
 
-                    <p className="print-body mt-4 text-ink/65 text-[17px] leading-relaxed">
+                    <p className="letterpress mt-4 text-ink/65 text-[17px] leading-relaxed">
                         {isIndonesian
                             ? 'Maaf, halaman yang kamu cari tidak ada atau sudah dipindahkan.'
                             : "Sorry, the page you're looking for doesn't exist or has moved."}

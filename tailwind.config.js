@@ -33,7 +33,8 @@ export default {
         // --- The one light surface for the whole public site ---
         cream: '#F3F1EC',
         paper: '#F3F1EC',
-        ink: '#000000',
+        // printing ink: a flat deep blue-black, never screen black (.letterpress)
+        ink: '#221D3C',
         // --- 404 page / dev-mode indicator only (not public palette) ---
         terracotta: '#F19F58',
         'terracotta-dark': '#DA8636',

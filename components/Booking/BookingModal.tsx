@@ -343,8 +343,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
       <div className="min-w-0">
         {totalPrice && (
           <>
-            <span className="block text-[11px] text-ink/50 leading-none">Total</span>
-            <span className="block mt-1 font-serif font-semibold text-lg text-ink leading-none tabular-nums">{totalPrice}</span>
+            <span className="letterpress block text-[11px] text-ink/50 leading-none">Total</span>
+            <span className="letterpress block mt-1 font-serif font-semibold text-lg text-ink leading-none tabular-nums">{totalPrice}</span>
           </>
         )}
       </div>
@@ -359,8 +359,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     <>
       {rule}
       <div className="flex items-start justify-between gap-4 py-2.5">
-        <span className="text-sm text-ink/55">{k}</span>
-        <span className="text-sm text-ink font-medium text-right break-words">{v}</span>
+        <span className="letterpress text-sm text-ink/55">{k}</span>
+        <span className="letterpress text-sm text-ink font-medium text-right break-words">{v}</span>
       </div>
     </>
   );
@@ -404,8 +404,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
         <div className="relative isolate mt-4 flex items-center justify-between gap-4 px-4 py-3.5">
           <PencilFrame className="text-ink/30" />
           <div className="min-w-0">
-            <div className="text-xs text-ink/55">{PAYMENT.bankName} · a.n. {PAYMENT.accountHolder}</div>
-            <div className="mt-1 font-serif font-semibold text-lg text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
+            <div className="letterpress text-xs text-ink/55">{PAYMENT.bankName} · a.n. {PAYMENT.accountHolder}</div>
+            <div className="letterpress mt-1 font-serif font-semibold text-lg text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
           </div>
           <button type="button" onClick={copyAccount} className="group/copy relative isolate shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-ink hover:text-moon transition-colors">
             <MarkerFrame className="text-ink/45 transition-colors group-hover/copy:text-moon/80" />
@@ -467,7 +467,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   <ArrowLeft className="w-5 h-5" />
                 </button>
               )}
-              <div className="font-serif font-semibold text-ink text-[1.2rem] md:text-[1.3rem] leading-tight truncate">
+              <div className="letterpress font-serif font-semibold text-ink text-[1.2rem] md:text-[1.3rem] leading-tight truncate">
                 {step === 0 ? t('Pilih layanan', 'Choose a service') : (service?.name ?? t('Booking Sesi', 'Book a Session'))}
               </div>
             </div>
@@ -509,8 +509,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                       <CelestialMark name={look?.mark || 'star'} className="w-5 text-cream" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block font-serif font-semibold text-[1.05rem] text-ink group-hover:text-moon transition-colors leading-tight">{s.name}</span>
-                      <span className="block mt-1 text-[13px] text-ink/55 leading-snug">{s.meta}</span>
+                      <span className="letterpress block font-serif font-semibold text-[1.05rem] text-ink group-hover:text-moon transition-colors leading-tight">{s.name}</span>
+                      <span className="letterpress block mt-1 text-[13px] text-ink/55 leading-snug">{s.meta}</span>
                     </span>
                     <span className="shrink-0 text-right">
                       <span className="block text-[11px] text-ink/45 leading-none">{s.packages?.length ? t('mulai', 'from') : ' '}</span>

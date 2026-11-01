@@ -154,10 +154,10 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                             <CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className={`print-ink ${tight ? 'w-6' : big ? 'w-9' : 'w-7'}`} />
                         </div>
                         {!tight && <span className={`relative block text-center font-elegant italic tracking-[0.15em] ${big ? 'text-[13px]' : 'text-[11px]'}`} style={{ color: accent }}>{numeral}</span>}
-                        <h3 className={`relative mt-0.5 text-center font-elegant font-semibold leading-tight ${tight ? 'text-[1.15rem]' : big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
-                        {g.blurb && <p className={`relative mt-1 text-center text-ink/55 font-light leading-snug ${tight ? 'text-[12px]' : big ? 'text-[14px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
+                        <h3 className={`letterpress relative mt-0.5 text-center font-elegant font-semibold leading-tight ${tight ? 'text-[1.15rem]' : big ? 'text-[1.45rem]' : 'text-[1.08rem]'}`}>{g.type}</h3>
+                        {g.blurb && <p className={`letterpress relative mt-1 text-center text-ink/55 font-light leading-snug ${tight ? 'text-[12px]' : big ? 'text-[14px]' : 'text-[10.5px] line-clamp-2'}`}>{g.blurb}</p>}
 
-                        <div className={`relative flex-1 min-h-0 overflow-y-auto ${tight ? 'mt-3' : big ? 'mt-4' : 'mt-3'}`}>
+                        <div className={`letterpress relative flex-1 min-h-0 overflow-y-auto ${tight ? 'mt-3' : big ? 'mt-4' : 'mt-3'}`}>
                             <ul className={tight ? 'space-y-2' : big ? 'space-y-3' : 'space-y-2.5'}>
                                 {g.offers.map((o: any, oi: number) => (
                                     <li key={oi} style={{ borderColor: `${accent}26` }} className={`border-t first:border-t-0 ${tight ? 'pt-2' : 'pt-2.5'} first:pt-0 flex items-baseline justify-between gap-3`}>
@@ -965,7 +965,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
             <div className="mx-auto px-8 pt-14 md:pt-20 pb-6 md:pb-10">
                 <FadeIn>
                     {/* centred over the spread, no subtitle — the cards say the rest */}
-                    <h2 className="print-text pb-[0.14em] -mb-[0.14em] text-center font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
+                    <h2 className="letterpress-lg pb-[0.14em] -mb-[0.14em] text-center font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em]">
                         {isIndonesian ? 'Pilih layanan tarotmu' : 'Ways we can work together'}
                     </h2>
                 </FadeIn>

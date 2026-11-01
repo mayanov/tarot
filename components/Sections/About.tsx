@@ -217,7 +217,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             {/* signed by hand (a script face, loaded for just these letters), printed in plum */}
             <figcaption className="mt-4 flex items-center gap-3 text-moon">
               <PencilRule fade="start" className="w-6 text-moon/60" />
-              <span className="print-body inline-block py-[0.3em] -my-[0.3em] pr-3 font-signature text-[2.5rem] md:text-[2.9rem] leading-none">Mayanov</span>
+              <span className="letterpress-lg inline-block py-[0.3em] -my-[0.3em] pr-3 font-signature text-[2.5rem] md:text-[2.9rem] leading-none">Mayanov</span>
             </figcaption>
           </figure>
 
