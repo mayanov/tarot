@@ -176,24 +176,24 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
 
         <FadeIn dir="left" className="w-full pt-12 md:pt-14 lg:pt-0">
           {/* hook title */}
-          <h2 className="print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
+          <h2 className="marker-ink print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-marker/90 text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>
               {isIndonesian ? 'Perkenalkan, saya Mayanov' : 'Meet Mayanov'}
             </MaskReveal>
           </h2>
 
-          <div lang={isIndonesian ? 'id' : 'en'} className="print-body mt-7 md:mt-9 space-y-5 text-justify hyphens-auto">
-            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-ink first-letter:text-[3.4rem] first-letter:leading-[0.72]">
+          <div lang={isIndonesian ? 'id' : 'en'} className="marker-ink print-body mt-7 md:mt-9 space-y-5 text-justify hyphens-auto">
+            <p className="text-[15px] md:text-base leading-[1.8] text-marker/75 first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-marker/90 first-letter:text-[3.4rem] first-letter:leading-[0.72]">
               {isIndonesian
                 ? 'Saya sudah membaca kartu Tarot sejak 2009 — lebih dari 15 tahun menjadikannya ruang untuk refleksi diri. Pada dasarnya, Tarot bekerja dengan membaca energi: gambaran dari situasi dan perasaan yang sedang kamu bawa saat ini.'
                 : 'I’ve been reading Tarot since 2009 — over 15 years using it as a space for self-reflection. At its core, Tarot works by reading energy: a snapshot of the situation and feelings you’re carrying right now.'}
             </p>
-            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light">
+            <p className="text-[15px] md:text-base leading-[1.8] text-marker/75">
               {isIndonesian
                 ? 'Dari situ kita lihat pola yang mungkin belum kamu sadari — soal karier, hubungan, keuangan, keluarga, atau keputusan besar — lalu menerjemahkannya jadi langkah yang jelas dan bisa kamu ambil.'
                 : 'From there we spot patterns you might not have noticed — around career, relationships, finances, family, or a big decision — and turn them into clear steps you can actually take.'}
             </p>
-            <p className="text-[15px] md:text-base leading-[1.8] text-ink/60 font-light">
+            <p className="text-[15px] md:text-base leading-[1.8] text-marker/75">
               {isIndonesian
                 ? 'Jadi ini bukan soal ‘menerawang’ masa depan, melainkan sesi konsultasi yang jujur dan menenangkan — bukan untuk menakuti, tapi untuk memberi arah.'
                 : 'So it isn’t about ‘predicting’ the future — it’s an honest, grounding consultation, not to frighten you but to give you direction.'}
@@ -207,9 +207,9 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             {/* (the ink texture sits on an inner box with room round the glyph — a mask clips
                 to its box) */}
             <span aria-hidden className="absolute left-0 -top-[0.14em] font-elegant font-semibold text-moon/80 text-[4.5rem] md:text-[5.75rem] leading-none select-none">
-              <span className="print-ink mix-blend-multiply inline-block py-[0.2em] -my-[0.2em] pr-[0.1em]">“</span>
+              <span className="marker-ink print-ink mix-blend-multiply inline-block py-[0.2em] -my-[0.2em] pr-[0.1em]">“</span>
             </span>
-            <blockquote className="print-text font-elegant text-ink text-[1.6rem] md:text-[2.1rem] leading-[1.2] tracking-[-0.02em]">
+            <blockquote className="marker-ink print-text font-elegant text-marker/90 text-[1.6rem] md:text-[2.1rem] leading-[1.2] tracking-[-0.02em]">
               {isIndonesian
                 ? <>Tujuan saya simpel: memberikan <em className="italic text-moon">kejelasan</em> agar kamu bisa mengambil keputusan dengan percaya diri.</>
                 : <>My goal is simple: to give you the <em className="italic text-moon">clarity</em> to make decisions with confidence.</>}
@@ -233,10 +233,10 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
               <div key={i} className={i > 0 ? 'relative pl-5 sm:pl-8' : undefined}>
                 {i > 0 && <PencilRule vertical className="absolute inset-y-0 left-0 text-ink/30" />}
                 {/* (only the faint grain here — two masks stacked washed the purple out) */}
-                <div className="print-body font-elegant font-semibold text-moon text-[1.7rem] sm:text-[2rem] md:text-[2.6rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em] pr-2 -mr-2">
+                <div className="marker-ink print-body font-elegant font-semibold text-moon/90 text-[1.7rem] sm:text-[2rem] md:text-[2.6rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em] pr-2 -mr-2">
                   {'still' in s ? s.n : <CountUp value={s.n} duration={1400 + i * 200} />}
                 </div>
-                <div className="print-body mt-2.5 font-elegant italic text-ink/55 text-[0.95rem] md:text-[1.05rem] leading-snug">{s.l}</div>
+                <div className="marker-ink print-body mt-2.5 font-elegant italic text-marker/65 text-[0.95rem] md:text-[1.05rem] leading-snug">{s.l}</div>
               </div>
             ))}
           </div>

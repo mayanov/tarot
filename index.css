@@ -570,3 +570,10 @@ select.pencil-field { appearance: auto; }
 .admin-shell .lucide {
   filter: none;
 }
+
+/* text written on the sheet with a felt-tip pen (#marker-ink, index.html). Give it
+   a slightly see-through ink colour (text-marker/…), so the edges where the ink
+   pooled read darker */
+.marker-ink {
+  filter: url(#marker-ink);
+}
