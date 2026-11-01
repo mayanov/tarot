@@ -13,8 +13,8 @@ const mulberry32 = (seed: number) => () => {
 // The stars are white paint flicked onto the painted sky with a brush — not points of
 // light: specks and drops with ragged edges (a mix of cool and warm whites, as the
 // paint picked up the wash under it), a few bigger drops with a satellite fleck, and a
-// handful of four-point stars painted in with a fine brush. No glow, no twinkle — paint
-// doesn't shine; the paper's grain breaks them up like everything else on the sheet.
+// handful of stars painted as two crossing brush strokes. Where a drop landed in the
+// still-wet wash it bled into a faint bloom. No twinkle — paint doesn't shine; the paper's grain breaks them up like everything else on the sheet.
 const COLORS = [
   '250,246,238', '250,246,238', '250,246,238', '246,242,236',
   '226,232,252', // cool, picked up from the blue
@@ -54,7 +54,7 @@ const rng = mulberry32(20090217);
 const SPECKS: Dot[] = field(rng, 280, 0.55, 1.3, 0.3, 0.75);
 const BAND: Dot[] = band(rng, 190);
 const DROPS: Dot[] = field(rng, 42, 1.5, 3, 0.7, 0.92);
-const STARS: Dot[] = field(rng, 10, 6, 10, 0.85, 0.95);
+const STARS: Dot[] = field(rng, 12, 4.5, 7.5, 0.8, 0.92);
 
 // a drop of paint: a round-ish blob whose edge wobbles (each drop its own shape)
 const blob = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rnd: () => number) => {
@@ -78,25 +78,30 @@ const blob = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rn
   ctx.fill();
 };
 
-// a four-point star painted with a fine brush: four tapering strokes, slightly
-// uneven, the two arms of one axis a touch longer
-const sparkle = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rnd: () => number) => {
-  const tilt = (rnd() - 0.5) * 0.35;
-  const w = r * 0.2;
+// where a drop landed in the still-wet wash, the white bled out into a faint, uneven
+// bloom round it (a soft-edged blob, densest at the middle)
+const bloom = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rgb: string, o: number, rnd: () => number) => {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, `rgba(${rgb},${o})`);
+  g.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.fillStyle = g;
+  blob(ctx, x, y, r, rnd);
+};
+
+// a star painted as two quick brush strokes crossing, each swelling in the middle and
+// tapering to round-ish ends, one a little longer and neither quite square to the other
+const stroke = (ctx: CanvasRenderingContext2D, x: number, y: number, a: number, len: number, w: number) => {
+  const dx = Math.cos(a), dy = Math.sin(a), nx = -dy, ny = dx;
   ctx.beginPath();
-  for (let i = 0; i < 4; i++) {
-    const a = tilt + (i * Math.PI) / 2;
-    const len = r * (i % 2 ? 0.72 + rnd() * 0.12 : 0.95 + rnd() * 0.1);
-    const tx = x + Math.cos(a) * len, ty = y + Math.sin(a) * len;
-    const a1 = a + Math.PI / 4, a2 = a - Math.PI / 4;
-    if (i === 0) ctx.moveTo(x + Math.cos(a2) * w, y + Math.sin(a2) * w);
-    ctx.quadraticCurveTo(x + Math.cos(a) * w * 1.3, y + Math.sin(a) * w * 1.3, tx, ty);
-    ctx.quadraticCurveTo(x + Math.cos(a) * w * 1.3, y + Math.sin(a) * w * 1.3, x + Math.cos(a1) * w, y + Math.sin(a1) * w);
-  }
-  ctx.closePath();
+  ctx.moveTo(x - dx * len, y - dy * len);
+  ctx.quadraticCurveTo(x + nx * w, y + ny * w, x + dx * len, y + dy * len);
+  ctx.quadraticCurveTo(x - nx * w, y - ny * w, x - dx * len, y - dy * len);
   ctx.fill();
-  // where the brush loaded the centre, a small round drop
-  blob(ctx, x, y, w * 1.4, rnd);
+};
+const cross = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rnd: () => number) => {
+  const tilt = (rnd() - 0.5) * 0.5;
+  stroke(ctx, x, y, Math.PI / 2 + tilt, r, r * 0.26);
+  stroke(ctx, x, y, tilt + (rnd() - 0.5) * 0.25, r * (0.62 + rnd() * 0.15), r * 0.24);
 };
 
 // Paint a set of marks into a <canvas> ONCE (and on resize): as a bitmap it rasters
@@ -123,13 +128,21 @@ const StarCanvas: React.FC<{ dots: Dot[]; kind?: 'drop' | 'star'; seed: number; 
       for (const [x, y, r, o, c] of dots) {
         const px = (x / 100) * W;
         const py = (y / 100) * H;
-        ctx.fillStyle = `rgba(${COLORS[c]},${o})`;
-        if (kind === 'star') { sparkle(ctx, px, py, r, rnd); continue; }
-        blob(ctx, px, py, Math.max(r, 0.45), rnd);
+        const rgb = COLORS[c];
+        if (kind === 'star') {
+          bloom(ctx, px, py, r * 1.5, rgb, o * 0.22, rnd);
+          ctx.fillStyle = `rgba(${rgb},${o})`;
+          cross(ctx, px, py, r, rnd);
+          continue;
+        }
+        const R = Math.max(r, 0.45);
+        if (R > 0.9) bloom(ctx, px, py, R * 2.6, rgb, o * 0.2, rnd);
+        ctx.fillStyle = `rgba(${rgb},${o})`;
+        blob(ctx, px, py, R, rnd);
         // the bigger drops threw a fleck off to one side
         if (r > 2 && rnd() < 0.6) {
           const a = rnd() * Math.PI * 2, d = r * (2.2 + rnd() * 2);
-          ctx.fillStyle = `rgba(${COLORS[c]},${o * 0.8})`;
+          ctx.fillStyle = `rgba(${rgb},${o * 0.8})`;
           blob(ctx, px + Math.cos(a) * d, py + Math.sin(a) * d, r * 0.35, rnd);
         }
       }
