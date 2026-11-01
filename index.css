@@ -576,3 +576,5 @@ select.pencil-field { appearance: auto; }
 .letterpress {
   filter: url(#letterpress);
 }
+html[data-print='riso'] .letterpress { filter: url(#riso); }
+html[data-print='offset'] .letterpress { filter: url(#offset); }
