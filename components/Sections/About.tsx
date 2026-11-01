@@ -176,13 +176,13 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
 
         <FadeIn dir="left" className="w-full pt-12 md:pt-14 lg:pt-0">
           {/* hook title */}
-          <h2 className="letterpress print-text pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-press text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
+          <h2 className="letterpress-lg pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-press text-[2.4rem] sm:text-[3.1rem] lg:text-[3.7rem] leading-[1.02] tracking-[-0.03em]">
             <MaskReveal>
               {isIndonesian ? 'Perkenalkan, saya Mayanov' : 'Meet Mayanov'}
             </MaskReveal>
           </h2>
 
-          <div lang={isIndonesian ? 'id' : 'en'} className="letterpress print-body mt-7 md:mt-9 space-y-5 text-justify hyphens-auto">
+          <div lang={isIndonesian ? 'id' : 'en'} className="letterpress mt-7 md:mt-9 space-y-5 text-justify hyphens-auto">
             <p className="text-[15px] md:text-base leading-[1.8] text-press/80 first-letter:float-left first-letter:mr-3 first-letter:mt-1.5 first-letter:font-elegant first-letter:font-semibold first-letter:text-press first-letter:text-[3.4rem] first-letter:leading-[0.72]">
               {isIndonesian
                 ? 'Saya sudah membaca kartu Tarot sejak 2009 — lebih dari 15 tahun menjadikannya ruang untuk refleksi diri. Pada dasarnya, Tarot bekerja dengan membaca energi: gambaran dari situasi dan perasaan yang sedang kamu bawa saat ini.'
@@ -207,9 +207,9 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
             {/* (the ink texture sits on an inner box with room round the glyph — a mask clips
                 to its box) */}
             <span aria-hidden className="absolute left-0 -top-[0.14em] font-elegant font-semibold text-moon/80 text-[4.5rem] md:text-[5.75rem] leading-none select-none">
-              <span className="letterpress print-ink mix-blend-multiply inline-block py-[0.2em] -my-[0.2em] pr-[0.1em]">“</span>
+              <span className="letterpress-lg mix-blend-multiply inline-block py-[0.2em] -my-[0.2em] pr-[0.1em]">“</span>
             </span>
-            <blockquote className="letterpress print-text font-elegant text-press text-[1.6rem] md:text-[2.1rem] leading-[1.2] tracking-[-0.02em]">
+            <blockquote className="letterpress-lg font-elegant text-press text-[1.6rem] md:text-[2.1rem] leading-[1.2] tracking-[-0.02em]">
               {isIndonesian
                 ? <>Tujuan saya simpel: memberikan <em className="italic text-moon">kejelasan</em> agar kamu bisa mengambil keputusan dengan percaya diri.</>
                 : <>My goal is simple: to give you the <em className="italic text-moon">clarity</em> to make decisions with confidence.</>}
@@ -233,10 +233,10 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
               <div key={i} className={i > 0 ? 'relative pl-5 sm:pl-8' : undefined}>
                 {i > 0 && <PencilRule vertical className="absolute inset-y-0 left-0 text-ink/30" />}
                 {/* (only the faint grain here — two masks stacked washed the purple out) */}
-                <div className="letterpress print-body font-elegant font-semibold text-moon text-[1.7rem] sm:text-[2rem] md:text-[2.6rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em] pr-2 -mr-2">
+                <div className="letterpress-lg font-elegant font-semibold text-moon text-[1.7rem] sm:text-[2rem] md:text-[2.6rem] leading-none tracking-[-0.02em] pb-[0.14em] -mb-[0.14em] pr-2 -mr-2">
                   {'still' in s ? s.n : <CountUp value={s.n} duration={1400 + i * 200} />}
                 </div>
-                <div className="letterpress print-body mt-2.5 font-elegant italic text-press/65 text-[0.95rem] md:text-[1.05rem] leading-snug">{s.l}</div>
+                <div className="letterpress mt-2.5 font-elegant italic text-press/65 text-[0.95rem] md:text-[1.05rem] leading-snug">{s.l}</div>
               </div>
             ))}
           </div>

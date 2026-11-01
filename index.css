@@ -578,3 +578,7 @@ select.pencil-field { appearance: auto; }
 }
 html[data-print='riso'] .letterpress { filter: url(#riso); }
 html[data-print='offset'] .letterpress { filter: url(#offset); }
+/* display type (headings, quotes, big numbers) gets versions sized to big letters */
+.letterpress-lg { filter: url(#letterpress-lg); }
+html[data-print='riso'] .letterpress-lg { filter: url(#riso-lg); }
+html[data-print='offset'] .letterpress-lg { filter: url(#offset-lg); }

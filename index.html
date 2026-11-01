@@ -174,6 +174,46 @@
       <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -9 0 0 0 7.3" result="ga" />
       <feComposite in="spread" in2="ga" operator="in" />
     </filter>
+    <!-- the same three prints for display type (.letterpress-lg): on big letters the
+         fine specks read as static and a 1px offset as a cheap drop shadow, so here the
+         ink lies solid with only a broad, soft mottle, the texture stays at the edges,
+         and the impression / misregistration is sized to the letters -->
+    <filter id="letterpress-lg" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="2" seed="4" result="n" />
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.3" xChannelSelector="R" yChannelSelector="G" result="d" />
+      <feMorphology in="d" operator="erode" radius="1" result="e" />
+      <feComposite in="d" in2="e" operator="out" result="rim" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="12" result="m" />
+      <feColorMatrix in="m" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.5 0 0 0 1.12" result="ma" />
+      <feComposite in="d" in2="ma" operator="in" result="inked" />
+      <feMerge result="ink"><feMergeNode in="inked" /><feMergeNode in="rim" /></feMerge>
+      <feOffset in="SourceAlpha" dx="1.2" dy="1.2" result="off" />
+      <feComposite in="SourceAlpha" in2="off" operator="out" result="inner0" />
+      <feGaussianBlur in="inner0" stdDeviation="0.7" result="inner" />
+      <feFlood flood-color="#000" flood-opacity="0.16" />
+      <feComposite in2="inner" operator="in" />
+      <feComposite in2="SourceAlpha" operator="in" result="innerShadow" />
+      <feMerge><feMergeNode in="ink" /><feMergeNode in="innerShadow" /></feMerge>
+    </filter>
+    <filter id="riso-lg" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
+      <feOffset in="SourceAlpha" dx="2.4" dy="-1.4" result="o" />
+      <feFlood flood-color="#b07ad8" flood-opacity="0.45" />
+      <feComposite in2="o" operator="in" result="plum" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="3" result="g" />
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1 0 0 0 1.35" result="ga" />
+      <feComposite in="SourceGraphic" in2="ga" operator="in" result="ink" />
+      <feComposite in="plum" in2="ga" operator="in" result="plumg" />
+      <feBlend in="ink" in2="plumg" mode="multiply" />
+    </filter>
+    <filter id="offset-lg" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.35" numOctaves="2" seed="6" result="n" />
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1" xChannelSelector="R" yChannelSelector="G" result="d" />
+      <feGaussianBlur in="d" stdDeviation="0.6" result="b" />
+      <feColorMatrix in="b" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 2 -0.3" result="spread" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="21" result="g" />
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -10 0 0 0 8.4" result="ga" />
+      <feComposite in="spread" in2="ga" operator="in" />
+    </filter>
   </svg>
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
