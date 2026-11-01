@@ -3,6 +3,7 @@ import { smoothScrollToId, touchScreen, cssScrollTimeline } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
 import { btnPrimaryDark } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
+import { TornSlip } from '../UI/PaperEdge';
 import Background from '../Layout/Background';
 import { REVEAL_FLIGHT_MS } from '../Layout/Loader';
 
@@ -136,7 +137,10 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
         <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 550}>
           <div ref={subRef} className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '42vh', ['--speed' as string]: 0.22 }}>
-          <p className="mt-7 md:mt-9 font-elegant font-medium leading-[1.2] md:leading-[1.14] tracking-[-0.01em] text-[1.3rem] sm:text-[1.6rem] md:text-[1.95rem] lg:text-[2.2rem] xl:text-[2.45rem] text-cream max-w-[20ch] md:max-w-none md:whitespace-nowrap [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
+          {/* the line is printed on a slip of the paper torn off and laid over the sky,
+              a little askew */}
+          <p className="relative isolate mx-auto w-fit mt-8 md:mt-10 px-[1.1em] py-[0.42em] -rotate-[1.4deg] font-elegant font-medium leading-[1.2] md:leading-[1.14] tracking-[-0.01em] text-[1.3rem] sm:text-[1.6rem] md:text-[1.95rem] lg:text-[2.2rem] xl:text-[2.45rem] text-ink max-w-[24.5ch] md:max-w-none md:whitespace-nowrap">
+            <TornSlip className="inset-0" />
             {isIndonesian ? (
               <>Pandangan <span className="italic">jernih</span> untuk langkah berikutnya.</>
             ) : (

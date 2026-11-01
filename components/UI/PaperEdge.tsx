@@ -118,3 +118,59 @@ export const tornBottom: React.CSSProperties = {
   WebkitMaskPosition: '0 100%, 0 0',
   maskPosition: '0 100%, 0 0',
 };
+
+// ---- a torn slip of the paper, for a line of text pasted over the sky ---------------
+
+// the slip's outline across a 1000 x 120 box (stretched to the slip): top and bottom
+// torn along the grain, so only faintly deckled; the two ends ripped across it, ragged
+const slipPath = (() => {
+  let s = 1984;
+  const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  const pts: string[] = [];
+  const end = (x0: number, dir: number, from: number, to: number) => {
+    for (let y = from; dir * (to - y) > 0; y += dir * (5 + rnd() * 9)) {
+      pts.push(`${(x0 + (rnd() - 0.5) * 16 + Math.sin(y / 23) * 6).toFixed(1)} ${y.toFixed(1)}`);
+    }
+  };
+  const side = (y0: number, dir: number, from: number, to: number) => {
+    for (let x = from; dir * (to - x) > 0; x += dir * (14 + rnd() * 22)) {
+      pts.push(`${x.toFixed(1)} ${(y0 + Math.sin(x / 140) * 2 + (rnd() - 0.5) * 2.4).toFixed(1)}`);
+    }
+  };
+  side(10, 1, 22, 980);   // top, left to right
+  end(984, 1, 8, 112);    // right end, down
+  side(110, -1, 978, 20); // bottom, right to left
+  end(16, -1, 112, 8);    // left end, up
+  return `M${pts.join(' L')} Z`;
+})();
+const slip = (fray: number, grow = 0) => svgUrl(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='120' viewBox='0 0 1000 120' preserveAspectRatio='none'>` +
+  `<filter id='f' x='-5%' y='-20%' width='110%' height='140%'>` +
+  `<feTurbulence type='fractalNoise' baseFrequency='0.35 0.5' numOctaves='2' seed='5'/>` +
+  `<feDisplacementMap in='SourceGraphic' scale='${fray}' xChannelSelector='R' yChannelSelector='G'/>` +
+  `</filter>` +
+  `<path d='${slipPath}' fill='white' stroke='white' stroke-width='${grow}' stroke-linejoin='round' filter='url(#f)'/>` +
+  `</svg>`,
+);
+const maskOf = (url: string): React.CSSProperties => ({
+  WebkitMaskImage: url, maskImage: url,
+  WebkitMaskSize: '100% 100%', maskSize: '100% 100%',
+  WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+});
+const SLIP = maskOf(slip(3));
+// a tear shows the paper's paler core as a thin fibrous rim just outside the face
+const SLIP_RIM = maskOf(slip(6, 5));
+
+/** a torn slip of the paper filling its box (put it behind the text, in a relative
+    parent), with the shadow it casts lying a little off whatever is under it */
+export const TornSlip: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <span aria-hidden className={`pointer-events-none absolute -z-10 ${className}`}>
+    {/* the shadow: the slip's shape, blurred (the blur goes on a wrapper, since a
+        mask is applied after an element's own filter) */}
+    <span className="absolute inset-0" style={{ filter: 'blur(6px)', transform: 'translate(2px,7px)' }}>
+      <span className="absolute inset-0 bg-[rgba(8,5,20,0.5)]" style={SLIP} />
+    </span>
+    <span className="absolute inset-0 bg-[#fbfaf7]" style={SLIP_RIM} />
+    <span className="absolute inset-0 bg-paper" style={SLIP} />
+  </span>
+);
