@@ -15,7 +15,7 @@ interface NotFoundProps {
 const NotFound: React.FC<NotFoundProps> = ({ isIndonesian = false }) => {
     return (
         <div className="min-h-screen relative font-sans text-ink bg-paper flex flex-col justify-between">
-            <Header isIndonesian={isIndonesian} paper />
+            <Header isIndonesian={isIndonesian} paper noBooking />
 
             <main className="flex-grow flex items-center justify-center w-full px-6 relative z-10 pt-28 pb-20">
                 <div className="max-w-md w-full flex flex-col items-center text-center">

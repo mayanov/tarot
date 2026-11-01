@@ -10,11 +10,12 @@ const mulberry32 = (seed: number) => () => {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
 
-// The stars are white paint flicked onto the painted sky with a brush — not points of
-// light: specks and drops with ragged edges (a mix of cool and warm whites, as the
-// paint picked up the wash under it), a few bigger drops with a satellite fleck, and a
-// handful of stars painted as two crossing brush strokes. Where a drop landed in the
-// still-wet wash it bled into a faint bloom. No twinkle — paint doesn't shine; the paper's grain breaks them up like everything else on the sheet.
+// The stars are white paint touched onto the painted sky with a fine brush: tiny
+// drops with soft, slightly ragged edges (a mix of cool and warm whites, as the paint
+// picked up the wash under it), a handful of brighter ones, and only a few painted as
+// two crossing strokes. Like a real clear night, most are pinpoints and they don't
+// fill the sky evenly: thin cloud covers some patches, so the stars gather in the
+// clear gaps between. They twinkle softly; the paper's grain breaks them up.
 const COLORS = [
   '250,246,238', '250,246,238', '250,246,238', '246,242,236',
   '226,232,252', // cool, picked up from the blue
@@ -26,35 +27,57 @@ type Dot = [number, number, number, number, number]; // [x%, y%, radius px, opac
 const clamp = (n: number) => Math.min(Math.max(n, 0), 100);
 const pick = (rng: () => number) => Math.floor(rng() * COLORS.length);
 
-// Scatter across the whole sky.
-const field = (rng: () => number, count: number, rMin: number, rMax: number, oMin: number, oMax: number): Dot[] =>
-  Array.from({ length: count }, () => [
-    +(rng() * 100).toFixed(2),
-    +(rng() * 100).toFixed(2),
-    +(rMin + rng() * (rMax - rMin)).toFixed(2),
-    +(oMin + rng() * (oMax - oMin)).toFixed(2),
-    pick(rng),
-  ]);
+// smooth value noise over the sky (0..1): where it is high, a thin veil of cloud
+const hash = (x: number, y: number) => {
+  const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+  return h - Math.floor(h);
+};
+const smooth = (t: number) => t * t * (3 - 2 * t);
+const noise = (x: number, y: number) => {
+  const xi = Math.floor(x), yi = Math.floor(y);
+  const u = smooth(x - xi), v = smooth(y - yi);
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+};
+const cloud = (x: number, y: number) => 0.65 * noise(x / 22, y / 18) + 0.35 * noise(x / 9 + 7, y / 8 + 3);
+// is this spot of sky clear? (a soft edge: stars thin out towards the cloud)
+const clear = (rng: () => number, x: number, y: number) => rng() > (cloud(x, y) - 0.4) * 4;
 
-// The flick of the brush runs along a diagonal (upper-left → lower-right), so the
-// spatter is densest there — a Milky-Way band.
-const band = (rng: () => number, count: number): Dot[] =>
-  Array.from({ length: count }, () => {
+// Scatter across the clear sky.
+const field = (rng: () => number, count: number, rMin: number, rMax: number, oMin: number, oMax: number): Dot[] => {
+  const out: Dot[] = [];
+  while (out.length < count) {
+    const x = rng() * 100, y = rng() * 100;
+    if (!clear(rng, x, y)) continue;
+    out.push([+x.toFixed(2), +y.toFixed(2), +(rMin + rng() * (rMax - rMin)).toFixed(2), +(oMin + rng() * (oMax - oMin)).toFixed(2), pick(rng)]);
+  }
+  return out;
+};
+
+// a faint Milky-Way band along the diagonal (upper-left → lower-right)
+const band = (rng: () => number, count: number): Dot[] => {
+  const out: Dot[] = [];
+  while (out.length < count) {
     const t = rng();
-    return [
-      +clamp(6 + t * 90 + (rng() - 0.5) * 12).toFixed(2),
-      +clamp(16 + t * 42 + (rng() - 0.5) * 16).toFixed(2),
-      +(0.45 + rng() * 0.7).toFixed(2),
-      +(0.35 + rng() * 0.45).toFixed(2),
-      pick(rng),
-    ];
-  });
+    const x = clamp(6 + t * 90 + (rng() - 0.5) * 12), y = clamp(16 + t * 42 + (rng() - 0.5) * 16);
+    if (!clear(rng, x, y)) continue;
+    out.push([+x.toFixed(2), +y.toFixed(2), +(0.5 + rng() * 0.45).toFixed(2), +(0.3 + rng() * 0.35).toFixed(2), pick(rng)]);
+  }
+  return out;
+};
 
 const rng = mulberry32(20090217);
-const SPECKS: Dot[] = field(rng, 280, 0.55, 1.3, 0.3, 0.75);
-const BAND: Dot[] = band(rng, 190);
-const DROPS: Dot[] = field(rng, 42, 1.5, 3, 0.7, 0.92);
-const STARS: Dot[] = field(rng, 12, 4.5, 7.5, 0.8, 0.92);
+// far: the faint dusting and the band, still
+const DUST: Dot[] = [...field(rng, 220, 0.5, 0.95, 0.35, 0.7), ...band(rng, 120)];
+// twinkling layers at different speeds, for depth
+const TWINKLE_LAYERS: { dur: number; delay: number; dots: Dot[] }[] = [
+  { dur: 4.2, delay: 0, dots: field(rng, 55, 0.8, 1.3, 0.65, 0.95) },
+  { dur: 6, delay: 1.1, dots: field(rng, 45, 0.7, 1.15, 0.55, 0.85) },
+  { dur: 8, delay: 2.4, dots: field(rng, 40, 0.6, 1, 0.45, 0.75) },
+];
+// the few bright ones, and fewer still painted as crossing strokes
+const BRIGHT: Dot[] = field(rng, 18, 1.4, 2, 0.88, 1);
+const STARS: Dot[] = field(rng, 5, 3.2, 4.4, 0.85, 0.95);
 
 // a drop of paint: a round-ish blob whose edge wobbles (each drop its own shape)
 const blob = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rnd: () => number) => {
@@ -136,15 +159,9 @@ const StarCanvas: React.FC<{ dots: Dot[]; kind?: 'drop' | 'star'; seed: number; 
           continue;
         }
         const R = Math.max(r, 0.45);
-        if (R > 0.9) bloom(ctx, px, py, R * 2.6, rgb, o * 0.2, rnd);
+        if (R > 1.2) bloom(ctx, px, py, R * 2.4, rgb, o * 0.16, rnd);
         ctx.fillStyle = `rgba(${rgb},${o})`;
         blob(ctx, px, py, R, rnd);
-        // the bigger drops threw a fleck off to one side
-        if (r > 2 && rnd() < 0.6) {
-          const a = rnd() * Math.PI * 2, d = r * (2.2 + rnd() * 2);
-          ctx.fillStyle = `rgba(${rgb},${o * 0.8})`;
-          blob(ctx, px + Math.cos(a) * d, py + Math.sin(a) * d, r * 0.35, rnd);
-        }
       }
     };
     draw();
@@ -204,22 +221,27 @@ const Background: React.FC = () => {
     return () => io.disconnect();
   }, [reduce]);
 
+  const twinkle = (dur: number, delay: number) => (reduce ? undefined : `skyTwinkle ${dur}s ease-in-out ${delay}s infinite`);
+
   return (
     <div ref={rootRef} className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* 1 — the sky itself, painted in watercolour (blue up the left, a violet
           heart, a rose bloom upper-right, teal lower-right), drifting very slowly */}
       <WatercolorSky palette={TWILIGHT} stars={false} className="absolute inset-0" />
 
-      {/* 4 — the stars, flicked on in white paint; the far specks, the band and the
-          near drops and painted stars drift apart a touch on scroll, and the paper's
-          grain (print-ink) breaks the paint up */}
+      {/* 4 — the stars, touched on in white paint: the still far dusting, twinkling
+          nearer layers and a few bright ones drift apart a touch on scroll, and the
+          paper's grain (print-ink) breaks the paint up */}
       <div ref={fieldRef} className="print-ink absolute -inset-y-[10%] inset-x-0 will-change-transform">
-        <StarCanvas dots={SPECKS} seed={11} className="absolute inset-0 w-full h-full" />
+        <StarCanvas dots={DUST} seed={11} className="absolute inset-0 w-full h-full" />
         <div ref={midRef} className="absolute inset-0 will-change-transform">
-          <StarCanvas dots={BAND} seed={23} className="absolute inset-0 w-full h-full" />
+          {TWINKLE_LAYERS.slice(1).map((l, i) => (
+            <StarCanvas key={i} dots={l.dots} seed={23 + i} className="absolute inset-0 w-full h-full" style={{ animation: twinkle(l.dur, l.delay) }} />
+          ))}
         </div>
         <div ref={nearRef} className="absolute inset-0 will-change-transform">
-          <StarCanvas dots={DROPS} seed={37} className="absolute inset-0 w-full h-full" />
+          <StarCanvas dots={TWINKLE_LAYERS[0].dots} seed={31} className="absolute inset-0 w-full h-full" style={{ animation: twinkle(TWINKLE_LAYERS[0].dur, 0) }} />
+          <StarCanvas dots={BRIGHT} seed={37} className="absolute inset-0 w-full h-full" style={{ animation: reduce ? undefined : 'starPulse 3.6s ease-in-out infinite' }} />
           <StarCanvas dots={STARS} kind="star" seed={41} className="absolute inset-0 w-full h-full" />
         </div>
       </div>

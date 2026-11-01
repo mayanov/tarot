@@ -14,6 +14,8 @@ interface HeaderProps {
   onSwitchRegion?: (toID: boolean) => void;
   /** a page with no sky under the bar (e.g. the 404): the bar sits on its paper from the start */
   paper?: boolean;
+  /** a page without the booking form (e.g. the 404): no Pesan buttons or service rows */
+  noBooking?: boolean;
 }
 
 const REGIONS = {
@@ -81,7 +83,7 @@ const MENU_SERVICES_EN: MenuService[] = [
   { id: '5card', name: '5-Card Deep', short: '5-Card', price: '$20', mark: 'star' },
 ];
 
-const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, paper = false }) => {
+const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, paper = false, noBooking = false }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const onPaper = (isScrolled || paper) && !menuOpen; // the bar is on its paper strip
@@ -278,14 +280,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
 
             {/* one 'Pesan' pill + a bare menu icon (no second pill) */}
             <div className="flex items-center gap-4">
-              <button
+              {!noBooking && <button
                 onClick={goToServices}
                 className={`${onPaper ? btnPrimaryLight : `${btnPrimaryDark} drop-shadow-[0_5px_12px_rgba(0,0,0,0.28)]`} hidden sm:inline-flex px-6 py-2.5 text-[15px] whitespace-nowrap`}
               >
                 <ButtonInk kind="primary" tone={onPaper ? 'light' : 'dark'}>
                   {isIndonesian ? 'Pesan' : 'Book'}
                 </ButtonInk>
-              </button>
+              </button>}
 
               <button
                 ref={menuBtnRef}
@@ -401,7 +403,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
             </ul>
 
             {/* phones / tablets: the services as a row of chips under the index */}
-            <div className={`lg:hidden mt-[2.5dvh] sm:mt-7 ${rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).className}`} style={rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).style}>
+            {!noBooking && <div className={`lg:hidden mt-[2.5dvh] sm:mt-7 ${rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).className}`} style={rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP).style}>
               <p className="letterpress font-elegant italic text-sm text-ink/45 mb-2">{isIndonesian ? 'Langsung pesan' : 'Book directly'}</p>
               <div className="flex flex-wrap gap-2">
                 {menuServices.map((sv) => (
@@ -412,14 +414,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
                   </button>
                 ))}
               </div>
-            </div>
+            </div>}
           </nav>
 
           {/* wide screens: book a service directly, plus the practical bits — set in the
               index's own type (serif names, italic small print, hairlines), no badges */}
           {/* (its rows come in one after another, like the index; the hover dimming sits on
               the buttons, since the rows' entrance animation holds their opacity) */}
-          <aside className="hidden lg:block">
+          {!noBooking && <aside className="hidden lg:block">
             <p className={`letterpress font-elegant italic text-sm text-ink/45 ${rowAnim(LINE_IN_AT + 180, 60).className}`} style={rowAnim(LINE_IN_AT + 180, 60).style}>{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
             <ul className="mt-3 group/svs">
               {menuServices.map((sv, j) => (
@@ -434,7 +436,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
                 </li>
               ))}
             </ul>
-          </aside>
+          </aside>}
           </div>
 
           {/* Bottom — language toggle + socials + book */}
@@ -469,14 +471,14 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
                 </a>
               </nav>
 
-              <button
+              {!noBooking && <button
                 onClick={goToServices}
                 className={`${btnPrimaryLight} inline-flex group gap-3 px-6 sm:px-8 py-3 sm:py-3.5 text-[1.05rem]`}
               >
                 <ButtonInk kind="primary" tone="light">
                   {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
                 </ButtonInk>
-              </button>
+              </button>}
             </div>
           </div>
         </div>
