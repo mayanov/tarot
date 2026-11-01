@@ -13,12 +13,17 @@ interface HeroProps {
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 
 // Soft fade-and-rise for each hero piece — opacity + transform only, so it's fully
-// GPU-composited. Defined OUTSIDE Hero so it isn't re-created (and remounted, which
+// GPU-composited. `land` is opacity-only (no movement): used for the crescent, which
+// must already sit at its final spot when the loader's moon measures it and flies in
+// to become it. Defined OUTSIDE Hero so it isn't re-created (and remounted, which
 // skipped the transition) on every render.
-const Rise: React.FC<{ shown: boolean; children: React.ReactNode; delay?: number; className?: string }> = ({ shown, children, delay = 0, className = '' }) => (
+const Rise: React.FC<{ shown: boolean; children: React.ReactNode; delay?: number; className?: string; land?: boolean }> = ({ shown, children, delay = 0, className = '', land = false }) => (
   <div
     className={className}
-    style={{
+    style={land ? {
+      opacity: shown ? 1 : 0,
+      transition: `opacity 420ms ease ${delay}ms`,
+    } : {
       opacity: shown ? 1 : 0,
       transform: shown ? 'translateY(0)' : 'translateY(22px)',
       transition: `opacity 1s ease ${delay}ms, transform 1.1s ${EASE} ${delay}ms`,
@@ -113,22 +118,19 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
       {/* MASTHEAD — a calm, centered stack under a quiet crescent moon. */}
       <div ref={contentRef} className="relative z-10 w-full mx-auto px-8 flex flex-col items-center">
-        <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 320}>
+        <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 180} land>
           <div ref={moonRef} data-hero-moon className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '35vh', ['--speed' as string]: 0.45 }}>
           <CelestialMark name="crescent" className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
           </div>
         </Rise>
 
         <div ref={titleRef} className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '50vh', ['--speed' as string]: 0.3 }}>
-          {/* rises in as the loader's paper sheet is lifted off the sky */}
+          {/* the loader's wordmark flies up and grows into exactly this spot; the real
+              title takes over the moment it lands (same font, size and position) */}
           <h1
             data-hero-title
             className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] text-cream"
-            style={{
-              opacity: shown ? 1 : 0,
-              transform: shown ? 'none' : 'translateY(16px)',
-              transition: `opacity 1s ease ${REVEAL_FLIGHT_MS - 220}ms, transform 1.1s cubic-bezier(0.16,1,0.3,1) ${REVEAL_FLIGHT_MS - 220}ms`,
-            }}
+            style={{ opacity: shown ? 1 : 0, transition: `opacity 220ms ease ${REVEAL_FLIGHT_MS + 20}ms` }}
           >
             Mayanov Tarot
           </h1>
