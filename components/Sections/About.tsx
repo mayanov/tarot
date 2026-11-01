@@ -204,12 +204,43 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
           {/* goal — the closing statement, set as a pull quote: a large opening mark hangs in
               its own indent beside the first line, the key word is picked out in purple
               italic, and it's signed by hand */}
-          <figure className="relative mt-12 md:mt-16 pl-12 md:pl-16">
-            {/* (the ink texture sits on an inner box with room round the glyph — a mask clips
-                to its box) */}
-            <span aria-hidden className="absolute left-0 -top-[0.14em] font-elegant font-semibold text-moon/80 text-[4.5rem] md:text-[5.75rem] leading-none select-none">
-              <span className="letterpress-lg mix-blend-multiply inline-block py-[0.2em] -my-[0.2em] pr-[0.1em]">“</span>
-            </span>
+          <figure className="relative mt-12 md:mt-16 pl-[4.25rem] md:pl-[5.75rem]">
+            {/* the mark is painted, not printed: two drops of violet watercolour, each
+                flicked up into a tail, the pigment thinner in the middle and pooled
+                darker round the rim where it dried, settled into the paper's tooth */}
+            <svg aria-hidden viewBox="0 0 100 80" className="absolute -left-1 md:-left-2 -top-1 md:-top-2 w-[3.6rem] md:w-[4.6rem] overflow-visible text-moon mix-blend-multiply">
+              <defs>
+                <filter id="about-quote-paint" x="-25%" y="-25%" width="150%" height="150%" colorInterpolationFilters="sRGB">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="9" result="n" />
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G" result="d" />
+                  <feGaussianBlur in="d" stdDeviation="0.5" result="soft" />
+                  <feColorMatrix in="soft" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 40 0" result="shape" />
+                  <feMorphology in="shape" operator="erode" radius="2.6" result="er" />
+                  <feGaussianBlur in="er" stdDeviation="3" result="erb" />
+                  <feComposite in="shape" in2="erb" operator="out" result="band" />
+                  <feComposite in="soft" in2="band" operator="in" result="rim" />
+                  <feComponentTransfer in="rim" result="rimd">
+                    <feFuncR type="linear" slope="0.7" />
+                    <feFuncG type="linear" slope="0.7" />
+                    <feFuncB type="linear" slope="0.7" />
+                  </feComponentTransfer>
+                  <feComponentTransfer in="soft" result="body">
+                    <feFuncA type="linear" slope="0.45" />
+                  </feComponentTransfer>
+                  <feMerge result="m">
+                    <feMergeNode in="body" />
+                    <feMergeNode in="rimd" />
+                  </feMerge>
+                  <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="g" />
+                  <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.5 1.3" result="ga" />
+                  <feComposite in="m" in2="ga" operator="in" />
+                </filter>
+              </defs>
+              <g fill="currentColor" filter="url(#about-quote-paint)">
+                <path d="M36 18 C27 23 22 29 21 35 C32 33 42 41 42 52 C42 63 34 70 24 70 C14 70 7 62 7 51 C7 37 18 25 36 18 Z" />
+                <path d="M85 15 C76 20 71 26 70 32 C81 30 91 38 91 49 C91 60 83 67 73 67 C63 67 56 59 56 48 C56 34 67 22 85 15 Z" fillOpacity="0.9" />
+              </g>
+            </svg>
             <blockquote className="letterpress-lg font-elegant text-press text-[1.6rem] md:text-[2.1rem] leading-[1.2] tracking-[-0.02em]">
               {isIndonesian
                 ? <>Tujuan saya simpel: memberikan <em className="italic text-moon">kejelasan</em> agar kamu bisa mengambil keputusan dengan percaya diri.</>
