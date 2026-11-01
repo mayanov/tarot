@@ -52,8 +52,8 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
           </h2>
           <p className="mt-6 md:mt-7 max-w-[34ch] font-elegant text-cream/80 text-lg md:text-[1.35rem] leading-[1.5]">
             {isIndonesian
-              ? 'Kamu nggak perlu datang dengan pertanyaan yang sempurna. Ini beberapa yang sering dibawa ke meja.'
-              : 'You don’t need the perfect question. Here are a few that often come to the table.'}
+              ? 'Kamu nggak perlu datang dengan pertanyaan yang sempurna. Ini beberapa yang sering dibawa ke meja, atau cukup cerita, kita cari pertanyaannya bareng.'
+              : 'You don’t need the perfect question. Here are a few that often come to the table, or just tell me what’s going on and we’ll find it together.'}
           </p>
         </FadeIn>
 
@@ -77,17 +77,10 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
           ))}
         </ol>
 
-        {/* if none of those fit: just come and talk, signed by hand (after the list
-            on a phone, under the heading beside it on a wide screen) */}
+        {/* the way in (after the list on a phone, under the heading beside it on a
+            wide screen) */}
         <FadeIn dir="left" delay={150} className="lg:col-start-1 lg:row-start-2 lg:self-start">
-          <p className="max-w-[30ch] font-elegant italic text-cream text-xl md:text-[1.6rem] leading-snug">
-            {isIndonesian ? 'Atau cukup cerita, kita cari pertanyaannya bareng.' : 'Or just tell me what’s going on, and we’ll find the question together.'}
-          </p>
-          <div className="mt-3 flex items-center gap-3 text-cream/80">
-            <PencilRule fade="start" className="w-6 text-cream/45" />
-            <span className="inline-block py-[0.3em] -my-[0.3em] pr-3 font-signature text-[2.4rem] md:text-[2.8rem] leading-none">Mayanov</span>
-          </div>
-          <button type="button" onClick={() => openBooking()} className={`${btnPrimaryDark} mt-9 md:mt-10 inline-flex group gap-3 px-8 py-3.5 text-[1.05rem]`}>
+          <button type="button" onClick={openBooking} className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-[1.05rem]`}>
             <ButtonInk kind="primary" tone="dark">
               {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
             </ButtonInk>
