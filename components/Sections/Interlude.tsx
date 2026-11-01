@@ -10,13 +10,14 @@ interface InterludeProps {
 }
 
 // what people actually come with, for the visitor who's just seen the prices and
-// doesn't know what they'd ask
-const QUESTIONS: { q: [string, string] }[] = [
-  { q: ['Apakah aku harus pindah kerja tahun ini?', 'Should I change jobs this year?'] },
-  { q: ['Ke mana arah hubunganku sama dia?', 'Where is this relationship going?'] },
-  { q: ['Kenapa aku merasa stuck akhir-akhir ini?', 'Why do I feel so stuck lately?'] },
-  { q: ['Pilihan mana yang paling selaras untukku?', 'Which choice sits right with me?'] },
-  { q: ['Apa yang perlu aku lepaskan?', 'What do I need to let go of?'] },
+// doesn't know what they'd ask; each with the part of life it's about, pencilled
+// beside it (the pencil face is subset in index.html: add letters there if these change)
+const QUESTIONS: { topic: [string, string]; q: [string, string] }[] = [
+  { topic: ['karier', 'career'], q: ['Apakah aku harus pindah kerja tahun ini?', 'Should I change jobs this year?'] },
+  { topic: ['hubungan', 'love'], q: ['Ke mana arah hubunganku sama dia?', 'Where is this relationship going?'] },
+  { topic: ['diri', 'self'], q: ['Kenapa aku merasa stuck akhir-akhir ini?', 'Why do I feel so stuck lately?'] },
+  { topic: ['keputusan', 'choices'], q: ['Pilihan mana yang paling selaras untukku?', 'Which choice sits right with me?'] },
+  { topic: ['melepaskan', 'letting go'], q: ['Apa yang perlu aku lepaskan?', 'What do I need to let go of?'] },
 ];
 
 // the booking form (BookingModal) opens on this event
@@ -61,9 +62,16 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
             <li key={item.q[0]}>
               <FadeIn delay={i * 110} dir="up" distance={0.5}>
                 {i > 0 && <PencilRule weight="fine" className="text-cream/40" />}
-                <p className="letterpress-lg py-6 md:py-7 font-elegant text-cream text-[1.35rem] sm:text-[1.5rem] md:text-[1.75rem] leading-[1.25] tracking-[-0.01em] [text-wrap:pretty]">
-                  &ldquo;{t(item.q)}&rdquo;
-                </p>
+                {/* numbered and labelled by hand in pencil, like notes in the margin */}
+                <div className="grid grid-cols-[2.75rem_minmax(0,1fr)] md:grid-cols-[3.5rem_minmax(0,1fr)] items-baseline py-6 md:py-7">
+                  <span className="inline-block -rotate-3 font-['Reenie_Beanie',cursive] text-cream/90 text-[2.4rem] md:text-[2.9rem] leading-none [filter:url(#pencil-icon)]">{i + 1}.</span>
+                  <div>
+                    <span className="inline-block -rotate-2 font-['Reenie_Beanie',cursive] text-cream/90 text-[1.75rem] md:text-[2.05rem] leading-none [filter:url(#pencil-icon)]">{t(item.topic)}</span>
+                    <p className="letterpress-lg mt-1 font-elegant text-cream text-[1.35rem] sm:text-[1.5rem] md:text-[1.75rem] leading-[1.25] tracking-[-0.01em] [text-wrap:pretty]">
+                      &ldquo;{t(item.q)}&rdquo;
+                    </p>
+                  </div>
+                </div>
               </FadeIn>
             </li>
           ))}
