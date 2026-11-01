@@ -586,3 +586,55 @@ html[data-print='offset'] .letterpress { filter: url(#offset); }
 }
 html[data-print='riso'] .letterpress-lg { filter: url(#riso-lg); }
 html[data-print='offset'] .letterpress-lg { filter: url(#offset-lg); }
+
+/* ---------------------------------------------------------------------------
+   Phones: scroll-linked motion run by the browser with the scroll itself (CSS
+   scroll-driven animations) instead of from a scroll listener, which on a phone
+   lags behind the scroll and judders. The classes are only set on touch screens
+   that support it (Hero.tsx, App.tsx); elsewhere the scripts drive the same motion.
+--------------------------------------------------------------------------- */
+@supports (animation-timeline: scroll()) {
+  /* the hero sky stays nearly put while the page slides over it */
+  .hero-sd-stage {
+    animation: heroStage linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 130vh;
+  }
+  @keyframes heroStage { to { transform: translate3d(0, calc(130vh * 0.92), 0); } }
+
+  /* moon, title, subtitle and button lift off and fade (--fade, --speed set on each) */
+  .hero-sd-lift {
+    animation: heroLift linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 var(--fade);
+  }
+  @keyframes heroLift { to { transform: translate3d(0, calc(var(--fade) * var(--speed) * -1), 0); opacity: 0; } }
+
+  /* the sky dims as the next section covers it */
+  .hero-sd-dim {
+    animation: heroDim ease-in-out both;
+    animation-timeline: scroll(root);
+    animation-range: 0 100vh;
+  }
+  @keyframes heroDim { from { opacity: 0; } to { opacity: 0.6; } }
+
+  /* the footer's content rises and fades in as the page uncovers it (--footer-h) */
+  .footer-sd-inner {
+    animation: footerIn ease-in-out both;
+    animation-timeline: scroll(root);
+    animation-range: calc(100% - var(--footer-h)) 100%;
+  }
+  @keyframes footerIn { from { transform: translateY(64px); opacity: 0.12; } to { transform: none; opacity: 1; } }
+  .footer-sd-sky {
+    animation: footerSky ease-in-out both;
+    animation-timeline: scroll(root);
+    animation-range: calc(100% - var(--footer-h)) 100%;
+  }
+  @keyframes footerSky { from { transform: scale(1.1) translateY(-26px); } to { transform: scale(1.1); } }
+}
+
+/* on a phone the star field goes without its grain mask: masked, its twinkling
+   layers were re-masked on every frame, and the grain doesn't show at that size */
+@media (pointer: coarse) {
+  .touch-unmask { -webkit-mask-image: none; mask-image: none; }
+}

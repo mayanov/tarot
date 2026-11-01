@@ -36,6 +36,13 @@ export function getLenis(): Lenis | null {
     return lenis;
 }
 
+// On a phone the page scrolls on its own thread, ahead of any script: motion tied to
+// the scroll from a scroll listener lags a frame or more behind and judders. There,
+// scroll-linked motion is handed to the browser (CSS scroll-driven animations, which
+// run with the scroll), or left out where the browser can't.
+export const touchScreen = () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+export const cssScrollTimeline = () => typeof CSS !== 'undefined' && CSS.supports('animation-timeline: scroll()');
+
 // Pause / resume inertia scrolling — used to fully lock the page behind a modal.
 export function stopLenis() { lenis?.stop(); }
 export function startLenis() { lenis?.start(); }

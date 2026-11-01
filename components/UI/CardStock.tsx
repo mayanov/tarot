@@ -1,4 +1,5 @@
 import React from 'react';
+import Baked from './Baked';
 
 /**
  * Lays real tarot card stock over a card face, so it reads as a printed card from a
@@ -16,6 +17,9 @@ const CardStock: React.FC<{ tone?: 'dark' | 'light'; className?: string }> = ({ 
   const dark = tone === 'dark';
   return (
     <span aria-hidden className={`pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] ${className}`}>
+      {/* painted once into a picture (the lit grain is costly to redraw), then laid
+          over the face in soft-light as the layers were */}
+      <Baked bleed={0} blend="soft-light">
       <svg className="absolute inset-0 h-full w-full">
         <defs>
           {/* the board under the coating: a very fine, even grain, barely raised */}
@@ -43,6 +47,7 @@ const CardStock: React.FC<{ tone?: 'dark' | 'light'; className?: string }> = ({ 
         <rect width="100%" height="100%" fill="#fff" filter={`url(#${id}i)`} style={{ mixBlendMode: 'soft-light' }} opacity={dark ? 0.18 : 0.1} />
         <rect width="100%" height="100%" fill={`url(#${id}s)`} style={{ mixBlendMode: 'soft-light' }} opacity={dark ? 0.45 : 0.35} />
       </svg>
+      </Baked>
     </span>
   );
 };

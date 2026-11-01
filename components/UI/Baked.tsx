@@ -50,7 +50,9 @@ const bake = (svg: SVGSVGElement, w: number, h: number, bleed: number): Promise<
     img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(doc)}`;
   })));
 
-const Baked: React.FC<React.PropsWithChildren<{ className?: string; bleed?: number }>> = ({ className = '', bleed = 60, children }) => {
+/** `blend`: a mix-blend-mode for the picture, for a drawing whose layers blend with
+    what's under it (they're flattened in the picture, then blended as one) */
+const Baked: React.FC<React.PropsWithChildren<{ className?: string; bleed?: number; blend?: React.CSSProperties['mixBlendMode'] }>> = ({ className = '', bleed = 60, blend, children }) => {
   const boxRef = useRef<HTMLSpanElement>(null);
   const [width, setWidth] = useState(0);
   const [src, setSrc] = useState<string | null>(null);
@@ -96,7 +98,7 @@ const Baked: React.FC<React.PropsWithChildren<{ className?: string; bleed?: numb
           alt=""
           src={src}
           className="absolute max-w-none select-none animate-[bakedIn_0.6s_ease-out]"
-          style={{ left: -bleed, top: -bleed, width: `calc(100% + ${bleed * 2}px)`, height: `calc(100% + ${bleed * 2}px)`, transform: turn || undefined }}
+          style={{ left: -bleed, top: -bleed, width: `calc(100% + ${bleed * 2}px)`, height: `calc(100% + ${bleed * 2}px)`, transform: turn || undefined, mixBlendMode: blend }}
         />
       )}
     </span>

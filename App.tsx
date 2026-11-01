@@ -9,7 +9,7 @@ import WatercolorSky from './components/Layout/WatercolorSky';
 import Loader from './components/Layout/Loader';
 import BookingModal from './components/Booking/BookingModal';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
-import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
+import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId, touchScreen, cssScrollTimeline } from './components/UI/scroll';
 import MoonPhaseDivider from './components/UI/MoonPhaseDivider';
 import { tornBottom, paperCut, TornPaper } from './components/UI/PaperEdge';
 import ButtonInk, { PaintSwatch } from './components/UI/ButtonInk';
@@ -62,6 +62,10 @@ function App() {
   const [reduceMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
+  // on a phone the reveal runs as a CSS scroll-driven animation over the last
+  // footer-height of the scroll (index.css, .footer-sd-*), or not at all
+  const [footerMotion] = useState<'js' | 'css' | 'none'>(() =>
+    reduceMotion ? 'none' : !touchScreen() ? 'js' : cssScrollTimeline() ? 'css' : 'none');
   useEffect(() => {
     const el = footerRef.current;
     if (!el) return;
@@ -76,7 +80,7 @@ function App() {
   // Animate the footer as it's uncovered: its content rises + fades into place and
   // the sky behind it parallaxes a touch — so the reveal doesn't feel plain.
   useEffect(() => {
-    if (reduceMotion || footerH <= 0) return;
+    if (footerMotion !== 'js' || footerH <= 0) return;
     let raf = 0;
     const update = () => {
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
@@ -95,7 +99,7 @@ function App() {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); cancelAnimationFrame(raf); };
-  }, [reduceMotion, footerH]);
+  }, [footerMotion, footerH]);
 
   // Define location check as a reusable function so we can retry from UI
   const performLocationCheck = async () => {
@@ -443,8 +447,8 @@ function App() {
         <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -top-20 md:-top-28 -z-10 overflow-hidden">
           <WatercolorSky
             skyRef={footerSkyRef}
-            className="absolute inset-0 will-change-transform"
-            style={{ transform: 'scale(1.1)' }}
+            className={`absolute inset-0 will-change-transform${footerMotion === 'css' ? ' footer-sd-sky' : ''}`}
+            style={{ transform: 'scale(1.1)', ['--footer-h' as string]: `${footerH}px` }}
           />
           {/* a light veil so the cream text keeps its contrast over the paler washes */}
           <div
@@ -453,7 +457,11 @@ function App() {
           />
         </div>
 
-        <div ref={footerInnerRef} className="relative p-3 sm:p-5 md:p-6 will-change-transform" style={reduceMotion ? undefined : { opacity: 0.12 }}>
+        <div
+          ref={footerInnerRef}
+          className={`relative p-3 sm:p-5 md:p-6 will-change-transform${footerMotion === 'css' ? ' footer-sd-inner' : ''}`}
+          style={footerMotion === 'js' ? { opacity: 0.12 } : footerMotion === 'css' ? { ['--footer-h' as string]: `${footerH}px` } : undefined}
+        >
           <Footer isIndonesian={isIndonesian} />
         </div>
       </div>

@@ -186,7 +186,8 @@ const Background: React.FC = () => {
   );
 
   useEffect(() => {
-    if (reduce) return;
+    // (on a phone the stars hold still: a scroll listener there lags the scroll)
+    if (reduce || window.matchMedia('(pointer: coarse)').matches) return;
     let raf = 0;
     const update = () => {
       // skip the parallax write while the sky is scrolled out of view
@@ -232,7 +233,7 @@ const Background: React.FC = () => {
       {/* 4 — the stars, touched on in white paint: the still far dusting, twinkling
           nearer layers and a few bright ones drift apart a touch on scroll, and the
           paper's grain (print-ink) breaks the paint up */}
-      <div ref={fieldRef} className="print-ink absolute -inset-y-[10%] inset-x-0 will-change-transform">
+      <div ref={fieldRef} className="print-ink touch-unmask absolute -inset-y-[10%] inset-x-0 will-change-transform">
         <StarCanvas dots={DUST} seed={11} className="absolute inset-0 w-full h-full" />
         <div ref={midRef} className="absolute inset-0 will-change-transform">
           {TWINKLE_LAYERS.slice(1).map((l, i) => (

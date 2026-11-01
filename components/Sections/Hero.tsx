@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { smoothScrollToId } from '../UI/scroll';
+import { smoothScrollToId, touchScreen, cssScrollTimeline } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
 import { btnPrimaryDark } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
@@ -44,6 +44,10 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
   const subRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const dimRef = useRef<HTMLDivElement>(null);
+  // on a phone the same choreography runs as CSS scroll-driven animations (index.css,
+  // .hero-sd-*), or not at all where the browser can't
+  const [touch] = useState(touchScreen);
+  const sd = touch && cssScrollTimeline() ? ' hero-sd' : '';
 
   // Scroll choreography — as the hero scrolls away:
   //  • the starry sky stays almost pinned, so the About sheet (rounded top, sits
@@ -55,7 +59,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     const stage = skyRef.current;
     const el = contentRef.current;
     if (!stage || !el) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || touch) return;
     let raf = 0;
     const lift = (node: HTMLElement | null, y: number, speed: number, fadeBy: number) => {
       if (!node) return;
@@ -108,19 +112,19 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
     >
       {/* the night-sky backdrop, scoped to the hero (so a pinned footer behind the
           page can't show through a transparent hero) */}
-      <div ref={skyRef} className="absolute inset-0 -z-10 will-change-transform">
+      <div ref={skyRef} className={`absolute inset-0 -z-10 will-change-transform${sd && ' hero-sd-stage'}`}>
         <Background />
       </div>
 
       {/* MASTHEAD — a calm, centered stack under a quiet crescent moon. */}
       <div ref={contentRef} className="relative z-10 w-full mx-auto px-8 flex flex-col items-center">
         <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 180} land>
-          <div ref={moonRef} data-hero-moon className="will-change-transform">
+          <div ref={moonRef} data-hero-moon className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '35vh', ['--speed' as string]: 0.45 }}>
           <CelestialMark name="crescent" className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
           </div>
         </Rise>
 
-        <div ref={titleRef} className="will-change-transform">
+        <div ref={titleRef} className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '50vh', ['--speed' as string]: 0.3 }}>
           {/* the loader's wordmark flies up and grows into exactly this spot; the real
               title takes over the moment it lands (same font, size and position) */}
           <h1
@@ -133,7 +137,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </div>
 
         <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 100}>
-          <div ref={subRef} className="will-change-transform">
+          <div ref={subRef} className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '42vh', ['--speed' as string]: 0.22 }}>
           <p className="mt-7 md:mt-9 font-elegant font-medium leading-[1.2] md:leading-[1.14] tracking-[-0.01em] text-[1.3rem] sm:text-[1.6rem] md:text-[1.95rem] lg:text-[2.2rem] xl:text-[2.45rem] text-cream max-w-[20ch] md:max-w-none md:whitespace-nowrap [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
             {isIndonesian ? (
               <>Pandangan <span className="italic">jernih</span> untuk langkah berikutnya.</>
@@ -145,7 +149,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         </Rise>
 
         <Rise shown={shown} delay={REVEAL_FLIGHT_MS + 80}>
-          <div ref={ctaRef} className="mt-8 md:mt-9 will-change-transform">
+          <div ref={ctaRef} className={`mt-8 md:mt-9 will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '38vh', ['--speed' as string]: 0.15 }}>
             <a
               href="#services"
               onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
@@ -160,7 +164,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
       </div>
 
       {/* dims the hero as the next section slides over it, so the overlap reads as depth */}
-      <div ref={dimRef} aria-hidden className="pointer-events-none absolute inset-0 z-20 bg-[#07061a] opacity-0" />
+      <div ref={dimRef} aria-hidden className={`pointer-events-none absolute inset-0 z-20 bg-[#07061a] opacity-0${sd && ' hero-sd-dim'}`} />
     </section>
   );
 };

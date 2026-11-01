@@ -36,6 +36,9 @@ const IlluminateText: React.FC<Props> = ({
     }
     const N = spans.length;
     const spread = 5; // how many words are mid-transition at once (soft edge)
+    // on a phone the words only brighten: re-blurring them on every scroll frame there
+    // redraws the whole paragraph each time
+    const soft = !window.matchMedia('(pointer: coarse)').matches;
     let raf = 0;
     const update = () => {
       const r = el.getBoundingClientRect();
@@ -47,7 +50,7 @@ const IlluminateText: React.FC<Props> = ({
       for (let i = 0; i < N; i++) {
         const o = clamp((reveal - i) / spread);
         spans[i].style.opacity = (baseOpacity + (1 - baseOpacity) * o).toFixed(3);
-        spans[i].style.filter = o < 1 ? `blur(${((1 - o) * 2.4).toFixed(2)}px)` : 'none';
+        if (soft) spans[i].style.filter = o < 1 ? `blur(${((1 - o) * 2.4).toFixed(2)}px)` : 'none';
       }
     };
     const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
@@ -74,7 +77,6 @@ const IlluminateText: React.FC<Props> = ({
               style={{
                 opacity: baseOpacity,
                 transition: 'opacity 0.25s ease-out, filter 0.25s ease-out',
-                willChange: 'opacity, filter',
               }}
             >
               {w}
