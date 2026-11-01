@@ -257,7 +257,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50">
+      <header className="boot-hide fixed inset-x-0 top-0 z-50">
         {/* once scrolled, a strip of the site's paper with a pencil line drawn under it
             (fades in); the bar's text turns to ink to sit on it */}
         <div aria-hidden className={`bg-paper pointer-events-none absolute inset-0 transition-opacity duration-500 ${onPaper ? 'opacity-100' : 'opacity-0'}`}>

@@ -2,7 +2,6 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
-import Background from './Background';
 import CelestialMark from '../UI/CelestialMark';
 
 interface LoaderProps {
@@ -11,7 +10,9 @@ interface LoaderProps {
   isIndonesian?: boolean;
 }
 
-// The loader is the hero itself, before the rest of it has come in: the same night sky,
+// The loader is the hero itself, before the rest of it has come in: it's drawn straight
+// over the hero's own night sky (nothing of its own behind it, so there's no second sky
+// to swap for the real one; the header and the WhatsApp button wait, see .boot-hide),
 // the name already in its place as the hero's title (same type, same spot), and where
 // the hero's crescent will be, the moon-phase divider pencilled on in cream as the page
 // loads, the rules drawn outward and the moons outlined and shaded in pair by pair (the
@@ -239,20 +240,13 @@ const Loader: React.FC<LoaderProps> = ({ ready = false }) => {
   return (
     <div
       aria-hidden
-      className="fixed inset-x-0 top-0 -bottom-12 z-[200]"
+      className="fixed inset-0 z-[200]"
       style={{
         pointerEvents: leaving ? 'none' : undefined,
         opacity: leaving && reduce ? 0 : 1,
         transition: leaving && reduce ? 'opacity 380ms ease' : undefined,
       }}
     >
-      {/* the hero's sky, the same as the page's under it: it's let go of straight away
-          (softly, so the two skies' drift can't show a seam), so the hero's words can
-          come in under the fading drawing */}
-      <div className="absolute inset-0" style={{ background: '#0b0924', opacity: clearing ? 0 : 1, transition: clearing ? 'opacity 500ms ease' : undefined }}>
-        <Background />
-      </div>
-
       {/* the name, exactly where (and as) the hero's title is */}
       {slots && (
         <div

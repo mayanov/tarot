@@ -469,7 +469,7 @@ function App() {
       <BookingModal isIndonesian={isIndonesian} />
 
       {/* Floating Action Buttons */}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-4 items-end">
+      <div className="boot-hide fixed bottom-6 right-6 z-[100] flex flex-col gap-4 items-end">
         {showBackToTop && (
           // a drop of indigo ink with a pencilled arrow on it; centred over the
           // larger WhatsApp drop below (mr-1.5 = half the difference in size)

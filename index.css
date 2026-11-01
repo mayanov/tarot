@@ -49,6 +49,10 @@ html.lenis body {
 /* ---- Living gradient drift (organic, clearly visible) ---- */
 /* a baked decoration (Baked.tsx) settling in once its picture is ready */
 @keyframes bakedIn { from { opacity: 0; } to { opacity: 1; } }
+/* the header and the floating buttons wait while the loader draws over the hero
+   (html.booting, until it hands over), then come in */
+.boot-hide { transition: opacity 900ms ease 300ms; }
+html.booting .boot-hide { opacity: 0; pointer-events: none; transition: none; }
 
 @keyframes blobA {
   0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
