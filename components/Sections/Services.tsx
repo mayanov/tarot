@@ -118,7 +118,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                 <CardWash colors={CAT_WASH[k % CAT_WASH.length]} />
                 <Spatter k={k} />
                 {/* ornamental inner frame */}
-                <div aria-hidden className="absolute ring-1 ring-white/[0.16]" style={{ inset: cq(10.4), borderRadius: cq(13.6) }} />
+                <div aria-hidden className="print-ink absolute ring-1 ring-white/[0.16]" style={{ inset: cq(10.4), borderRadius: cq(13.6) }} />
 
                 <div className="relative h-full flex flex-col items-center justify-between text-cream text-center" style={{ padding: `${cq(28)} ${cq(20)}` }}>
                     <span className="print-ink font-elegant italic text-cream/55 tracking-wide leading-[1.43]" style={{ fontSize: cq(14) }}>{numeral}</span>
@@ -285,8 +285,8 @@ const CardBack: React.FC<{ seed?: number }> = ({ seed = 5 }) => (
     <div className="absolute inset-0 overflow-hidden rounded-[1.15rem]" style={paperCut(seed)}>
         <CardWash colors={['#4a2e6e', '#241638', '#150c24']} />
         <span className="absolute inset-0 opacity-80"><Spatter k={1} /></span>
-        <div aria-hidden className="absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-[#C9B8E8]/25" />
-        <div aria-hidden className="absolute inset-[1.15rem] rounded-[0.6rem] ring-1 ring-[#C9B8E8]/10" />
+        <div aria-hidden className="print-ink absolute inset-[0.65rem] rounded-[0.85rem] ring-1 ring-[#C9B8E8]/25" />
+        <div aria-hidden className="print-ink absolute inset-[1.15rem] rounded-[0.6rem] ring-1 ring-[#C9B8E8]/10" />
         <div className="absolute inset-0 grid place-items-center">
             <div className="flex flex-col items-center gap-3 text-[#C9B8E8]/80">
                 <CelestialMark name="crescent" className="print-ink w-14" />
@@ -742,26 +742,6 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         </div>
     );
 };
-
-// One offer line inside a category row: name (+ inline badge) left, price right.
-const OfferRow: React.FC<{ o: any }> = ({ o }) => (
-    <div className="py-4 border-t border-white/10 first:border-t-0">
-        <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-2.5 flex-wrap min-w-0">
-                <h4 className="text-[1.05rem] font-serif font-semibold text-cream leading-tight tracking-tight">
-                    {o.name}{o.sub && <span className="text-sm text-cream/80 font-sans font-normal ml-2">{o.sub}</span>}
-                </h4>
-                {o.badge && <span className={`text-[11px] tracking-[0.01em] font-medium px-2.5 py-1 rounded-full ${o.badgeTone || 'bg-white/[0.06] text-cream'}`}>{o.badge}</span>}
-            </div>
-            <div className="text-right shrink-0">
-                {o.oldPrice && <span className="text-xs text-cream/45 line-through leading-none block">{o.oldPrice}</span>}
-                <span className="text-lg md:text-xl font-serif font-semibold text-cream leading-none whitespace-nowrap">{o.price}</span>
-            </div>
-        </div>
-        {o.desc && <p className="mt-2 text-sm text-cream/95 font-light leading-relaxed max-w-2xl">{o.desc}</p>}
-        {o.features && <p className="mt-1.5 text-xs text-cream/80 leading-relaxed max-w-2xl">{o.features}</p>}
-    </div>
-);
 
 // Maps a pricelist category to a booking-modal service id (by category name so it
 // works for both markets). Unmapped categories (e.g. Call, with 30/60 options) open

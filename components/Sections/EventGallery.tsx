@@ -84,7 +84,8 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {
                 {/* the card's face, painted in watercolour */}
                 <CardWash colors={DECK_WASH[1]} />
                 {/* inner frame */}
-                <span className="relative flex min-h-0 flex-1 flex-col rounded-[0.55rem] md:rounded-[0.7rem] ring-1 ring-white/[0.16] px-1.5 md:px-2 pt-1 md:pt-1.5 pb-2 md:pb-2.5">
+                <span className="relative flex min-h-0 flex-1 flex-col px-1.5 md:px-2 pt-1 md:pt-1.5 pb-2 md:pb-2.5">
+                <span aria-hidden className="print-ink pointer-events-none absolute inset-0 rounded-[0.55rem] md:rounded-[0.7rem] ring-1 ring-white/[0.16]" />
                 {/* head: the card's numeral between two rules */}
                 <span aria-hidden className="print-ink flex items-center justify-center gap-2 pb-1 md:pb-1.5 text-cream/60">
                   <span className="h-px w-4 md:w-6 bg-gradient-to-r from-transparent to-current opacity-60" />
@@ -101,7 +102,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {
                     className="absolute inset-0 w-full h-full object-cover [filter:sepia(0.22)_saturate(0.85)_contrast(1.05)] group-hover:[filter:none] transition-[filter] duration-700"
                   />
                   {/* a gentle inner vignette, like a printed photo */}
-                  <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[0.3rem] shadow-[inset_0_0_40px_rgba(30,18,50,0.25)] ring-1 ring-inset ring-white/10" />
+                  <span aria-hidden className="print-ink pointer-events-none absolute inset-0 rounded-[0.3rem] shadow-[inset_0_0_40px_rgba(30,18,50,0.25)] ring-1 ring-inset ring-white/10" />
                 </span>
                 {/* foot: the title, set like a card name */}
                 <span className="flex items-center justify-center gap-1.5 md:gap-2 pt-2 md:pt-3 text-center">

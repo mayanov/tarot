@@ -12,7 +12,10 @@ import { trackEvent, setUserProperties, trackPageView } from './services/analyti
 import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId } from './components/UI/scroll';
 import MoonPhaseDivider from './components/UI/MoonPhaseDivider';
 import { tornBottom, paperCut } from './components/UI/PaperEdge';
-import { PaintSwatch } from './components/UI/ButtonInk';
+import ButtonInk, { PaintSwatch } from './components/UI/ButtonInk';
+import CelestialMark from './components/UI/CelestialMark';
+import PencilRule from './components/UI/PencilRule';
+import { btnPrimaryLight } from './components/UI/buttons';
 import { ArrowUp, RefreshCw } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 
@@ -348,24 +351,20 @@ function App() {
   // ------------------------------------------------------------
   if (isGeoError) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-cream text-ink p-4 text-center">
-        <div className="bg-paper p-8 rounded-2xl border border-ink/10 max-w-md shadow-[0_24px_60px_-30px_rgba(42,35,32,0.4)]">
-          <div className="mx-auto mb-4 w-12 h-16 border-2 border-terracotta rounded-lg flex items-center justify-center relative bg-terracotta/10 animate-float">
-            <div className="w-8 h-12 border border-terracotta/50 rounded-sm flex items-center justify-center">
-              <span className="text-xl">⚡</span>
-            </div>
-          </div>
-          <h2 className="text-2xl font-serif font-medium mb-2 text-ink">Something Went Wrong</h2>
-          <p className="text-ink/60 mb-6 font-light">
-            We encountered an issue loading the page. Please check your connection and try again.
-          </p>
-          <button
-            onClick={performLocationCheck}
-            className="px-6 py-3 rounded-lg bg-terracotta text-paper font-medium hover:bg-terracotta-dark transition flex items-center gap-2 mx-auto"
-          >
+      // the site's paper, a printed crescent, the message set like a heading, and a
+      // painted button to try again
+      <div className="min-h-screen flex flex-col items-center justify-center bg-paper text-ink px-6 text-center">
+        <CelestialMark name="crescent" className="print-ink w-12 text-moon/80" />
+        <h2 className="print-text mt-5 font-elegant font-semibold text-ink text-[2rem] leading-tight tracking-[-0.01em]">Something went wrong</h2>
+        <PencilRule collapse={false} className="mt-3 w-14 text-moon/50" />
+        <p className="print-body mt-3 max-w-sm text-ink/65 leading-relaxed">
+          We couldn't load the page. Please check your connection and try again.
+        </p>
+        <button onClick={performLocationCheck} className={`${btnPrimaryLight} inline-flex mt-7 px-7 py-3 text-[1.05rem]`}>
+          <ButtonInk kind="primary" tone="light">
             <RefreshCw className="w-4 h-4" /> Try Again
-          </button>
-        </div>
+          </ButtonInk>
+        </button>
       </div>
     );
   }

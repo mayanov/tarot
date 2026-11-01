@@ -85,7 +85,9 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
           {/* the deck's twilight plum (as the event photo cards), painted in watercolour,
               so it stands off the paper */}
           <CardWash colors={DECK_WASH[1]} />
-          <div className="relative rounded-[0.8rem] ring-1 ring-[#C9B8E8]/25 px-2.5 md:px-3 pb-3 pt-2">
+          <div className="relative px-2.5 md:px-3 pb-3 pt-2">
+            {/* the inner frame, printed (worn like the rest of the print) */}
+            <span aria-hidden className="print-ink pointer-events-none absolute inset-0 rounded-[0.8rem] ring-1 ring-[#C9B8E8]/25" />
             {/* a tiny sparkle in each corner of the inner frame */}
             {CORNERS.map((c) => (
               <CelestialMark key={c} name="sparkle" className={`print-ink absolute ${c} w-2 text-[#C9B8E8]/55`} />
@@ -108,7 +110,7 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
               />
               {/* flat plum tint (no directional gradient) to cohere with the palette */}
               <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-multiply" style={{ background: 'rgba(42,24,57,0.14)' }} />
-              <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[0.45rem] ring-1 ring-inset ring-white/10" />
+              <div aria-hidden className="print-ink pointer-events-none absolute inset-0 rounded-[0.45rem] ring-1 ring-inset ring-white/10" />
             </div>
             <figcaption className="pt-3 flex flex-col items-center gap-1 text-center">
               <span className="print-text font-elegant font-semibold uppercase tracking-[0.28em] text-[0.8rem] md:text-[0.85rem] text-cream/90 pl-[0.28em]">

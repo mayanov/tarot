@@ -12,6 +12,8 @@ import { MoonWatermark, moonNow } from './MenuMoon';
 interface HeaderProps {
   isIndonesian?: boolean;
   onSwitchRegion?: (toID: boolean) => void;
+  /** a page with no sky under the bar (e.g. the 404): the bar sits on its paper from the start */
+  paper?: boolean;
 }
 
 const REGIONS = {
@@ -79,10 +81,10 @@ const MENU_SERVICES_EN: MenuService[] = [
   { id: '5card', name: '5-Card Deep', short: '5-Card', price: '$20', mark: 'star' },
 ];
 
-const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion }) => {
+const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, paper = false }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const onPaper = isScrolled && !menuOpen; // the bar is on its paper strip
+  const onPaper = (isScrolled || paper) && !menuOpen; // the bar is on its paper strip
   const [closing, setClosing] = useState(false); // links leaving, paper still down
   const closingRef = useRef(false);
   const closeTimer = useRef<number | undefined>(undefined);
