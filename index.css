@@ -573,10 +573,6 @@ html.booting .boot-hide { opacity: 0; pointer-events: none; transition: none; }
   filter: none;
 }
 
-/* text put down in felt-tip marker instead of pressed (#marker, index.html) */
-.marker-ink { filter: url(#marker); }
-@media (pointer: coarse) { .marker-ink { filter: url(#marker-m); } }
-
 /* text letterpressed into the sheet (#letterpress, index.html), in a flat deep ink
    (text-press) */
 .letterpress {
