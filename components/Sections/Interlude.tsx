@@ -69,7 +69,7 @@ const washEdge = (seed: number, flip: boolean) => {
     `<svg xmlns='http://www.w3.org/2000/svg' width='${TILE}' height='${EDGE}' viewBox='0 0 ${TILE} ${EDGE}'>` +
     brush('b1', seed, 90, true) + brush('b2', seed + 20, 80, true) + brush('b3', seed + 40, 60, false) +
     `<g${flip ? ` transform='translate(0 ${EDGE}) scale(1 -1)'` : ''} fill='white'>` +
-    `<g opacity='0.7' filter='url(#b1)'>${sweeps(4, 95, 35)}</g>` +
+    `<g opacity='0.55' filter='url(#b1)'>${sweeps(4, 95, 35)}</g>` +
     `<g opacity='0.9' filter='url(#b2)'>${sweeps(5, 125, 30)}</g>` +
     `<rect x='-300' y='165' width='${TILE + 600}' height='400' filter='url(#b3)'/>` +
     `</g></svg>`;
@@ -96,17 +96,23 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="interlude"
-      className="relative overflow-hidden isolate text-cream py-52 md:py-60"
+      className="relative overflow-hidden text-cream py-52 md:py-60"
     >
       {/* a watercolour evening sky, lighter than the hero's twilight, its top and bottom
-          brushed out onto the paper rather than cut straight across
-          (washEdges) */}
-      <div aria-hidden className="absolute inset-0 -z-10" style={washEdges}>
+          brushed out onto the paper rather than cut straight across (washEdges), and
+          multiplied into the page's paper like pigment soaked into it, so the paper's
+          grain runs on through the strokes (the section isn't isolated, so the blend
+          reaches the paper laid behind the page) */}
+      <div aria-hidden className="absolute inset-0 mix-blend-multiply" style={washEdges}>
         <WatercolorSky palette={EVENING} className="absolute inset-0" />
         {/* a soft shade behind each column only, so the cream type keeps its contrast
             over the pale washes without darkening the whole sky (the type is pressed
             like the rest of the site's, so it carries no glow of its own) */}
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(60% 70% at 28% 50%, rgba(30,20,70,0.3), transparent 72%), radial-gradient(55% 75% at 70% 50%, rgba(30,20,70,0.28), transparent 70%)' }} />
+        {/* the pigment thinning out toward the ends of the strokes, as a brush does
+            when it runs out onto the paper (paper-coloured, so under the multiply it
+            only pales the sky there) */}
+        <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(to bottom, rgba(243,241,236,0.62), rgba(243,241,236,0.28) ${EDGE * 0.55}px, transparent ${EDGE}px, transparent calc(100% - ${EDGE}px), rgba(243,241,236,0.28) calc(100% - ${EDGE * 0.55}px), rgba(243,241,236,0.62))` }} />
       </div>
 
       <div className="relative z-10 mx-auto px-8 max-w-6xl grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-24 gap-y-14 lg:gap-y-10">
