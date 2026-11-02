@@ -28,6 +28,7 @@ const FAQ = React.lazy(() => import('./components/Sections/FAQ'));
 const AnalyticsDashboard = React.lazy(() => import('./components/Dashboard/AnalyticsDashboard'));
 const AdminLogin = React.lazy(() => import('./components/Admin/AdminLogin'));
 const NotFound = React.lazy(() => import('./components/Layout/NotFound'));
+const ThankYou = React.lazy(() => import('./components/Layout/ThankYou'));
 // the booking form (with its date picker and date libraries) is the heaviest thing on the
 // page and nobody needs it until they press a button, so it's fetched once the intro is
 // over (BookingGate) rather than with the first script
@@ -281,13 +282,6 @@ function App() {
       setShowBackToTop((prev) => (prev === v ? prev : v));
     };
 
-    // Handle Payment Redirects
-    const params = new URLSearchParams(window.location.search);
-    const successParam = params.get('payment_success');
-    if (successParam === '3card' || successParam === '5card') {
-      setTimeout(() => { window.location.href = `/thankyou-page-${successParam}.html`; }, 500);
-    }
-
     performLocationCheck();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -427,6 +421,17 @@ function App() {
   // Everything else is a 404.
   // Note: Anchors (#section) do not change pathname.
   const isNotFound = !['/', '/index.html'].includes(path) && !path.endsWith('.html');
+
+  // Back from PayPal after paying for a global reading (the return URL set on the
+  // PayPal payment links): the thank-you page instead of the home page.
+  const paid = params.get('payment_success');
+  if (paid === '3card' || paid === '5card') {
+    return (
+      <React.Suspense fallback={<div className="min-h-screen bg-cream" />}>
+        <ThankYou reading={paid} />
+      </React.Suspense>
+    );
+  }
 
   if (isNotFound) {
     return (

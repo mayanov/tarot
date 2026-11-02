@@ -87,6 +87,13 @@ const PAYMENT = {
   waNumber: '6287786280310', // business WhatsApp (same as the footer / floating button)
 };
 
+// Global readings are paid on PayPal once booked; PayPal then sends the visitor back
+// to /?payment_success=<id> (the thank-you page, set as each link's return URL).
+const PAYPAL: Record<string, string> = {
+  '3card': 'https://www.paypal.com/ncp/payment/DSPX84KBN8GC2',
+  '5card': 'https://www.paypal.com/ncp/payment/V6U4QMAU642KA',
+};
+
 // Each service wears its pricelist card's colour and mark, so the picker ties back to
 // the cards the visitor just saw.
 const SERVICE_LOOK: Record<string, { accent: string; mark: 'constellation' | 'star' | 'sparkle' | 'crescent' | 'sun' }> = {
@@ -270,8 +277,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
         market: isIndonesian ? 'ID' : 'Global',
       });
       const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
-      // GA4 only counts a purchase with a transaction id
-      trackEvent('purchase', { item_name: trackName, market: isIndonesian ? 'ID' : 'Global', transaction_id: `bk-${Date.now()}` }, 'Schedule', { content_name: trackName });
+      // GA4 only counts a purchase with a transaction id. A global reading is only
+      // bought once PayPal sends them back (the thank-you page counts it there).
+      if (isIndonesian) trackEvent('purchase', { item_name: trackName, market: 'ID', transaction_id: `bk-${Date.now()}` }, 'Schedule', { content_name: trackName });
+      else trackEvent('add_payment_info', { item_name: trackName, market: 'Global' }, 'AddPaymentInfo', { content_name: trackName });
       setStep(4);
     } catch (err) {
       setError(err instanceof Error && err.message === 'SLOT_TAKEN'
@@ -291,8 +300,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const waDigits = whatsapp.replace(/\D/g, '');
   const whatsappValid = waDigits.length >= 8;
   // Email is optional, but if given it must look like name@domain.tld
-  const emailValid = email.trim() === '' || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
-  const detailsValid = name.trim().length > 1 && dob.trim() !== '' && whatsappValid && emailValid && (!needsPackage || !!pkg);
+  // global readings are delivered by email, so there it's required
+  const emailValid = (isIndonesian && email.trim() === '') || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+  // a global reading is done by email, without a session: it needs the question
+  const detailsValid = (isIndonesian || question.trim().length > 0) && name.trim().length > 1 && dob.trim() !== '' && whatsappValid && emailValid && (!needsPackage || !!pkg);
   const scheduled = service?.scheduled ?? true;
 
   // Time slots: on the current day, the earliest bookable slot is 2 hours out.
@@ -685,15 +696,15 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   )}
                 </label>
                 <label className="block">
-                  <span className={label}>Email <span className="text-ink/40 font-normal">({t('opsional', 'optional')})</span></span>
+                  <span className={label}>Email {isIndonesian && <span className="text-ink/40 font-normal">(opsional)</span>}</span>
                   <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" className={field} placeholder={t('nama@email.com', 'you@email.com')} />
                   {!emailValid && (
                     <span className="block mt-1.5 text-xs text-ink/70">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
                   )}
                 </label>
                 <label className="block">
-                  <span className={label}>{t('Pertanyaanmu', 'Your question')} <span className="text-ink/40 font-normal">({t('opsional', 'optional')})</span></span>
-                  <textarea value={question} onChange={(e) => setQuestion(e.target.value.slice(0, 2000))} rows={2} className={`${field} resize-none`} placeholder={t('Boleh dikosongkan, kita bisa cari bareng saat sesi.', 'You can leave this blank; we can find it together in the session.')} />
+                  <span className={label}>{t('Pertanyaanmu', 'Your question')} {isIndonesian && <span className="text-ink/40 font-normal">(opsional)</span>}</span>
+                  <textarea value={question} onChange={(e) => setQuestion(e.target.value.slice(0, 2000))} rows={2} className={`${field} resize-none`} placeholder={t('Boleh dikosongkan, kita bisa cari bareng saat sesi.', 'What would you like the cards to look at? A little context helps.')} />
                 </label>
               </div>
 
@@ -734,10 +745,16 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 </div>
               )}
 
+              {!isIndonesian && (
+                <p className="mt-6 text-[13px] text-ink/60 leading-relaxed">
+                  Next, you’ll pay {totalPrice} securely on PayPal. Your reading is sent to your email once payment is through.
+                </p>
+              )}
+
               {bottomBar(
                 <button onClick={submit} disabled={submitting} className={primaryBtn}>
                   {swatch}
-                  {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', 'Confirm booking')}
+                  {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', 'Confirm & pay')}
                 </button>
               )}
             </div>
@@ -752,7 +769,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               </div>
               <h3 className="font-serif font-semibold text-2xl text-ink">{t('Booking diterima!', 'You’re booked!')}</h3>
               <p className="mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
-                {t('Terima kasih, ', 'Thank you, ')}{name || t('kamu', 'friend')}. {t('Aku akan menghubungimu via WhatsApp', 'I’ll reach out on WhatsApp')} ({whatsapp}) {t('untuk konfirmasi.', 'to confirm.')}
+                {isIndonesian
+                  ? <>Terima kasih, {name || 'kamu'}. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk konfirmasi.</>
+                  : <>Thank you, {name || 'friend'}. One last step: pay on PayPal, and your reading is on its way to {email.trim()}.</>}
               </p>
 
               <div className="mt-5 text-left">
@@ -770,9 +789,17 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {isIndonesian && showPay && <div className="mt-5 text-left">{paymentPanel()}</div>}
 
               <p className="mt-5 text-[13px] text-ink/60 max-w-sm mx-auto leading-relaxed">
-                {t('Kirim bukti pembayaran via WhatsApp. Tanpa pembayaran, booking otomatis dibatalkan.', 'Send your payment proof via WhatsApp. Without payment, the booking is cancelled automatically.')}
+                {t('Kirim bukti pembayaran via WhatsApp. Tanpa pembayaran, booking otomatis dibatalkan.', 'Without payment, the booking is cancelled automatically.')}
               </p>
 
+              {!isIndonesian && service && PAYPAL[service.id] ? (
+              <div className="mt-5 flex flex-col items-center gap-3">
+                <a href={PAYPAL[service.id]} className={`${primaryBtn} px-8 py-3`}>
+                  {swatch}
+                  Pay {totalPrice} with PayPal
+                </a>
+              </div>
+              ) : (
               <div className="mt-5 flex flex-col items-center gap-3">
                 <a href={waLink} target="_blank" rel="noopener noreferrer" className={`${primaryBtn} px-8 py-3`}>
                   {swatch}
@@ -784,6 +811,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   </button>
                 )}
               </div>
+              )}
             </div>
           )}
         </div>
