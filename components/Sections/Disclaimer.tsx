@@ -87,7 +87,9 @@ const Disclaimer: React.FC<DisclaimerProps> = ({ isIndonesian = false }) => {
                     </div>
 
                     <PencilRule collapse={false} className="mt-2 text-moon/70" />
-                    <p className="letterpress mt-4 font-elegant italic font-medium text-moon text-[1rem] md:text-[1.05rem]">
+                    {/* signed off in pencil, like the card hint above the pricelist (the
+                        pencil face is subset in index.html: add letters there if this changes) */}
+                    <p className="mt-4 -rotate-1 origin-left font-['Reenie_Beanie',cursive] text-moon text-[1.45rem] md:text-[1.6rem] leading-[1.15]">
                         {agreement}
                     </p>
                 </div>
