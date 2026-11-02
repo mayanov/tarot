@@ -40,7 +40,7 @@ const brush = (id: string, s: number, scale: number, streaks: boolean) =>
   `<feGaussianBlur in='er' stdDeviation='6' result='erb'/>` +
   `<feComposite in='shape' in2='erb' operator='out' result='band'/>` +
   `<feComposite in='soft' in2='band' operator='in' result='rim'/>` +
-  `<feComponentTransfer in='rim' result='rim2'><feFuncA type='linear' slope='0.5'/></feComponentTransfer>` +
+  `<feComponentTransfer in='rim' result='rim2'><feFuncA type='linear' slope='0.9'/></feComponentTransfer>` +
   `<feMerge result='m'><feMergeNode in='soft'/><feMergeNode in='rim2'/></feMerge>` +
   (streaks
     ? `<feTurbulence type='fractalNoise' baseFrequency='0.005 0.09' numOctaves='3' seed='${s + 3}' stitchTiles='stitch' result='st'/>` +
@@ -82,9 +82,9 @@ const washEdge = (seed: number, flip: boolean) => {
     `<g mask='url(#fm)'>` +
     `<g${flip ? ` transform='translate(0 ${EDGE}) scale(1 -1)'` : ''} fill='white'>` +
     `<g opacity='0.12' filter='url(#wb)'>${sweeps(5, 40, 70)}</g>` +
-    `<g opacity='0.3' filter='url(#b1)'>${sweeps(5, 45, 75)}</g>` +
-    `<g opacity='0.55' filter='url(#b2)'>${sweeps(6, 80, 45)}</g>` +
-    `<rect x='-300' y='110' width='${TILE + 600}' height='400' filter='url(#wb)'/>` +
+    `<g opacity='0.42' filter='url(#b1)'>${sweeps(5, 45, 75)}</g>` +
+    `<g opacity='0.72' filter='url(#b2)'>${sweeps(6, 80, 45)}</g>` +
+    `<rect x='-300' y='165' width='${TILE + 600}' height='400' filter='url(#wb)'/>` +
     `</g></g></svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 };
@@ -143,6 +143,10 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
             over the pale washes without darkening the whole sky (the type is pressed
             like the rest of the site's, so it carries no glow of its own) */}
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(60% 70% at 28% 50%, rgba(30,20,70,0.3), transparent 72%), radial-gradient(55% 75% at 70% 50%, rgba(30,20,70,0.28), transparent 70%)' }} />
+        {/* the paint thinning toward the ends of the strokes, as a brush does when it runs
+            out onto the paper: a pale tint of the sky's own lilac (not the paper's colour,
+            which turns grey under the multiply) */}
+        <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(to bottom, rgba(222,214,246,0.7), rgba(222,214,246,0.3) ${EDGE * 0.6}px, transparent ${EDGE * 1.1}px, transparent calc(100% - ${EDGE * 1.1}px), rgba(222,214,246,0.3) calc(100% - ${EDGE * 0.6}px), rgba(222,214,246,0.7))` }} />
       </div>
 
       <div className="relative z-10 mx-auto px-8 max-w-6xl grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-24 gap-y-14 lg:gap-y-10">
