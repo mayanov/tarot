@@ -24,9 +24,10 @@ const QUESTIONS: { topic: [string, string]; q: [string, string] }[] = [
 // (WatercolorWash 'stroke'): the body of the sky ends in a few broad sweeps laid across
 // it, their edges torn along the stroke, the paint pooled along their rims and
 // streaked where the bristles ran dry and left the paper showing. Drawn as a mask (how
-// much of the sky shows, so the strokes are the sky's own colours). One tile of each
-// edge, repeated across (the noise stitched and the strokes wrapped round, so the
-// tiles meet), the middle of the section solid between them.
+// much of the sky shows, so the strokes are the sky's own colours), with
+// a faint wet bleed running ahead so the wash fades in rather than starts. One
+// tile of each edge, repeated across (the noise stitched and the strokes wrapped
+// round, so the tiles meet), the middle of the section solid between them.
 const EDGE = 240;
 const TILE = 1400;
 const brush = (id: string, s: number, scale: number, streaks: boolean) =>
@@ -61,18 +62,29 @@ const washEdge = (seed: number, flip: boolean) => {
       const x = (i / n) * TILE + rand() * 120;
       const y = y0 + rand() * spread;
       const h = 46 + rand() * 30;
-      for (const dx of [-TILE, 0, TILE]) out += `<rect x='${(x + dx).toFixed(0)}' y='${y.toFixed(0)}' width='${w.toFixed(0)}' height='${h.toFixed(0)}' rx='${(h / 2).toFixed(0)}'/>`;
+      for (const dx of [-TILE, 0, TILE]) out += `<ellipse cx='${(x + dx + w / 2).toFixed(0)}' cy='${(y + h / 2).toFixed(0)}' rx='${(w / 2).toFixed(0)}' ry='${(h / 2).toFixed(0)}'/>`;
     }
     return out;
   };
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' width='${TILE}' height='${EDGE}' viewBox='0 0 ${TILE} ${EDGE}'>` +
     brush('b1', seed, 90, true) + brush('b2', seed + 20, 80, true) + brush('b3', seed + 40, 60, false) +
+    `<filter id='wb' x='-10%' y='-80%' width='120%' height='260%'>` +
+    `<feTurbulence type='fractalNoise' baseFrequency='0.004 0.02' numOctaves='3' seed='${seed + 7}' stitchTiles='stitch' result='n'/>` +
+    `<feDisplacementMap in='SourceGraphic' in2='n' scale='90' xChannelSelector='R' yChannelSelector='G'/>` +
+    `<feGaussianBlur stdDeviation='14'/>` +
+    `</filter>` +
+    // everything fades to nothing before the tile's outer side, so nothing is cut off
+    // straight along the section's boundary
+    `<linearGradient id='fo' x1='0' y1='${flip ? 1 : 0}' x2='0' y2='${flip ? 0 : 1}'><stop offset='0' stop-color='white' stop-opacity='0'/><stop offset='0.4' stop-color='white'/></linearGradient>` +
+    `<mask id='fm' maskUnits='userSpaceOnUse' x='0' y='0' width='${TILE}' height='${EDGE}'><rect width='${TILE}' height='${EDGE}' fill='url(#fo)'/></mask>` +
+    `<g mask='url(#fm)'>` +
     `<g${flip ? ` transform='translate(0 ${EDGE}) scale(1 -1)'` : ''} fill='white'>` +
-    `<g opacity='0.45' filter='url(#b1)'>${sweeps(4, 55, 30)}</g>` +
-    `<g opacity='0.75' filter='url(#b2)'>${sweeps(5, 85, 25)}</g>` +
+    `<g opacity='0.12' filter='url(#wb)'>${sweeps(5, 40, 70)}</g>` +
+    `<g opacity='0.4' filter='url(#b1)'>${sweeps(5, 45, 75)}</g>` +
+    `<g opacity='0.7' filter='url(#b2)'>${sweeps(6, 80, 45)}</g>` +
     `<rect x='-300' y='125' width='${TILE + 600}' height='400' filter='url(#b3)'/>` +
-    `</g></svg>`;
+    `</g></g></svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 };
 const washMask = [
@@ -93,8 +105,23 @@ const openBooking = () => window.dispatchEvent(new CustomEvent('open-booking'));
  */
 const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
   const t = (pair: [string, string]) => (isIndonesian ? pair[0] : pair[1]);
+  // the pricelist above lays its own sheet of paper, tiled from its own top; carry
+  // that sheet on into this section, its tiles lined up with where the pricelist's
+  // stop, so the grain runs straight on past the boundary instead of jumping
+  const sectionRef = React.useRef<HTMLElement>(null);
+  const [paperY, setPaperY] = React.useState(0);
+  React.useLayoutEffect(() => {
+    const prev = sectionRef.current?.previousElementSibling as HTMLElement | null;
+    if (!prev) return;
+    const align = () => setPaperY(-(prev.offsetHeight % 600)); // .bg-paper's tile is 600px
+    align();
+    const ro = new ResizeObserver(align);
+    ro.observe(prev);
+    return () => ro.disconnect();
+  }, []);
   return (
     <section
+      ref={sectionRef}
       id="interlude"
       className="relative overflow-hidden text-cream py-52 md:py-60"
     >
@@ -103,6 +130,12 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
           multiplied into the page's paper like pigment soaked into it, so the paper's
           grain runs on through the strokes (the section isn't isolated, so the blend
           reaches the paper laid behind the page) */}
+      {/* (fading out under the sky, onto the page's own paper beneath) */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 bg-paper"
+        style={{ height: EDGE * 2.5, backgroundPosition: `center ${paperY}px`, WebkitMaskImage: `linear-gradient(#000 ${EDGE}px, transparent)`, maskImage: `linear-gradient(#000 ${EDGE}px, transparent)` }}
+      />
       <div aria-hidden className="absolute inset-0 mix-blend-multiply" style={washEdges}>
         <WatercolorSky palette={EVENING} className="absolute inset-0" />
         {/* a soft shade behind each column only, so the cream type keeps its contrast
