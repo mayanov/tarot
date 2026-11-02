@@ -3,6 +3,7 @@ import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import CelestialMark from '../UI/CelestialMark';
+import { skyPainted, TWILIGHT } from './WatercolorSky';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -31,7 +32,7 @@ export const REVEAL_FLIGHT_MS = CARRY_DELAY_MS + CARRY_MS;
 const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
 
 // Loading is REAL: progress comes from the work the page actually waits on.
-const TASKS = ['fonts', 'paper', 'app', 'page'] as const;
+const TASKS = ['fonts', 'paper', 'sky', 'app', 'page'] as const;
 const MIN_CLIMB_MS = 1600;    // even on a fast connection the drawing takes this long (no flash)
 const SETTLE_MS = 450;        // the finished drawing (at 100%) holds a beat before the hand-off
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
@@ -124,6 +125,9 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     img.onerror = safe('paper');
     img.src = PAPER_IMG;
     if (img.complete && img.naturalWidth) safe('paper')();
+    // the hero's watercolour sky: painted first thing (it holds the main thread for a
+    // moment, which on a phone would show as a hitch if it landed mid-drawing)
+    skyPainted(TWILIGHT).then(safe('sky'), safe('sky'));
     // the page itself (scripts, styles, images in the document)
     if (document.readyState === 'complete') safe('page')();
     else window.addEventListener('load', safe('page'), { once: true });
@@ -147,7 +151,10 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     const t0 = performance.now();
     let p = 0;
     setShown(true);
-    // a ~30fps timer rather than rAF, so progress keeps moving even in a background tab
+    // in step with the screen (rAF), so the pencil moves smoothly; a timer takes over
+    // while the tab is hidden, so progress keeps moving in a background tab
+    let raf = 0, iv = 0;
+    const stop = () => { cancelAnimationFrame(raf); clearInterval(iv); };
     const tick = () => {
       const now = performance.now();
       const real = doneRef.current / TASKS.length;
@@ -155,13 +162,21 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       const timeCap = Math.min(1, (now - t0) / climb) * 100;
       const creep = allDone ? 0 : 12 * (1 - Math.exp(-(now - lastDoneAt.current) / 1800));
       const target = Math.min(timeCap, allDone ? 100 : Math.min(99, real * 100 + creep));
-      p += (target - p) * (reduce ? 1 : 0.14);
+      // (nobody's watching a hidden tab: go straight to where it's got)
+      p += (target - p) * (reduce || document.hidden ? 1 : 0.14);
       if (allDone && timeCap >= 100 && p > 99.4) p = 100;
       setPct(p);
-      if (p >= 100) { clearInterval(iv); setComplete(true); }
+      if (p >= 100) { stop(); setComplete(true); return; }
+      if (!document.hidden) raf = requestAnimationFrame(tick);
     };
-    const iv = window.setInterval(tick, 33);
-    return () => clearInterval(iv);
+    const run = () => {
+      stop();
+      if (document.hidden) iv = window.setInterval(tick, 100);
+      else raf = requestAnimationFrame(tick);
+    };
+    run();
+    document.addEventListener('visibilitychange', run);
+    return () => { stop(); document.removeEventListener('visibilitychange', run); };
   }, [reduce]);
 
   // ---- where the hero's title and crescent are, to draw the loader over them ----
@@ -279,12 +294,19 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           style={{ top: slots.moonY, transform: 'translateY(-50%)', opacity: shown ? 1 : 0, transition: 'opacity 900ms ease' }}
         >
         <div className="w-full max-w-[34rem] flex items-center gap-4 md:gap-5" style={{ transform: `translateX(${(slots.moonX - window.innerWidth / 2).toFixed(1)}px)` }}>
-          <div className="flex-1 min-w-0" style={{ clipPath: `inset(-8px 0 -8px ${(1 - rule) * 100}%)`, ...fades }}>
-            <PencilRule fade="start" className="w-full text-cream/45" />
+          {/* each rule is uncovered outward from the moons: a window slides along over
+              it (the line held still inside), transforms only, so nothing is redrawn */}
+          <div className="flex-1 min-w-0 overflow-hidden py-2 -my-2" style={fades}>
+            <div className="overflow-hidden py-2 -my-2 will-change-transform" style={{ transform: `translate3d(${((1 - rule) * 100).toFixed(2)}%,0,0)` }}>
+              <div className="will-change-transform" style={{ transform: `translate3d(${(-(1 - rule) * 100).toFixed(2)}%,0,0)` }}>
+                <PencilRule fade="start" className="w-full text-cream/45" />
+              </div>
+            </div>
           </div>
           {/* (the pencil's filter is let go of as the moon moves off, or it'd clip it
-              to the row) */}
-          <div className={`${clearing ? '' : '[filter:url(#pencil-icon)]'} flex items-center gap-2.5 md:gap-3`}>
+              to the row; and it's left off on touch screens, where working it out
+              again for every step of the drawing makes the phone stutter) */}
+          <div className={`${clearing ? '' : '[@media(pointer:fine)]:[filter:url(#pencil-icon)]'} flex items-center gap-2.5 md:gap-3`}>
             {PHASES.map((ph, i) => {
               const full = ph.p === 1;
               return (
@@ -316,8 +338,12 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
               );
             })}
           </div>
-          <div className="flex-1 min-w-0" style={{ clipPath: `inset(-8px ${(1 - rule) * 100}% -8px 0)`, ...fades }}>
-            <PencilRule fade="end" className="w-full text-cream/45" />
+          <div className="flex-1 min-w-0 overflow-hidden py-2 -my-2" style={fades}>
+            <div className="overflow-hidden py-2 -my-2 will-change-transform" style={{ transform: `translate3d(${(-(1 - rule) * 100).toFixed(2)}%,0,0)` }}>
+              <div className="will-change-transform" style={{ transform: `translate3d(${((1 - rule) * 100).toFixed(2)}%,0,0)` }}>
+                <PencilRule fade="end" className="w-full text-cream/45" />
+              </div>
+            </div>
           </div>
         </div>
         </div>

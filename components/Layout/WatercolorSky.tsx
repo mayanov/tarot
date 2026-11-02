@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { afterIntro } from '../UI/introGate';
 
 // A sky painted in watercolour rather than photographed: a graded wash, long
 // wet-in-wet streaks laid across it like cloud (edges bled and dried darker), pale
@@ -152,8 +153,10 @@ const paintSvg = (p: SkyPalette) => svg(`
   <rect width="${W}" height="${H}" filter="url(#paper)" opacity="0.42" style="mix-blend-mode:multiply"/>`);
 
 // Each palette is painted once per page load into a plain JPEG bitmap (at 1.5× the
-// sheet), queued for idle time so the heavy filters never run during a scroll. Until
-// it's ready the sky shows its flat ground colour, then fades the painting in.
+// sheet), queued for idle time after the intro (introGate) so the heavy filters never
+// run during the loader or a scroll. The hero's sky is `eager`: painted at once, first
+// thing (the loader waits for it, see skyPainted), while nothing is moving yet. Until
+// it's ready a sky shows its flat ground colour, then fades the painting in.
 const SCALE = 1.5;
 const bitmaps = new Map<SkyPalette, Promise<string>>();
 let queue: Promise<unknown> = Promise.resolve();
@@ -161,10 +164,11 @@ const idle = () => new Promise<void>((r) => {
   const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
   if (ric) ric(() => r(), { timeout: 1500 }); else setTimeout(r, 60);
 });
-const bitmap = (p: SkyPalette) => {
+const bitmap = (p: SkyPalette, eager = false) => {
   let v = bitmaps.get(p);
   if (!v) {
-    v = queue.then(idle).then(() => new Promise<string>((resolve) => {
+    const start = eager ? Promise.resolve() : queue.then(afterIntro).then(idle);
+    v = start.then(() => new Promise<string>((resolve) => {
       const src = paintSvg(p);
       const img = new Image();
       img.onload = () => {
@@ -178,21 +182,24 @@ const bitmap = (p: SkyPalette) => {
       img.onerror = () => resolve(src);
       img.src = src;
     }));
-    queue = v;
+    if (!eager) queue = v;
     bitmaps.set(p, v);
   }
   return v;
 };
 
-const WatercolorSky: React.FC<{ palette?: SkyPalette; stars?: boolean; className?: string; style?: React.CSSProperties; skyRef?: React.Ref<HTMLDivElement> }> = ({ palette: p = DUSK, stars = true, className = '', style, skyRef }) => {
+/** the bitmap of a sky painted at once (the hero's): the loader waits on it */
+export const skyPainted = (p: SkyPalette) => bitmap(p, true);
+
+const WatercolorSky: React.FC<{ palette?: SkyPalette; stars?: boolean; eager?: boolean; className?: string; style?: React.CSSProperties; skyRef?: React.Ref<HTMLDivElement> }> = ({ palette: p = DUSK, stars = true, eager = false, className = '', style, skyRef }) => {
   const [src, setSrc] = useState<string>();
   const [onScreen, setOnScreen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let live = true;
-    bitmap(p).then((u) => { if (live) setSrc(u); });
+    bitmap(p, eager).then((u) => { if (live) setSrc(u); });
     return () => { live = false; };
-  }, [p]);
+  }, [p, eager]);
   // drift and twinkle only while the sky is on screen
   useEffect(() => {
     const el = boxRef.current;

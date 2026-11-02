@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { afterIntro } from './introGate';
 
 /**
  * Paints a heavy SVG decoration (a watercolour wash: noise, displacement, wide blurs)
@@ -13,7 +14,8 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
  * it for decorations that don't change on hover.
  */
 
-// one bake at a time, each in idle time, so painting them never lands on a scroll
+// one bake at a time, each in idle time after the intro (introGate), so painting them
+// never lands on the loader, the hero's entrance or a scroll
 let queue: Promise<unknown> = Promise.resolve();
 const idle = () => new Promise<void>((r) => {
   const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
@@ -21,7 +23,7 @@ const idle = () => new Promise<void>((r) => {
 });
 
 const bake = (svg: SVGSVGElement, w: number, h: number, bleed: number): Promise<string | null> =>
-  (queue = queue.then(idle).then(() => new Promise<string | null>((resolve) => {
+  (queue = queue.then(afterIntro).then(idle).then(() => new Promise<string | null>((resolve) => {
     const W = w + bleed * 2, H = h + bleed * 2;
     const clone = svg.cloneNode(true) as SVGSVGElement;
     clone.removeAttribute('class');

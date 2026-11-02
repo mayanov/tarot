@@ -23,7 +23,7 @@ const Background: React.FC = () => {
     <div ref={rootRef} className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* the sky itself, painted in watercolour (blue up the left, a violet heart, a
           rose bloom upper-right, teal lower-right), drifting very slowly */}
-      <WatercolorSky palette={TWILIGHT} stars={false} className="absolute inset-0" />
+      <WatercolorSky palette={TWILIGHT} stars={false} eager className="absolute inset-0" />
       {/* a thin lavender veil over it, lifting the whole sky a touch (a plain overlay:
           blend modes are unreliable on iPhones) */}
       <div className="absolute inset-0" style={{ background: 'rgba(196,178,236,0.07)' }} />
