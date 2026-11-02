@@ -1,5 +1,4 @@
 import Lenis from 'lenis';
-import { useEffect, RefObject } from 'react';
 
 let lenis: Lenis | null = null;
 
@@ -30,10 +29,6 @@ export function initLenis(): Lenis {
 export function destroyLenis() {
     lenis?.destroy();
     lenis = null;
-}
-
-export function getLenis(): Lenis | null {
-    return lenis;
 }
 
 // On a phone the page scrolls on its own thread, ahead of any script: motion tied to
@@ -110,32 +105,6 @@ export function initParallax() {
 export function destroyParallax() {
     parallaxCleanup?.();
     parallaxCleanup = null;
-}
-
-// Scroll-linked parallax: translate an element by its distance from the viewport
-// centre × speed. Negative speed = moves against scroll (feels deeper). Runs off the
-// (Lenis-driven) scroll event via rAF, and respects reduced-motion.
-export function useParallax(ref: RefObject<HTMLElement>, speed = 0.15) {
-    useEffect(() => {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        let raf = 0;
-        const update = () => {
-            const el = ref.current;
-            if (!el) return;
-            const rect = el.getBoundingClientRect();
-            const dist = (rect.top + rect.height / 2) - window.innerHeight / 2;
-            el.style.transform = `translate3d(0, ${(dist * speed).toFixed(1)}px, 0)`;
-        };
-        const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
-        update();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-        return () => {
-            window.removeEventListener('scroll', onScroll);
-            window.removeEventListener('resize', onScroll);
-            cancelAnimationFrame(raf);
-        };
-    }, [ref, speed]);
 }
 
 // Smoothly scroll to an element id, leaving room for the fixed header.

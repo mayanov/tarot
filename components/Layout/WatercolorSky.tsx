@@ -247,18 +247,6 @@ export const DUSK: SkyPalette = {
   glow: ['rgba(255,214,236,0.9)', 'rgba(214,190,255,0.7)'],
 };
 
-// midnight: deep navy at the top warming through violet to a mauve-rose haze, with
-// a teal-blue drift and a few aqua and pink lights — the interlude, a night sky to
-// the footer's dusk
-export const MIDNIGHT: SkyPalette = {
-  ground: '#2a2560',
-  base: ['#0d1638', '#1e2560', '#3a3488', '#6a4a9e', '#a7739f'],
-  back: ['#0b1333', '#2a1f62', '#1c3a74', '#4b3c9c', '#7a4a9a', '#2f6a9a'],
-  front: ['#3a3a8e', '#6a5ab0', '#b07ab0', '#e0a8c4', '#7fb0d8'],
-  bloom: '#e6dcf5',
-  glow: ['rgba(255,190,220,0.6)', 'rgba(150,210,240,0.5)'],
-};
-
 // evening: the interlude — the hour before the hero's twilight, a soft lit sky: a
 // periwinkle-violet overhead into lilac and a warm rose-peach haze low down, with
 // cool blue washes and a pale lavender bloom
