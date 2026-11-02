@@ -58,8 +58,9 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             {reasons.map((reason, index) => (
               <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
                 <div className="letterpress-lg group/row text-center">
-                  {/* quiet kicker label */}
-                  <span className="block font-elegant italic lowercase text-moon/70 text-[0.9rem] md:text-[1.05rem] transition-colors duration-500 group-hover/row:text-moon">
+                  {/* kicker label, pencilled by hand like the card hint above the pricelist
+                      (the pencil face is subset in index.html: add letters there if these change) */}
+                  <span className="block w-fit mx-auto -rotate-2 font-['Reenie_Beanie',cursive] lowercase text-moon/80 text-[1.45rem] md:text-[1.6rem] leading-none transition-colors duration-500 group-hover/row:text-moon">
                     {reason.label}
                   </span>
                   {/* the statement does the talking */}
