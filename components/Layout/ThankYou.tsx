@@ -40,15 +40,15 @@ const ThankYou: React.FC<{ reading: PaidReading }> = ({ reading }) => {
     ];
 
     return (
-        <div className="min-h-screen relative font-sans text-ink bg-paper flex flex-col">
+        <div className="h-[100dvh] overflow-hidden relative font-sans text-ink bg-paper flex flex-col">
             <Header isIndonesian={false} paper noBooking />
 
-            <main className="flex-grow flex items-center justify-center w-full px-6 relative z-10 pt-28 pb-20">
+            <main className="flex-1 min-h-0 flex items-center justify-center w-full px-6 relative z-10 pt-20 pb-6 [@media(max-height:740px)]:pt-16 [@media(max-height:740px)]:pb-3">
                 <div className="max-w-md w-full flex flex-col items-center text-center">
-                    <CelestialMark name={r.mark} className="print-ink w-14 text-moon/80" />
-                    <span className="print-ink mt-4 font-elegant italic text-ink/45 tracking-[0.2em]">{r.name}</span>
+                    <CelestialMark name={r.mark} className="print-ink w-14 [@media(max-height:740px)]:w-10 text-moon/80" />
+                    <span className="print-ink mt-4 [@media(max-height:740px)]:mt-2 font-elegant italic text-ink/45 tracking-[0.2em]">{r.name}</span>
 
-                    <h1 className="letterpress-lg mt-3 font-elegant font-semibold text-ink text-[2.4rem] md:text-[3rem] leading-[1.05] tracking-[-0.02em]">
+                    <h1 className="letterpress-lg mt-3 font-elegant font-semibold text-ink text-[2.4rem] md:text-[3rem] [@media(max-height:740px)]:text-[2rem] leading-[1.05] tracking-[-0.02em]">
                         Thank you, payment received
                     </h1>
                     <PencilRule collapse={false} className="mt-4 w-16 text-moon/50" />
@@ -57,20 +57,20 @@ const ThankYou: React.FC<{ reading: PaidReading }> = ({ reading }) => {
                         Your reading is confirmed. I’ll sit with your cards and write back soon.
                     </p>
 
-                    <ol className="mt-8 w-full text-left">
+                    <ol className="mt-8 [@media(max-height:740px)]:mt-4 w-full text-left">
                         {steps.map((s, i) => (
-                            <li key={i} className="flex gap-4 py-3">
+                            <li key={i} className="flex gap-4 py-3 [@media(max-height:740px)]:py-1.5">
                                 <span className="print-ink font-elegant italic text-moon/80 text-xl leading-none pt-0.5">{i + 1}</span>
                                 <span className="letterpress text-ink/70 text-[15px] leading-relaxed">{s}</span>
                             </li>
                         ))}
                     </ol>
 
-                    <span className="mt-6 block w-fit -rotate-2 font-['Reenie_Beanie',cursive] lowercase text-moon/80 text-[1.45rem] leading-none [filter:url(#pencil-icon)]">
+                    <span className="mt-6 [@media(max-height:740px)]:mt-3 block w-fit -rotate-2 font-['Reenie_Beanie',cursive] lowercase text-moon/80 text-[1.45rem] leading-none [filter:url(#pencil-icon)]">
                         thank you for trusting me
                     </span>
 
-                    <a href="/" className={`${btnPrimaryLight} inline-flex mt-8 px-8 py-3 text-[1.05rem]`}>
+                    <a href="/" className={`${btnPrimaryLight} inline-flex mt-8 [@media(max-height:740px)]:mt-5 px-8 py-3 text-[1.05rem]`}>
                         <ButtonInk kind="primary" tone="light">Back to Home</ButtonInk>
                     </a>
                 </div>
