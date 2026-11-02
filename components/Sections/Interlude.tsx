@@ -40,7 +40,8 @@ const brush = (id: string, s: number, scale: number, streaks: boolean) =>
   `<feGaussianBlur in='er' stdDeviation='6' result='erb'/>` +
   `<feComposite in='shape' in2='erb' operator='out' result='band'/>` +
   `<feComposite in='soft' in2='band' operator='in' result='rim'/>` +
-  `<feMerge result='m'><feMergeNode in='soft'/><feMergeNode in='rim'/></feMerge>` +
+  `<feComponentTransfer in='rim' result='rim2'><feFuncA type='linear' slope='0.5'/></feComponentTransfer>` +
+  `<feMerge result='m'><feMergeNode in='soft'/><feMergeNode in='rim2'/></feMerge>` +
   (streaks
     ? `<feTurbulence type='fractalNoise' baseFrequency='0.005 0.09' numOctaves='3' seed='${s + 3}' stitchTiles='stitch' result='st'/>` +
       `<feColorMatrix in='st' type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.3 1.6' result='sa'/>` +
@@ -68,7 +69,7 @@ const washEdge = (seed: number, flip: boolean) => {
   };
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' width='${TILE}' height='${EDGE}' viewBox='0 0 ${TILE} ${EDGE}'>` +
-    brush('b1', seed, 90, true) + brush('b2', seed + 20, 80, true) + brush('b3', seed + 40, 60, false) +
+    brush('b1', seed, 90, true) + brush('b2', seed + 20, 80, true) +
     `<filter id='wb' x='-10%' y='-80%' width='120%' height='260%'>` +
     `<feTurbulence type='fractalNoise' baseFrequency='0.004 0.02' numOctaves='3' seed='${seed + 7}' stitchTiles='stitch' result='n'/>` +
     `<feDisplacementMap in='SourceGraphic' in2='n' scale='90' xChannelSelector='R' yChannelSelector='G'/>` +
@@ -81,9 +82,9 @@ const washEdge = (seed: number, flip: boolean) => {
     `<g mask='url(#fm)'>` +
     `<g${flip ? ` transform='translate(0 ${EDGE}) scale(1 -1)'` : ''} fill='white'>` +
     `<g opacity='0.12' filter='url(#wb)'>${sweeps(5, 40, 70)}</g>` +
-    `<g opacity='0.4' filter='url(#b1)'>${sweeps(5, 45, 75)}</g>` +
-    `<g opacity='0.7' filter='url(#b2)'>${sweeps(6, 80, 45)}</g>` +
-    `<rect x='-300' y='125' width='${TILE + 600}' height='400' filter='url(#b3)'/>` +
+    `<g opacity='0.3' filter='url(#b1)'>${sweeps(5, 45, 75)}</g>` +
+    `<g opacity='0.55' filter='url(#b2)'>${sweeps(6, 80, 45)}</g>` +
+    `<rect x='-300' y='110' width='${TILE + 600}' height='400' filter='url(#wb)'/>` +
     `</g></g></svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 };
@@ -142,10 +143,6 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
             over the pale washes without darkening the whole sky (the type is pressed
             like the rest of the site's, so it carries no glow of its own) */}
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(60% 70% at 28% 50%, rgba(30,20,70,0.3), transparent 72%), radial-gradient(55% 75% at 70% 50%, rgba(30,20,70,0.28), transparent 70%)' }} />
-        {/* the pigment thinning out toward the ends of the strokes, as a brush does
-            when it runs out onto the paper (paper-coloured, so under the multiply it
-            only pales the sky there) */}
-        <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(to bottom, rgba(243,241,236,0.62), rgba(243,241,236,0.28) ${EDGE * 0.55}px, transparent ${EDGE}px, transparent calc(100% - ${EDGE}px), rgba(243,241,236,0.28) calc(100% - ${EDGE * 0.55}px), rgba(243,241,236,0.62))` }} />
       </div>
 
       <div className="relative z-10 mx-auto px-8 max-w-6xl grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-24 gap-y-14 lg:gap-y-10">
