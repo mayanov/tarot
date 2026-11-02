@@ -141,7 +141,7 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
 
         <div ref={stackRef} className="mx-auto px-8 relative z-10 w-full max-w-3xl text-center will-change-transform">
           <h2
-            className="font-elegant font-medium text-[clamp(2.2rem,6vw,4.2rem)] leading-[1.06] tracking-[-0.02em] [text-shadow:0_8px_50px_rgba(6,4,14,0.5)]"
+            className="letterpress-lg pb-[0.14em] -mb-[0.14em] font-elegant font-medium text-[clamp(2.2rem,6vw,4.2rem)] leading-[1.06] tracking-[-0.02em]"
           >
             {isIndonesian ? 'Ruang tenang untuk berpikir dengan jujur.' : 'A calm space to think out loud.'}
           </h2>
@@ -149,7 +149,7 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           <p
             ref={paraRef}
             style={hidden}
-            className="mt-9 md:mt-10 mx-auto max-w-2xl text-cream font-light text-[0.95rem] leading-relaxed will-change-[opacity,transform]"
+            className="letterpress mt-9 md:mt-10 mx-auto max-w-2xl text-cream font-light text-[0.95rem] leading-relaxed will-change-[opacity,transform]"
           >
             {isIndonesian
               ? 'Kita buka kartunya dan baca energi yang sedang kamu bawa — pola yang sedang kamu jalani, perasaan yang belum sempat kamu ucapkan — lalu kita ubah jadi langkah yang jelas dan bisa kamu ambil.'

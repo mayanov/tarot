@@ -265,7 +265,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       {/* the name, exactly where (and as) the hero's title is */}
       {slots && (
         <div
-          className="fixed flex items-center justify-center font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] text-cream"
+          className="letterpress-lg fixed flex items-center justify-center font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-cream"
           style={{
             left: slots.title.left, top: slots.title.top, width: slots.title.width, height: slots.title.height, fontSize: slots.titleFont,
             opacity: shown ? 1 : 0, transition: clearing ? 'opacity 400ms ease 300ms' : 'opacity 900ms ease',

@@ -125,7 +125,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
           <h1
             data-hero-title
-            className="font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] [text-shadow:0_8px_60px_rgba(6,4,14,0.5)] text-cream"
+            className="letterpress-lg pb-[0.14em] -mb-[0.14em] font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-[clamp(1.7rem,8.6vw,7.6rem)] text-cream"
             // shown at once when the loader hands over: its name is drawn right here,
             // in the same type, so the title is already in place
             style={{ opacity: shown ? 1 : 0 }}
@@ -136,7 +136,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
 
         <Rise shown={shown} delay={REVEAL_FLIGHT_MS - 550}>
           <div ref={subRef} className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '42vh', ['--speed' as string]: 0.22 }}>
-          <p className="mt-7 md:mt-9 font-elegant font-medium leading-[1.2] md:leading-[1.14] tracking-[-0.01em] text-[1.3rem] sm:text-[1.6rem] md:text-[1.95rem] lg:text-[2.2rem] xl:text-[2.45rem] text-cream max-w-[20ch] md:max-w-none md:whitespace-nowrap [text-shadow:0_4px_30px_rgba(6,4,14,0.5)]">
+          <p className="letterpress-lg mt-7 md:mt-9 font-elegant font-medium leading-[1.2] md:leading-[1.14] tracking-[-0.01em] text-[1.3rem] sm:text-[1.6rem] md:text-[1.95rem] lg:text-[2.2rem] xl:text-[2.45rem] text-cream max-w-[20ch] md:max-w-none md:whitespace-nowrap">
             {isIndonesian ? (
               <>Pandangan <span className="italic">jernih</span> untuk langkah berikutnya.</>
             ) : (

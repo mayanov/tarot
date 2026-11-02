@@ -93,11 +93,11 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                         <div className="grid place-items-center" style={{ height: cq(64) }}>
                             <span className="block" style={{ width: cq(64) }}><CelestialMark name={CAT_MARKS[k % CAT_MARKS.length]} className="print-ink block w-full text-cream/90" /></span>
                         </div>
-                        <h3 className="min-h-[2.24em] flex items-center justify-center font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch]" style={{ fontSize: cq(22.4) }}>{g.type}</h3>
+                        <h3 className="letterpress-lg min-h-[2.24em] flex items-center justify-center font-elegant font-medium leading-[1.12] tracking-tight max-w-[12ch]" style={{ fontSize: cq(22.4) }}>{g.type}</h3>
                     </div>
                     <div className="flex flex-col items-center" style={{ gap: cq(4) }}>
-                        <span className="text-cream/45 tracking-[0.18em] uppercase leading-[1.5]" style={{ fontSize: cq(10.5) }}>{g.promo ? 'Promo' : isIndonesian ? 'Mulai dari' : 'From'}</span>
-                        <span className="font-serif font-semibold whitespace-nowrap leading-[1.55]" style={{ fontSize: cq(g.promo ? 16.8 : 18) }}>{g.promo ? g.priceLabel : fromPrice(g)}</span>
+                        <span className="letterpress text-cream/55 tracking-[0.18em] uppercase leading-[1.5]" style={{ fontSize: cq(10.5) }}>{g.promo ? 'Promo' : isIndonesian ? 'Mulai dari' : 'From'}</span>
+                        <span className="letterpress font-serif font-semibold whitespace-nowrap leading-[1.55]" style={{ fontSize: cq(g.promo ? 16.8 : 18) }}>{g.promo ? g.priceLabel : fromPrice(g)}</span>
                     </div>
                 </div>
                 <CardStock />

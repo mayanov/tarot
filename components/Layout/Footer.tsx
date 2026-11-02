@@ -57,7 +57,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
             <div className="mx-auto px-6 md:px-10 max-w-5xl">
                 {/* the close */}
                 <div style={rise(0)} className="flex flex-col items-center text-center pt-14 md:pt-20 pb-12 md:pb-16">
-                    <h2 className="font-elegant font-medium text-cream leading-[1.08] tracking-[-0.015em] text-[clamp(1.9rem,4vw,3.1rem)] max-w-[18ch]">
+                    <h2 className="letterpress-lg pb-[0.14em] -mb-[0.14em] font-elegant font-medium text-cream leading-[1.08] tracking-[-0.015em] text-[clamp(1.9rem,4vw,3.1rem)] max-w-[18ch]">
                         {isIndonesian
                             ? <>Siap untuk pikiran yang lebih <span className="italic">jernih</span>?</>
                             : <>Ready for a <span className="italic">clearer</span> view?</>}
@@ -77,7 +77,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 {/* small print, under a line drawn in white pencil */}
                 <PencilRule weight="fine" className="text-cream/30" />
                 <div style={rise(200)} className="py-6 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 text-xs text-cream/50">
-                    <span>© {year} Mayanov Tarot · Jakarta</span>
+                    <span className="letterpress">© {year} Mayanov Tarot · Jakarta</span>
                     <nav className="flex items-center gap-6" aria-label="Social">
                         <a
                             href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={icon}
