@@ -13,7 +13,7 @@ interface EventsProps {
   isIndonesian?: boolean;
 }
 
-const EVENT_PHOTOS = ['/event-1.jpeg', '/event-2.jpeg', '/event-3.jpeg', '/event-4.jpeg'];
+const EVENT_PHOTOS = ['/event-1.webp', '/event-2.webp', '/event-3.webp', '/event-4.webp'];
 
 const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
   const [showAll, setShowAll] = useState(false);

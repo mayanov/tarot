@@ -7,7 +7,7 @@ import TarotIntro from './components/Sections/TarotIntro';
 import Footer from './components/Layout/Footer';
 import WatercolorSky from './components/Layout/WatercolorSky';
 import Loader from './components/Layout/Loader';
-import BookingModal from './components/Booking/BookingModal';
+import { afterIntro } from './components/UI/introGate';
 import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
 import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId, touchScreen, cssScrollTimeline } from './components/UI/scroll';
 import MoonPhaseDivider from './components/UI/MoonPhaseDivider';
@@ -28,6 +28,47 @@ const FAQ = React.lazy(() => import('./components/Sections/FAQ'));
 const AnalyticsDashboard = React.lazy(() => import('./components/Dashboard/AnalyticsDashboard'));
 const AdminLogin = React.lazy(() => import('./components/Admin/AdminLogin'));
 const NotFound = React.lazy(() => import('./components/Layout/NotFound'));
+// the booking form (with its date picker and date libraries) is the heaviest thing on the
+// page and nobody needs it until they press a button, so it's fetched once the intro is
+// over (BookingGate) rather than with the first script
+const BookingModal = React.lazy(() => import('./components/Booking/BookingModal'));
+
+/**
+ * Mounts the booking form once its code is wanted: quietly in the background after the
+ * intro, or at once if someone asks for it first. The form listens for 'open-booking'
+ * itself, so a request that came in before it existed is held and sent again once it's
+ * mounted (Resend runs after the form's own effects, as its later sibling).
+ */
+const BookingGate: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
+  const [wanted, setWanted] = useState(false);
+  const pending = useRef<CustomEvent | null>(null);
+  useEffect(() => {
+    if (wanted) return;
+    const onOpen = (e: Event) => { pending.current = e as CustomEvent; setWanted(true); };
+    window.addEventListener('open-booking', onOpen);
+    // (a late call after it's already wanted just sets the same state again)
+    afterIntro().then(() => {
+      const ric = (window as { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
+      if (ric) ric(() => setWanted(true)); else window.setTimeout(() => setWanted(true), 1500);
+    });
+    return () => window.removeEventListener('open-booking', onOpen);
+  }, [wanted]);
+  if (!wanted) return null;
+  return (
+    <React.Suspense fallback={null}>
+      <BookingModal isIndonesian={isIndonesian} />
+      <Resend pending={pending} />
+    </React.Suspense>
+  );
+};
+const Resend: React.FC<{ pending: React.MutableRefObject<CustomEvent | null> }> = ({ pending }) => {
+  useEffect(() => {
+    const e = pending.current;
+    pending.current = null;
+    if (e) window.dispatchEvent(new CustomEvent('open-booking', { detail: e.detail }));
+  }, [pending]);
+  return null;
+};
 
 
 // Helper to fetch with timeout
@@ -466,7 +507,7 @@ function App() {
         </div>
       </div>
 
-      <BookingModal isIndonesian={isIndonesian} />
+      <BookingGate isIndonesian={isIndonesian} />
 
       {/* Floating Action Buttons */}
       <div className="boot-hide fixed bottom-6 right-6 z-[100] flex flex-col gap-4 items-end">

@@ -100,7 +100,7 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
             </div>
             <div className="relative aspect-[4/5] overflow-hidden rounded-[0.45rem]">
               <ImageReveal
-                src={`${import.meta.env.BASE_URL}bio image/WhatsApp Image 2026-01-20 at 16.21.09.jpeg`}
+                src={`${import.meta.env.BASE_URL}bio image/portrait.webp`}
                 alt="Mayanov"
                 // peeks in at the bottom of the screen on landing — unveil as soon as any of it shows
                 threshold={0}
