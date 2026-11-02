@@ -44,7 +44,6 @@
   <!-- pencil notes in the margin (e.g. "tap a card to draw it"): a pencil handwriting,
        subset to just the letters those notes use (and the interlude's pencilled topics and
        numbers) — add letters here when a note changes -->
-  <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&text=%20%2C.HIKYabcdefghijklmnopqrstuwy%E2%80%99&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&text=%20KTabcdefghiklmnoprstuvwy&display=swap" rel="stylesheet">
 
   <!-- Google sign-in / API scripts are loaded on demand by the admin dashboard
@@ -135,6 +134,33 @@
          edge a touch rough, ink squeezed out darker along each letter's edge, a few
          specks where the ink didn't take, a faint shadow inside the top/left edges of
          the impression and the paper catching the light just past its bottom/right -->
+    <!-- felt-tip marker on paper: the stroke edge wobbles a little, the ink bleeds a
+         hair into the fibres around it, and it lies a touch uneven along the stroke -->
+    <filter id="marker" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="7" result="w" />
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="d" />
+      <feGaussianBlur in="d" stdDeviation="1.5" result="b" />
+      <feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="2" seed="3" result="f" />
+      <feDisplacementMap in="b" in2="f" scale="4.5" xChannelSelector="R" yChannelSelector="G" result="bf" />
+      <feComponentTransfer in="bf" result="bleed"><feFuncA type="linear" slope="0.8" /></feComponentTransfer>
+      <feTurbulence type="fractalNoise" baseFrequency="0.015 0.5" numOctaves="2" seed="21" result="s" />
+      <feColorMatrix in="s" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1.1 0 0 0 1.3" result="sa" />
+      <feComposite in="d" in2="sa" operator="in" result="stroke" />
+      <feMerge>
+        <feMergeNode in="bleed" />
+        <feMergeNode in="stroke" />
+      </feMerge>
+    </filter>
+    <!-- the marker on touch screens: the soft bleed without the noise, which costs a
+         phone too much while it scrolls -->
+    <filter id="marker-m" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="b" />
+      <feComponentTransfer in="b" result="bleed"><feFuncA type="linear" slope="0.8" /></feComponentTransfer>
+      <feMerge>
+        <feMergeNode in="bleed" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
     <filter id="letterpress" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="n" />
       <feDisplacementMap in="SourceGraphic" in2="n" scale="0.7" xChannelSelector="R" yChannelSelector="G" result="d" />
