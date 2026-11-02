@@ -28,7 +28,9 @@ const QUESTIONS: { topic: [string, string]; q: [string, string] }[] = [
 // a faint wet bleed running ahead so the wash fades in rather than starts. One
 // tile of each edge, repeated across (the noise stitched and the strokes wrapped
 // round, so the tiles meet), the middle of the section solid between them.
-const EDGE = 240;
+// drawn on a 240px-tall tile, laid down squeezed into EDGE so the band stays shallow
+const DRAWN = 240;
+const EDGE = 170;
 const TILE = 1400;
 const brush = (id: string, s: number, scale: number, streaks: boolean) =>
   `<filter id='${id}' x='-10%' y='-60%' width='120%' height='220%' color-interpolation-filters='sRGB'>` +
@@ -68,7 +70,7 @@ const washEdge = (seed: number, flip: boolean) => {
     return out;
   };
   const svg =
-    `<svg xmlns='http://www.w3.org/2000/svg' width='${TILE}' height='${EDGE}' viewBox='0 0 ${TILE} ${EDGE}'>` +
+    `<svg xmlns='http://www.w3.org/2000/svg' width='${TILE}' height='${DRAWN}' viewBox='0 0 ${TILE} ${DRAWN}' preserveAspectRatio='none'>` +
     brush('b1', seed, 90, true) + brush('b2', seed + 20, 80, true) +
     `<filter id='wb' x='-10%' y='-80%' width='120%' height='260%'>` +
     `<feTurbulence type='fractalNoise' baseFrequency='0.004 0.02' numOctaves='3' seed='${seed + 7}' stitchTiles='stitch' result='n'/>` +
@@ -78,9 +80,9 @@ const washEdge = (seed: number, flip: boolean) => {
     // everything fades to nothing before the tile's outer side, so nothing is cut off
     // straight along the section's boundary
     `<linearGradient id='fo' x1='0' y1='${flip ? 1 : 0}' x2='0' y2='${flip ? 0 : 1}'><stop offset='0' stop-color='white' stop-opacity='0'/><stop offset='0.4' stop-color='white'/></linearGradient>` +
-    `<mask id='fm' maskUnits='userSpaceOnUse' x='0' y='0' width='${TILE}' height='${EDGE}'><rect width='${TILE}' height='${EDGE}' fill='url(#fo)'/></mask>` +
+    `<mask id='fm' maskUnits='userSpaceOnUse' x='0' y='0' width='${TILE}' height='${DRAWN}'><rect width='${TILE}' height='${DRAWN}' fill='url(#fo)'/></mask>` +
     `<g mask='url(#fm)'>` +
-    `<g${flip ? ` transform='translate(0 ${EDGE}) scale(1 -1)'` : ''} fill='white'>` +
+    `<g${flip ? ` transform='translate(0 ${DRAWN}) scale(1 -1)'` : ''} fill='white'>` +
     `<g opacity='0.12' filter='url(#wb)'>${sweeps(5, 40, 70)}</g>` +
     `<g opacity='0.42' filter='url(#b1)'>${sweeps(5, 45, 75)}</g>` +
     `<g opacity='0.72' filter='url(#b2)'>${sweeps(6, 80, 45)}</g>` +
@@ -124,7 +126,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
     <section
       ref={sectionRef}
       id="interlude"
-      className="relative overflow-hidden text-cream py-52 md:py-60"
+      className="relative overflow-hidden text-cream py-28 md:py-32"
     >
       {/* a watercolour evening sky, lighter than the hero's twilight, its top and bottom
           brushed out onto the paper rather than cut straight across (washEdges), and
@@ -136,6 +138,13 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 bg-paper"
         style={{ height: EDGE * 2.5, backgroundPosition: `center ${paperY}px`, WebkitMaskImage: `linear-gradient(#000 ${EDGE}px, transparent)`, maskImage: `linear-gradient(#000 ${EDGE}px, transparent)` }}
+      />
+      {/* and the same below: "why Mayanov" lays its own sheet from its top, which is
+          this section's bottom, so a tile starts exactly there */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 bg-paper"
+        style={{ height: EDGE * 2.5, backgroundPosition: `center ${EDGE * 2.5}px`, WebkitMaskImage: `linear-gradient(to top, #000 ${EDGE}px, transparent)`, maskImage: `linear-gradient(to top, #000 ${EDGE}px, transparent)` }}
       />
       <div aria-hidden className="absolute inset-0 mix-blend-multiply" style={washEdges}>
         <WatercolorSky palette={EVENING} className="absolute inset-0" />
