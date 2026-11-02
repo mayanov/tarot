@@ -156,14 +156,16 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
               : 'We lay the cards and read the energy you’re carrying — the patterns you’re in, the feelings you haven’t quite put into words — then turn them into clear, doable next steps.'}
           </p>
 
+          {/* the promises, pencilled by hand like the card hint above the pricelist (the
+              pencil face is subset in index.html: add letters there if these change) */}
           <div
             ref={affirmRef}
             style={hidden}
-            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 font-elegant italic text-cream/90 text-[1.05rem] [text-shadow:0_2px_18px_rgba(40,20,60,0.45)] will-change-[opacity,transform]"
+            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 -rotate-1 font-['Reenie_Beanie',cursive] text-cream/90 text-[1.6rem] md:text-[1.8rem] leading-none [text-shadow:0_2px_18px_rgba(40,20,60,0.45)] will-change-[opacity,transform]"
           >
             {affirmations.map((w, i) => (
               <span key={w} className="inline-flex items-center gap-4">
-                {i > 0 && <span aria-hidden className="not-italic text-cream/45">&middot;</span>}
+                {i > 0 && <span aria-hidden className="font-elegant text-[1.05rem] text-cream/45">&middot;</span>}
                 {w}
               </span>
             ))}
