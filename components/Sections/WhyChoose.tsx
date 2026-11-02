@@ -60,7 +60,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
                 <div className="letterpress-lg group/row text-center">
                   {/* kicker label, pencilled by hand like the card hint above the pricelist
                       (the pencil face is subset in index.html: add letters there if these change) */}
-                  <span className="block w-fit mx-auto -rotate-2 font-['Reenie_Beanie',cursive] lowercase text-moon/80 text-[1.45rem] md:text-[1.6rem] leading-none transition-colors duration-500 group-hover/row:text-moon">
+                  <span className="block w-fit mx-auto -rotate-2 font-['Reenie_Beanie',cursive] lowercase text-moon/80 text-[1.45rem] md:text-[1.6rem] leading-none [filter:url(#pencil-icon)] transition-colors duration-500 group-hover/row:text-moon">
                     {reason.label}
                   </span>
                   {/* the statement does the talking */}

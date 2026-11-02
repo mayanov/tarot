@@ -600,7 +600,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                     <path d="M36 26C24 27 12 22 9 6" />
                     <path d="M4 11L9 5.5l4.5 6" />
                 </svg>
-                <span className="inline-block -rotate-2 font-['Reenie_Beanie',cursive] text-[1.45rem] md:text-[1.6rem] leading-none">
+                <span className="inline-block -rotate-2 font-['Reenie_Beanie',cursive] text-[1.45rem] md:text-[1.6rem] leading-none [filter:url(#pencil-icon)]">
                     {isIndonesian ? 'Ketuk kartu untuk menariknya' : 'Tap a card to draw it'}
                 </span>
             </p>

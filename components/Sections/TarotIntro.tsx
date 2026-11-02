@@ -161,7 +161,7 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           <div
             ref={affirmRef}
             style={hidden}
-            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 -rotate-1 font-['Reenie_Beanie',cursive] text-cream/90 text-[1.6rem] md:text-[1.8rem] leading-none [text-shadow:0_2px_18px_rgba(40,20,60,0.45)] will-change-[opacity,transform]"
+            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 -rotate-1 font-['Reenie_Beanie',cursive] text-cream/90 text-[1.6rem] md:text-[1.8rem] leading-none [filter:url(#pencil-icon)] will-change-[opacity,transform]"
           >
             {affirmations.map((w, i) => (
               <span key={w} className="inline-flex items-center gap-4">

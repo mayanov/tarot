@@ -105,13 +105,14 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
                 // peeks in at the bottom of the screen on landing — unveil as soon as any of it shows
                 threshold={0}
                 className="absolute inset-0"
-                imgClassName="w-full h-full object-cover object-[45%_28%]"
+                imgClassName="w-full h-full object-cover object-[45%_28%] [filter:sepia(0.22)_saturate(0.85)_contrast(1.05)]"
                 loading="eager"
               />
               {/* flat plum tint (no directional gradient) to cohere with the palette; laid
                   on plainly, not multiplied: iPhones drop the blend and showed a film */}
               <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'rgba(42,24,57,0.12)' }} />
-              <div aria-hidden className="print-ink pointer-events-none absolute inset-0 rounded-[0.45rem] ring-1 ring-inset ring-white/10" />
+              {/* toned and vignetted like a printed photo, as the event photos are */}
+              <div aria-hidden className="print-ink pointer-events-none absolute inset-0 rounded-[0.45rem] shadow-[inset_0_0_40px_rgba(30,18,50,0.25)] ring-1 ring-inset ring-white/10" />
             </div>
             <figcaption className="pt-3 flex flex-col items-center gap-1 text-center">
               <span className="print-text font-elegant font-semibold uppercase tracking-[0.28em] text-[0.8rem] md:text-[0.85rem] text-cream/90 pl-[0.28em]">

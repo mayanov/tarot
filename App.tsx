@@ -516,7 +516,7 @@ const WhatsAppFab: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
       {/* a drop of the brand purple, a pair with the back-to-top drop */}
       <span className="relative isolate grid place-items-center w-14 h-14 text-cream drop-shadow-[0_1px_1.5px_rgba(57,35,78,0.45)]">
         <PaintSwatch round className="transition-colors duration-300 text-moon group-hover:text-plum" />
-        <FaWhatsapp size={24} />
+        <span className="print-ink inline-flex"><FaWhatsapp size={24} /></span>
       </span>
     </a>
   );

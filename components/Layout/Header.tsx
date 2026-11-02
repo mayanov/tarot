@@ -240,15 +240,15 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
   const Wordmark: React.FC<{ onDark?: boolean }> = ({ onDark = true }) => (
     <div className="flex items-center gap-2 cursor-pointer group whitespace-nowrap" onClick={handleLogoClick}>
       {/* the badge's ring is drawn in pencil; on hover it fills with paint */}
-      <span className={`relative grid place-items-center w-7 h-7 shrink-0 font-serif text-base leading-none transition-colors duration-500 ${onDark ? 'text-cream group-hover:text-ink [text-shadow:0_1px_8px_rgba(0,0,0,0.45)]' : 'text-ink group-hover:text-cream'}`}>
+      <span className={`relative grid place-items-center w-7 h-7 shrink-0 font-serif text-base leading-none transition-colors duration-500 ${onDark ? 'text-cream group-hover:text-ink' : 'text-ink group-hover:text-cream'}`}>
         <svg aria-hidden className={`absolute inset-0 h-full w-full overflow-visible [filter:url(#pencil-icon)] ${onDark ? 'text-cream/70' : 'text-ink/45'}`}>
           <circle cx="50%" cy="50%" r="48%" className={`opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${onDark ? 'fill-cream' : 'fill-ink'}`} />
           <circle cx="50%" cy="50%" r="48%" fill="none" stroke="currentColor" strokeWidth="1.4" />
         </svg>
-        <span className="relative">M</span>
+        <span className="letterpress relative">M</span>
       </span>
       <span className={`overflow-hidden whitespace-nowrap transition-[max-width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled || menuOpen ? 'max-w-[220px]' : 'max-w-0'}`}>
-        <span className={`pl-0.5 text-base font-serif font-bold uppercase tracking-tight ${onDark ? 'text-cream [text-shadow:0_1px_10px_rgba(0,0,0,0.55),0_0_2px_rgba(0,0,0,0.4)]' : 'text-ink'}`}>
+        <span className={`letterpress pl-0.5 text-base font-serif font-bold uppercase tracking-tight ${onDark ? 'text-cream' : 'text-ink'}`}>
           Mayanov <span className={onDark ? 'text-cream/55' : 'text-ink/45'}>Tarot</span>
         </span>
       </span>
@@ -455,19 +455,19 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
                   href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer"
                   onClick={() => trackEvent('social_click', { platform: 'Instagram', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'Instagram', content_category: isIndonesian ? 'ID' : 'Global' })}
                   aria-label="Instagram" className="text-ink/60 hover:text-moon transition-all duration-500 hover:-translate-y-0.5">
-                  <Instagram className="w-5 h-5" strokeWidth={1.7} />
+                  <Instagram className="print-ink w-5 h-5" strokeWidth={1.7} />
                 </a>
                 <a
                   href="https://www.tiktok.com/@mayanov_" target="_blank" rel="noopener noreferrer"
                   onClick={() => trackEvent('social_click', { platform: 'TikTok', market: isIndonesian ? 'ID' : 'Global' }, 'ViewContent', { content_name: 'TikTok', content_category: isIndonesian ? 'ID' : 'Global' })}
                   aria-label="TikTok" className="text-ink/60 hover:text-moon transition-all duration-500 hover:-translate-y-0.5">
-                  <FaTiktok size={18} />
+                  <span className="print-ink inline-flex"><FaTiktok size={18} /></span>
                 </a>
                 <a
                   href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
                   onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
                   aria-label="WhatsApp" className="text-ink/60 hover:text-moon transition-all duration-500 hover:-translate-y-0.5">
-                  <FaWhatsapp size={20} />
+                  <span className="print-ink inline-flex"><FaWhatsapp size={20} /></span>
                 </a>
               </nav>
 
