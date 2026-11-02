@@ -11,6 +11,7 @@ import * as eventStore from './eventStore.js';
 import * as settingsStore from './settingsStore.js';
 import * as userStore from './userStore.js';
 import * as gcal from './googleCalendar.js';
+import * as paypal from './paypal.js';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 
@@ -432,6 +433,76 @@ app.post('/api/bookings', async (req, res) => {
         if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
         console.error('Booking create failed:', e);
         res.status(500).json({ error: 'Failed to create booking' });
+    }
+});
+
+// Public: PayPal Checkout for the global readings (server/paypal.js). The form asks
+// for the client id, has the order made here, and hands it back once the visitor has
+// approved it; the capture is checked and only then saved, as a paid booking.
+app.get('/api/paypal/config', (req, res) => {
+    if (!paypal.configured()) return res.json({ enabled: false });
+    res.json({ enabled: true, ...paypal.publicConfig() });
+});
+
+app.post('/api/paypal/orders', async (req, res) => {
+    if (!paypal.configured()) return res.status(503).json({ error: 'PayPal not configured' });
+    const { serviceId } = req.body || {};
+    if (!paypal.READINGS[serviceId]) return res.status(400).json({ error: 'Unknown service' });
+    try {
+        res.status(201).json({ id: await paypal.createOrder(serviceId) });
+    } catch (e) {
+        console.error('PayPal order failed:', e.message);
+        res.status(502).json({ error: 'Could not start the payment' });
+    }
+});
+
+app.post('/api/paypal/orders/:id/capture', async (req, res) => {
+    if (!paypal.configured()) return res.status(503).json({ error: 'PayPal not configured' });
+    const orderId = String(req.params.id || '').slice(0, 64);
+    const { serviceId, name, dob, contact, question } = req.body || {};
+    const reading = paypal.READINGS[serviceId];
+    // checked before taking the money, so a bad form never ends in a paid order with no booking
+    if (!reading || !name || !contact || !String(question || '').trim()) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+    let paid;
+    try {
+        paid = await paypal.captureOrder(orderId);
+    } catch (e) {
+        console.error('PayPal capture failed:', orderId, e.message, e.issue || '');
+        // INSTRUMENT_DECLINED: the buyer can pick another card/account and try again
+        return res.status(402).json({ error: e.issue === 'INSTRUMENT_DECLINED' ? 'DECLINED' : 'CAPTURE_FAILED' });
+    }
+    if (!paid.completed || paid.serviceId !== serviceId || paid.amount !== reading.value) {
+        console.error('PayPal capture mismatch:', orderId, paid);
+        return res.status(402).json({ error: 'CAPTURE_FAILED' });
+    }
+    try {
+        // a retried request for an order already turned into a booking gets that booking back
+        const existing = (await bookingStore.getAllBookings()).find((b) => b.paypalOrderId === orderId);
+        if (existing) return res.json(existing);
+        const booking = await bookingStore.createBooking({
+            serviceId,
+            serviceName: reading.name,
+            date: '',
+            time: '',
+            durationMin: 0,
+            name: String(name).slice(0, 120),
+            dob: /^\d{4}-\d{2}-\d{2}$/.test(String(dob || '')) ? String(dob) : '',
+            contact: String(contact).slice(0, 160),
+            question: String(question).slice(0, 2000),
+            market: 'Global',
+            paymentStatus: 'paid',
+            paymentMethod: 'PayPal',
+            paypalOrderId: orderId,
+            paypalCaptureId: paid.captureId,
+            paypalPayer: paid.payerEmail,
+        });
+        res.status(201).json(booking);
+    } catch (e) {
+        // paid but not saved: keep every detail in the log so it can be entered by hand
+        console.error('PAID BUT NOT SAVED:', orderId, paid.captureId, JSON.stringify(req.body), e);
+        res.status(500).json({ error: 'SAVE_FAILED', captureId: paid.captureId });
     }
 });
 

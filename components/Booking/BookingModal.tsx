@@ -8,7 +8,9 @@ import { PaintSwatch, PencilFrame, MarkerFrame } from '../UI/ButtonInk';
 import PencilRule from '../UI/PencilRule';
 import { paperCut, PaperShadow } from '../UI/PaperEdge';
 import { FaWhatsapp } from 'react-icons/fa';
-import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan } from '../../services/booking';
+import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan, BookingInput, Booking } from '../../services/booking';
+import { paypalConfig, PayPalConfig } from '../../services/paypal';
+import PayPalButtons from './PayPalButtons';
 import { trackEvent, SERVICE_TRACK_NAME } from '../../services/analytics';
 import { lockPage, unlockPage } from '../UI/scroll';
 
@@ -87,8 +89,9 @@ const PAYMENT = {
   waNumber: '6287786280310', // business WhatsApp (same as the footer / floating button)
 };
 
-// Global readings are paid on PayPal once booked; PayPal then sends the visitor back
-// to /?payment_success=<id> (the thank-you page, set as each link's return URL).
+// Global readings are paid with PayPal's buttons on the review step (services/paypal.ts)
+// when the API has PayPal keys; until then, once booked, on these payment links, which
+// send the visitor back to /?payment_success=<id> (the thank-you page).
 const PAYPAL: Record<string, string> = {
   '3card': 'https://www.paypal.com/ncp/payment/DSPX84KBN8GC2',
   '5card': 'https://www.paypal.com/ncp/payment/V6U4QMAU642KA',
@@ -134,6 +137,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const [question, setQuestion] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [ppConfig, setPpConfig] = useState<PayPalConfig | null>(null); // global: PayPal Checkout available?
   const [showPay, setShowPay] = useState(false); // reveal payment details on the success step
   const [payTab, setPayTab] = useState<'qris' | 'bank'>('qris');
   const [copied, setCopied] = useState(false);
@@ -251,6 +255,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     return () => window.removeEventListener('keydown', onKey);
   }, [open, close]);
 
+  useEffect(() => {
+    if (!isIndonesian) paypalConfig().then(setPpConfig);
+  }, [isIndonesian]);
+
   // Load taken slots when a date is picked.
   useEffect(() => {
     if (!date) { setTaken([]); return; }
@@ -259,23 +267,42 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     return () => { active = false; };
   }, [date]);
 
+  const bookingInput = (s: ServiceOption): BookingInput => ({
+    serviceId: s.id,
+    serviceName: pkg ? `${s.name} · ${pkg}` : s.name,
+    date: s.scheduled && date ? toISODate(date) : '',
+    time: s.scheduled ? (time || '') : '',
+    durationMin: s.scheduled ? (durationFromText(pkg) ?? durationFromText(s.meta) ?? 30) : 0,
+    name: name.trim(),
+    dob: dob,
+    contact: [whatsapp.trim() && `WA: ${whatsapp.trim()}`, email.trim() && `Email: ${email.trim()}`].filter(Boolean).join(' · '),
+    question: question.trim(),
+    market: isIndonesian ? 'ID' : 'Global',
+  });
+
+  // Paid through PayPal's buttons: the booking is already saved (as paid). Count the
+  // sale here, with PayPal's id, and move on to the thank-you page (which then won't
+  // count it again).
+  const paidWithPayPal = (b: Booking) => {
+    const trackName = SERVICE_TRACK_NAME[b.serviceId] || b.serviceName;
+    const value = Number(String(service?.price || '').replace(/[^\d.]/g, '')) || undefined;
+    trackEvent('purchase', { item_name: trackName, market: 'Global', value, currency: 'USD', transaction_id: (b as Booking & { paypalCaptureId?: string }).paypalCaptureId || b.id }, 'Purchase', { value, currency: 'USD', content_name: trackName });
+    try { sessionStorage.setItem(`mt:paid:${b.serviceId}`, '1'); } catch { /* storage blocked */ }
+    window.location.assign(`/?payment_success=${encodeURIComponent(b.serviceId)}`);
+  };
+
+  const payPalFailed = (code: string) => setError(code === 'SAVE_FAILED'
+    ? 'Your payment went through, but saving your booking failed. Please message me on WhatsApp with your PayPal receipt and I’ll sort it out.'
+    : code === 'PAYPAL_SDK'
+      ? 'PayPal couldn’t load. Please check your connection and reopen the form.'
+      : 'The payment didn’t go through, and you haven’t been charged. Please try again.');
+
   const submit = async () => {
     if (!service) return;
     if (service.scheduled && (!date || !time)) return;
     setSubmitting(true); setError('');
     try {
-      await createBooking({
-        serviceId: service.id,
-        serviceName: pkg ? `${service.name} · ${pkg}` : service.name,
-        date: service.scheduled && date ? toISODate(date) : '',
-        time: service.scheduled ? (time || '') : '',
-        durationMin: service.scheduled ? (durationFromText(pkg) ?? durationFromText(service.meta) ?? 30) : 0,
-        name: name.trim(),
-        dob: dob,
-        contact: [whatsapp.trim() && `WA: ${whatsapp.trim()}`, email.trim() && `Email: ${email.trim()}`].filter(Boolean).join(' · '),
-        question: question.trim(),
-        market: isIndonesian ? 'ID' : 'Global',
-      });
+      await createBooking(bookingInput(service));
       const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
       // GA4 only counts a purchase with a transaction id. A global reading is only
       // bought once PayPal sends them back (the thank-you page counts it there).
@@ -327,6 +354,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const timeRange = (start: string) => (durationMin ? `${start}–${addMinutes(start, durationMin)}` : start);
 
   const totalPrice = pkg ? priceFromText(pkg) : (service?.price || '');
+  // global reading + PayPal keys on the server → paid right here on the review step
+  const payInForm = !isIndonesian && !!ppConfig?.enabled && !!service && !!PAYPAL[service.id];
 
   // WhatsApp deep link for the success step — prefilled with the booking so the
   // customer just attaches their payment proof.
@@ -720,7 +749,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           {/* STEP 3 — review: one summary list, payment tabs, one line of terms */}
           {step === 3 && (
             <div>
-              {error && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
+              {error && !payInForm && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
 
               <h3 className="font-serif font-semibold text-ink text-lg">{t('Ringkasan', 'Summary')}</h3>
               <div className="mt-2">
@@ -745,13 +774,22 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 </div>
               )}
 
-              {!isIndonesian && (
+              {payInForm && service ? (
+                <div className="mt-6">
+                  <h3 className="font-serif font-semibold text-ink text-lg mb-1">Payment</h3>
+                  <p className="mb-4 text-[13px] text-ink/60 leading-relaxed">
+                    Pay {totalPrice} with PayPal or a card. Your booking is made once the payment goes through, and your reading is sent to {email.trim()}.
+                  </p>
+                  {error && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
+                  <PayPalButtons config={ppConfig!} input={bookingInput(service)} onStart={() => setError('')} onPaid={paidWithPayPal} onError={payPalFailed} />
+                </div>
+              ) : !isIndonesian && (
                 <p className="mt-6 text-[13px] text-ink/60 leading-relaxed">
                   Next, you’ll pay {totalPrice} securely on PayPal. Your reading is sent to your email once payment is through.
                 </p>
               )}
 
-              {bottomBar(
+              {payInForm ? bottomBar(null) : bottomBar(
                 <button onClick={submit} disabled={submitting} className={primaryBtn}>
                   {swatch}
                   {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', 'Confirm & pay')}
