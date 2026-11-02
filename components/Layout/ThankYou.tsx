@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import Header from './Header';
-import Footer from './Footer';
 import CelestialMark from '../UI/CelestialMark';
 import ButtonInk from '../UI/ButtonInk';
 import PencilRule from '../UI/PencilRule';
@@ -41,7 +40,7 @@ const ThankYou: React.FC<{ reading: PaidReading }> = ({ reading }) => {
     ];
 
     return (
-        <div className="min-h-screen relative font-sans text-ink bg-paper flex flex-col justify-between">
+        <div className="min-h-screen relative font-sans text-ink bg-paper flex flex-col">
             <Header isIndonesian={false} paper noBooking />
 
             <main className="flex-grow flex items-center justify-center w-full px-6 relative z-10 pt-28 pb-20">
@@ -76,8 +75,6 @@ const ThankYou: React.FC<{ reading: PaidReading }> = ({ reading }) => {
                     </a>
                 </div>
             </main>
-
-            <Footer isIndonesian={false} />
         </div>
     );
 };
