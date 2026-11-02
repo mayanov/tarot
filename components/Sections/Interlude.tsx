@@ -33,16 +33,16 @@ const brush = (id: string, s: number, scale: number, streaks: boolean) =>
   `<filter id='${id}' x='-10%' y='-60%' width='120%' height='220%' color-interpolation-filters='sRGB'>` +
   `<feTurbulence type='fractalNoise' baseFrequency='0.0025 0.03' numOctaves='3' seed='${s}' stitchTiles='stitch' result='n'/>` +
   `<feDisplacementMap in='SourceGraphic' in2='n' scale='${scale}' xChannelSelector='R' yChannelSelector='G' result='d'/>` +
-  `<feGaussianBlur in='d' stdDeviation='1.4' result='soft'/>` +
+  `<feGaussianBlur in='d' stdDeviation='3' result='soft'/>` +
   `<feColorMatrix in='soft' type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 40 0' result='shape'/>` +
   `<feMorphology in='shape' operator='erode' radius='5' result='er'/>` +
   `<feGaussianBlur in='er' stdDeviation='6' result='erb'/>` +
   `<feComposite in='shape' in2='erb' operator='out' result='band'/>` +
   `<feComposite in='soft' in2='band' operator='in' result='rim'/>` +
-  `<feMerge result='m'><feMergeNode in='soft'/><feMergeNode in='rim'/><feMergeNode in='rim'/></feMerge>` +
+  `<feMerge result='m'><feMergeNode in='soft'/><feMergeNode in='rim'/></feMerge>` +
   (streaks
     ? `<feTurbulence type='fractalNoise' baseFrequency='0.005 0.09' numOctaves='3' seed='${s + 3}' stitchTiles='stitch' result='st'/>` +
-      `<feColorMatrix in='st' type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.9' result='sa'/>` +
+      `<feColorMatrix in='st' type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.3 1.6' result='sa'/>` +
       `<feComposite in='m' in2='sa' operator='in' result='m2'/>`
     : `<feMerge result='m2'><feMergeNode in='m'/></feMerge>`) +
   `<feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='${s + 2}' stitchTiles='stitch' result='g'/>` +
@@ -69,9 +69,9 @@ const washEdge = (seed: number, flip: boolean) => {
     `<svg xmlns='http://www.w3.org/2000/svg' width='${TILE}' height='${EDGE}' viewBox='0 0 ${TILE} ${EDGE}'>` +
     brush('b1', seed, 90, true) + brush('b2', seed + 20, 80, true) + brush('b3', seed + 40, 60, false) +
     `<g${flip ? ` transform='translate(0 ${EDGE}) scale(1 -1)'` : ''} fill='white'>` +
-    `<g opacity='0.55' filter='url(#b1)'>${sweeps(4, 95, 35)}</g>` +
-    `<g opacity='0.9' filter='url(#b2)'>${sweeps(5, 125, 30)}</g>` +
-    `<rect x='-300' y='165' width='${TILE + 600}' height='400' filter='url(#b3)'/>` +
+    `<g opacity='0.45' filter='url(#b1)'>${sweeps(4, 55, 30)}</g>` +
+    `<g opacity='0.75' filter='url(#b2)'>${sweeps(5, 85, 25)}</g>` +
+    `<rect x='-300' y='125' width='${TILE + 600}' height='400' filter='url(#b3)'/>` +
     `</g></svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 };
