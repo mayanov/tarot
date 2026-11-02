@@ -20,6 +20,37 @@ const QUESTIONS: { topic: [string, string]; q: [string, string] }[] = [
   { topic: ['melepaskan', 'letting go'], q: ['Apa yang perlu aku lepaskan?', 'What do I need to let go of?'] },
 ];
 
+// The sky's top and bottom edges as a wash leaves them on paper: a mask whose edge
+// wanders (low noise pushing it about), softened, with a paler fringe of pigment run
+// ahead of it. One tile of each, repeated across (the noise stitched so the tiles
+// meet), with the middle of the section solid between them.
+const EDGE = 180;
+const washEdge = (seed: number, flip: boolean) => {
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='${EDGE}' viewBox='0 0 1200 ${EDGE}'>` +
+    `<filter id='w' x='-10%' y='-60%' width='120%' height='220%'>` +
+    `<feTurbulence type='fractalNoise' baseFrequency='0.006 0.009' numOctaves='4' seed='${seed}' stitchTiles='stitch' result='n'/>` +
+    `<feDisplacementMap in='SourceGraphic' in2='n' scale='90' xChannelSelector='R' yChannelSelector='G'/>` +
+    `<feGaussianBlur stdDeviation='9'/>` +
+    `</filter>` +
+    `<filter id='f' x='-10%' y='-60%' width='120%' height='220%'>` +
+    `<feTurbulence type='fractalNoise' baseFrequency='0.01 0.014' numOctaves='3' seed='${seed + 3}' stitchTiles='stitch' result='n'/>` +
+    `<feDisplacementMap in='SourceGraphic' in2='n' scale='110' xChannelSelector='G' yChannelSelector='R'/>` +
+    `<feGaussianBlur stdDeviation='16'/>` +
+    `</filter>` +
+    `<g${flip ? ` transform='translate(0 ${EDGE}) scale(1 -1)'` : ''}>` +
+    `<rect x='-200' y='40' width='1600' height='400' fill='white' fill-opacity='0.35' filter='url(#f)'/>` +
+    `<rect x='-200' y='85' width='1600' height='400' fill='white' filter='url(#w)'/>` +
+    `</g></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+};
+const washMask = [
+  `${washEdge(5, false)} top / 1200px ${EDGE}px repeat-x`,
+  `${washEdge(17, true)} bottom / 1200px ${EDGE}px repeat-x`,
+  `linear-gradient(#000, #000) center / 100% calc(100% - ${EDGE * 2 - 8}px) no-repeat`,
+].join(', ');
+const washEdges: React.CSSProperties = { WebkitMask: washMask, mask: washMask };
+
 // the booking form (BookingModal) opens on this event
 const openBooking = () => window.dispatchEvent(new CustomEvent('open-booking'));
 
@@ -34,14 +65,18 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
   return (
     <section
       id="interlude"
-      className="relative overflow-hidden isolate text-cream py-24 md:py-32"
+      className="relative overflow-hidden isolate text-cream py-36 md:py-44"
     >
-      {/* a watercolour evening sky, lighter than the hero's twilight */}
-      <WatercolorSky palette={EVENING} className="absolute inset-0 -z-10" />
-      {/* a soft shade behind each column only, so the cream type keeps its contrast
-          over the pale washes without darkening the whole sky (the type is pressed
-          like the rest of the site's, so it carries no glow of its own) */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(60% 70% at 28% 50%, rgba(30,20,70,0.3), transparent 72%), radial-gradient(55% 75% at 70% 50%, rgba(30,20,70,0.28), transparent 70%)' }} />
+      {/* a watercolour evening sky, lighter than the hero's twilight, its top and bottom
+          left as the wash's own ragged, bleeding edge into the paper rather than cut
+          straight across (washEdges) */}
+      <div aria-hidden className="absolute inset-0 -z-10" style={washEdges}>
+        <WatercolorSky palette={EVENING} className="absolute inset-0" />
+        {/* a soft shade behind each column only, so the cream type keeps its contrast
+            over the pale washes without darkening the whole sky (the type is pressed
+            like the rest of the site's, so it carries no glow of its own) */}
+        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(60% 70% at 28% 50%, rgba(30,20,70,0.3), transparent 72%), radial-gradient(55% 75% at 70% 50%, rgba(30,20,70,0.28), transparent 70%)' }} />
+      </div>
 
       <div className="relative z-10 mx-auto px-8 max-w-6xl grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-24 gap-y-14 lg:gap-y-10">
         {/* the question, and the reassurance */}
