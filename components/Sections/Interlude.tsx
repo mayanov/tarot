@@ -49,7 +49,9 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
           <h2 className="letterpress-lg pb-[0.14em] -mb-[0.14em] [text-wrap:balance] font-elegant italic font-bold text-cream text-[2.5rem] sm:text-[3.2rem] md:text-[3.8rem] lg:text-[4.2rem] leading-[1.02] tracking-[-0.02em]">
             {isIndonesian ? 'Bingung mau tanya apa?' : 'Not sure what to ask?'}
           </h2>
-          <p className="letterpress mt-6 md:mt-7 max-w-[34ch] font-elegant text-cream/80 text-lg md:text-[1.35rem] leading-[1.5]">
+          {/* said in felt-tip marker, like a note written straight to the visitor (the
+              marker face is subset in index.html: add letters there if this changes) */}
+          <p className="mt-6 md:mt-7 max-w-[30ch] -rotate-1 font-['Caveat_Brush',cursive] text-cream/90 text-[1.6rem] md:text-[1.9rem] leading-[1.2] [filter:url(#pencil-icon)]">
             {isIndonesian
               ? 'Kamu nggak perlu datang dengan pertanyaan yang sempurna. Ini beberapa yang sering dibawa ke meja, atau cukup cerita, kita cari pertanyaannya bareng.'
               : 'You don’t need the perfect question. Here are a few that often come to the table, or just tell me what’s going on and we’ll find it together.'}
