@@ -12,6 +12,8 @@ import * as settingsStore from './settingsStore.js';
 import * as userStore from './userStore.js';
 import * as gcal from './googleCalendar.js';
 import * as paypal from './paypal.js';
+import * as midtrans from './midtrans.js';
+import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 
@@ -506,6 +508,135 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
     }
 });
 
+// Public: Midtrans Snap for the Indonesian bookings (server/midtrans.js). Checkout
+// holds the slot and opens a payment; the booking turns real (paid, in the dashboard,
+// on the calendar) once Midtrans confirms it — by its notification or the visitor's
+// own check, whichever lands first — and a failed or expired payment frees the slot.
+async function settleMidtrans(orderId) {
+    const booking = await bookingStore.findByMidtransOrder(orderId);
+    if (!booking) return { state: 'failed' };
+    if (!booking.holdOnly) return { state: booking.status === 'cancelled' ? 'failed' : 'paid', booking };
+    if (booking.status === 'cancelled') return { state: 'failed' };
+    const st = await midtrans.getStatus(orderId);
+    if (st.state === 'paid') {
+        if (st.amount !== booking.amountDue) {
+            console.error('Midtrans amount mismatch:', orderId, st.amount, booking.amountDue);
+            return { state: 'pending' };
+        }
+        const paid = await bookingStore.confirmPaidHold(booking, {
+            paymentMethod: `Midtrans · ${st.method}`,
+            midtransTransactionId: st.transactionId,
+            paidAt: new Date().toISOString(),
+        });
+        return { state: 'paid', booking: paid };
+    }
+    if (st.state === 'failed') {
+        await bookingStore.releaseHold(booking);
+        return { state: 'failed' };
+    }
+    return { state: 'pending' };
+}
+
+app.get('/api/midtrans/config', (req, res) => {
+    if (!midtrans.configured()) return res.json({ enabled: false });
+    res.json({ enabled: true, ...midtrans.publicConfig() });
+});
+
+app.post('/api/midtrans/checkout', async (req, res) => {
+    if (!midtrans.configured()) return res.status(503).json({ error: 'Midtrans not configured' });
+    const { serviceId, pkg, date, time, name, dob, contact, question, phone, email } = req.body || {};
+    const q = midtrans.quote(serviceId, String(pkg || ''));
+    if (!q || !name || !contact) return res.status(400).json({ error: 'Missing required fields' });
+    if (q.scheduled && (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || !/^\d{2}:\d{2}$/.test(String(time)))) {
+        return res.status(400).json({ error: 'Missing date or time' });
+    }
+    const orderId = `MYV-${Date.now().toString(36)}-${crypto.randomBytes(3).toString('hex')}`.toUpperCase();
+    let hold;
+    try {
+        hold = await bookingStore.createBooking({
+            serviceId,
+            serviceName: q.name,
+            date: q.scheduled ? date : '',
+            time: q.scheduled ? time : '',
+            durationMin: q.durationMin,
+            name: String(name).slice(0, 120),
+            dob: /^\d{4}-\d{2}-\d{2}$/.test(String(dob || '')) ? String(dob) : '',
+            contact: String(contact).slice(0, 160),
+            question: String(question || '').slice(0, 2000),
+            market: 'ID',
+            status: 'awaiting_payment',
+            holdOnly: true,
+            holdUntil: new Date(Date.now() + midtrans.HOLD_MIN * 60_000).toISOString(),
+            amountDue: q.amount,
+            midtransOrderId: orderId,
+            skipCalendar: true,
+        });
+    } catch (e) {
+        if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
+        console.error('Midtrans hold failed:', e);
+        return res.status(500).json({ error: 'Failed to start booking' });
+    }
+    try {
+        const token = await midtrans.createTransaction({
+            orderId,
+            amount: q.amount,
+            item: { id: serviceId, name: q.name },
+            customer: {
+                first_name: String(name).slice(0, 50),
+                ...(phone ? { phone: String(phone).slice(0, 20) } : {}),
+                ...(email ? { email: String(email).slice(0, 80) } : {}),
+            },
+        });
+        res.status(201).json({ token, orderId });
+    } catch (e) {
+        console.error('Midtrans checkout failed:', e.message);
+        await bookingStore.releaseHold(hold).catch(() => {});
+        res.status(502).json({ error: 'Could not start the payment' });
+    }
+});
+
+// the visitor's own check (after the payment window closes, or while they're paying)
+app.get('/api/midtrans/status/:orderId', async (req, res) => {
+    if (!midtrans.configured()) return res.status(503).json({ error: 'Midtrans not configured' });
+    try {
+        const { state, booking } = await settleMidtrans(String(req.params.orderId).slice(0, 64));
+        res.json({ state, ...(booking ? { ref: booking.ref } : {}) });
+    } catch (e) {
+        console.error('Midtrans status failed:', e.message);
+        res.json({ state: 'pending' });
+    }
+});
+
+// the visitor went back or closed the form before paying: cancel that payment with
+// Midtrans, then free the slot (unless it was paid just now — then it's confirmed)
+app.post('/api/midtrans/release/:orderId', async (req, res) => {
+    if (!midtrans.configured()) return res.status(503).json({ error: 'Midtrans not configured' });
+    const orderId = String(req.params.orderId).slice(0, 64);
+    try {
+        const settled = await settleMidtrans(orderId);
+        if (settled.state !== 'pending') return res.json({ state: settled.state });
+        const booking = await bookingStore.findByMidtransOrder(orderId);
+        if (booking && await midtrans.cancel(orderId)) await bookingStore.releaseHold(booking);
+        res.json({ state: 'failed' });
+    } catch (e) {
+        console.error('Midtrans release failed:', orderId, e.message);
+        res.json({ state: 'pending' }); // the hold runs out on its own
+    }
+});
+
+// Midtrans's notification (set as the Payment Notification URL in its dashboard); it
+// retries until it gets a 2xx, so a failure here is answered with a 500
+app.post('/api/midtrans/notify', async (req, res) => {
+    if (!midtrans.configured() || !midtrans.validNotification(req.body)) return res.status(403).json({ error: 'Invalid' });
+    try {
+        await settleMidtrans(String(req.body.order_id));
+        res.json({ ok: true });
+    } catch (e) {
+        console.error('Midtrans notification failed:', req.body.order_id, e.message);
+        res.status(500).json({ error: 'Retry' });
+    }
+});
+
 // Admin: Google Calendar sync status (for setup verification).
 app.get('/api/admin/calendar/status', verifyToken, (req, res) => {
     res.json(gcal.calendarStatus());
@@ -563,7 +694,8 @@ app.get('/api/admin/bookings', verifyToken, async (req, res) => {
             lastReconcileAt = Date.now();
             try { await bookingStore.reconcileWithCalendar(); } catch (e) { console.error('reconcile failed:', e.message); }
         }
-        res.json(await bookingStore.getAllBookings());
+        // holds still waiting on (or never paid through) Midtrans aren't bookings yet
+        res.json((await bookingStore.getAllBookings()).filter((b) => !b.holdOnly));
     } catch (e) {
         console.error('list bookings failed:', e);
         res.status(500).json({ error: 'Failed to load bookings' });

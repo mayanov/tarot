@@ -39,6 +39,11 @@ const bufferFor = (b) => SESSION_BUFFER_MIN[b?.serviceId] || 0;
 // A booking's full footprint on the grid: its own duration + its service buffer.
 const footprintSlots = (b) => occupiedSlots(b.time, (b.durationMin || 30) + bufferFor(b));
 
+// A slot held while someone pays (status 'awaiting_payment', see server/midtrans.js)
+// blocks it only until its hold runs out; an unpaid hold after that frees it again.
+const blocksSlot = (b) => b.status !== 'cancelled'
+  && !(b.status === 'awaiting_payment' && b.holdUntil && Date.parse(b.holdUntil) < Date.now());
+
 // ---- Firestore init (only if a service account is provided) ----
 let db = null;
 try {
@@ -89,7 +94,7 @@ export async function dbTakenSlots(date) {
     rows = readAll().filter((b) => b.date === date);
   }
   const set = new Set();
-  rows.filter((b) => b.status !== 'cancelled')
+  rows.filter(blocksSlot)
     .forEach((b) => footprintSlots(b).forEach((s) => set.add(s)));
   return set;
 }
@@ -201,7 +206,7 @@ export async function createBooking(input) {
   const all = readAll();
   if (hasSlot) {
     const taken = new Set(
-      all.filter((b) => b.date === data.date && b.status !== 'cancelled')
+      all.filter((b) => b.date === data.date && blocksSlot(b))
         .flatMap((b) => footprintSlots(b)),
     );
     if (wanted.some((s) => taken.has(s))) {
@@ -346,4 +351,48 @@ export async function updateStatus(id, status) {
   }
   writeAll(all);
   return b;
+}
+
+async function findBy(field, value) {
+  if (db) {
+    const snap = await db.collection(COLLECTION).where(field, '==', value).limit(1).get();
+    return snap.empty ? null : snap.docs[0].data();
+  }
+  return readAll().find((b) => b[field] === value) || null;
+}
+
+async function patch(id, fields) {
+  if (db) {
+    await db.collection(COLLECTION).doc(id).update(fields);
+    return;
+  }
+  const all = readAll();
+  const b = all.find((x) => x.id === id);
+  if (b) { Object.assign(b, fields); writeAll(all); }
+}
+
+/** the booking a Midtrans payment belongs to (its hold), or null */
+export const findByMidtransOrder = (orderId) => findBy('midtransOrderId', orderId);
+
+// A held booking whose payment has gone through: it becomes a real one — confirmed,
+// paid, shown in the dashboard, and on the calendar (holds stay off it). Safe to call
+// twice (the webhook and the visitor's own check can both land).
+export async function confirmPaidHold(booking, payment) {
+  if (!booking.holdOnly) return booking;
+  const fields = { status: 'confirmed', paymentStatus: 'paid', holdOnly: false, holdUntil: null, ...payment };
+  await patch(booking.id, fields);
+  const confirmed = { ...booking, ...fields };
+  try {
+    const eventId = await gcal.createEvent(confirmed);
+    const transportIds = await gcal.createTransportEvents(confirmed);
+    const cal = { ...(eventId ? { gcalEventId: eventId } : {}), ...(transportIds.length ? { gcalTransportIds: transportIds } : {}) };
+    if (Object.keys(cal).length) { await patch(booking.id, cal); Object.assign(confirmed, cal); }
+  } catch (e) { console.error('[bookings] calendar for paid booking failed:', e.message); }
+  return confirmed;
+}
+
+/** an unpaid hold whose payment failed or expired: the slot is free again */
+export async function releaseHold(booking) {
+  if (!booking.holdOnly || booking.status === 'cancelled') return;
+  await patch(booking.id, { status: 'cancelled' });
 }

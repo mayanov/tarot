@@ -11,6 +11,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan, BookingInput, Booking } from '../../services/booking';
 import { paypalConfig, PayPalConfig } from '../../services/paypal';
 import PayPalButtons from './PayPalButtons';
+import { midtransConfig, MidtransConfig, loadSnap, startMidtrans, midtransStatus, releaseMidtrans } from '../../services/midtrans';
 import { trackEvent, SERVICE_TRACK_NAME } from '../../services/analytics';
 import { lockPage, unlockPage } from '../UI/scroll';
 
@@ -67,6 +68,15 @@ const priceFromText = (s?: string | null): string => {
   return m ? m[0].trim() : '';
 };
 
+// A rupiah price token as a number, for analytics ('Rp 315K' → 315000, 'Rp 1,17JT' → 1170000).
+const rupiah = (token: string): number | undefined => {
+  const m = token.match(/([\d.,]+)\s*(K|JT|rb)?/i);
+  if (!m) return undefined;
+  const n = parseFloat(m[1].replace(',', '.'));
+  const unit = (m[2] || '').toUpperCase();
+  return Math.round(n * (unit === 'JT' ? 1e6 : unit === 'K' || unit === 'RB' ? 1e3 : 1));
+};
+
 // Read a duration in minutes out of a package/meta string ('30 Menit', '1 jam', 'Google Meet · 30 min').
 const durationFromText = (s?: string | null): number | null => {
   if (!s) return null;
@@ -78,7 +88,8 @@ const durationFromText = (s?: string | null): number | null => {
   return null;
 };
 
-// Payment details shown on the success step (Indonesian market).
+// Payment details shown on the success step (Indonesian market) — only while the API
+// has no Midtrans keys; with them, the review step takes the payment itself.
 // TODO: replace these placeholders with the real values, and drop the QRIS
 // image at public/payment-qris.png.
 const PAYMENT = {
@@ -138,6 +149,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [ppConfig, setPpConfig] = useState<PayPalConfig | null>(null); // global: PayPal Checkout available?
+  const [mtConfig, setMtConfig] = useState<MidtransConfig | null>(null); // ID: Midtrans available?
+  const mtOrder = useRef<{ token: string; orderId: string } | null>(null); // the payment open right now
+  const [payWait, setPayWait] = useState(false); // ID: waiting for a payment to come in
+  const [paidHere, setPaidHere] = useState(false); // paid inside the form (the done step says so)
   const [showPay, setShowPay] = useState(false); // reveal payment details on the success step
   const [payTab, setPayTab] = useState<'qris' | 'bank'>('qris');
   const [copied, setCopied] = useState(false);
@@ -164,14 +179,26 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const reset = useCallback(() => {
     setStep(0); setService(null); setDate(undefined); setTime(null); setPkg(null);
     setName(''); setDob(''); setDobDay(''); setDobMonth(''); setDobYear(''); setWhatsapp(''); setEmail(''); setQuestion(''); setError(''); setSubmitting(false); setShowPay(false); setPayTab('qris'); setCopied(false);
+    mtOrder.current = null; setPayWait(false); setPaidHere(false);
+  }, []);
+
+  // Leaving the review step (back, or closing the form) with a payment still open:
+  // it's cancelled and the held slot freed — unless it went through just now.
+  const dropOrder = useCallback(() => {
+    const open = mtOrder.current;
+    if (!open) return;
+    mtOrder.current = null;
+    setPayWait(false);
+    releaseMidtrans(open.orderId);
   }, []);
 
   // opened from a pricelist card (still open underneath): closing the form closes that too
   const close = useCallback(() => {
+    dropOrder();
     if (returnToCard.current !== null) window.dispatchEvent(new CustomEvent('close-pricelist-card'));
     returnToCard.current = null;
     setOpen(false);
-  }, []);
+  }, [dropOrder]);
 
   // keep `dob` in sync with the three fields (only a real, past date counts)
   useEffect(() => {
@@ -187,6 +214,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   // to that card (reopened on its details) instead of the generic service picker.
   const returnToCard = useRef<number | null>(null);
   const goBack = () => {
+    if (step === 3) dropOrder();
     const target = step === 3 ? 2 : step === 2 ? (scheduled ? 1 : 0) : 0;
     if (target === 0 && returnToCard.current !== null) {
       if (turn) return;
@@ -257,6 +285,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
   useEffect(() => {
     if (!isIndonesian) paypalConfig().then(setPpConfig);
+    else midtransConfig().then(setMtConfig);
   }, [isIndonesian]);
 
   // Load taken slots when a date is picked.
@@ -296,6 +325,71 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     : code === 'PAYPAL_SDK'
       ? 'PayPal couldn’t load. Please check your connection and reopen the form.'
       : 'The payment didn’t go through, and you haven’t been charged. Please try again.');
+
+  // ---- Indonesia: Midtrans's payment window on the review step ----
+  const paidWithMidtrans = () => {
+    if (!service || paidHere) return;
+    const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
+    const value = rupiah(totalPrice);
+    trackEvent('purchase', { item_name: trackName, market: 'ID', value, currency: 'IDR', transaction_id: mtOrder.current?.orderId || `bk-${Date.now()}` }, 'Purchase', { value, currency: 'IDR', content_name: trackName });
+    mtOrder.current = null;
+    setPayWait(false); setPaidHere(true); setError('');
+    setStep(4);
+  };
+  const checkMidtrans = async () => {
+    const open = mtOrder.current;
+    if (!open) return;
+    const state = await midtransStatus(open.orderId);
+    if (mtOrder.current !== open) return; // left or restarted meanwhile
+    if (state === 'paid') paidWithMidtrans();
+    else if (state === 'failed') {
+      mtOrder.current = null; setPayWait(false);
+      setError('Pembayaran gagal atau sudah kedaluwarsa, dan belum ada dana yang terpotong. Silakan coba lagi.');
+    } else setPayWait(true);
+  };
+  const payMidtrans = async () => {
+    if (!service || !mtConfig) return;
+    setError(''); setSubmitting(true);
+    try {
+      const snap = await loadSnap(mtConfig);
+      if (!mtOrder.current) {
+        mtOrder.current = await startMidtrans({
+          serviceId: service.id,
+          pkg: pkg ? pkg.split(' · ')[0] : '',
+          date: service.scheduled && date ? toISODate(date) : '',
+          time: service.scheduled ? (time || '') : '',
+          name: name.trim(), dob,
+          contact: bookingInput(service).contact,
+          question: question.trim(),
+          phone: whatsapp.trim(), email: email.trim(),
+        });
+        const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
+        trackEvent('add_payment_info', { item_name: trackName, market: 'ID' }, 'AddPaymentInfo', { content_name: trackName });
+      }
+      snap.pay(mtOrder.current.token, {
+        onSuccess: checkMidtrans,
+        onPending: () => setPayWait(true),
+        onError: checkMidtrans,
+        onClose: checkMidtrans,
+      });
+    } catch (e) {
+      if (e instanceof Error && e.message === 'SLOT_TAKEN') {
+        setError('Maaf, slot itu baru saja terisi. Pilih waktu lain ya.');
+        setStep(1);
+      } else {
+        setError('Pembayaran belum bisa dibuka. Coba lagi sebentar.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  // while a payment is open (e.g. a QRIS shown, the window closed), keep asking
+  useEffect(() => {
+    if (!payWait || step !== 3) return;
+    const iv = window.setInterval(checkMidtrans, 4000);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payWait, step]);
 
   const submit = async () => {
     if (!service) return;
@@ -356,6 +450,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const totalPrice = pkg ? priceFromText(pkg) : (service?.price || '');
   // global reading + PayPal keys on the server → paid right here on the review step
   const payInForm = !isIndonesian && !!ppConfig?.enabled && !!service && !!PAYPAL[service.id];
+  // ID + Midtrans keys on the server → paid right here on the review step too
+  const midtransHere = isIndonesian && !!mtConfig?.enabled;
 
   // WhatsApp deep link for the success step — prefilled with the booking so the
   // customer just attaches their payment proof.
@@ -764,7 +860,18 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 {rule}
               </div>
 
-              {isIndonesian && (
+              {midtransHere && (
+                <div className="mt-6">
+                  <h3 className="font-serif font-semibold text-ink text-lg mb-1">Pembayaran</h3>
+                  <p className="text-[13px] text-ink/60 leading-relaxed">
+                    {payWait
+                      ? <>Menunggu pembayaranmu masuk… Kalau sudah bayar, tunggu sebentar di sini. {scheduled ? 'Jadwalmu kami tahan selama 30 menit.' : ''}</>
+                      : <>Bayar {totalPrice} lewat QRIS, e-wallet (GoPay, ShopeePay, dll.), atau transfer bank. Booking-mu langsung tercatat begitu pembayaran masuk.</>}
+                  </p>
+                </div>
+              )}
+
+              {isIndonesian && !midtransHere && (
                 <div className="mt-6">
                   <h3 className="font-serif font-semibold text-ink text-lg mb-3">{t('Pembayaran', 'Payment')}</h3>
                   {paymentPanel()}
@@ -789,7 +896,12 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 </p>
               )}
 
-              {payInForm ? bottomBar(null) : bottomBar(
+              {payInForm ? bottomBar(null) : midtransHere ? bottomBar(
+                <button onClick={payMidtrans} disabled={submitting} className={primaryBtn}>
+                  {swatch}
+                  {submitting ? 'Membuka pembayaran…' : payWait ? 'Lanjutkan pembayaran' : `Bayar ${totalPrice}`}
+                </button>
+              ) : bottomBar(
                 <button onClick={submit} disabled={submitting} className={primaryBtn}>
                   {swatch}
                   {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', 'Confirm & pay')}
@@ -805,9 +917,11 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 <PaintSwatch round />
                 <Check className="w-7 h-7 text-cream" />
               </div>
-              <h3 className="font-serif font-semibold text-2xl text-ink">{t('Booking diterima!', 'You’re booked!')}</h3>
+              <h3 className="font-serif font-semibold text-2xl text-ink">{paidHere ? 'Booking terkonfirmasi!' : t('Booking diterima!', 'You’re booked!')}</h3>
               <p className="mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
-                {isIndonesian
+                {paidHere
+                  ? <>Terima kasih, {name || 'kamu'}. Pembayaranmu sudah masuk dan booking-mu tercatat. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk detail sesinya.</>
+                  : isIndonesian
                   ? <>Terima kasih, {name || 'kamu'}. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk konfirmasi.</>
                   : <>Thank you, {name || 'friend'}. One last step: pay on PayPal, and your reading is on its way to {email.trim()}.</>}
               </p>
@@ -824,6 +938,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 {rule}
               </div>
 
+              {!paidHere && <>
               {isIndonesian && showPay && <div className="mt-5 text-left">{paymentPanel()}</div>}
 
               <p className="mt-5 text-[13px] text-ink/60 max-w-sm mx-auto leading-relaxed">
@@ -850,6 +965,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 )}
               </div>
               )}
+              </>}
             </div>
           )}
         </div>

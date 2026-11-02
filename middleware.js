@@ -7,10 +7,11 @@
 // of the password, so changing SITE_PASSWORD signs everyone out). A cookie is
 // used rather than browser Basic auth because the admin API already uses the
 // Authorization header for its own login.
-// The daily cron is left open — it has its own CRON_SECRET check.
+// The daily cron is left open — it has its own CRON_SECRET check — and so are
+// Midtrans's payment notifications, which are checked by their signature.
 
 export const config = {
-  matcher: '/((?!api/cron/).*)',
+  matcher: '/((?!api/cron/|api/midtrans/notify).*)',
 };
 
 const COOKIE = 'site_pass';
