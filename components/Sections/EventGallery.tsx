@@ -107,7 +107,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {
                 {/* foot: the title, set like a card name */}
                 <span className="flex items-center justify-center gap-1.5 md:gap-2 pt-2 md:pt-3 text-center">
                   <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-cream/50" />
-                  <span className="letterpress font-elegant font-semibold uppercase tracking-[0.18em] md:tracking-[0.24em] text-[0.6rem] md:text-[0.72rem] text-cream/90 pl-[0.2em]">{isIndonesian ? pr.id : pr.en}</span>
+                  <span className="letterpress on-dark font-elegant font-semibold uppercase tracking-[0.18em] md:tracking-[0.24em] text-[0.6rem] md:text-[0.72rem] text-cream/90 pl-[0.2em]">{isIndonesian ? pr.id : pr.en}</span>
                   <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-cream/50" />
                 </span>
                 </span>

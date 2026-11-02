@@ -248,7 +248,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
         <span className="letterpress relative">M</span>
       </span>
       <span className={`overflow-hidden whitespace-nowrap transition-[max-width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled || menuOpen ? 'max-w-[220px]' : 'max-w-0'}`}>
-        <span className={`letterpress pl-0.5 text-base font-serif font-bold uppercase tracking-tight ${onDark ? 'text-cream' : 'text-ink'}`}>
+        <span className={`letterpress pl-0.5 text-base font-serif font-bold uppercase tracking-tight ${onDark ? 'on-dark text-cream' : 'text-ink'}`}>
           Mayanov <span className={onDark ? 'text-cream/55' : 'text-ink/45'}>Tarot</span>
         </span>
       </span>
