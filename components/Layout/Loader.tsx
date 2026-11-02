@@ -191,10 +191,15 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       setSlots({ title: title.getBoundingClientRect(), titleFont: getComputedStyle(title).fontSize, moonX: c.left + c.width * 0.414, moonY: c.top + c.height / 2 });
     };
     measure();
-    // the title's size depends on the web fonts, and the window may change
+    // the title's size depends on the web fonts, and the window may change; its place
+    // too, whenever the hero's stack changes height (e.g. the line rewraps once the
+    // language is known), since the stack is centred in the screen
     (document as any).fonts?.ready?.then(measure);
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    const stack = document.querySelector('[data-hero-title]')?.parentElement?.parentElement;
+    const ro = stack && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    if (stack) ro?.observe(stack);
+    return () => { window.removeEventListener('resize', measure); ro?.disconnect(); };
   }, []);
 
   // ---- the hand-off: the full moon wanes into the crescent where it is ----
@@ -262,10 +267,11 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         transition: leaving && reduce ? 'opacity 380ms ease' : undefined,
       }}
     >
-      {/* the name, exactly where (and as) the hero's title is */}
+      {/* the name, exactly where (and as) the hero's title is: the same box, with the
+          h1's room for descenders at the bottom (pb), so the letters sit on the same line */}
       {slots && (
         <div
-          className="letterpress-lg fixed flex items-center justify-center font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-cream"
+          className="letterpress-lg fixed flex items-start justify-center pb-[0.14em] font-serif font-medium uppercase whitespace-nowrap leading-[0.95] tracking-[-0.01em] text-cream"
           style={{
             left: slots.title.left, top: slots.title.top, width: slots.title.width, height: slots.title.height, fontSize: slots.titleFont,
             opacity: shown ? 1 : 0, transition: clearing ? 'opacity 400ms ease 300ms' : 'opacity 900ms ease',
