@@ -63,15 +63,18 @@ const Events: React.FC<EventsProps> = ({ isIndonesian = false }) => {
               </h2>
             </div>
           </FadeIn>
-          {/* HISTORY — editorial year-grouped list: lilac year markers, hairline lines */}
+          {/* HISTORY — editorial year-grouped list: stamped year markers, pencil lines */}
           <div>
             {timeline.map((grp, gi) => (
               <FadeIn key={grp.year + gi} delay={Math.min(gi, 6) * 70} dir="up" distance={0.7}>
                 <PencilRule className="text-ink/30" />
                 <div className="grid md:grid-cols-[7rem_1fr] gap-y-3 md:gap-x-12 md:items-start pt-4 md:pt-5 pb-4 md:pb-5">
-                  {/* year marker */}
-                  <div className="letterpress-lg pb-[0.14em] -mb-[0.14em] font-elegant italic text-moon text-2xl md:text-[1.9rem] leading-none tracking-tight md:pt-1.5">
-                    {grp.year}
+                  {/* year marker, rubber-stamped like the disclaimer's rules: an inked
+                      outline, pressed a little crooked, the ink catching unevenly */}
+                  <div className="md:pt-1">
+                    <span className={`print-ink mix-blend-multiply inline-block rounded-[4px] border-[1.5px] border-current px-3 py-1 text-[13px] md:text-[14px] font-bold uppercase tracking-[0.16em] text-moon/85 ${gi % 2 ? 'rotate-[2.5deg]' : '-rotate-[2deg]'}`}>
+                      {grp.year}
+                    </span>
                   </div>
                   {/* that year's events */}
                   <ul>
