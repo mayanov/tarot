@@ -54,13 +54,14 @@ const DUSK_MS = 2600;
 const SUNSET_IMG = `${import.meta.env.BASE_URL}sky-sunset.webp`;
 const DUSK_IMG = `${import.meta.env.BASE_URL}sky-dusk.webp`;
 const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-// the clouds' drift across the timelapse: fast at first, slowing to a stop just where
-// the hero's sky sits (every sky layer, the hero's included, moves together, so the
-// clouds carry on through the colour changes; index.html starts the sunset at drift(0))
+// the clouds' drift across the timelapse: easing in, then slowing to a stop just where
+// the hero's sky sits (every sky painting, the hero's included, moves together, so the
+// clouds carry on through the colour changes; index.html starts the sunset at
+// drift(0)). Sideways only, within the 6% each painting overhangs its frame, so there's
+// no zoom; and as `translate`, so it adds to the hero sky's own slow drift (transform).
 const drift = (d: number) => {
-  const k = Math.pow(1 - Math.min(1, d), 3);
-  // (zoomed in enough to cover the shift: each layer's box moves with it)
-  return k < 0.0005 ? '' : `translate3d(${(-8 * k).toFixed(3)}vw, 0, 0) scale(${(1 + 0.2 * k).toFixed(4)})`;
+  const k = 1 - smooth(0, 1, d);
+  return k < 0.0005 ? '' : `${(-5 * k).toFixed(3)}vw 0`;
 };
 
 // One moon pencilled in: its outline drawn round as `draw` goes 0 → 1, then its lit part
@@ -232,12 +233,12 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     return () => { cancelAnimationFrame(raf); clearTimeout(cap); document.removeEventListener('visibilitychange', skip); };
   }, [eveningAt, reduce]);
   const night = dusk >= 1;
-  // every sky layer drifts together (the loader's and the hero's: data-sky-drift)
+  // every sky painting drifts together (the loader's and the hero's: data-sky-drift)
   useLayoutEffect(() => {
-    document.querySelectorAll<HTMLElement>('[data-sky-drift]').forEach((el) => { el.style.transform = drift(dusk); });
+    document.querySelectorAll<HTMLElement>('[data-sky-drift] img').forEach((el) => { el.style.translate = drift(dusk); });
   }, [dusk]);
   useEffect(() => () => {
-    document.querySelectorAll<HTMLElement>('[data-sky-drift]').forEach((el) => { el.style.transform = ''; });
+    document.querySelectorAll<HTMLElement>('[data-sky-drift] img').forEach((el) => { el.style.translate = ''; });
   }, []);
 
   // ---- where the hero's title and crescent are, to draw the loader over them ----
@@ -333,7 +334,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           holds on the lighter skies) */}
       {!reduce && !night && (
         <>
-          <div data-sky-drift className="absolute inset-0 overflow-hidden will-change-transform">
+          <div data-sky-drift className="absolute inset-0 overflow-hidden">
             {/* (placed as WatercolorSky places the hero's painting) */}
             <img src={DUSK_IMG} alt="" draggable={false} className="absolute -inset-[6%] w-[112%] h-[112%] max-w-none object-cover select-none" style={{ opacity: (1 - smooth(0.55, 1, dusk)).toFixed(3) }} />
             <img src={SUNSET_IMG} alt="" draggable={false} className="absolute -inset-[6%] w-[112%] h-[112%] max-w-none object-cover select-none" style={{ opacity: (1 - smooth(0.05, 0.6, dusk)).toFixed(3) }} />
