@@ -117,9 +117,13 @@
 }
 </script>
   <!-- until the loader hands over, the page under it is the sunset the loader's
-       timelapse starts from (the same painting, placed as the loader places it), so
-       the first frame (before the scripts run) is already that sky -->
-  <style>html.booting { background: #5a4a8a url(/sky-sunset.webp) center / cover no-repeat fixed; } html.booting body { background: transparent; }</style>
+       timelapse starts from (the same painting, placed and drifted as the loader
+       places it: Loader's drift(0)), so the first frame (before the scripts run) is
+       already that sky -->
+  <style>
+    html.booting { background: #5a4a8a; } html.booting body { background: transparent; }
+    html.booting body::before { content: ''; position: fixed; inset: -6%; z-index: -1; background: url(/sky-sunset.webp) center / cover no-repeat; transform: translate3d(-8vw, 0, 0) scale(1.2); }
+  </style>
 </head>
 
 <body class="text-cream overflow-x-hidden selection:bg-ink/20 antialiased font-sans">

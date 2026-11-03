@@ -23,8 +23,10 @@ interface LoaderProps {
 //
 // The sky runs a timelapse while it loads: it opens on a sunset (peach and rose under
 // indigo), which gives way to a violet dusk, which gives way to the hero's own
-// twilight; they're laid over the hero's sky and thin away in turn, so by the
-// hand-off only the hero's own sky is left and nothing is swapped.
+// twilight, while the clouds sail across and slow to a stop. The three skies share
+// one set of clouds; the sunset and dusk are laid over the hero's sky and thin away in
+// turn, so by the hand-off only the hero's own sky is left, at rest, and nothing is
+// swapped.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
 const CLEAR_MS = 1300;                // the drawing fades from the sky
@@ -44,13 +46,22 @@ const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
 // The timelapse: once the skies are in, sunset turns to dusk and dusk to the hero's
 // twilight over this long (the hand-off waits for it, so it's always seen through)
-const DUSK_MS = 2400;
-// the sunset and the dusk (WatercolorSky's SUNRISE and DUSK), painted ahead of time so
-// they're there from the first frame (index.html preloads them and shows the sunset
-// before the scripts run)
+const DUSK_MS = 2600;
+// the sunset and the dusk (WatercolorSky's SUNRISE and DUSK, painted as clear skies so
+// their clouds are the hero's own, in the same places: only the light changes), painted
+// ahead of time so they're there from the first frame (index.html preloads them and
+// shows the sunset before the scripts run)
 const SUNSET_IMG = `${import.meta.env.BASE_URL}sky-sunset.webp`;
 const DUSK_IMG = `${import.meta.env.BASE_URL}sky-dusk.webp`;
 const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+// the clouds' drift across the timelapse: fast at first, slowing to a stop just where
+// the hero's sky sits (every sky layer, the hero's included, moves together, so the
+// clouds carry on through the colour changes; index.html starts the sunset at drift(0))
+const drift = (d: number) => {
+  const k = Math.pow(1 - Math.min(1, d), 3);
+  // (zoomed in enough to cover the shift: each layer's box moves with it)
+  return k < 0.0005 ? '' : `translate3d(${(-8 * k).toFixed(3)}vw, 0, 0) scale(${(1 + 0.2 * k).toFixed(4)})`;
+};
 
 // One moon pencilled in: its outline drawn round as `draw` goes 0 → 1, then its lit part
 // shaded in. Same geometry as the divider's Phase (MoonPhaseDivider).
@@ -221,6 +232,13 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     return () => { cancelAnimationFrame(raf); clearTimeout(cap); document.removeEventListener('visibilitychange', skip); };
   }, [eveningAt, reduce]);
   const night = dusk >= 1;
+  // every sky layer drifts together (the loader's and the hero's: data-sky-drift)
+  useLayoutEffect(() => {
+    document.querySelectorAll<HTMLElement>('[data-sky-drift]').forEach((el) => { el.style.transform = drift(dusk); });
+  }, [dusk]);
+  useEffect(() => () => {
+    document.querySelectorAll<HTMLElement>('[data-sky-drift]').forEach((el) => { el.style.transform = ''; });
+  }, []);
 
   // ---- where the hero's title and crescent are, to draw the loader over them ----
   const [slots, setSlots] = useState<{ title: DOMRect; titleFont: string; moonY: number; moonX: number } | null>(null);
@@ -313,14 +331,15 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       {/* the timelapse over the hero's twilight: the dusk, and the sunset over that,
           each thinning away in turn (with the hero's own pool of shade, so the cream
           holds on the lighter skies) */}
-      {!reduce && (
-        <div className="absolute inset-0 will-change-[opacity]" style={{ opacity: (1 - smooth(0.5, 1, dusk)).toFixed(3) }}>
-          <img src={DUSK_IMG} alt="" draggable={false} className="absolute inset-0 w-full h-full object-cover select-none" />
-          <div className="absolute inset-0 will-change-[opacity]" style={{ opacity: (1 - smooth(0.05, 0.55, dusk)).toFixed(3) }}>
-            <img src={SUNSET_IMG} alt="" draggable={false} className="absolute inset-0 w-full h-full object-cover select-none" />
+      {!reduce && !night && (
+        <>
+          <div data-sky-drift className="absolute inset-0 overflow-hidden will-change-transform">
+            {/* (placed as WatercolorSky places the hero's painting) */}
+            <img src={DUSK_IMG} alt="" draggable={false} className="absolute -inset-[6%] w-[112%] h-[112%] max-w-none object-cover select-none" style={{ opacity: (1 - smooth(0.55, 1, dusk)).toFixed(3) }} />
+            <img src={SUNSET_IMG} alt="" draggable={false} className="absolute -inset-[6%] w-[112%] h-[112%] max-w-none object-cover select-none" style={{ opacity: (1 - smooth(0.05, 0.6, dusk)).toFixed(3) }} />
           </div>
-          <div className="absolute inset-0" style={{ background: 'radial-gradient(68% 54% at 50% 44%, rgba(9,7,22,0.3) 0%, transparent 74%)' }} />
-        </div>
+          <div className="absolute inset-0" style={{ opacity: (1 - smooth(0.55, 1, dusk)).toFixed(3), background: 'radial-gradient(68% 54% at 50% 44%, rgba(9,7,22,0.3) 0%, transparent 74%)' }} />
+        </>
       )}
 
       {/* the name, exactly where (and as) the hero's title is: the same box, with the

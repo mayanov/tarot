@@ -23,7 +23,10 @@ const Background: React.FC = () => {
     <div ref={rootRef} className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* the sky itself, painted in watercolour (blue up the left, a violet heart, a
           rose bloom upper-right, teal lower-right), drifting very slowly */}
-      <WatercolorSky palette={TWILIGHT} stars={false} eager className="absolute inset-0" />
+      {/* (data-sky-drift: the loader's timelapse drifts it with its own skies, see Loader) */}
+      <div data-sky-drift className="absolute inset-0">
+        <WatercolorSky palette={TWILIGHT} stars={false} eager className="absolute inset-0" />
+      </div>
       {/* a thin lavender veil over it, lifting the whole sky a touch (a plain overlay:
           blend modes are unreliable on iPhones) */}
       <div className="absolute inset-0" style={{ background: 'rgba(196,178,236,0.07)' }} />
