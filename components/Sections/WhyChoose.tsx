@@ -44,7 +44,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
             <h2 className="letterpress-lg pb-[0.14em] -mb-[0.14em] font-elegant font-semibold text-ink text-[2.4rem] sm:text-[3.2rem] lg:text-[4rem] leading-[1.02] tracking-[-0.025em] max-w-4xl mx-auto text-center">
               <MaskReveal>{isIndonesian ? 'Kenapa tarot sama Mayanov?' : 'Why work with me?'}</MaskReveal>
             </h2>
-            <p className="letterpress-lg mt-6 md:mt-7 max-w-[40ch] mx-auto text-center font-elegant text-ink/80 text-lg md:text-[1.35rem] leading-[1.5]">
+            <p className="letterpress-lg mt-6 md:mt-7 max-w-[36rem] mx-auto text-center font-elegant text-ink/80 text-lg md:text-[1.35rem] leading-[1.5]">
               {isIndonesian
                 ? 'Sesi tarot yang tidak kaku atau menyeramkan — ruang aman untuk bercerita, dengan kesimpulan jelas dan langkah yang bisa kamu ambil.'
                 : 'The objectivity of a therapist mixed with the warmth of a best friend — grounded, practical, and centered on you.'}

@@ -149,7 +149,7 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           <p
             ref={paraRef}
             style={hidden}
-            className="letterpress on-dark mt-9 md:mt-10 mx-auto max-w-[40ch] font-elegant text-cream text-lg md:text-[1.35rem] leading-[1.5] will-change-[opacity,transform]"
+            className="letterpress on-dark mt-9 md:mt-10 mx-auto max-w-[36rem] font-elegant text-cream text-lg md:text-[1.35rem] leading-[1.5] will-change-[opacity,transform]"
           >
             {isIndonesian
               ? 'Kita buka kartunya dan baca energi yang sedang kamu bawa — pola yang sedang kamu jalani, perasaan yang belum sempat kamu ucapkan — lalu kita ubah jadi langkah yang jelas dan bisa kamu ambil.'

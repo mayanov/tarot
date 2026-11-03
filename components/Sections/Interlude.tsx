@@ -165,7 +165,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
             {isIndonesian ? 'Bingung mau tanya apa?' : 'Not sure what to ask?'}
           </h2>
           {/* pressed with the heading's own impression, so the two read as one voice */}
-          <p className="letterpress-lg mt-6 md:mt-7 max-w-[34ch] font-elegant text-cream text-lg md:text-[1.35rem] leading-[1.5]">
+          <p className="letterpress-lg mt-6 md:mt-7 max-w-[36rem] lg:max-w-[34ch] font-elegant text-cream text-lg md:text-[1.35rem] leading-[1.5]">
             {isIndonesian
               ? 'Kamu nggak perlu datang dengan pertanyaan yang sempurna. Ini beberapa yang sering dibawa ke meja, atau cukup cerita, kita cari pertanyaannya bareng.'
               : 'You don’t need the perfect question. Here are a few that often come to the table, or just tell me what’s going on and we’ll find it together.'}
