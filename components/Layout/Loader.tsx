@@ -3,7 +3,7 @@ import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import CelestialMark from '../UI/CelestialMark';
-import { skyPainted, TWILIGHT } from './WatercolorSky';
+import WatercolorSky, { skyPainted, EVENING, TWILIGHT } from './WatercolorSky';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -20,6 +20,11 @@ interface LoaderProps {
 // outer pair first, the full moon last, right where the crescent goes). Once everything
 // is in, nothing moves: the rest of the divider fades, the full moon wanes into the
 // crescent where it is, and the hero's words come in under the title.
+//
+// The sky runs a timelapse while it loads: it opens on an early-evening sky (the
+// interlude's, lighter and lit) laid over the hero's, which thins away once it's
+// painted, so the evening darkens into the hero's twilight; by the hand-off only the
+// hero's own sky is left, so nothing is swapped.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
 const CLEAR_MS = 1300;                // the drawing fades from the sky
@@ -37,6 +42,12 @@ const MIN_CLIMB_MS = 1600;    // even on a fast connection the drawing takes thi
 const SETTLE_MS = 450;        // the finished drawing (at 100%) holds a beat before the hand-off
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
+// The timelapse: once the evening sky is painted, it darkens into the hero's twilight
+// over this long (the hand-off waits for it, so it's always seen through)
+const DUSK_MS = 1700;
+// the evening sky's own colours, flat, until its painting is in (and the page's, before
+// the scripts run: index.html)
+const EVENING_GROUND = 'linear-gradient(170deg, #33307a, #4a4194 30%, #6c56a8 55%, #9a72b4 78%, #c99ab8)';
 
 // One moon pencilled in: its outline drawn round as `draw` goes 0 → 1, then its lit part
 // shaded in. Same geometry as the divider's Phase (MoonPhaseDivider).
@@ -69,6 +80,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
   const [unlocked, setUnlocked] = useState(false); // page may scroll again
+  const [eveningAt, setEveningAt] = useState<number | null>(null); // the evening sky is painted
+  const [dusk, setDusk] = useState(reduce ? 1 : 0); // the timelapse, 0 (evening) → 1 (twilight)
 
   // The page must not scroll while loading. Native overflow:hidden isn't enough: the
   // smooth-scroll library (Lenis) starts right after this and drives the scroll itself.
@@ -127,6 +140,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     if (img.complete && img.naturalWidth) safe('paper')();
     // the hero's watercolour sky: painted first thing (it holds the main thread for a
     // moment, which on a phone would show as a hitch if it landed mid-drawing)
+    // (the evening first: it's the one seen first)
+    skyPainted(EVENING).then(() => { if (!cancelled) setEveningAt(performance.now()); }, () => { if (!cancelled) setEveningAt(performance.now()); });
     skyPainted(TWILIGHT).then(safe('sky'), safe('sky'));
     // the page itself (scripts, styles, images in the document)
     if (document.readyState === 'complete') safe('page')();
@@ -179,6 +194,26 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     return () => { stop(); document.removeEventListener('visibilitychange', run); };
   }, [reduce]);
 
+  // ---- the timelapse: from the painted evening into the night, on its own clock ----
+  useEffect(() => {
+    if (reduce || eveningAt === null) return;
+    let raf = 0;
+    const tick = () => {
+      const t = Math.min(1, (performance.now() - eveningAt) / DUSK_MS);
+      // (nobody's watching a hidden tab: straight to the night)
+      const d = document.hidden ? 1 : t * t * (3 - 2 * t);
+      setDusk(d);
+      if (d < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    const skip = () => { if (document.hidden) setDusk(1); };
+    document.addEventListener('visibilitychange', skip);
+    // never hold the hand-off on it
+    const cap = window.setTimeout(() => setDusk(1), TASK_TIMEOUT_MS);
+    return () => { cancelAnimationFrame(raf); clearTimeout(cap); document.removeEventListener('visibilitychange', skip); };
+  }, [eveningAt, reduce]);
+  const night = dusk >= 1;
+
   // ---- where the hero's title and crescent are, to draw the loader over them ----
   const [slots, setSlots] = useState<{ title: DOMRect; titleFont: string; moonY: number; moonX: number } | null>(null);
   useLayoutEffect(() => {
@@ -207,7 +242,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   const [carry, setCarry] = useState<string | null>(null);
   const [landed, setLanded] = useState(false);
   useEffect(() => {
-    if (!complete) return;
+    if (!complete || !night) return;
     const timers: number[] = [];
     const at = (ms: number, f: () => void) => timers.push(window.setTimeout(f, ms));
     at(reduce ? 0 : SETTLE_MS, () => {
@@ -231,7 +266,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       at(reduce ? 400 : Math.max(CLEAR_MS, REVEAL_FLIGHT_MS + 500), () => setGone(true));
     });
     return () => timers.forEach(clearTimeout);
-  }, [complete, reduce]);
+  }, [complete, night, reduce]);
 
   // the page shows the sky's colour until the loader's done (index.html sets
   // html.booting, so the first frame before React is already the night)
@@ -267,6 +302,15 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         transition: leaving && reduce ? 'opacity 380ms ease' : undefined,
       }}
     >
+      {/* the timelapse: the evening sky over the hero's twilight, thinning as it loads
+          (with the hero's own pool of shade, so the cream holds on the lighter sky) */}
+      {!reduce && (
+        <div className="absolute inset-0 will-change-[opacity]" style={{ opacity: (1 - dusk).toFixed(3) }}>
+          <WatercolorSky palette={EVENING} stars={false} eager className="absolute inset-0" style={{ background: EVENING_GROUND }} />
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(68% 54% at 50% 44%, rgba(9,7,22,0.26) 0%, transparent 74%)' }} />
+        </div>
+      )}
+
       {/* the name, exactly where (and as) the hero's title is: the same box, with the
           h1's room for descenders at the bottom (pb), so the letters sit on the same line */}
       {slots && (

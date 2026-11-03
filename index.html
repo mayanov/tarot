@@ -112,9 +112,10 @@
   }
 }
 </script>
-  <!-- until the loader's paper sheet is lifted, the page under it is the paper's
-       colour, so the first frame (before the scripts run) matches the sheet -->
-  <style>html.booting, html.booting body { background: #1c1240; }</style>
+  <!-- until the loader hands over, the page under it is the early-evening sky the
+       loader's timelapse starts from (Loader: EVENING), so the first frame (before the
+       scripts run) is already that sky -->
+  <style>html.booting { background: #4a3f8c linear-gradient(170deg, #33307a, #4a4194 30%, #6c56a8 55%, #9a72b4 78%, #c99ab8) fixed; } html.booting body { background: transparent; }</style>
 </head>
 
 <body class="text-cream overflow-x-hidden selection:bg-ink/20 antialiased font-sans">
