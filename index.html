@@ -117,12 +117,13 @@
 }
 </script>
   <!-- until the loader hands over, the page under it is the sunset the loader's
-       timelapse starts from (the same painting, placed and drifted as the loader
-       places it: Loader's drift(0)), so the first frame (before the scripts run) is
-       already that sky -->
+       timelapse starts from (the same painting, with the hero's shading over it, as
+       Background lays it), so the first frame (before the scripts run) is already
+       that sky -->
   <style>
     html.booting { background: #5a4a8a; } html.booting body { background: transparent; }
-    html.booting body::before { content: ''; position: fixed; inset: -6%; z-index: -1; background: url(/sky-sunset.webp) center / cover no-repeat; translate: -5vw 0; }
+    html.booting body::before { content: ''; position: fixed; inset: -6%; z-index: -1; background: url(/sky-sunset.webp) center / cover no-repeat; }
+    html.booting body::after { content: ''; position: fixed; inset: 0; z-index: -1; background: radial-gradient(68% 54% at 50% 44%, rgba(9,7,22,0.32) 0%, transparent 74%), linear-gradient(180deg, transparent 0%, transparent 60%, rgba(9,7,22,0.38) 100%) rgba(196,178,236,0.07); }
   </style>
 </head>
 
