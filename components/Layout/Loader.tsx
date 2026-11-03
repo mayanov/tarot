@@ -3,7 +3,7 @@ import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import CelestialMark from '../UI/CelestialMark';
-import WatercolorSky, { skyPainted, EVENING, TWILIGHT } from './WatercolorSky';
+import { skyPainted, TWILIGHT } from './WatercolorSky';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -22,9 +22,9 @@ interface LoaderProps {
 // crescent where it is, and the hero's words come in under the title.
 //
 // The sky runs a timelapse while it loads: it opens on an early-evening sky (the
-// interlude's, lighter and lit) laid over the hero's, which thins away once it's
-// painted, so the evening darkens into the hero's twilight; by the hand-off only the
-// hero's own sky is left, so nothing is swapped.
+// interlude's, lighter and lit) laid over the hero's, which thins away once the hero's
+// is painted, so the evening darkens into the hero's twilight; by the hand-off only
+// the hero's own sky is left, so nothing is swapped.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
 const CLEAR_MS = 1300;                // the drawing fades from the sky
@@ -42,12 +42,13 @@ const MIN_CLIMB_MS = 1600;    // even on a fast connection the drawing takes thi
 const SETTLE_MS = 450;        // the finished drawing (at 100%) holds a beat before the hand-off
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
-// The timelapse: once the evening sky is painted, it darkens into the hero's twilight
+// The timelapse: once both skies are in, the evening darkens into the hero's twilight
 // over this long (the hand-off waits for it, so it's always seen through)
 const DUSK_MS = 1700;
-// the evening sky's own colours, flat, until its painting is in (and the page's, before
-// the scripts run: index.html)
-const EVENING_GROUND = 'linear-gradient(170deg, #33307a, #4a4194 30%, #6c56a8 55%, #9a72b4 78%, #c99ab8)';
+// the evening sky (WatercolorSky's EVENING, the interlude's), painted ahead of time so
+// it's there from the first frame (index.html preloads it and shows it before the
+// scripts run)
+const EVENING_IMG = `${import.meta.env.BASE_URL}sky-evening.webp`;
 
 // One moon pencilled in: its outline drawn round as `draw` goes 0 → 1, then its lit part
 // shaded in. Same geometry as the divider's Phase (MoonPhaseDivider).
@@ -80,7 +81,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
   const [unlocked, setUnlocked] = useState(false); // page may scroll again
-  const [eveningAt, setEveningAt] = useState<number | null>(null); // the evening sky is painted
+  const [eveningAt, setEveningAt] = useState<number | null>(null); // both skies are in
   const [dusk, setDusk] = useState(reduce ? 1 : 0); // the timelapse, 0 (evening) → 1 (twilight)
 
   // The page must not scroll while loading. Native overflow:hidden isn't enough: the
@@ -140,9 +141,15 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     if (img.complete && img.naturalWidth) safe('paper')();
     // the hero's watercolour sky: painted first thing (it holds the main thread for a
     // moment, which on a phone would show as a hitch if it landed mid-drawing)
-    // (the evening first: it's the one seen first)
-    skyPainted(EVENING).then(() => { if (!cancelled) setEveningAt(performance.now()); }, () => { if (!cancelled) setEveningAt(performance.now()); });
-    skyPainted(TWILIGHT).then(safe('sky'), safe('sky'));
+    const twilight = skyPainted(TWILIGHT);
+    twilight.then(safe('sky'), safe('sky'));
+    // night starts falling once both skies are in
+    const evening = new Promise<void>((r) => {
+      const e = new Image();
+      e.onload = e.onerror = () => r();
+      e.src = EVENING_IMG;
+    });
+    Promise.all([evening, twilight.catch(() => {})]).then(() => { if (!cancelled) setEveningAt(performance.now()); });
     // the page itself (scripts, styles, images in the document)
     if (document.readyState === 'complete') safe('page')();
     else window.addEventListener('load', safe('page'), { once: true });
@@ -306,7 +313,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
           (with the hero's own pool of shade, so the cream holds on the lighter sky) */}
       {!reduce && (
         <div className="absolute inset-0 will-change-[opacity]" style={{ opacity: (1 - dusk).toFixed(3) }}>
-          <WatercolorSky palette={EVENING} stars={false} eager className="absolute inset-0" style={{ background: EVENING_GROUND }} />
+          <img src={EVENING_IMG} alt="" draggable={false} className="absolute inset-0 w-full h-full object-cover select-none" />
           <div className="absolute inset-0" style={{ background: 'radial-gradient(68% 54% at 50% 44%, rgba(9,7,22,0.26) 0%, transparent 74%)' }} />
         </div>
       )}
