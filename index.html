@@ -29,8 +29,10 @@
   <!-- Preload the loader's moon so it appears without a fetch stall (the sky itself is
        drawn in code; the sky photo is only used by the footer and loads later) -->
   <link rel="preload" as="image" href="/moon.jpg" fetchpriority="high" />
-  <!-- the loader's evening sky, painted ahead of time (the first thing seen) -->
-  <link rel="preload" as="image" href="/sky-evening.webp" fetchpriority="high" />
+  <!-- the loader's timelapse skies, painted ahead of time (the sunset is the first
+       thing seen) -->
+  <link rel="preload" as="image" href="/sky-sunset.webp" fetchpriority="high" />
+  <link rel="preload" as="image" href="/sky-dusk.webp" />
 
   <!-- Font: Switzer (self-hosted woff2 — no third-party stylesheet round-trip) -->
   <link rel="preload" as="font" type="font/woff2" href="/fonts/switzer-400.woff2" crossorigin>
@@ -114,10 +116,10 @@
   }
 }
 </script>
-  <!-- until the loader hands over, the page under it is the early-evening sky the
-       loader's timelapse starts from (the same painting, placed as the loader places
-       it), so the first frame (before the scripts run) is already that sky -->
-  <style>html.booting { background: #4a3f8c url(/sky-evening.webp) center / cover no-repeat fixed; } html.booting body { background: transparent; }</style>
+  <!-- until the loader hands over, the page under it is the sunset the loader's
+       timelapse starts from (the same painting, placed as the loader places it), so
+       the first frame (before the scripts run) is already that sky -->
+  <style>html.booting { background: #5a4a8a url(/sky-sunset.webp) center / cover no-repeat fixed; } html.booting body { background: transparent; }</style>
 </head>
 
 <body class="text-cream overflow-x-hidden selection:bg-ink/20 antialiased font-sans">

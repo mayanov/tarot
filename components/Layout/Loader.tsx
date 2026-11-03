@@ -21,10 +21,10 @@ interface LoaderProps {
 // is in, nothing moves: the rest of the divider fades, the full moon wanes into the
 // crescent where it is, and the hero's words come in under the title.
 //
-// The sky runs a timelapse while it loads: it opens on an early-evening sky (the
-// interlude's, lighter and lit) laid over the hero's, which thins away once the hero's
-// is painted, so the evening darkens into the hero's twilight; by the hand-off only
-// the hero's own sky is left, so nothing is swapped.
+// The sky runs a timelapse while it loads: it opens on a sunset (peach and rose under
+// indigo), which gives way to a violet dusk, which gives way to the hero's own
+// twilight; they're laid over the hero's sky and thin away in turn, so by the
+// hand-off only the hero's own sky is left and nothing is swapped.
 
 // The hand-off's timing (ms). The hero and About time their entrances against these.
 const CLEAR_MS = 1300;                // the drawing fades from the sky
@@ -42,13 +42,15 @@ const MIN_CLIMB_MS = 1600;    // even on a fast connection the drawing takes thi
 const SETTLE_MS = 450;        // the finished drawing (at 100%) holds a beat before the hand-off
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
 const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
-// The timelapse: once both skies are in, the evening darkens into the hero's twilight
-// over this long (the hand-off waits for it, so it's always seen through)
-const DUSK_MS = 1700;
-// the evening sky (WatercolorSky's EVENING, the interlude's), painted ahead of time so
-// it's there from the first frame (index.html preloads it and shows it before the
-// scripts run)
-const EVENING_IMG = `${import.meta.env.BASE_URL}sky-evening.webp`;
+// The timelapse: once the skies are in, sunset turns to dusk and dusk to the hero's
+// twilight over this long (the hand-off waits for it, so it's always seen through)
+const DUSK_MS = 2400;
+// the sunset and the dusk (WatercolorSky's SUNRISE and DUSK), painted ahead of time so
+// they're there from the first frame (index.html preloads them and shows the sunset
+// before the scripts run)
+const SUNSET_IMG = `${import.meta.env.BASE_URL}sky-sunset.webp`;
+const DUSK_IMG = `${import.meta.env.BASE_URL}sky-dusk.webp`;
+const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 // One moon pencilled in: its outline drawn round as `draw` goes 0 → 1, then its lit part
 // shaded in. Same geometry as the divider's Phase (MoonPhaseDivider).
@@ -81,8 +83,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
   const [unlocked, setUnlocked] = useState(false); // page may scroll again
-  const [eveningAt, setEveningAt] = useState<number | null>(null); // both skies are in
-  const [dusk, setDusk] = useState(reduce ? 1 : 0); // the timelapse, 0 (evening) → 1 (twilight)
+  const [eveningAt, setEveningAt] = useState<number | null>(null); // the skies are in
+  const [dusk, setDusk] = useState(reduce ? 1 : 0); // the timelapse, 0 (sunset) → 1 (twilight)
 
   // The page must not scroll while loading. Native overflow:hidden isn't enough: the
   // smooth-scroll library (Lenis) starts right after this and drives the scroll itself.
@@ -143,13 +145,13 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     // moment, which on a phone would show as a hitch if it landed mid-drawing)
     const twilight = skyPainted(TWILIGHT);
     twilight.then(safe('sky'), safe('sky'));
-    // night starts falling once both skies are in
-    const evening = new Promise<void>((r) => {
+    // night starts falling once all three skies are in
+    const load = (src: string) => new Promise<void>((r) => {
       const e = new Image();
       e.onload = e.onerror = () => r();
-      e.src = EVENING_IMG;
+      e.src = src;
     });
-    Promise.all([evening, twilight.catch(() => {})]).then(() => { if (!cancelled) setEveningAt(performance.now()); });
+    Promise.all([load(SUNSET_IMG), load(DUSK_IMG), twilight.catch(() => {})]).then(() => { if (!cancelled) setEveningAt(performance.now()); });
     // the page itself (scripts, styles, images in the document)
     if (document.readyState === 'complete') safe('page')();
     else window.addEventListener('load', safe('page'), { once: true });
@@ -206,9 +208,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     if (reduce || eveningAt === null) return;
     let raf = 0;
     const tick = () => {
-      const t = Math.min(1, (performance.now() - eveningAt) / DUSK_MS);
       // (nobody's watching a hidden tab: straight to the night)
-      const d = document.hidden ? 1 : t * t * (3 - 2 * t);
+      const d = document.hidden ? 1 : Math.min(1, (performance.now() - eveningAt) / DUSK_MS);
       setDusk(d);
       if (d < 1) raf = requestAnimationFrame(tick);
     };
@@ -309,12 +310,16 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         transition: leaving && reduce ? 'opacity 380ms ease' : undefined,
       }}
     >
-      {/* the timelapse: the evening sky over the hero's twilight, thinning as it loads
-          (with the hero's own pool of shade, so the cream holds on the lighter sky) */}
+      {/* the timelapse over the hero's twilight: the dusk, and the sunset over that,
+          each thinning away in turn (with the hero's own pool of shade, so the cream
+          holds on the lighter skies) */}
       {!reduce && (
-        <div className="absolute inset-0 will-change-[opacity]" style={{ opacity: (1 - dusk).toFixed(3) }}>
-          <img src={EVENING_IMG} alt="" draggable={false} className="absolute inset-0 w-full h-full object-cover select-none" />
-          <div className="absolute inset-0" style={{ background: 'radial-gradient(68% 54% at 50% 44%, rgba(9,7,22,0.26) 0%, transparent 74%)' }} />
+        <div className="absolute inset-0 will-change-[opacity]" style={{ opacity: (1 - smooth(0.5, 1, dusk)).toFixed(3) }}>
+          <img src={DUSK_IMG} alt="" draggable={false} className="absolute inset-0 w-full h-full object-cover select-none" />
+          <div className="absolute inset-0 will-change-[opacity]" style={{ opacity: (1 - smooth(0.05, 0.55, dusk)).toFixed(3) }}>
+            <img src={SUNSET_IMG} alt="" draggable={false} className="absolute inset-0 w-full h-full object-cover select-none" />
+          </div>
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(68% 54% at 50% 44%, rgba(9,7,22,0.3) 0%, transparent 74%)' }} />
         </div>
       )}
 
