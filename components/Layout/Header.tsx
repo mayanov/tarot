@@ -18,36 +18,64 @@ interface HeaderProps {
   noBooking?: boolean;
 }
 
-const REGIONS = {
-  global: { name: 'Global', cur: 'EN' },
-  id: { name: 'Indonesia', cur: 'ID' },
-} as const;
-
-// Region switcher: a quiet EN / ID text toggle (no box, flags or sliding thumb).
-// Active language is full-strength; the other is dimmed. `light` is for light bgs.
-const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; light?: boolean }> = ({ isIndonesian, onSwitch, light = false }) => {
-  const activeCls = light ? 'text-ink' : 'text-cream';
-  const dimCls = light ? 'text-ink/40 hover:text-ink/70' : 'text-cream/55 hover:text-cream/85';
-  const items = [['global', false, 'EN'], ['id', true, 'ID']] as const;
+// Region switcher. The two versions aren't just two languages: each has its own
+// readings, prices and way to pay, so each is named by its market and currency
+// (compact in the bar: "ID · Rp", in the menu: "Indonesia · Rupiah", with a note that
+// prices follow). The one you're on is circled in pencil, drawn round when you switch,
+// and the other stays legible ink (dimmed text reads as disabled). `light` is for
+// light grounds.
+const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; light?: boolean; full?: boolean }> = ({ isIndonesian, onSwitch, light = false, full = false }) => {
+  const items = [
+    { key: 'global', toID: false, code: 'EN', cur: '$', name: 'Global', curName: 'USD' },
+    { key: 'id', toID: true, code: 'ID', cur: 'Rp', name: 'Indonesia', curName: 'Rupiah' },
+  ] as const;
+  const ink = light ? 'text-ink' : 'text-cream';
+  const soft = light ? 'text-ink/60 hover:text-ink' : 'text-cream/70 hover:text-cream';
   return (
-    <div
-      role="group"
-      aria-label="Site version"
-      className={`inline-flex items-center gap-2 text-[13px] font-medium tracking-[0.04em] ${!light ? '[text-shadow:0_1px_8px_rgba(0,0,0,0.5)]' : ''}`}
-    >
-      {items.map(([key, toID, label], i) => (
-        <React.Fragment key={key}>
-          {i === 1 && <span aria-hidden className={light ? 'text-ink/25' : 'text-cream/30'}>/</span>}
-          <button
-            onClick={() => onSwitch(toID)}
-            aria-pressed={toID === isIndonesian}
-            title={`Switch to the ${REGIONS[key].name} version`}
-            className={`transition-colors duration-500 ${toID === isIndonesian ? activeCls : dimCls}`}
-          >
-            {label}
-          </button>
-        </React.Fragment>
-      ))}
+    <div className={full ? 'flex flex-col gap-1.5' : 'inline-flex'}>
+      <div
+        role="group"
+        aria-label={isIndonesian ? 'Versi situs' : 'Site version'}
+        className={`inline-flex items-center ${full ? 'gap-6 text-[15px]' : 'gap-4 text-[13px]'} font-medium tracking-[0.04em] ${!light ? '[text-shadow:0_1px_8px_rgba(0,0,0,0.5)]' : ''}`}
+      >
+        {items.map((it) => {
+          const active = it.toID === isIndonesian;
+          return (
+            <button
+              key={it.key}
+              onClick={() => !active && onSwitch(it.toID)}
+              aria-pressed={active}
+              title={active ? undefined : isIndonesian ? `Pindah ke versi ${it.name} (${it.curName})` : `Switch to the ${it.name} version (${it.curName})`}
+              className={`relative whitespace-nowrap transition-colors duration-500 ${active ? `${ink} cursor-default` : soft}`}
+            >
+              {full ? it.name : it.code}
+              <span className={`${active ? 'opacity-60' : 'opacity-75'} font-normal`}> · {full ? it.curName : it.cur}</span>
+              {/* the pencil loop round the one you're on, drawn when it's chosen */}
+              {active && (
+                <svg
+                  key={String(isIndonesian)} aria-hidden viewBox="0 0 100 40" preserveAspectRatio="none"
+                  className={`pointer-events-none absolute overflow-visible [filter:url(#pencil-icon)] ${light ? 'text-ink/55' : 'text-cream/70'}`}
+                  style={full
+                    ? { left: '-0.75rem', top: '-0.5rem', width: 'calc(100% + 1.5rem)', height: 'calc(100% + 1rem)' }
+                    : { left: '-0.6rem', top: '-0.4rem', width: 'calc(100% + 1.2rem)', height: 'calc(100% + 0.8rem)' }}
+                >
+                  <path
+                    d="M 10 24 C 7 10, 38 4, 62 5 C 87 6, 99 13, 96 24 C 93 35, 52 39, 26 36 C 7 34, 1 25, 12 15"
+                    fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" vectorEffect="non-scaling-stroke"
+                    pathLength={1} strokeDasharray="1" strokeDashoffset="1"
+                    className="motion-safe:animate-[ldDraw_0.7s_cubic-bezier(0.4,0,0.2,1)_0.1s_forwards] motion-reduce:[stroke-dashoffset:0]"
+                  />
+                </svg>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      {full && (
+        <p className={`letterpress font-elegant italic text-[13px] ${light ? 'text-ink/45' : 'text-cream/55'}`}>
+          {isIndonesian ? 'Layanan & harga mengikuti versinya' : 'Readings and prices follow the version'}
+        </p>
+      )}
     </div>
   );
 };
@@ -351,12 +379,6 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
             style={{ animationDelay: closing ? `${OUT_TOP_AT}ms` : '160ms' }}
           >
             <Wordmark onDark={false} />
-            {/* phones: the language switch sits up here, keeping the bottom row to one line */}
-            {onSwitchRegion && (
-              <div className="sm:hidden ml-auto mr-5">
-                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />
-              </div>
-            )}
             <button
               onClick={closeMenu}
               aria-label={isIndonesian ? 'Tutup menu' : 'Close menu'}
@@ -445,12 +467,20 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
           </aside>}
           </div>
 
+          {/* phones: the site version gets its own line above the bottom row (the top
+              row has no room for it named in full, and the bottom row stays one line) */}
+          {onSwitchRegion && (
+            <div className={`sm:hidden shrink-0 pt-4 pb-4 ${rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP + 40).className}`} style={rowAnim(LINE_IN_AT + navLinks.length * LINE_STEP + 40).style}>
+              <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light full />
+            </div>
+          )}
+
           {/* Bottom — language toggle + socials + book */}
           <div className={`relative shrink-0 pt-4 pb-5 md:py-6 flex flex-row items-center justify-between gap-5 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`} style={{ animationDelay: closing ? '0ms' : `${LINE_IN_AT + navLinks.length * LINE_STEP + 80}ms` }}>
             <PencilRule className="absolute inset-x-0 top-0 text-ink/30" />
             {onSwitchRegion ? (
               <div className="hidden sm:block">
-                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light />
+                <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light full />
               </div>
             ) : <span className="hidden sm:block" />}
 
