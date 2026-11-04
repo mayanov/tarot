@@ -3,7 +3,7 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound, Sparkles } from 'lucide-react';
-import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks } from '../../services/mockAnalytics';
+import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks, FormFunnels } from '../../services/mockAnalytics';
 import { FaWhatsapp } from 'react-icons/fa';
 import { initGoogleAPI, loginToGoogle, fetchGA4Data, resetAnalytics, undoAnalyticsReset } from '../../services/ga4';
 import { DayPicker } from 'react-day-picker';
@@ -69,6 +69,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         topServicesID: ServicePerformance[];
         topServicesGlobal: ServicePerformance[];
         whatsapp?: WhatsAppClicks | null;
+        form?: FormFunnels | null;
         since?: string | null;
     } | null>(null);
     const [resetBusy, setResetBusy] = useState(false);
@@ -969,6 +970,74 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             />
                                         )}
                                     </div>
+
+                                    {/* The booking form, step by step, for the market chosen above: how many
+                                        got to each step (and what share of those who opened it), then the
+                                        payments that didn't go through */}
+                                    {(() => {
+                                        const f = data?.form?.[serviceTab];
+                                        // (the global readings have no date & time step)
+                                        const steps = (f?.steps || []).filter((s) => !(serviceTab === 'Global' && s.step === 'schedule'));
+                                        const opened = steps[0]?.count || 0;
+                                        return (
+                                            <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative">
+                                                <div className="flex items-start justify-between gap-4 mb-6">
+                                                    <h3 className="text-xl font-serif flex items-center gap-2">
+                                                        <BarChart2 size={20} className="text-gold-accent" />
+                                                        Booking form steps
+                                                    </h3>
+                                                    <span className="text-xs text-text-subtle mt-1.5">{serviceTab === 'ID' ? 'Indonesia (IDR)' : 'Global (USD)'}</span>
+                                                </div>
+                                                {isLoading ? (
+                                                    <div className="flex items-center justify-center py-10">
+                                                        <RefreshCcw className="animate-spin text-gold-accent" size={28} />
+                                                    </div>
+                                                ) : !f ? (
+                                                    <p className="text-sm text-text-subtle">The booking form report couldn’t be loaded.</p>
+                                                ) : !opened ? (
+                                                    <p className="text-sm text-text-subtle">Nobody opened the booking form in this period.</p>
+                                                ) : (
+                                                    <>
+                                                        <div className="space-y-5">
+                                                            {steps.map((s, i) => {
+                                                                const share = Math.round((s.count / opened) * 100);
+                                                                const prev = steps[i - 1]?.count;
+                                                                const lost = i > 0 && prev ? prev - s.count : 0;
+                                                                return (
+                                                                    <div key={s.step}>
+                                                                        <div className="flex justify-between gap-4 text-sm mb-2">
+                                                                            <span className="text-text-light font-medium">{s.label}{s.step === 'schedule' && <span className="text-text-subtle font-normal"> (sessions with a time)</span>}</span>
+                                                                            <span className="text-text-subtle font-mono text-xs whitespace-nowrap">
+                                                                                {s.count} · {share}%{lost > 0 && <span className="text-rose-400"> · −{lost}</span>}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="h-1.5 w-full bg-surface-2 rounded-full overflow-hidden">
+                                                                            <div className="h-full bg-gradient-to-r from-gold-accent to-lilac rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.min(100, share)}%` }} />
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                        <div className="mt-7 pt-5 border-t border-adm-line">
+                                                            <div className="text-sm font-medium text-text-light mb-3">Payments that didn’t go through</div>
+                                                            {f.issues.length ? (
+                                                                <ul className="space-y-2">
+                                                                    {f.issues.map((i) => (
+                                                                        <li key={i.reason} className="flex justify-between gap-4 text-sm">
+                                                                            <span className="text-text-subtle">{i.label}</span>
+                                                                            <span className="font-mono text-xs text-text-light">{i.count}</span>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            ) : (
+                                                                <p className="text-sm text-text-subtle">None in this period.</p>
+                                                            )}
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
 
                                     {/* WhatsApp clicks: in all (and how many people), then per place on the site */}
                                     <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative">

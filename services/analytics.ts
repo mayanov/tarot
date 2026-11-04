@@ -111,6 +111,34 @@ export const trackWhatsApp = (place: WhatsAppPlace, market: 'ID' | 'Global') => 
     );
 };
 
+// The booking form, step by step: one event per step reached (once per opening of the
+// form), so the dashboard can show where people stop. Each step has its own event
+// name (eventName is a built-in GA4 dimension) and the market goes in link_text (also
+// built in), so none of it needs a custom dimension registered in GA4. GA4 only.
+export type FormStep = 'open' | 'schedule' | 'details' | 'review' | 'done';
+export const FORM_STEPS: [FormStep, string][] = [
+    ['open', 'Opened the form'],
+    ['schedule', 'Picking a date & time'],
+    ['details', 'Filling in their details'],
+    ['review', 'At the payment step'],
+    ['done', 'Booked'],
+];
+export const trackFormStep = (step: FormStep, market: 'ID' | 'Global', service?: string) =>
+    trackEvent(`form_${step}`, { market, service, link_text: market });
+
+// Payments that didn't go through, and why. link_text carries "market:reason" (see above).
+export type PaymentIssue = 'closed' | 'declined' | 'failed' | 'slot_taken' | 'not_opened' | 'save_failed';
+export const PAYMENT_ISSUES: Record<PaymentIssue, string> = {
+    closed: 'Closed the payment window without paying',
+    declined: 'Card or payment declined',
+    failed: 'Payment failed or expired',
+    slot_taken: 'Slot taken while they were booking',
+    not_opened: 'Payment couldn’t open',
+    save_failed: 'Paid, but the booking didn’t save',
+};
+export const trackPaymentIssue = (reason: PaymentIssue, method: 'PayPal' | 'Midtrans' | 'Manual', market: 'ID' | 'Global') =>
+    trackEvent('payment_issue', { reason, method, market, link_text: `${market}:${reason}` });
+
 // The item_name each service is tracked under (pricelist card opens, "Pesan"
 // clicks and finished bookings all use the same name, so the admin's Service
 // Engagement table can line them up). Keyed by the booking form's service id.

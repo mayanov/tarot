@@ -12,7 +12,7 @@ import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan, Booki
 import { paypalConfig, PayPalConfig } from '../../services/paypal';
 import PayPalButtons from './PayPalButtons';
 import { midtransConfig, MidtransConfig, loadSnap, startMidtrans, midtransStatus, releaseMidtrans } from '../../services/midtrans';
-import { trackEvent, trackWhatsApp, SERVICE_TRACK_NAME } from '../../services/analytics';
+import { trackEvent, trackWhatsApp, trackFormStep, trackPaymentIssue, FormStep, SERVICE_TRACK_NAME } from '../../services/analytics';
 import { lockPage, unlockPage } from '../UI/scroll';
 
 interface BookingModalProps {
@@ -260,6 +260,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
       const preset = detail?.serviceId ? services.find((s) => s.id === detail.serviceId) : undefined;
       if (preset) { setService(preset); setStep(preset.scheduled ? 1 : 2); }
       setOpen(true);
+      stepsSeen.current = new Set(['open']);
+      trackFormStep('open', isIndonesian ? 'ID' : 'Global', preset && SERVICE_TRACK_NAME[preset.id]);
       // opened from a pricelist card's "Pesan" → counted as a click for that service
       trackEvent('begin_checkout', { item_name: (preset && SERVICE_TRACK_NAME[preset.id]) || 'Booking flow', market: isIndonesian ? 'ID' : 'Global' });
     };
@@ -267,6 +269,23 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     return () => window.removeEventListener('open-booking', onOpen);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isIndonesian]);
+
+  // Each step reached, counted once per opening of the form (see trackFormStep): the
+  // dashboard lines them up to show where people stop. (A PayPal payment leaves for
+  // the thank-you page before the form gets to "done": paidWithPayPal counts that.)
+  const stepsSeen = useRef<Set<FormStep>>(new Set());
+  const reachStep = (s: FormStep) => {
+    if (stepsSeen.current.has(s)) return;
+    stepsSeen.current.add(s);
+    trackFormStep(s, isIndonesian ? 'ID' : 'Global', service ? SERVICE_TRACK_NAME[service.id] : undefined);
+  };
+  useEffect(() => {
+    if (!open) return;
+    const s = ([undefined, 'schedule', 'details', 'review', 'done'] as const)[step];
+    if (s) reachStep(s);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, step]);
+  const market = isIndonesian ? 'ID' : 'Global';
 
   // Lock scroll while open — stops Lenis too, or it keeps scrolling the page behind.
   useEffect(() => {
@@ -316,15 +335,19 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     const trackName = SERVICE_TRACK_NAME[b.serviceId] || b.serviceName;
     const value = Number(String(service?.price || '').replace(/[^\d.]/g, '')) || undefined;
     trackEvent('purchase', { item_name: trackName, market: 'Global', value, currency: 'USD', transaction_id: (b as Booking & { paypalCaptureId?: string }).paypalCaptureId || b.id }, 'Purchase', { value, currency: 'USD', content_name: trackName });
+    reachStep('done');
     try { sessionStorage.setItem(`mt:paid:${b.serviceId}`, '1'); } catch { /* storage blocked */ }
     window.location.assign(`/?payment_success=${encodeURIComponent(b.serviceId)}`);
   };
 
-  const payPalFailed = (code: string) => setError(code === 'SAVE_FAILED'
+  const payPalFailed = (code: string) => {
+    trackPaymentIssue(code === 'SAVE_FAILED' ? 'save_failed' : code === 'PAYPAL_SDK' ? 'not_opened' : 'failed', 'PayPal', 'Global');
+    setError(code === 'SAVE_FAILED'
     ? 'Your payment went through, but saving your booking failed. Please message me on WhatsApp with your PayPal receipt and I’ll sort it out.'
     : code === 'PAYPAL_SDK'
       ? 'PayPal couldn’t load. Please check your connection and reopen the form.'
       : 'The payment didn’t go through, and you haven’t been charged. Please try again.');
+  };
 
   // ---- Indonesia: Midtrans's payment window on the review step ----
   const paidWithMidtrans = () => {
@@ -336,16 +359,21 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     setPayWait(false); setPaidHere(true); setError('');
     setStep(4);
   };
-  const checkMidtrans = async () => {
+  // (`closed`: Midtrans's window was just closed; still unpaid then, it's counted)
+  const checkMidtrans = async (closed = false) => {
     const open = mtOrder.current;
     if (!open) return;
     const state = await midtransStatus(open.orderId);
     if (mtOrder.current !== open) return; // left or restarted meanwhile
     if (state === 'paid') paidWithMidtrans();
     else if (state === 'failed') {
+      trackPaymentIssue('failed', 'Midtrans', 'ID');
       mtOrder.current = null; setPayWait(false);
       setError('Pembayaran gagal atau sudah kedaluwarsa, dan belum ada dana yang terpotong. Silakan coba lagi.');
-    } else setPayWait(true);
+    } else {
+      if (closed) trackPaymentIssue('closed', 'Midtrans', 'ID');
+      setPayWait(true);
+    }
   };
   const payMidtrans = async () => {
     if (!service || !mtConfig) return;
@@ -367,13 +395,15 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
         trackEvent('add_payment_info', { item_name: trackName, market: 'ID' }, 'AddPaymentInfo', { content_name: trackName });
       }
       snap.pay(mtOrder.current.token, {
-        onSuccess: checkMidtrans,
+        onSuccess: () => checkMidtrans(),
         onPending: () => setPayWait(true),
-        onError: checkMidtrans,
-        onClose: checkMidtrans,
+        onError: () => checkMidtrans(),
+        onClose: () => checkMidtrans(true),
       });
     } catch (e) {
-      if (e instanceof Error && e.message === 'SLOT_TAKEN') {
+      const taken = e instanceof Error && e.message === 'SLOT_TAKEN';
+      trackPaymentIssue(taken ? 'slot_taken' : 'not_opened', 'Midtrans', 'ID');
+      if (taken) {
         setError('Maaf, slot itu baru saja terisi. Pilih waktu lain ya.');
         setStep(1);
       } else {
@@ -386,7 +416,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   // while a payment is open (e.g. a QRIS shown, the window closed), keep asking
   useEffect(() => {
     if (!payWait || step !== 3) return;
-    const iv = window.setInterval(checkMidtrans, 4000);
+    const iv = window.setInterval(() => checkMidtrans(), 4000);
     return () => clearInterval(iv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [payWait, step]);
@@ -404,6 +434,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
       else trackEvent('add_payment_info', { item_name: trackName, market: 'Global' }, 'AddPaymentInfo', { content_name: trackName });
       setStep(4);
     } catch (err) {
+      trackPaymentIssue(err instanceof Error && err.message === 'SLOT_TAKEN' ? 'slot_taken' : 'failed', 'Manual', market);
       setError(err instanceof Error && err.message === 'SLOT_TAKEN'
         ? t('Maaf, slot itu baru saja terisi. Pilih waktu lain ya.', 'Sorry, that slot was just taken. Please pick another time.')
         : t('Ada kendala. Coba lagi sebentar.', 'Something went wrong. Please try again.'));
@@ -888,7 +919,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     Pay {totalPrice} with PayPal or a card. Your booking is made once the payment goes through, and your reading is sent to {email.trim()}.
                   </p>
                   {error && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
-                  <PayPalButtons config={ppConfig!} input={bookingInput(service)} onStart={() => setError('')} onPaid={paidWithPayPal} onError={payPalFailed} />
+                  <PayPalButtons config={ppConfig!} input={bookingInput(service)} onStart={() => setError('')} onPaid={paidWithPayPal} onError={payPalFailed} onIssue={(r) => trackPaymentIssue(r, 'PayPal', 'Global')} />
                 </div>
               ) : !isIndonesian && (
                 <p className="mt-6 text-[13px] text-ink/60 leading-relaxed">

@@ -1,5 +1,5 @@
-import { DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks } from './mockAnalytics';
-import { WHATSAPP_PLACES, WhatsAppPlace } from './analytics';
+import { DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks, FormFunnels } from './mockAnalytics';
+import { WHATSAPP_PLACES, WhatsAppPlace, FORM_STEPS, PAYMENT_ISSUES, PaymentIssue } from './analytics';
 
 // Types for Google API
 declare global {
@@ -256,6 +256,37 @@ const processWhatsApp = (reports?: any[] | null): WhatsAppClicks | null => {
     return { clicks: num(total[0]), people: num(total[1]), places };
 };
 
+// The booking form per market (the server's form batch: [eventName, linkText] →
+// eventCount; linkText is the market for a step, "market:reason" for a payment issue).
+const processForm = (reports?: any[] | null): FormFunnels | null => {
+    if (!reports?.length) return null;
+    const blank = () => ({
+        steps: FORM_STEPS.map(([step, label]) => ({ step, label, count: 0 })),
+        issues: [] as FormFunnels['ID']['issues'],
+    });
+    const out: FormFunnels = { ID: blank(), Global: blank() };
+    (reports[0].rows || []).forEach((row: any) => {
+        const event = row.dimensionValues[0]?.value || '';
+        const text = row.dimensionValues[1]?.value || '';
+        const count = parseInt(row.metricValues[0]?.value) || 0;
+        if (event === 'payment_issue') {
+            const [market, reason] = text.split(':');
+            const f = out[market as 'ID' | 'Global'];
+            if (!f || !reason) return;
+            const label = PAYMENT_ISSUES[reason as PaymentIssue] || reason;
+            const same = f.issues.find((i) => i.reason === reason);
+            if (same) same.count += count; else f.issues.push({ reason, label, count });
+        } else {
+            const f = out[text as 'ID' | 'Global'];
+            const s = f?.steps.find((x) => `form_${x.step}` === event);
+            if (s) s.count += count;
+        }
+    });
+    out.ID.issues.sort((a, b) => b.count - a.count);
+    out.Global.issues.sort((a, b) => b.count - a.count);
+    return out;
+};
+
 // 3. Fetch Real Data (Backend or Frontend)
 export const fetchGA4Data = async (
     propertyId: string,
@@ -270,6 +301,7 @@ export const fetchGA4Data = async (
     topServicesID: ServicePerformance[];
     topServicesGlobal: ServicePerformance[];
     whatsapp?: WhatsAppClicks | null;
+    form?: FormFunnels | null;
     since?: string | null; // analytics reset date (counting starts here), from the server
 }> => {
 
@@ -307,7 +339,7 @@ export const fetchGA4Data = async (
         // To reuse logic without massive copy-paste, I should extract the processing function.
         // For now, I will proceed with the assumption that I will update the SERVER to return the exact shape matches.
 
-        return { ...processReports(reports), whatsapp: processWhatsApp(responseData.whatsapp), since: responseData.since || null };
+        return { ...processReports(reports), whatsapp: processWhatsApp(responseData.whatsapp), form: processForm(responseData.form), since: responseData.since || null };
 
     } catch (e) {
         console.warn("Backend fetch failed, falling back to Client-Side (Popup) mode...", e);

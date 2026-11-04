@@ -50,6 +50,14 @@ export interface WhatsAppClicks {
     places: { place: string; clicks: number; people: number }[];
 }
 
+// The booking form per market: how many reached each step, and the payments that
+// didn't go through (by reason)
+export interface FormFunnel {
+    steps: { step: string; label: string; count: number }[];
+    issues: { reason: string; label: string; count: number }[];
+}
+export type FormFunnels = Record<'ID' | 'Global', FormFunnel>;
+
 // Mock Data Generator
 // Now accepts optional start/end dates. Defaults to last 7 days.
 export const getMockAnalyticsData = (startStr?: string, endStr?: string) => {
@@ -117,5 +125,18 @@ export const getMockAnalyticsData = (startStr?: string, endStr?: string) => {
     whatsapp.clicks = whatsapp.places.reduce((n, p) => n + p.clicks, 0);
     whatsapp.people = 22;
 
-    return { dailyVisits, locations, devices, summary, topServicesID, topServicesGlobal, whatsapp };
+    const form: FormFunnels = {
+        ID: {
+            steps: [['open', 'Opened the form', 40], ['schedule', 'Picking a date & time', 22], ['details', 'Filling in their details', 25], ['review', 'At the payment step', 14], ['done', 'Booked', 8]]
+                .map(([step, label, count]) => ({ step: step as string, label: label as string, count: count as number })),
+            issues: [{ reason: 'closed', label: 'Closed the payment window without paying', count: 4 }, { reason: 'slot_taken', label: 'Slot taken while they were booking', count: 1 }],
+        },
+        Global: {
+            steps: [['open', 'Opened the form', 18], ['schedule', 'Picking a date & time', 0], ['details', 'Filling in their details', 15], ['review', 'At the payment step', 9], ['done', 'Booked', 5]]
+                .map(([step, label, count]) => ({ step: step as string, label: label as string, count: count as number })),
+            issues: [{ reason: 'closed', label: 'Closed the payment window without paying', count: 3 }, { reason: 'declined', label: 'Card or payment declined', count: 1 }],
+        },
+    };
+
+    return { dailyVisits, locations, devices, summary, topServicesID, topServicesGlobal, whatsapp, form };
 };

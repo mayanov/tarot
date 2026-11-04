@@ -229,7 +229,7 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
         const startDate = since && since > req.query.startDate ? since : req.query.startDate;
         if (since && endDate && since > endDate) {
             // the whole range is before the reset — nothing to count
-            return res.json({ reports: Array.from({ length: 5 }, () => ({ rows: [] })), whatsapp: [{ rows: [] }, { rows: [] }], since, site });
+            return res.json({ reports: Array.from({ length: 5 }, () => ({ rows: [] })), whatsapp: [{ rows: [] }, { rows: [] }], form: [{ rows: [] }], since, site });
         }
 
         if (!propertyId) {
@@ -303,11 +303,29 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
             ],
         };
 
+        // The booking form, step by step (form_open … form_done, see trackFormStep) and
+        // the payments that didn't go through (payment_issue): counts per event and
+        // link_text (the market, or "market:reason"). Also its own batch, allowed to fail.
+        const formEvents = ['form_open', 'form_schedule', 'form_details', 'form_review', 'form_done', 'payment_issue'];
+        const formBody = {
+            property: `properties/${propertyId}`,
+            requests: [{
+                dateRanges: [{ startDate, endDate }],
+                dimensions: [{ name: 'eventName' }, { name: 'linkText' }],
+                metrics: [{ name: 'eventCount' }],
+                dimensionFilter: { andGroup: { expressions: [hostFilter, { filter: { fieldName: 'eventName', inListFilter: { values: formEvents } } }] } },
+            }],
+        };
+
         // Run the Batch Reports
-        const [[response], whatsapp] = await Promise.all([
+        const [[response], whatsapp, form] = await Promise.all([
             analyticsDataClient.batchRunReports(requestBody),
             analyticsDataClient.batchRunReports(whatsappBody).then(([r]) => r.reports, (e) => {
                 console.error('[Server] WhatsApp clicks report failed:', e.message);
+                return null;
+            }),
+            analyticsDataClient.batchRunReports(formBody).then(([r]) => r.reports, (e) => {
+                console.error('[Server] Booking form report failed:', e.message);
                 return null;
             }),
         ]);
@@ -315,7 +333,7 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
         console.log("[Server] Data fetched successfully.");
         // The Node.js client returns an array [response, request, raw].
         // The response object contains { reports: [...] }
-        res.json({ ...response, whatsapp, since, site });
+        res.json({ ...response, whatsapp, form, since, site });
 
     } catch (error) {
         console.error("[Server] Error fetching analytics:", error);
