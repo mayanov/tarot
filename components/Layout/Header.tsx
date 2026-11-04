@@ -20,10 +20,10 @@ interface HeaderProps {
 
 // Region switcher. The two versions aren't just two languages: each has its own
 // readings, prices and way to pay, so each is named by its market and currency
-// (compact in the bar: "ID · Rp", in the menu: "Indonesia · Rupiah", with a note that
-// prices follow). The one you're on is circled in pencil, drawn round when you switch,
-// and the other stays legible ink (dimmed text reads as disabled). `light` is for
-// light grounds.
+// symbol, as its prices are written (compact in the bar: "ID · Rp", in the menu:
+// "Indonesia · Rp", with a note that prices follow). The one you're on is circled in
+// pencil, drawn round when you switch, and the other stays legible ink (dimmed text
+// reads as disabled). `light` is for light grounds.
 const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean) => void; light?: boolean; full?: boolean }> = ({ isIndonesian, onSwitch, light = false, full = false }) => {
   const items = [
     { key: 'global', toID: false, code: 'EN', cur: '$', name: 'Global', curName: 'USD' },
@@ -49,7 +49,7 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
               className={`relative whitespace-nowrap transition-colors duration-500 ${active ? `${ink} cursor-default` : soft}`}
             >
               {full ? it.name : it.code}
-              <span className={`${active ? 'opacity-60' : 'opacity-75'} font-normal`}> · {full ? it.curName : it.cur}</span>
+              <span className={`${active ? 'opacity-60' : 'opacity-75'} font-normal`}> · {it.cur}</span>
               {/* the pencil loop round the one you're on, drawn when it's chosen */}
               {active && (
                 <svg
