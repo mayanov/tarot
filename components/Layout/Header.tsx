@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Instagram } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
-import { trackEvent } from '../../services/analytics';
+import { trackEvent, trackWhatsApp } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/scroll';
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 import ButtonInk, { MarkerFrame } from '../UI/ButtonInk';
@@ -501,7 +501,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
                 </a>
                 <a
                   href="https://wa.me/6287786280310?text=Halo%20Mayanov%2C%20saya%20ingin%20bertanya%20mengenai%20tarot%20reading" target="_blank" rel="noopener noreferrer"
-                  onClick={() => trackEvent('contact', { method: 'WhatsApp', market: isIndonesian ? 'ID' : 'Global' }, 'Contact', { content_name: 'WhatsApp Chat', content_category: isIndonesian ? 'ID' : 'Global' })}
+                  onClick={() => trackWhatsApp('menu', isIndonesian ? 'ID' : 'Global')}
                   aria-label="WhatsApp" className="text-ink/60 hover:text-moon transition-all duration-500 hover:-translate-y-0.5">
                   <span className="print-ink inline-flex"><FaWhatsapp size={20} /></span>
                 </a>

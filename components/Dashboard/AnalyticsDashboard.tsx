@@ -3,7 +3,8 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound, Sparkles } from 'lucide-react';
-import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance } from '../../services/mockAnalytics';
+import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks } from '../../services/mockAnalytics';
+import { FaWhatsapp } from 'react-icons/fa';
 import { initGoogleAPI, loginToGoogle, fetchGA4Data, resetAnalytics, undoAnalyticsReset } from '../../services/ga4';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
@@ -67,6 +68,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         summary: AnalyticsSummary;
         topServicesID: ServicePerformance[];
         topServicesGlobal: ServicePerformance[];
+        whatsapp?: WhatsAppClicks | null;
         since?: string | null;
     } | null>(null);
     const [resetBusy, setResetBusy] = useState(false);
@@ -965,6 +967,49 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             <ServiceFunnel
                                                 services={(serviceTab === 'ID' ? data?.topServicesID : data?.topServicesGlobal) || []}
                                             />
+                                        )}
+                                    </div>
+
+                                    {/* WhatsApp clicks: in all (and how many people), then per place on the site */}
+                                    <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative">
+                                        <div className="flex items-start justify-between gap-4 mb-6">
+                                            <h3 className="text-xl font-serif flex items-center gap-2">
+                                                <span className="text-teal-accent inline-flex"><FaWhatsapp size={20} /></span>
+                                                WhatsApp clicks
+                                            </h3>
+                                            {!isLoading && (
+                                                <div className="text-right">
+                                                    <div className="text-2xl font-mono text-text-light leading-none">{data?.whatsapp ? data.whatsapp.clicks : '—'}</div>
+                                                    <div className="mt-1 text-xs text-text-subtle">
+                                                        {data?.whatsapp ? `by ${data.whatsapp.people} ${data.whatsapp.people === 1 ? 'person' : 'people'}` : 'couldn’t load'}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {isLoading ? (
+                                            <div className="flex items-center justify-center py-10">
+                                                <RefreshCcw className="animate-spin text-teal-accent" size={28} />
+                                            </div>
+                                        ) : data?.whatsapp?.places.length ? (
+                                            <div className="space-y-5">
+                                                {data.whatsapp.places.map((p) => (
+                                                    <div key={p.place}>
+                                                        <div className="flex justify-between gap-4 text-sm mb-2">
+                                                            <span className="text-text-light font-medium">{p.place}</span>
+                                                            <span className="text-text-subtle font-mono text-xs whitespace-nowrap">{p.clicks} · {p.people} {p.people === 1 ? 'person' : 'people'}</span>
+                                                        </div>
+                                                        <div className="h-1.5 w-full bg-surface-2 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-gradient-to-r from-teal-accent to-teal-dark rounded-full transition-all duration-1000 ease-out"
+                                                                style={{ width: `${(p.clicks / (data.whatsapp!.places[0]?.clicks || 1)) * 100}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-text-subtle">{data?.whatsapp ? 'No WhatsApp clicks in this period.' : 'The WhatsApp report couldn’t be loaded.'}</p>
                                         )}
                                     </div>
 

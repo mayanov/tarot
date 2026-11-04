@@ -43,6 +43,13 @@ const getDatesInRange = (startDate: Date, endDate: Date) => {
     return dates;
 };
 
+// WhatsApp button clicks: in all, and per place on the site
+export interface WhatsAppClicks {
+    clicks: number;
+    people: number;
+    places: { place: string; clicks: number; people: number }[];
+}
+
 // Mock Data Generator
 // Now accepts optional start/end dates. Defaults to last 7 days.
 export const getMockAnalyticsData = (startStr?: string, endStr?: string) => {
@@ -102,5 +109,13 @@ export const getMockAnalyticsData = (startStr?: string, endStr?: string) => {
         { name: '5-Card Deep', views: 15, clicks: 5, bookings: 2, revenuePotential: 20 * 5 },
     ];
 
-    return { dailyVisits, locations, devices, summary, topServicesID, topServicesGlobal };
+    const whatsapp: WhatsAppClicks = {
+        clicks: 0, people: 0,
+        places: [['Floating button', 14, 11], ['Menu', 6, 5], ['FAQ', 4, 4], ['Footer', 2, 2], ['Payment proof (after booking)', 3, 3]]
+            .map(([place, clicks, people]) => ({ place: place as string, clicks: clicks as number, people: people as number })),
+    };
+    whatsapp.clicks = whatsapp.places.reduce((n, p) => n + p.clicks, 0);
+    whatsapp.people = 22;
+
+    return { dailyVisits, locations, devices, summary, topServicesID, topServicesGlobal, whatsapp };
 };

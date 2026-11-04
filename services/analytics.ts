@@ -86,6 +86,31 @@ export const trackEvent = (
         }
     }
 };
+// WhatsApp clicks, one event wherever the button is: GA4 'contact' (method WhatsApp)
+// with the place it was clicked from, so the dashboard can count them per place. The
+// place goes in link_text too: that's a built-in GA4 dimension (linkText), so it can
+// be reported without registering a custom one. The Pixel's Contact goes only with
+// the "get in touch" buttons, not the promo's or the payment proof's (those are part
+// of buying, already counted as checkout).
+export type WhatsAppPlace = 'floating' | 'menu' | 'footer' | 'faq' | 'promo' | 'payment_proof';
+export const WHATSAPP_PLACES: Record<WhatsAppPlace, string> = {
+    floating: 'Floating button',
+    menu: 'Menu',
+    footer: 'Footer',
+    faq: 'FAQ',
+    promo: 'Promo card',
+    payment_proof: 'Payment proof (after booking)',
+};
+export const trackWhatsApp = (place: WhatsAppPlace, market: 'ID' | 'Global') => {
+    const pixel = place !== 'promo' && place !== 'payment_proof';
+    trackEvent(
+        'contact',
+        { method: 'WhatsApp', market, location: place, link_text: place },
+        pixel ? 'Contact' : undefined,
+        { content_name: 'WhatsApp Chat', content_category: market, location: place },
+    );
+};
+
 // The item_name each service is tracked under (pricelist card opens, "Pesan"
 // clicks and finished bookings all use the same name, so the admin's Service
 // Engagement table can line them up). Keyed by the booking form's service id.

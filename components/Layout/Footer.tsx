@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Instagram } from 'lucide-react';
 import PencilArrow from '../UI/PencilArrow';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
-import { trackEvent } from '../../services/analytics';
+import { trackEvent, trackWhatsApp } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
 import { btnPrimaryDark } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
@@ -89,7 +89,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                         ><span className="print-ink inline-flex"><FaTiktok size={16} /></span></a>
                         <a
                             href={WA_HELLO} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className={icon}
-                            onClick={() => trackEvent('contact', { method: 'WhatsApp', market }, 'Contact', { content_name: 'WhatsApp Chat', content_category: market })}
+                            onClick={() => trackWhatsApp('footer', market)}
                         ><span className="print-ink inline-flex"><FaWhatsapp size={18} /></span></a>
                     </nav>
                 </div>

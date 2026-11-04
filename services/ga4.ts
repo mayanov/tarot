@@ -1,4 +1,5 @@
-import { DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance } from './mockAnalytics';
+import { DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks } from './mockAnalytics';
+import { WHATSAPP_PLACES, WhatsAppPlace } from './analytics';
 
 // Types for Google API
 declare global {
@@ -233,6 +234,28 @@ const processReports = (reports: any[]) => {
     return { dailyVisits, locations, devices, summary, topServicesID, topServicesGlobal };
 };
 
+// WhatsApp clicks (the server's second batch: [per place, total]); null when it
+// couldn't be fetched. Clicks from before the place was recorded show as "Earlier".
+const processWhatsApp = (reports?: any[] | null): WhatsAppClicks | null => {
+    if (!reports || reports.length < 2) return null;
+    const num = (m: any) => parseInt(m?.value) || 0;
+    const places = (reports[0].rows || [])
+        .map((row: any) => {
+            const key = row.dimensionValues[0]?.value || '';
+            const place = WHATSAPP_PLACES[key as WhatsAppPlace] || 'Earlier (place not recorded)';
+            return { place, clicks: num(row.metricValues[0]), people: num(row.metricValues[1]) };
+        })
+        // (two raw values can land on "Earlier": merge them)
+        .reduce((list: WhatsAppClicks['places'], p: WhatsAppClicks['places'][number]) => {
+            const same = list.find((q) => q.place === p.place);
+            if (same) { same.clicks += p.clicks; same.people += p.people; } else list.push(p);
+            return list;
+        }, [])
+        .sort((a: { clicks: number }, b: { clicks: number }) => b.clicks - a.clicks);
+    const total = reports[1].rows?.[0]?.metricValues || [];
+    return { clicks: num(total[0]), people: num(total[1]), places };
+};
+
 // 3. Fetch Real Data (Backend or Frontend)
 export const fetchGA4Data = async (
     propertyId: string,
@@ -246,6 +269,7 @@ export const fetchGA4Data = async (
     summary: AnalyticsSummary;
     topServicesID: ServicePerformance[];
     topServicesGlobal: ServicePerformance[];
+    whatsapp?: WhatsAppClicks | null;
     since?: string | null; // analytics reset date (counting starts here), from the server
 }> => {
 
@@ -283,7 +307,7 @@ export const fetchGA4Data = async (
         // To reuse logic without massive copy-paste, I should extract the processing function.
         // For now, I will proceed with the assumption that I will update the SERVER to return the exact shape matches.
 
-        return { ...processReports(reports), since: responseData.since || null };
+        return { ...processReports(reports), whatsapp: processWhatsApp(responseData.whatsapp), since: responseData.since || null };
 
     } catch (e) {
         console.warn("Backend fetch failed, falling back to Client-Side (Popup) mode...", e);

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { trackWhatsApp } from '../../services/analytics';
 import { Plus } from 'lucide-react';
 import PencilArrow from '../UI/PencilArrow';
 import FadeIn from '../UI/FadeIn';
@@ -245,6 +246,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
               href={wa}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackWhatsApp('faq', isIndonesian ? 'ID' : 'Global')}
               className="group mt-3 inline-flex items-center gap-3 font-elegant font-semibold text-ink text-[1.8rem] md:text-[2.6rem] leading-tight tracking-[-0.02em] hover:text-moon transition-colors duration-300"
             >
               <span className="letterpress-lg pb-[0.14em] -mb-[0.14em]">{isIndonesian ? 'Tanya langsung via WhatsApp' : 'Ask me on WhatsApp'}</span>

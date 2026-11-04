@@ -12,7 +12,7 @@ import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan, Booki
 import { paypalConfig, PayPalConfig } from '../../services/paypal';
 import PayPalButtons from './PayPalButtons';
 import { midtransConfig, MidtransConfig, loadSnap, startMidtrans, midtransStatus, releaseMidtrans } from '../../services/midtrans';
-import { trackEvent, SERVICE_TRACK_NAME } from '../../services/analytics';
+import { trackEvent, trackWhatsApp, SERVICE_TRACK_NAME } from '../../services/analytics';
 import { lockPage, unlockPage } from '../UI/scroll';
 
 interface BookingModalProps {
@@ -954,7 +954,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               </div>
               ) : (
               <div className="mt-5 flex flex-col items-center gap-3">
-                <a href={waLink} target="_blank" rel="noopener noreferrer" className={`${primaryBtn} px-8 py-3`}>
+                <a href={waLink} target="_blank" rel="noopener noreferrer" onClick={() => trackWhatsApp('payment_proof', isIndonesian ? 'ID' : 'Global')} className={`${primaryBtn} px-8 py-3`}>
                   {swatch}
                   <span className="inline-flex items-center gap-2"><FaWhatsapp size={18} /> {t('Kirim Bukti Pembayaran', 'Send Payment Proof')}</span>
                 </a>

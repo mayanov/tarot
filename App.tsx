@@ -8,7 +8,7 @@ import Footer from './components/Layout/Footer';
 import WatercolorSky from './components/Layout/WatercolorSky';
 import Loader from './components/Layout/Loader';
 import { afterIntro } from './components/UI/introGate';
-import { trackEvent, setUserProperties, trackPageView } from './services/analytics';
+import { trackEvent, setUserProperties, trackPageView, trackWhatsApp } from './services/analytics';
 import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId, touchScreen, cssScrollTimeline } from './components/UI/scroll';
 import MoonPhaseDivider from './components/UI/MoonPhaseDivider';
 import { tornBottom, paperCut, TornPaper } from './components/UI/PaperEdge';
@@ -549,7 +549,7 @@ const WhatsAppFab: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
       href={`https://wa.me/6287786280310?text=${encodeURIComponent(text)}`}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={() => trackEvent('contact', { method: 'WhatsApp', market }, 'Contact', { content_name: 'WhatsApp Chat', content_category: market })}
+      onClick={() => trackWhatsApp('floating', market)}
       aria-label={label}
       className="group relative flex items-center justify-end"
     >

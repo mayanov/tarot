@@ -229,7 +229,7 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
         const startDate = since && since > req.query.startDate ? since : req.query.startDate;
         if (since && endDate && since > endDate) {
             // the whole range is before the reset — nothing to count
-            return res.json({ reports: Array.from({ length: 5 }, () => ({ rows: [] })), since, site });
+            return res.json({ reports: Array.from({ length: 5 }, () => ({ rows: [] })), whatsapp: [{ rows: [] }, { rows: [] }], since, site });
         }
 
         if (!propertyId) {
@@ -290,13 +290,32 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
         const hostFilter = { filter: { fieldName: 'hostName', inListFilter: { values: SITE_HOSTS[site] } } };
         requestBody.requests.forEach((r) => { r.dimensionFilter = hostFilter; });
 
-        // Run the Batch Report
-        const [response] = await analyticsDataClient.batchRunReports(requestBody);
+        // WhatsApp clicks (the 'contact' event, see trackWhatsApp): per place (sent as
+        // link_text, a built-in dimension) and the total, with how many people clicked.
+        // Its own batch (a batch holds at most 5 reports), and allowed to fail without
+        // taking the rest of the dashboard down.
+        const contactOnly = { andGroup: { expressions: [hostFilter, { filter: { fieldName: 'eventName', stringFilter: { value: 'contact' } } }] } };
+        const whatsappBody = {
+            property: `properties/${propertyId}`,
+            requests: [
+                { dateRanges: [{ startDate, endDate }], dimensions: [{ name: 'linkText' }], metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }], dimensionFilter: contactOnly },
+                { dateRanges: [{ startDate, endDate }], metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }], dimensionFilter: contactOnly },
+            ],
+        };
+
+        // Run the Batch Reports
+        const [[response], whatsapp] = await Promise.all([
+            analyticsDataClient.batchRunReports(requestBody),
+            analyticsDataClient.batchRunReports(whatsappBody).then(([r]) => r.reports, (e) => {
+                console.error('[Server] WhatsApp clicks report failed:', e.message);
+                return null;
+            }),
+        ]);
 
         console.log("[Server] Data fetched successfully.");
         // The Node.js client returns an array [response, request, raw].
         // The response object contains { reports: [...] }
-        res.json({ ...response, since, site });
+        res.json({ ...response, whatsapp, since, site });
 
     } catch (error) {
         console.error("[Server] Error fetching analytics:", error);
