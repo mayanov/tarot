@@ -59,11 +59,14 @@ interface NavItem {
 }
 
 // Menu motion: opening, the paper wipes down over the site (WIPE_MS) and the links rise
-// in one by one as it settles; closing plays it backwards — the links drop out, last
-// first (OUT_MS), then the paper wipes back up.
+// in one by one as it settles; closing, the paper lifts at once, its edge sweeping up
+// from the bottom, and everything on it rises away with it, bottom first (the last
+// link before the first, the top row last), each just ahead of the edge.
 const WIPE_MS = 700;
 const WIPE_EASE = 'cubic-bezier(0.76,0,0.24,1)';
-const OUT_MS = 380;
+const OUT_LINK_AT = 60;  // the last link leaves this long after the bottom row
+const OUT_LINK_STEP = 25;
+const OUT_TOP_AT = 260;  // the top row (brand + close), last
 // the links: each line slides up into place from behind its own baseline (a mask),
 // one after another, starting while the paper is still coming down
 const LINE_IN_AT = 260;
@@ -87,14 +90,16 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const onPaper = (isScrolled || paper) && !menuOpen; // the bar is on its paper strip
-  const [closing, setClosing] = useState(false); // links leaving, paper still down
+  const [closing, setClosing] = useState(false); // the paper lifting, its links rising away with it
+  const [openCount, setOpenCount] = useState(0); // (each opening plays the links in afresh)
   const closingRef = useRef(false);
   const closeTimer = useRef<number | undefined>(undefined);
   const closeMenu = () => {
     if (closingRef.current) return;
     closingRef.current = true;
     setClosing(true);
-    closeTimer.current = window.setTimeout(() => { setMenuOpen(false); setClosing(false); closingRef.current = false; }, OUT_MS);
+    setMenuOpen(false); // the paper starts lifting now
+    closeTimer.current = window.setTimeout(() => { setClosing(false); closingRef.current = false; }, WIPE_MS);
   };
   // opening again mid-close cancels the close (the links come straight back)
   // the section on screen when the menu opens (marked in the index)
@@ -109,6 +114,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
     closingRef.current = false;
     setClosing(false);
     setMenuOpen(true);
+    setOpenCount((n) => n + 1);
   };
 
   useEffect(() => {
@@ -342,7 +348,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
           {/* Top row — brand + close (in with the paper's leading edge, out with the links) */}
           <div
             className={`flex items-center justify-between py-4 md:py-5 shrink-0 ${closing ? 'animate-[navOut_0.25s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[navSlide_0.6s_cubic-bezier(0.22,1,0.36,1)_both]' : 'opacity-0'}`}
-            style={{ animationDelay: closing ? '120ms' : '160ms' }}
+            style={{ animationDelay: closing ? `${OUT_TOP_AT}ms` : '160ms' }}
           >
             <Wordmark onDark={false} />
             {/* phones: the language switch sits up here, keeping the bottom row to one line */}
@@ -365,7 +371,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
           </div>
 
           {/* Main — the section index (left) and, on wide screens, the services (right) */}
-          <div key={menuOpen ? 'open' : 'closed'} className="flex-1 min-h-0 overflow-y-auto lg:grid lg:grid-cols-[1fr_minmax(20rem,24rem)] lg:gap-16 xl:gap-24 lg:items-center pt-[2.5dvh] pb-[2dvh] sm:py-8">
+          <div key={openCount} className="flex-1 min-h-0 overflow-y-auto lg:grid lg:grid-cols-[1fr_minmax(20rem,24rem)] lg:gap-16 xl:gap-24 lg:items-center pt-[2.5dvh] pb-[2dvh] sm:py-8">
           <nav className="flex flex-col justify-start lg:justify-center">
             <ul className="group/nav">
               {navLinks.map((link, i) => {
@@ -384,8 +390,8 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
                         hover step and italic overhang) and the line sliding in it */}
                     <span className="block overflow-hidden pb-[0.14em] -mb-[0.14em] lg:pr-8 lg:-mr-8">
                       <span
-                        className={`flex items-baseline gap-3 sm:gap-5 transition-colors duration-500 group-hover/link:text-moon ${active ? 'text-moon' : 'text-ink'} ${closing ? 'animate-[lineOut_0.3s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[lineIn_0.85s_cubic-bezier(0.22,1,0.36,1)_both]' : 'translate-y-[115%]'}`}
-                        style={{ animationDelay: `${closing ? (navLinks.length - 1 - i) * 30 : LINE_IN_AT + i * LINE_STEP}ms` }}
+                        className={`flex items-baseline gap-3 sm:gap-5 transition-colors duration-500 group-hover/link:text-moon ${active ? 'text-moon' : 'text-ink'} ${closing ? 'animate-[lineOut_0.26s_cubic-bezier(0.5,0,0.75,0)_both]' : menuOpen ? 'animate-[lineIn_0.85s_cubic-bezier(0.22,1,0.36,1)_both]' : 'translate-y-[115%]'}`}
+                        style={{ animationDelay: `${closing ? OUT_LINK_AT + (navLinks.length - 1 - i) * OUT_LINK_STEP : LINE_IN_AT + i * LINE_STEP}ms` }}
                       >
                         {/* index number, like the FAQ list — on hover (desktop) it lifts away
                             and a small star takes its place, while the name steps forward */}
@@ -422,10 +428,10 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
           {/* (its rows come in one after another, like the index; the hover dimming sits on
               the buttons, since the rows' entrance animation holds their opacity) */}
           {!noBooking && <aside className="hidden lg:block">
-            <p className={`letterpress font-elegant italic text-sm text-ink/45 ${rowAnim(LINE_IN_AT + 180, 60).className}`} style={rowAnim(LINE_IN_AT + 180, 60).style}>{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
+            <p className={`letterpress font-elegant italic text-sm text-ink/45 ${rowAnim(LINE_IN_AT + 180, 160).className}`} style={rowAnim(LINE_IN_AT + 180, 160).style}>{isIndonesian ? 'Langsung pesan sesi' : 'Book a reading'}</p>
             <ul className="mt-3 group/svs">
               {menuServices.map((sv, j) => (
-                <li key={sv.id} className={`${rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).className}`} style={rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 60).style}>
+                <li key={sv.id} className={`${rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 140 - j * 20).className}`} style={rowAnim(LINE_IN_AT + 240 + j * LINE_STEP, 140 - j * 20).style}>
                   <PencilRule weight="fine" className="text-ink/30" />
                   <button type="button" onClick={() => showService(sv.id)} className="group/sv w-full flex items-baseline gap-3 py-3.5 text-left transition-[opacity,padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/svs:opacity-40 hover:!opacity-100 hover:pl-2">
                     <CelestialMark name={sv.mark} className="print-ink w-3.5 shrink-0 self-center text-ink/35 transition-colors duration-300 group-hover/sv:text-moon" />

@@ -138,17 +138,18 @@ html.booting .boot-hide { opacity: 0; pointer-events: none; transition: none; }
   0%   { opacity: 0; transform: translateY(18px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-/* the menu closing: the links drop out before the paper lifts */
+/* the menu closing: each row rises away with the lifting paper */
 @keyframes navOut {
-  to { opacity: 0; transform: translateY(14px); }
+  to { opacity: 0; transform: translateY(-14px); }
 }
-/* menu links: each line slides up from behind its baseline, and back down on close */
+/* menu links: each line slides up from behind its baseline, and on close on up out of
+   its mask, with the lifting paper */
 @keyframes lineIn {
   from { transform: translateY(115%); }
   to   { transform: none; }
 }
 @keyframes lineOut {
-  to { transform: translateY(115%); }
+  to { transform: translateY(-115%); }
 }
 /* the menu's moon rises and turns into place behind the index */
 /* FAQ answer panel: the newly chosen answer settles in */
