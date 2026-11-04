@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Instagram } from 'lucide-react';
 import PencilArrow from '../UI/PencilArrow';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
-import { trackEvent, trackWhatsApp } from '../../services/analytics';
+import { trackEvent, trackWhatsApp, trackBookClick } from '../../services/analytics';
 import { smoothScrollToId } from '../UI/scroll';
 import { btnPrimaryDark } from '../UI/buttons';
 import ButtonInk from '../UI/ButtonInk';
@@ -64,7 +64,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                     </h2>
                     <a
                         href="#services"
-                        onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
+                        onClick={(e) => { e.preventDefault(); trackBookClick('footer', market); smoothScrollToId('services', 80); }}
                         className={`${btnPrimaryDark} mt-8 inline-flex group gap-3 px-8 py-3.5 text-[1.05rem]`}
                     >
                       <ButtonInk kind="primary" tone="dark">

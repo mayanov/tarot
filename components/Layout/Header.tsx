@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Instagram } from 'lucide-react';
 import { FaWhatsapp, FaTiktok } from 'react-icons/fa';
-import { trackEvent, trackWhatsApp } from '../../services/analytics';
+import { trackEvent, trackWhatsApp, trackBookClick, trackRegionSwitch } from '../../services/analytics';
 import { smoothScrollTo, smoothScrollToId, lockPage, unlockPage } from '../UI/scroll';
 import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 import ButtonInk, { MarkerFrame } from '../UI/ButtonInk';
@@ -43,7 +43,7 @@ const RegionSwitcher: React.FC<{ isIndonesian: boolean; onSwitch: (toID: boolean
           return (
             <button
               key={it.key}
-              onClick={() => !active && onSwitch(it.toID)}
+              onClick={() => { if (active) return; trackRegionSwitch(it.toID, full ? 'menu' : 'bar'); onSwitch(it.toID); }}
               aria-pressed={active}
               title={active ? undefined : isIndonesian ? `Pindah ke versi ${it.name} (${it.curName})` : `Switch to the ${it.name} version (${it.curName})`}
               className={`relative whitespace-nowrap transition-colors duration-500 ${active ? `${ink} cursor-default` : soft}`}
@@ -229,6 +229,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
   // a service from the menu: its pricelist card is drawn over the menu as it closes,
   // turning to its details (booking is one step further, from the card)
   const showService = (id: string) => {
+    trackBookClick('menu_reading', isIndonesian ? 'ID' : 'Global');
     closeMenu();
     window.dispatchEvent(new CustomEvent('open-pricelist-card', { detail: { serviceId: id } }));
   };
@@ -315,7 +316,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
             {/* one 'Pesan' pill + a bare menu icon (no second pill) */}
             <div className="flex items-center gap-4">
               {!noBooking && <button
-                onClick={goToServices}
+                onClick={() => { trackBookClick('nav', isIndonesian ? 'ID' : 'Global'); goToServices(); }}
                 className={`${onPaper ? btnPrimaryLight : `${btnPrimaryDark} drop-shadow-[0_5px_12px_rgba(0,0,0,0.28)]`} hidden sm:inline-flex px-6 py-2.5 text-[15px] whitespace-nowrap`}
               >
                 <ButtonInk kind="primary" tone={onPaper ? 'light' : 'dark'}>
@@ -508,7 +509,7 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
               </nav>
 
               {!noBooking && <button
-                onClick={goToServices}
+                onClick={() => { trackBookClick('menu', isIndonesian ? 'ID' : 'Global'); goToServices(); }}
                 className={`${btnPrimaryLight} inline-flex group gap-3 px-6 sm:px-8 py-3 sm:py-3.5 text-[1.05rem]`}
               >
                 <ButtonInk kind="primary" tone="light">

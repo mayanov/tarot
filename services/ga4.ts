@@ -1,5 +1,5 @@
-import { DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks, FormFunnels } from './mockAnalytics';
-import { WHATSAPP_PLACES, WhatsAppPlace, FORM_STEPS, PAYMENT_ISSUES, PaymentIssue } from './analytics';
+import { DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks, FormFunnels, Journey } from './mockAnalytics';
+import { WHATSAPP_PLACES, WhatsAppPlace, FORM_STEPS, PAYMENT_ISSUES, PaymentIssue, BOOK_PLACES, BookPlace, PAGE_SECTIONS } from './analytics';
 
 // Types for Google API
 declare global {
@@ -287,6 +287,63 @@ const processForm = (reports?: any[] | null): FormFunnels | null => {
     return out;
 };
 
+// The visit beyond the form (the server's journey batch: book_click, booked_via,
+// faq_open, region_switch [+ country], section_view; linkText is "market:…", or
+// "from>to" for a switch).
+const processJourney = (reports?: any[] | null): Journey | null => {
+    if (!reports || reports.length < 5) return null;
+    const num = (m: any) => parseInt(m?.value) || 0;
+    const blank = () => ({
+        books: [] as Journey['ID']['books'],
+        faq: [] as Journey['ID']['faq'],
+        sections: PAGE_SECTIONS.map(([id, label]) => ({ id, label, people: 0 })),
+    });
+    const out: Journey = { ID: blank(), Global: blank(), switches: [] };
+    const split = (row: any): [Journey['ID'] | undefined, string] => {
+        const t: string = row.dimensionValues[0]?.value || '';
+        const i = t.indexOf(':');
+        return [i > 0 ? out[t.slice(0, i) as 'ID' | 'Global'] : undefined, t.slice(i + 1)];
+    };
+    const book = (m: Journey['ID'], place: string) => {
+        let b = m.books.find((x) => x.place === place);
+        if (!b) { b = { place, label: BOOK_PLACES[place as BookPlace] || place, clicks: 0, people: 0, booked: 0 }; m.books.push(b); }
+        return b;
+    };
+    (reports[0].rows || []).forEach((row: any) => {
+        const [m, place] = split(row);
+        if (!m || !place) return;
+        const b = book(m, place);
+        b.clicks += num(row.metricValues[0]); b.people += num(row.metricValues[1]);
+    });
+    (reports[1].rows || []).forEach((row: any) => {
+        const [m, place] = split(row);
+        if (!m || !place) return;
+        book(m, place).booked += num(row.metricValues[0]);
+    });
+    (reports[2].rows || []).forEach((row: any) => {
+        const [m, question] = split(row);
+        if (!m || !question) return;
+        m.faq.push({ question, opens: num(row.metricValues[0]), people: num(row.metricValues[1]) });
+    });
+    (reports[3].rows || []).forEach((row: any) => {
+        const t: string = row.dimensionValues[0]?.value || '';
+        const to = t.split('>')[1];
+        if (to !== 'ID' && to !== 'Global') return;
+        out.switches.push({ to, country: row.dimensionValues[1]?.value || '(unknown)', count: num(row.metricValues[0]), people: num(row.metricValues[1]) });
+    });
+    (reports[4].rows || []).forEach((row: any) => {
+        const [m, id] = split(row);
+        const s = m?.sections.find((x) => x.id === id);
+        if (s) s.people += num(row.metricValues[0]);
+    });
+    (['ID', 'Global'] as const).forEach((k) => {
+        out[k].books.sort((a, b) => b.clicks - a.clicks);
+        out[k].faq.sort((a, b) => b.opens - a.opens);
+    });
+    out.switches.sort((a, b) => b.count - a.count);
+    return out;
+};
+
 // 3. Fetch Real Data (Backend or Frontend)
 export const fetchGA4Data = async (
     propertyId: string,
@@ -302,6 +359,7 @@ export const fetchGA4Data = async (
     topServicesGlobal: ServicePerformance[];
     whatsapp?: WhatsAppClicks | null;
     form?: FormFunnels | null;
+    journey?: Journey | null;
     since?: string | null; // analytics reset date (counting starts here), from the server
 }> => {
 
@@ -339,7 +397,7 @@ export const fetchGA4Data = async (
         // To reuse logic without massive copy-paste, I should extract the processing function.
         // For now, I will proceed with the assumption that I will update the SERVER to return the exact shape matches.
 
-        return { ...processReports(reports), whatsapp: processWhatsApp(responseData.whatsapp), form: processForm(responseData.form), since: responseData.since || null };
+        return { ...processReports(reports), whatsapp: processWhatsApp(responseData.whatsapp), form: processForm(responseData.form), journey: processJourney(responseData.journey), since: responseData.since || null };
 
     } catch (e) {
         console.warn("Backend fetch failed, falling back to Client-Side (Popup) mode...", e);

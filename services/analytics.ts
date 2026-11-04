@@ -155,3 +155,62 @@ export const SERVICE_TRACK_NAME: Record<string, string> = {
 // which sends plain 'Operation Happy Birthday' without any card-open step.
 export const promoTrackName = (isIndonesian: boolean) =>
     isIndonesian ? 'Promo · Operation Happy Birthday' : 'Promo · Operation Happy Birthday (Global)';
+
+// Where bookings start: every "Book" button sends 'book_click' with its place, and the
+// first one pressed in a visit is remembered, so a finished booking can say where that
+// visitor began ('booked_via'). link_text carries "market:place" (built-in dimension).
+export type BookPlace = 'hero' | 'nav' | 'menu' | 'menu_reading' | 'card' | 'interlude' | 'footer';
+export const BOOK_PLACES: Record<BookPlace | 'none', string> = {
+    hero: 'Hero button',
+    nav: 'Top bar “Book”',
+    menu: 'Menu “Book a Reading”',
+    menu_reading: 'A reading in the menu',
+    card: 'A reading card (scrolled to it)',
+    interlude: '“How it works” button',
+    footer: 'Footer button',
+    none: 'No button recorded',
+};
+const FIRST_BOOK_KEY = 'mt_first_book';
+let firstBook: BookPlace | null = null;
+export const trackBookClick = (place: BookPlace, market: 'ID' | 'Global') => {
+    if (!firstBook) {
+        try { firstBook = (sessionStorage.getItem(FIRST_BOOK_KEY) as BookPlace) || null; } catch { /* storage blocked */ }
+        if (!firstBook) {
+            firstBook = place;
+            try { sessionStorage.setItem(FIRST_BOOK_KEY, place); } catch { /* storage blocked */ }
+        }
+    }
+    trackEvent('book_click', { market, location: place, link_text: `${market}:${place}` });
+};
+export const trackBookedVia = (market: 'ID' | 'Global') => {
+    let place: string | null = firstBook;
+    if (!place) { try { place = sessionStorage.getItem(FIRST_BOOK_KEY); } catch { /* storage blocked */ } }
+    trackEvent('booked_via', { market, location: place || 'none', link_text: `${market}:${place || 'none'}` });
+};
+
+// FAQ questions opened (not the one shown open by default). link_text "market:question",
+// cut to GA's 100-character limit.
+export const trackFaqOpen = (question: string, market: 'ID' | 'Global') =>
+    trackEvent('faq_open', { market, link_text: `${market}:${question}`.slice(0, 100) });
+
+// Site-version switches: link_text "ID>Global" / "Global>ID"; the report pairs it with
+// the visitor's country (built in), so it shows when the location guess was wrong.
+export const trackRegionSwitch = (toID: boolean, where: 'bar' | 'menu') =>
+    trackEvent('region_switch', { where, link_text: toID ? 'Global>ID' : 'ID>Global' });
+
+// How far down the page people get: one 'section_view' per section per page load,
+// link_text "market:section".
+export const PAGE_SECTIONS: [string, string][] = [
+    ['hero', 'Hero'],
+    ['about', 'About'],
+    ['tarot-intro', 'What a reading is'],
+    ['services', 'Readings & prices'],
+    ['interlude', 'How it works'],
+    ['why-choose', 'Why choose'],
+    ['testimonials', 'Testimonials'],
+    ['events', 'Events'],
+    ['faq', 'FAQ'],
+    ['end', 'Bottom of the page'],
+];
+export const trackSectionView = (section: string, market: 'ID' | 'Global') =>
+    trackEvent('section_view', { market, link_text: `${market}:${section}` });

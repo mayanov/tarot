@@ -1,4 +1,5 @@
 import React from 'react';
+import { trackBookClick } from '../../services/analytics';
 import FadeIn from '../UI/FadeIn';
 import PencilRule from '../UI/PencilRule';
 import ButtonInk from '../UI/ButtonInk';
@@ -195,7 +196,7 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
         {/* the way in (after the list on a phone, under the heading beside it on a
             wide screen) */}
         <FadeIn dir="left" delay={150} className="lg:col-start-1 lg:row-start-2 lg:self-start">
-          <button type="button" onClick={openBooking} className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-[1.05rem]`}>
+          <button type="button" onClick={() => { trackBookClick('interlude', isIndonesian ? 'ID' : 'Global'); openBooking(); }} className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-[1.05rem]`}>
             <ButtonInk kind="primary" tone="dark">
               {isIndonesian ? 'Pesan Sesi' : 'Book a Reading'}
             </ButtonInk>

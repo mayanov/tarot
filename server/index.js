@@ -229,7 +229,7 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
         const startDate = since && since > req.query.startDate ? since : req.query.startDate;
         if (since && endDate && since > endDate) {
             // the whole range is before the reset — nothing to count
-            return res.json({ reports: Array.from({ length: 5 }, () => ({ rows: [] })), whatsapp: [{ rows: [] }, { rows: [] }], form: [{ rows: [] }], since, site });
+            return res.json({ reports: Array.from({ length: 5 }, () => ({ rows: [] })), whatsapp: [{ rows: [] }, { rows: [] }], form: [{ rows: [] }], journey: Array.from({ length: 5 }, () => ({ rows: [] })), since, site });
         }
 
         if (!propertyId) {
@@ -317,8 +317,26 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
             }],
         };
 
+        // The visit beyond the form: which "Book" buttons get pressed (book_click) and
+        // where the visitors who booked first pressed one (booked_via), FAQ questions
+        // opened, site-version switches (with the visitor's country) and how far down
+        // the page people get (section_view). All per link_text, like above; its own
+        // batch, allowed to fail.
+        const only = (name) => ({ andGroup: { expressions: [hostFilter, { filter: { fieldName: 'eventName', stringFilter: { value: name } } }] } });
+        const range = [{ startDate, endDate }];
+        const journeyBody = {
+            property: `properties/${propertyId}`,
+            requests: [
+                { dateRanges: range, dimensions: [{ name: 'linkText' }], metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }], dimensionFilter: only('book_click') },
+                { dateRanges: range, dimensions: [{ name: 'linkText' }], metrics: [{ name: 'eventCount' }], dimensionFilter: only('booked_via') },
+                { dateRanges: range, dimensions: [{ name: 'linkText' }], metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }], dimensionFilter: only('faq_open'), limit: 50, orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }] },
+                { dateRanges: range, dimensions: [{ name: 'linkText' }, { name: 'country' }], metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }], dimensionFilter: only('region_switch') },
+                { dateRanges: range, dimensions: [{ name: 'linkText' }], metrics: [{ name: 'totalUsers' }], dimensionFilter: only('section_view') },
+            ],
+        };
+
         // Run the Batch Reports
-        const [[response], whatsapp, form] = await Promise.all([
+        const [[response], whatsapp, form, journey] = await Promise.all([
             analyticsDataClient.batchRunReports(requestBody),
             analyticsDataClient.batchRunReports(whatsappBody).then(([r]) => r.reports, (e) => {
                 console.error('[Server] WhatsApp clicks report failed:', e.message);
@@ -328,12 +346,16 @@ app.get('/api/analytics', verifyToken, async (req, res) => {
                 console.error('[Server] Booking form report failed:', e.message);
                 return null;
             }),
+            analyticsDataClient.batchRunReports(journeyBody).then(([r]) => r.reports, (e) => {
+                console.error('[Server] Visit journey report failed:', e.message);
+                return null;
+            }),
         ]);
 
         console.log("[Server] Data fetched successfully.");
         // The Node.js client returns an array [response, request, raw].
         // The response object contains { reports: [...] }
-        res.json({ ...response, whatsapp, form, since, site });
+        res.json({ ...response, whatsapp, form, journey, since, site });
 
     } catch (error) {
         console.error("[Server] Error fetching analytics:", error);

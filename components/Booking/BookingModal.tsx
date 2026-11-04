@@ -12,7 +12,7 @@ import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan, Booki
 import { paypalConfig, PayPalConfig } from '../../services/paypal';
 import PayPalButtons from './PayPalButtons';
 import { midtransConfig, MidtransConfig, loadSnap, startMidtrans, midtransStatus, releaseMidtrans } from '../../services/midtrans';
-import { trackEvent, trackWhatsApp, trackFormStep, trackPaymentIssue, FormStep, SERVICE_TRACK_NAME } from '../../services/analytics';
+import { trackEvent, trackWhatsApp, trackFormStep, trackPaymentIssue, trackBookedVia, FormStep, SERVICE_TRACK_NAME } from '../../services/analytics';
 import { lockPage, unlockPage } from '../UI/scroll';
 
 interface BookingModalProps {
@@ -278,6 +278,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     if (stepsSeen.current.has(s)) return;
     stepsSeen.current.add(s);
     trackFormStep(s, isIndonesian ? 'ID' : 'Global', service ? SERVICE_TRACK_NAME[service.id] : undefined);
+    if (s === 'done') trackBookedVia(isIndonesian ? 'ID' : 'Global');
   };
   useEffect(() => {
     if (!open) return;

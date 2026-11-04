@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { trackWhatsApp } from '../../services/analytics';
+import { trackWhatsApp, trackFaqOpen } from '../../services/analytics';
 import { Plus } from 'lucide-react';
 import PencilArrow from '../UI/PencilArrow';
 import FadeIn from '../UI/FadeIn';
@@ -130,6 +130,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   // phones: an accordion (tap again to close). Desktop: a question is picked for the
   // panel on the right, so tapping it again keeps it.
   const toggleFAQ = (key: string) => {
+    if (key !== openKey) trackFaqOpen(key, isIndonesian ? 'ID' : 'Global');
     if (window.matchMedia('(min-width: 1024px)').matches) setOpenKey(key);
     else setOpenKey((cur) => (cur === key ? null : key));
   };

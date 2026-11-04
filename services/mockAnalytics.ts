@@ -58,6 +58,20 @@ export interface FormFunnel {
 }
 export type FormFunnels = Record<'ID' | 'Global', FormFunnel>;
 
+// The visit beyond the form, per market: the "Book" buttons pressed (and how many
+// bookings came from visitors who pressed that one first), FAQ questions opened and how
+// far down the page people got; plus the site-version switches (with the country).
+export interface MarketJourney {
+    books: { place: string; label: string; clicks: number; people: number; booked: number }[];
+    faq: { question: string; opens: number; people: number }[];
+    sections: { id: string; label: string; people: number }[];
+}
+export interface Journey {
+    ID: MarketJourney;
+    Global: MarketJourney;
+    switches: { to: 'ID' | 'Global'; country: string; count: number; people: number }[];
+}
+
 // Mock Data Generator
 // Now accepts optional start/end dates. Defaults to last 7 days.
 export const getMockAnalyticsData = (startStr?: string, endStr?: string) => {
@@ -138,5 +152,21 @@ export const getMockAnalyticsData = (startStr?: string, endStr?: string) => {
         },
     };
 
-    return { dailyVisits, locations, devices, summary, topServicesID, topServicesGlobal, whatsapp, form };
+    const sec = (n: number[]) => [['hero', 'Hero'], ['about', 'About'], ['tarot-intro', 'What a reading is'], ['services', 'Readings & prices'], ['interlude', 'How it works'], ['why-choose', 'Why choose'], ['testimonials', 'Testimonials'], ['events', 'Events'], ['faq', 'FAQ'], ['end', 'Bottom of the page']]
+        .map(([id, label], i) => ({ id, label, people: n[i] }));
+    const journey: Journey = {
+        ID: {
+            books: [{ place: 'card', label: 'A reading card (scrolled to it)', clicks: 30, people: 22, booked: 4 }, { place: 'hero', label: 'Hero button', clicks: 18, people: 16, booked: 3 }, { place: 'nav', label: 'Top bar “Book”', clicks: 9, people: 8, booked: 1 }, { place: 'interlude', label: '“How it works” button', clicks: 4, people: 4, booked: 0 }],
+            faq: [{ question: 'Apakah ramalan tarot itu akurat?', opens: 12, people: 10 }, { question: 'Bagaimana cara pembayaran?', opens: 7, people: 6 }],
+            sections: sec([120, 104, 90, 76, 60, 52, 45, 38, 30, 21]),
+        },
+        Global: {
+            books: [{ place: 'hero', label: 'Hero button', clicks: 10, people: 9, booked: 2 }, { place: 'card', label: 'A reading card (scrolled to it)', clicks: 8, people: 7, booked: 2 }],
+            faq: [{ question: 'Is tarot reading accurate?', opens: 5, people: 5 }],
+            sections: sec([60, 50, 41, 33, 25, 21, 18, 14, 11, 7]),
+        },
+        switches: [{ to: 'ID', country: 'Indonesia', count: 6, people: 5 }, { to: 'Global', country: 'Indonesia', count: 2, people: 2 }, { to: 'ID', country: 'Singapore', count: 1, people: 1 }],
+    };
+
+    return { dailyVisits, locations, devices, summary, topServicesID, topServicesGlobal, whatsapp, form, journey };
 };

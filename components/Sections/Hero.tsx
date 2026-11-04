@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { trackBookClick } from '../../services/analytics';
 import { smoothScrollToId, touchScreen, cssScrollTimeline } from '../UI/scroll';
 import CelestialMark from '../UI/CelestialMark';
 import { btnPrimaryDark } from '../UI/buttons';
@@ -150,7 +151,7 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
           <div ref={ctaRef} className={`mt-8 md:mt-9 will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '38vh', ['--speed' as string]: 0.15 }}>
             <a
               href="#services"
-              onClick={(e) => { e.preventDefault(); smoothScrollToId('services', 80); }}
+              onClick={(e) => { e.preventDefault(); trackBookClick('hero', isIndonesian ? 'ID' : 'Global'); smoothScrollToId('services', 80); }}
               className={`${btnPrimaryDark} inline-flex group gap-3 px-8 py-3.5 text-[1.05rem]`}
             >
               <ButtonInk kind="primary" tone="dark">

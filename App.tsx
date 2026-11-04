@@ -8,6 +8,7 @@ import Footer from './components/Layout/Footer';
 import WatercolorSky from './components/Layout/WatercolorSky';
 import Loader from './components/Layout/Loader';
 import { afterIntro } from './components/UI/introGate';
+import SectionTracker from './components/UI/SectionTracker';
 import { trackEvent, setUserProperties, trackPageView, trackWhatsApp } from './services/analytics';
 import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId, touchScreen, cssScrollTimeline } from './components/UI/scroll';
 import MoonPhaseDivider from './components/UI/MoonPhaseDivider';
@@ -463,6 +464,7 @@ function App() {
           </div>
           <TornPaper edge="bottom" />
         </div>
+        <SectionTracker isIndonesian={isIndonesian} />
         <Hero isIndonesian={isIndonesian} />
         <About isIndonesian={isIndonesian} />
         <TarotIntro isIndonesian={isIndonesian} />

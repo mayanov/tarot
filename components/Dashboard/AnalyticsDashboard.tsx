@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound, Sparkles } from 'lucide-react';
-import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks, FormFunnels } from '../../services/mockAnalytics';
+import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound, Sparkles, MousePointerClick, ArrowDownToLine, HelpCircle, Repeat } from 'lucide-react';
+import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks, FormFunnels, Journey } from '../../services/mockAnalytics';
 import { FaWhatsapp } from 'react-icons/fa';
 import { initGoogleAPI, loginToGoogle, fetchGA4Data, resetAnalytics, undoAnalyticsReset } from '../../services/ga4';
 import { DayPicker } from 'react-day-picker';
@@ -70,6 +70,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         topServicesGlobal: ServicePerformance[];
         whatsapp?: WhatsAppClicks | null;
         form?: FormFunnels | null;
+        journey?: Journey | null;
         since?: string | null;
     } | null>(null);
     const [resetBusy, setResetBusy] = useState(false);
@@ -1081,6 +1082,127 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             <p className="text-sm text-text-subtle">{data?.whatsapp ? 'No WhatsApp clicks in this period.' : 'The WhatsApp report couldn’t be loaded.'}</p>
                                         )}
                                     </div>
+
+                                    {/* The visit beyond the form, for the market chosen above: which "Book"
+                                        buttons get pressed (and bookings by where the visitor first pressed
+                                        one), how far down the page people get, the FAQ questions opened, and
+                                        the site-version switches */}
+                                    {(() => {
+                                        const j = data?.journey;
+                                        const m = j?.[serviceTab];
+                                        const market = serviceTab === 'ID' ? 'Indonesia (IDR)' : 'Global (USD)';
+                                        const ppl = (n: number) => `${n} ${n === 1 ? 'person' : 'people'}`;
+                                        const Bar = ({ value, max }: { value: number; max: number }) => (
+                                            <div className="h-1.5 w-full bg-surface-2 rounded-full overflow-hidden">
+                                                <div className="h-full bg-gradient-to-r from-gold-accent to-lilac rounded-full transition-all duration-1000 ease-out" style={{ width: `${max ? (value / max) * 100 : 0}%` }} />
+                                            </div>
+                                        );
+                                        const Card = ({ icon, title, sub, children }: { icon: React.ReactNode; title: string; sub?: string; children: React.ReactNode }) => (
+                                            <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative">
+                                                <div className="flex items-start justify-between gap-4 mb-6">
+                                                    <h3 className="text-xl font-serif flex items-center gap-2">{icon}{title}</h3>
+                                                    {sub && <span className="text-xs text-text-subtle mt-1.5 whitespace-nowrap">{sub}</span>}
+                                                </div>
+                                                {isLoading ? (
+                                                    <div className="flex items-center justify-center py-10"><RefreshCcw className="animate-spin text-gold-accent" size={28} /></div>
+                                                ) : !j ? (
+                                                    <p className="text-sm text-text-subtle">This report couldn’t be loaded.</p>
+                                                ) : children}
+                                            </div>
+                                        );
+                                        const books = m?.books || [];
+                                        const booked = books.reduce((n, b) => n + b.booked, 0);
+                                        const sections = m?.sections || [];
+                                        const top = sections[0]?.people || 0;
+                                        const faq = m?.faq || [];
+                                        const switches = j?.switches || [];
+                                        return (
+                                            <>
+                                                <Card icon={<MousePointerClick size={20} className="text-gold-accent" />} title="Where bookings start" sub={market}>
+                                                    {!books.length ? (
+                                                        <p className="text-sm text-text-subtle">No “Book” buttons pressed in this period.</p>
+                                                    ) : (
+                                                        <>
+                                                            <div className="space-y-5">
+                                                                {books.map((b) => (
+                                                                    <div key={b.place}>
+                                                                        <div className="flex justify-between gap-4 text-sm mb-2">
+                                                                            <span className="text-text-light font-medium">{b.label}</span>
+                                                                            <span className="text-text-subtle font-mono text-xs whitespace-nowrap">{b.clicks} · {ppl(b.people)} · {b.booked} booked</span>
+                                                                        </div>
+                                                                        <Bar value={b.clicks} max={books[0]?.clicks || 0} />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <p className="mt-5 text-xs text-text-subtle leading-relaxed">
+                                                                Presses of each “Book” button. “Booked” counts the {booked} {booked === 1 ? 'booking' : 'bookings'} by where that visitor first pressed one; “No button recorded” means they got to the form some other way.
+                                                            </p>
+                                                        </>
+                                                    )}
+                                                </Card>
+
+                                                <Card icon={<ArrowDownToLine size={20} className="text-gold-accent" />} title="How far people scroll" sub={market}>
+                                                    {!top ? (
+                                                        <p className="text-sm text-text-subtle">No visits recorded in this period.</p>
+                                                    ) : (
+                                                        <>
+                                                            <div className="space-y-4">
+                                                                {sections.filter((s) => s.people || s.id !== 'events').map((s) => (
+                                                                    <div key={s.id}>
+                                                                        <div className="flex justify-between gap-4 text-sm mb-2">
+                                                                            <span className="text-text-light font-medium">{s.label}</span>
+                                                                            <span className="text-text-subtle font-mono text-xs whitespace-nowrap">{Math.round((s.people / top) * 100)}% · {ppl(s.people)}</span>
+                                                                        </div>
+                                                                        <Bar value={s.people} max={top} />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <p className="mt-5 text-xs text-text-subtle leading-relaxed">Share of visitors who reached each part of the page, in page order.</p>
+                                                        </>
+                                                    )}
+                                                </Card>
+
+                                                <Card icon={<HelpCircle size={20} className="text-gold-accent" />} title="FAQ questions opened" sub={market}>
+                                                    {!faq.length ? (
+                                                        <p className="text-sm text-text-subtle">No FAQ questions opened in this period.</p>
+                                                    ) : (
+                                                        <div className="space-y-5 max-h-[420px] overflow-y-auto pr-2 custom-scrollbar">
+                                                            {faq.map((q) => (
+                                                                <div key={q.question}>
+                                                                    <div className="flex justify-between gap-4 text-sm mb-2">
+                                                                        <span className="text-text-light font-medium">{q.question}</span>
+                                                                        <span className="text-text-subtle font-mono text-xs whitespace-nowrap">{q.opens} · {ppl(q.people)}</span>
+                                                                    </div>
+                                                                    <Bar value={q.opens} max={faq[0]?.opens || 0} />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </Card>
+
+                                                <Card icon={<Repeat size={20} className="text-gold-accent" />} title="Site-version switches" sub="Both versions">
+                                                    {!switches.length ? (
+                                                        <p className="text-sm text-text-subtle">Nobody switched between Global and Indonesia in this period.</p>
+                                                    ) : (
+                                                        <>
+                                                            <div className="space-y-5">
+                                                                {switches.map((s) => (
+                                                                    <div key={`${s.to}-${s.country}`}>
+                                                                        <div className="flex justify-between gap-4 text-sm mb-2">
+                                                                            <span className="text-text-light font-medium">To {s.to === 'ID' ? 'Indonesia' : 'Global'} <span className="text-text-subtle font-normal">· visitors in {s.country}</span></span>
+                                                                            <span className="text-text-subtle font-mono text-xs whitespace-nowrap">{s.count} · {ppl(s.people)}</span>
+                                                                        </div>
+                                                                        <Bar value={s.count} max={switches[0]?.count || 0} />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <p className="mt-5 text-xs text-text-subtle leading-relaxed">Someone in Indonesia switching to Indonesia (or elsewhere switching to Global) means the site guessed their location wrong.</p>
+                                                        </>
+                                                    )}
+                                                </Card>
+                                            </>
+                                        );
+                                    })()}
 
                                     {/* 3. Geography Breakdown (Moved Bottom) */}
                                     <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative min-h-[400px]">

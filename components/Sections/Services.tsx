@@ -10,7 +10,7 @@ import PencilRule from '../UI/PencilRule';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
 import { PaperShadow, paperCut } from '../UI/PaperEdge';
 import { lockPage, unlockPage } from '../UI/scroll';
-import { trackEvent, trackWhatsApp, SERVICE_TRACK_NAME, promoTrackName } from '../../services/analytics';
+import { trackEvent, trackWhatsApp, trackBookClick, SERVICE_TRACK_NAME, promoTrackName } from '../../services/analytics';
 
 const REVEAL_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
@@ -432,6 +432,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
         if (selected === null) return;
         setBooking(true);
         setUnflip(false);
+        trackBookClick('card', isIndonesian ? 'ID' : 'Global');
         openBooking(BOOKING_MAP[g.type], selected);
     };
 
