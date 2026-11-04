@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 export type CelestialName = 'sparkle' | 'star' | 'constellation' | 'crescent' | 'sun';
 
@@ -22,7 +22,18 @@ interface CelestialMarkProps {
  */
 const SPARKLE = 'M0,-1 C0.06,-0.3 0.3,-0.06 1,0 C0.3,0.06 0.06,0.3 0,1 C-0.06,0.3 -0.3,0.06 -1,0 C-0.3,-0.06 -0.06,-0.3 0,-1 Z';
 
+// The crescent, drawn in pencil: its outline (with a second, lighter pass a hair off,
+// as a hand goes round twice), shaded with diagonal hatching, each stroke a little
+// uneven. The shape is unchanged — the loader's moon lands on its lit disc (Loader.tsx).
+const CRESCENT = 'M37 15 A20 20 0 1 0 37 49 A18 18 0 0 1 37 15 Z';
+const HATCH = Array.from({ length: 43 }, (_, n) => {
+  const i = -20 + n * 2.1;
+  const j = ((Math.sin(i * 7.3) + 1) * 0.6).toFixed(2);
+  return `M${i.toFixed(1)} ${64 + +j} L${(i + 64).toFixed(1)} ${-j}`;
+}).join(' ');
+
 const CelestialMark: React.FC<CelestialMarkProps> = ({ name = 'sparkle', className = '', title }) => {
+  const clip = `crescent-${useId().replace(/:/g, '')}`;
   const a11y = title ? { role: 'img', 'aria-label': title } : { 'aria-hidden': true as const };
   const box = name === 'sparkle' ? '0 0 24 24' : '0 0 64 64';
 
@@ -67,14 +78,15 @@ const CelestialMark: React.FC<CelestialMarkProps> = ({ name = 'sparkle', classNa
 
       {name === 'crescent' && (
         <>
-          <path fill="currentColor" d="M37 15 A20 20 0 1 0 37 49 A18 18 0 0 1 37 15 Z" />
-          <g fill="rgba(20,17,43,0.24)">
-            <circle cx="15" cy="28" r="1.3" />
-            <circle cx="12.6" cy="35" r="1" />
-            <circle cx="17" cy="41" r="1.1" />
+          <defs><clipPath id={clip}><path d={CRESCENT} /></clipPath></defs>
+          <g filter="url(#pencil-icon)" stroke="currentColor" strokeLinecap="round">
+            <path d={HATCH} clipPath={`url(#${clip})`} strokeWidth={0.55} opacity={0.75} />
+            <path d={CRESCENT} strokeWidth={1.1} />
+            <path d="M36.4 15.6 A19.6 19.6 0 1 0 37.4 48.6" strokeWidth={0.6} opacity={0.6} transform="rotate(-2 32 32)" />
+            <path d="M49 12.5 L49 25.5 M42.5 19 L55.5 19" strokeWidth={0.9} />
+            <path d="M46.6 16.6 L51.4 21.4 M51.4 16.6 L46.6 21.4" strokeWidth={0.5} opacity={0.7} />
+            <circle cx="54" cy="31" r="0.9" strokeWidth={0.8} />
           </g>
-          <path transform="translate(49 19) scale(6)" fill="currentColor" d={SPARKLE} />
-          <circle cx="54" cy="31" r="1.1" fill="currentColor" />
         </>
       )}
 
