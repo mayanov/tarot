@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshCcw, MessageSquare, ShoppingBag, ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
+import PageHeader from './ui/PageHeader';
+import Button from './ui/Button';
+import Card from './ui/Card';
+import Segmented from './ui/Segmented';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, Booking, CalEvent } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
@@ -479,34 +483,17 @@ const BookingsView: React.FC = () => {
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
-            <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Bookings</h1>
-                    <p className="text-text-subtle text-sm">{calendarSessions.length} scheduled · {orders.length} orders (cancelled left out of the schedule)</p>
-                </div>
-                <div className="flex items-center gap-2.5 shrink-0">
-                    <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
-                        {TABS.map((t) => (
-                            <button
-                                key={t.id}
-                                onClick={() => setTab(t.id)}
-                                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ${tab === t.id ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}
-                            >
-                                {t.label}
-                                <span className={`text-[0.7rem] tabular-nums ${tab === t.id ? 'text-white/70' : 'text-text-subtle'}`}>{t.count}</span>
-                            </button>
-                        ))}
-                    </div>
-                    <button onClick={() => setShowAdd(true)} title="Add booking"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-lilac text-white text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors">
-                        <Plus size={16} /> <span className="hidden sm:inline">Add booking</span>
-                    </button>
-                    <button onClick={load} title="Refresh"
-                        className="p-2.5 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light hover:border-adm-line-3 transition-colors">
-                        <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
-                    </button>
-                </div>
-            </div>
+            <PageHeader
+                title="Bookings"
+                subtitle={tab === 'calendar' ? 'Sessions with a time. Click one for details, drag it to move it.' : 'Readings and chats with no fixed time. Click a row for details.'}
+                onRefresh={load}
+                refreshing={loading}
+            >
+                <Segmented value={tab} options={TABS} onChange={setTab} />
+                <Button onClick={() => setShowAdd(true)} title="Add booking">
+                    <Plus size={16} /> <span className="hidden sm:inline">Add booking</span>
+                </Button>
+            </PageHeader>
 
             {showAdd && (
                 <AddBookingModal
@@ -653,151 +640,129 @@ const BookingsView: React.FC = () => {
                 </div>
             )}
 
-            {/* selected booking detail — modal popover */}
+            {/* selected booking (session or order): the details, in one popup */}
             {selectedBooking && (() => {
                 const b = selectedBooking;
-                const svcBase = serviceTitle(b);
-                const svcRest = [packageOf(b), amountLabel(b)].filter((x) => x && x !== '—').join(' · ');
                 const phone = phoneOf(b.contact);
                 const email = emailOf(b.contact);
                 const method = paymentMethodOf(b);
-                const endStr = b.durationMin
-                    ? (() => { const e = toMin(b.time) + b.durationMin; return `${String(Math.floor(e / 60)).padStart(2, '0')}:${String(e % 60).padStart(2, '0')}`; })()
-                    : '';
-                const Field: React.FC<{ label: string; value: string; italic?: boolean }> = ({ label, value, italic }) => (
-                    <div>
-                        <div className="text-[0.6rem] uppercase tracking-[0.18em] text-text-subtle mb-1">{label}</div>
-                        <div className={`text-sm text-text-light break-words ${italic ? 'italic text-text-light' : ''}`}>{value}</div>
+                const timed = !!(b.date && b.time);
+                const endStr = timed && b.durationMin ? toHHMM(toMin(b.time) + b.durationMin) : '';
+                const Field: React.FC<{ label: string; children: React.ReactNode; wide?: boolean }> = ({ label, children, wide }) => (
+                    <div className={wide ? 'col-span-2' : ''}>
+                        <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle mb-1">{label}</div>
+                        <div className="text-sm text-text-light break-words">{children}</div>
                     </div>
                 );
                 return (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
                         <div className="relative w-full max-w-md bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl overflow-hidden">
-                            {/* header — date & time first */}
-                            <div className="p-4 border-b border-adm-line">
+                            <div className="px-5 pt-5 pb-4 border-b border-adm-line">
                                 <div className="flex items-start justify-between gap-3">
-                                    <div className="flex flex-wrap items-center gap-2 text-sm text-text-light">
-                                        <span className="font-semibold tabular-nums">{fmtDate(b.date)} · {b.time}{endStr && `–${endStr}`}</span>
-                                        <span className="px-1.5 py-0.5 rounded bg-adm-hover-2 text-[0.6rem] uppercase tracking-wider text-text-subtle">{b.market}</span>
-                                        {b.ref && <span className="font-mono text-[0.6rem] px-1.5 py-0.5 rounded bg-adm-hover text-text-subtle">{b.ref}</span>}
+                                    <div className="min-w-0">
+                                        <div className="text-xs text-text-subtle tabular-nums">
+                                            {timed ? `${fmtDate(b.date)} · ${b.time}${endStr ? `–${endStr}` : ''}` : `Ordered ${fmtDate(b.createdAt)}`}
+                                            <span className="mx-1.5">·</span>{b.market === 'ID' ? 'Indonesia' : 'Global'}
+                                            {b.source === 'manual' && <><span className="mx-1.5">·</span>added by hand</>}
+                                        </div>
+                                        <h3 className="mt-1.5 text-xl font-serif font-bold text-text-light leading-snug">{b.name || '—'}</h3>
+                                        <div className="text-sm text-text-subtle mt-0.5">{serviceLabel(b)}</div>
                                     </div>
                                     <button aria-label="Close" onClick={() => setSelectedId(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors">
                                         <X size={16} />
                                     </button>
                                 </div>
-                                <h3 className="mt-3 text-lg font-serif font-bold text-text-light leading-snug">{svcBase}</h3>
-                                {svcRest && <div className="text-sm text-lilac mt-0.5">{svcRest}</div>}
                             </div>
 
-                            {/* details */}
-                            <div className="p-4 grid grid-cols-2 gap-x-4 gap-y-4">
-                                <Field label="Name" value={b.name} />
-                                {b.dob && <Field label="Date of birth" value={fmtDate(b.dob)} />}
-                                <Field label="WhatsApp" value={phone || '—'} />
-                                <Field label="Email" value={email || '—'} />
-                                {b.question && <div className="col-span-2"><Field label="Question" value={b.question} italic /></div>}
-                                <div className="col-span-2"><WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} /></div>
+                            <div className="px-5 py-4 grid grid-cols-2 gap-x-4 gap-y-4">
+                                <Field label="WhatsApp">{phone || '—'}</Field>
+                                <Field label="Email">{email || '—'}</Field>
+                                {b.dob && <Field label="Born">{fmtDate(b.dob)}</Field>}
+                                {b.ref && <Field label="Ref"><span className="font-mono text-xs">{b.ref}</span></Field>}
+                                {b.question && <Field label="Question" wide><span className="italic">“{b.question}”</span></Field>}
                             </div>
 
-                            {/* status + payment footer */}
-                            <div className="px-5 py-4 border-t border-adm-line bg-adm-hover grid grid-cols-2 gap-4">
-                                <div>
-                                    <div className="text-xs uppercase tracking-wider text-text-subtle mb-2">Status</div>
-                                    <StatusControl b={b} />
-                                </div>
-                                <div>
-                                    <div className="text-xs uppercase tracking-wider text-text-subtle mb-2">Payment</div>
-                                    <div className="flex flex-wrap items-center gap-2">
+                            <div className="px-5 py-4 border-t border-adm-line bg-adm-hover space-y-3">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div>
+                                        <div className="text-base font-serif font-bold text-text-light tabular-nums">{amountLabel(b)}</div>
+                                        {method && <div className="text-xs text-text-subtle">{method}</div>}
+                                    </div>
+                                    <div className="flex items-center gap-1">
                                         <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
-                                        {method && <span className="text-xs text-text-subtle">{method}</span>}
+                                        <StatusControl b={b} />
                                     </div>
                                 </div>
+                                <WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} />
                             </div>
                         </div>
                     </div>
                 );
             })()}
 
-            {/* ---------------- ORDERS (async services) ---------------- */}
-            {!initialLoading && tab === 'orders' && (
-                <>
-                    {/* active / done sub-tabs */}
-                    <div className="inline-flex rounded-xl bg-adm-hover p-1">
-                        {([['active', 'Active', activeOrders.length], ['done', 'Done', doneOrders.length]] as const).map(([id, label, count]) => (
-                            <button
-                                key={id}
-                                onClick={() => setOrderView(id)}
-                                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${orderView === id ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}
-                            >
-                                {label}
-                                <span className={`text-[0.7rem] px-1.5 py-0.5 rounded-full ${orderView === id ? 'bg-adm-hover-3' : 'bg-adm-hover-2'}`}>{count}</span>
-                            </button>
-                        ))}
-                    </div>
+            {/* ---------------- ORDERS (no fixed time) — one aligned list ---------------- */}
+            {!initialLoading && tab === 'orders' && (() => {
+                const list = orderView === 'active' ? activeOrders : doneOrders;
+                const COLS = 'md:grid md:grid-cols-[5.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4';
+                return (
+                    <Card className="overflow-hidden">
+                        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
+                            <Segmented size="sm" value={orderView} onChange={setOrderView}
+                                options={[{ id: 'active', label: 'To do', count: activeOrders.length }, { id: 'done', label: 'Done', count: doneOrders.length }]} />
+                            <span className="text-xs text-text-subtle">Newest first</span>
+                        </div>
 
-                    {(() => {
-                        const list = orderView === 'active' ? activeOrders : doneOrders;
-                        if (!error && !loading && list.length === 0) {
-                            return (
-                                <div className="text-center py-20 text-text-subtle">
-                                    <ShoppingBag size={40} className="mx-auto mb-4 opacity-40" />
-                                    <p>{orderView === 'active' ? 'No active orders.' : 'No completed orders.'}</p>
-                                </div>
-                            );
-                        }
-                        return (
-                            <div className="grid gap-3">
-                                {list.map((b) => {
-                                    const phone = phoneOf(b.contact);
-                                    const email = emailOf(b.contact);
-                                    const method = paymentMethodOf(b);
-                                    return (
-                                        <div key={b.id} className="bg-surface-1 border border-adm-line rounded-2xl p-4 flex flex-col lg:flex-row lg:items-start gap-4">
-                                            {/* who and what */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="text-text-subtle text-xs mb-1.5 flex flex-wrap items-center gap-x-2">
-                                                    <span>Ordered {fmtDate(b.createdAt)}</span>
-                                                    <span className="px-1.5 py-0.5 rounded bg-adm-hover-2 text-[0.6rem] uppercase tracking-wider">{b.market === 'ID' ? 'ID' : 'Global'}</span>
-                                                    {b.source === 'manual' && <span className="px-1.5 py-0.5 rounded bg-adm-hover text-[0.6rem] uppercase tracking-wider">Manual</span>}
-                                                </div>
-                                                <div className="text-lg font-serif font-bold text-text-light leading-tight">{b.name || '—'}</div>
-                                                <div className="text-sm text-lilac mt-0.5">{serviceLabel(b)}</div>
-                                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-text-subtle tabular-nums">
-                                                    {phone && <span>{phone}</span>}
-                                                    {email && <span className="truncate">{email}</span>}
-                                                    {!phone && !email && <span className="truncate">{b.contact}</span>}
-                                                </div>
-                                                {b.question && (
-                                                    <div className="mt-2 flex items-start gap-1.5 text-sm text-text-subtle/80">
-                                                        <MessageSquare size={13} className="mt-0.5 shrink-0" />
-                                                        <span className="italic">{b.question}</span>
-                                                    </div>
-                                                )}
-                                                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                                                    <WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} />
-                                                    {b.dob && <span className="text-xs text-text-subtle">Born {fmtDate(b.dob)}</span>}
-                                                </div>
-                                            </div>
-                                            {/* money and state */}
-                                            <div className="shrink-0 flex flex-col items-start lg:items-end gap-2">
-                                                <div className="lg:text-right">
-                                                    <div className="text-base font-serif font-bold text-text-light whitespace-nowrap tabular-nums">{amountLabel(b)}</div>
-                                                    {method && <div className="text-xs text-text-subtle">{method}</div>}
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
-                                                    <StatusControl b={b} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                        {list.length > 0 && (
+                            <div className={`hidden ${COLS} px-4 py-2 text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle border-b border-adm-line`}>
+                                <div>Ordered</div><div>Customer</div><div>Service</div><div className="text-right">Amount</div><div>Payment</div><div>Status</div><div>WhatsApp</div>
                             </div>
-                        );
-                    })()}
-                </>
-            )}
+                        )}
+
+                        {!error && !loading && list.length === 0 && (
+                            <div className="text-center py-16 text-text-subtle">
+                                <ShoppingBag size={32} className="mx-auto mb-3 opacity-40" />
+                                <p className="text-sm">{orderView === 'active' ? 'Nothing waiting. All orders are answered.' : 'No finished orders yet.'}</p>
+                            </div>
+                        )}
+
+                        <div className="divide-y divide-adm-line">
+                            {list.map((b) => {
+                                const contact = phoneOf(b.contact) || emailOf(b.contact) || b.contact;
+                                const method = paymentMethodOf(b);
+                                return (
+                                    <div key={b.id} onClick={() => setSelectedId(b.id)}
+                                        className={`${COLS} px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5`}>
+                                        <div className="text-xs text-text-subtle tabular-nums col-span-2 md:col-span-1">{fmtDate(b.createdAt)}</div>
+                                        <div className="min-w-0">
+                                            <div className="text-sm font-medium text-text-light truncate">
+                                                {b.name || '—'}
+                                                <span className="ml-1.5 text-[0.65rem] font-normal text-text-subtle">{b.market === 'ID' ? 'ID' : 'Global'}</span>
+                                            </div>
+                                            <div className="text-xs text-text-subtle truncate tabular-nums">{contact}</div>
+                                        </div>
+                                        <div className="min-w-0 col-span-2 md:col-span-1 order-1 md:order-none">
+                                            <div className="text-sm text-text-light truncate">{serviceLabel(b)}</div>
+                                            {b.question
+                                                ? <div className="text-xs text-text-subtle italic truncate">“{b.question}”</div>
+                                                : b.source === 'manual' && <div className="text-xs text-text-subtle">Added by hand</div>}
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-sm font-semibold text-text-light tabular-nums whitespace-nowrap">{amountLabel(b)}</div>
+                                            {method && <div className="text-[0.7rem] text-text-subtle truncate">{method}</div>}
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-1 col-span-2 order-2 md:order-none md:contents">
+                                            <div><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} /></div>
+                                            <div><StatusControl b={b} /></div>
+                                            <div><WaConfirmButton compact b={b} onSent={(at) => markWaSent(b.id, at)} /></div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </Card>
+                );
+            })()}
         </div>
     );
 };

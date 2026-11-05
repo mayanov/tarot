@@ -92,13 +92,13 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; comp
     return (
       <button
         type="button"
-        onClick={send}
+        onClick={(e) => { e.stopPropagation(); send(); }}
         disabled={busy}
         title={b.waConfirmSentAt ? `Konfirmasi dikirim ${sentLabel(b.waConfirmSentAt)} · klik untuk kirim lagi` : 'Kirim konfirmasi WhatsApp'}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors disabled:opacity-50 ${b.waConfirmSentAt ? 'bg-adm-hover-2 text-text-subtle hover:text-text-light' : 'bg-[#25D366] text-[#0b2e17] hover:bg-[#1fbe5b]'}`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-colors disabled:opacity-50 ${b.waConfirmSentAt ? 'text-text-subtle hover:text-text-light hover:bg-adm-hover-2' : 'border border-adm-line-2 text-text-light font-medium hover:bg-adm-hover-2'}`}
       >
-        <FaWhatsapp size={13} />
-        {b.waConfirmSentAt ? `✓ Dikirim ${sentLabel(b.waConfirmSentAt)}` : 'Kirim konfirmasi'}
+        <span className={b.waConfirmSentAt ? '' : 'text-[#1fae55]'}><FaWhatsapp size={13} /></span>
+        {b.waConfirmSentAt ? `Dikirim ${sentLabel(b.waConfirmSentAt).split(',')[0]}` : 'Konfirmasi'}
       </button>
     );
   }

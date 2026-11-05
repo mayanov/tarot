@@ -7,6 +7,7 @@ import WaConfirmButton from './WaConfirmButton';
 import { StatusPill, PaymentPill } from './lib/status';
 import Card from './ui/Card';
 import PageHeader from './ui/PageHeader';
+import Segmented from './ui/Segmented';
 import Button from './ui/Button';
 import { SearchInput, Select } from './ui/Field';
 
@@ -159,20 +160,13 @@ const SalesView: React.FC = () => {
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
-            <PageHeader title="Sales" subtitle={`${orders.length} ${market === 'ID' ? 'Indonesia' : 'Global'} orders · mark payments as they come in`} onRefresh={load} refreshing={loading} />
+            <PageHeader title="Sales" subtitle={`${orders.length} ${market === 'ID' ? 'Indonesia' : 'Global'} orders · mark payments as they come in`} onRefresh={load} refreshing={loading}>
+                {/* market: rupiah and dollars are kept apart */}
+                <Segmented value={market} onChange={(m) => { setMarket(m); setServiceFilter('all'); setCustomerFilter('all'); }}
+                    options={[{ id: 'ID', label: 'Indonesia · IDR', count: countBy.ID }, { id: 'Global', label: 'Global · USD', count: countBy.Global }]} />
+            </PageHeader>
 
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
-
-            {/* market: rupiah and dollars are kept apart */}
-            <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
-                {(['ID', 'Global'] as const).map((m) => (
-                    <button key={m} onClick={() => { setMarket(m); setServiceFilter('all'); setCustomerFilter('all'); }}
-                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ${market === m ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>
-                        {m === 'ID' ? 'Indonesia · IDR' : 'Global · USD'}
-                        <span className={`text-[0.7rem] tabular-nums ${market === m ? 'text-white/70' : 'text-text-subtle'}`}>{countBy[m]}</span>
-                    </button>
-                ))}
-            </div>
 
             {/* summary cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

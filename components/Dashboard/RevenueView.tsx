@@ -1,5 +1,7 @@
+import PageHeader from './ui/PageHeader';
+import Segmented from './ui/Segmented';
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, TrendingUp, Wallet, ShoppingBag, Award, Users, Repeat, UserPlus } from 'lucide-react';
+import { TrendingUp, Wallet, ShoppingBag, Award, Users, Repeat, UserPlus } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
@@ -262,16 +264,7 @@ const RevenueView: React.FC = () => {
         </div>
     );
 
-    const Seg = <T extends string>({ value, options, onChange }: { value: T; options: { id: T; label: string }[]; onChange: (v: T) => void }) => (
-        <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
-            {options.map((o) => (
-                <button key={o.id} onClick={() => onChange(o.id)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors whitespace-nowrap ${value === o.id ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>
-                    {o.label}
-                </button>
-            ))}
-        </div>
-    );
+    const Seg = <T extends string>(p: { value: T; options: { id: T; label: string }[]; onChange: (v: T) => void }) => <Segmented size="sm" {...p} />;
 
     const granLabel = gran === 'day' ? 'Daily' : 'Weekly';
 
@@ -279,25 +272,19 @@ const RevenueView: React.FC = () => {
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
-            <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Revenue</h1>
-                    <p className="text-text-subtle text-sm">
-                        {tab === 'revenue'
-                            ? 'Money that came in: bookings marked paid (cancelled left out), by order date.'
-                            : "Who's booking — totals, repeat rate, and your top customers."}
-                    </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <Seg value={currency} options={[{ id: 'IDR', label: 'IDR' }, { id: 'USD', label: 'USD' }]} onChange={setCurrency} />
-                    <button onClick={load} className="p-2.5 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light hover:border-adm-line-3 transition-colors" title="Refresh">
-                        <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
-                    </button>
-                </div>
-            </div>
+            <PageHeader
+                title="Revenue"
+                subtitle={tab === 'revenue'
+                    ? 'Money that came in: bookings marked paid (cancelled left out), by order date.'
+                    : "Who's booking: totals, repeat rate and your top customers."}
+                onRefresh={load}
+                refreshing={loading}
+            >
+                <Segmented value={currency} options={[{ id: 'IDR', label: 'IDR' }, { id: 'USD', label: 'USD' }]} onChange={setCurrency} />
+            </PageHeader>
 
             {/* Dashboard tabs */}
-            <Seg value={tab} options={[{ id: 'revenue', label: 'Revenue' }, { id: 'customers', label: 'Customers' }]} onChange={setTab} />
+            <Segmented value={tab} options={[{ id: 'revenue', label: 'Revenue' }, { id: 'customers', label: 'Customers' }]} onChange={setTab} />
 
             {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
 

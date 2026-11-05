@@ -1,5 +1,7 @@
+import PageHeader from './ui/PageHeader';
+import Segmented from './ui/Segmented';
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCcw, Search, Phone, Mail, X, Repeat } from 'lucide-react';
+import { Search, Phone, Mail, X, Repeat } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking, fmtMoney, fmtDate, serviceLabel, sessionWhen } from './lib/format';
@@ -128,43 +130,27 @@ const CustomersView: React.FC = () => {
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
-            <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Customers</h1>
-                    <p className="text-text-subtle text-sm">{customers.length} {market === 'ID' ? 'Indonesia' : 'Global'} clients · {repeatCount} returning · grouped by phone number (email if none).</p>
-                </div>
-                <button onClick={load} className="p-2.5 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light hover:border-adm-line-3 transition-colors" title="Refresh">
-                    <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
-                </button>
-            </div>
+            <PageHeader
+                title="Customers"
+                subtitle={`${customers.length} ${market === 'ID' ? 'Indonesia' : 'Global'} clients · ${repeatCount} returning · grouped by phone number (email if none)`}
+                onRefresh={load}
+                refreshing={loading}
+            >
+                <Segmented value={market} onChange={setMarket}
+                    options={[{ id: 'ID', label: 'Indonesia · IDR' }, { id: 'Global', label: 'Global · USD' }]} />
+            </PageHeader>
 
-            {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
-
-            {/* market */}
-            <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
-                {(['ID', 'Global'] as const).map((m) => (
-                    <button key={m} onClick={() => setMarket(m)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${market === m ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>
-                        {m === 'ID' ? 'Indonesia · IDR' : 'Global · USD'}
-                    </button>
-                ))}
-            </div>
+            {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
 
             {/* toolbar */}
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
                 <div className="relative flex-1 max-w-sm">
                     <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-subtle" />
                     <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, or email"
-                        className="w-full rounded-full border border-adm-line-2 bg-surface-1 pl-9 pr-4 py-2 text-sm text-text-light placeholder-text-subtle focus:border-lilac focus:outline-none" />
+                        className="w-full rounded-lg border border-adm-line-2 bg-surface-1 pl-9 pr-4 py-2 text-sm text-text-light placeholder-text-subtle focus:border-lilac focus:outline-none" />
                 </div>
-                <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
-                    {([['spent', 'Top spenders'], ['bookings', 'Most bookings'], ['recent', 'Recent']] as const).map(([id, label]) => (
-                        <button key={id} onClick={() => setSort(id)}
-                            className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors ${sort === id ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>
-                            {label}
-                        </button>
-                    ))}
-                </div>
+                <Segmented size="sm" value={sort} onChange={setSort}
+                    options={[{ id: 'spent', label: 'Top spenders' }, { id: 'bookings', label: 'Most bookings' }, { id: 'recent', label: 'Recent' }]} />
             </div>
 
             {/* list */}
