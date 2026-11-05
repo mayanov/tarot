@@ -39,15 +39,19 @@ export const confirmationText = (b: Booking) => {
   const service = (b.serviceName || '').split(' · ').filter((p) => !/^(Rp|\$)/i.test(p.trim())).join(' · ');
   const total = totalOf(b);
   const paid = b.paymentStatus === 'paid';
+  // Konsultasi via Chat has no time: the customer sends their question and gets a voice note back
+  const chat = b.serviceId === 'chat' || /via chat/i.test(b.serviceName || '');
   return id
     ? [
         `Halo ${first}, booking kamu di Mayanov Tarot sudah terkonfirmasi ✨`,
         '',
         `Layanan: ${service}`,
-        `Jadwal: ${scheduleOf(b, true)}`,
+        chat ? null : `Jadwal: ${scheduleOf(b, true)}`,
         total ? `Total: ${total}${paid ? ' (lunas)' : ''}` : null,
         '',
-        'Kalo ada yang mau ditanya bisa langsung chat aja yaa. See you! ☺️',
+        chat
+          ? 'Silahkan drop konteks dan pertanyaannya, hasil akan aku jawab segera melalui voice note. Terima kasih! ☺️'
+          : 'Kalo ada yang mau ditanya bisa langsung chat aja yaa. See you! ☺️',
       ].filter((l) => l !== null).join('\n')
     : [
         `Hi ${first}, your booking with Mayanov Tarot is confirmed ✨`,
