@@ -10,7 +10,9 @@ import { amountForBooking, fmtMoney } from './lib/format';
 
 /** The customer's number as WhatsApp links want it (0812… → 62812…), or '' */
 export const waNumberOf = (contact?: string) => {
-  const raw = ((contact || '').match(/WA:\s*([^·]+)/i) || [])[1] || '';
+  const c = contact || '';
+  // "WA: 0812…" from the form, or a bare number on an order typed in by hand
+  const raw = (c.match(/WA:\s*([^·]+)/i) || [])[1] || (c.replace(/[^\s:·]+@[^\s·]+/g, '').match(/\+?\d[\d\s-]{7,}/) || [])[0] || '';
   let d = raw.replace(/\D/g, '');
   if (d.startsWith('0')) d = '62' + d.slice(1);
   else if (d.startsWith('8')) d = '62' + d;
@@ -61,7 +63,8 @@ export const confirmationText = (b: Booking) => {
 const sentLabel = (iso: string) =>
   new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 
-const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void }> = ({ b, onSent }) => {
+/** `compact`: a small pill for table rows (the Sales table) */
+const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; compact?: boolean }> = ({ b, onSent, compact }) => {
   const [busy, setBusy] = useState(false);
   const number = waNumberOf(b.contact);
   if (!number) return null;
@@ -81,6 +84,20 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void }> = 
       if (r.ok && data.waConfirmSentAt) onSent(data.waConfirmSentAt);
     } catch { /* WhatsApp still opened; only the note is missing */ } finally { setBusy(false); }
   };
+  if (compact) {
+    return (
+      <button
+        type="button"
+        onClick={send}
+        disabled={busy}
+        title={b.waConfirmSentAt ? `Konfirmasi dikirim ${sentLabel(b.waConfirmSentAt)} · klik untuk kirim lagi` : 'Kirim konfirmasi WhatsApp'}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors disabled:opacity-50 ${b.waConfirmSentAt ? 'bg-adm-hover-2 text-text-subtle hover:text-text-light' : 'bg-[#25D366] text-[#0b2e17] hover:bg-[#1fbe5b]'}`}
+      >
+        <FaWhatsapp size={13} />
+        {b.waConfirmSentAt ? `✓ Dikirim ${sentLabel(b.waConfirmSentAt)}` : 'Kirim konfirmasi'}
+      </button>
+    );
+  }
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
       <button

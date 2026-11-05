@@ -3,6 +3,7 @@ import { Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } 
 import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking as amountOf, fmtMoney, fmtDate } from './lib/format';
+import WaConfirmButton from './WaConfirmButton';
 
 // The form's contact line is "WA: 0812… · Email: a@b.co"; a manual order may be a bare number.
 const emailOf = (contact?: string) => ((contact || '').match(/[^\s:·]+@[^\s·]+/) || [])[0] || '';
@@ -313,7 +314,14 @@ const SalesView: React.FC = () => {
                                         <td className="px-4 py-3">
                                             <div className="font-semibold text-text-light">{b.name || '—'}</div>
                                         </td>
-                                        <td className="px-4 py-3 text-text-subtle whitespace-nowrap tabular-nums">{phoneOf(b.contact) || '—'}</td>
+                                        <td className="px-4 py-3 text-text-subtle whitespace-nowrap tabular-nums">
+                                            <div>{phoneOf(b.contact) || '—'}</div>
+                                            {b.status !== 'cancelled' && (
+                                                <div className="mt-1.5">
+                                                    <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="px-4 py-3 text-text-subtle whitespace-nowrap">{emailOf(b.contact) || '—'}</td>
                                         <td className="px-4 py-3 text-text-light">
                                             {serviceLabel(b)}
