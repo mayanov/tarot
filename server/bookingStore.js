@@ -36,8 +36,21 @@ const occupiedSlots = (time, durationMin) => {
 // become unavailable for the next booking too, so sessions aren't back-to-back.
 const SESSION_BUFFER_MIN = { call: 15, live: 15 };
 const bufferFor = (b) => SESSION_BUFFER_MIN[b?.serviceId] || 0;
-// A booking's full footprint on the grid: its own duration + its service buffer.
-const footprintSlots = (b) => occupiedSlots(b.time, (b.durationMin || 30) + bufferFor(b));
+// A meetup also needs the travel there and back (the same 1 h before / 30 min after as its
+// travel blocks on the calendar, server/googleCalendar.js), so that time has to be free
+// when it's booked, and stays blocked for others once it is.
+const TRAVEL_BEFORE_MIN = 60;
+const TRAVEL_AFTER_MIN = 30;
+const isMeetup = (b) => (b?.serviceId || '') === 'meetup' || /tatap muka/i.test(b?.serviceName || '');
+// The grid slots a booking needs at a given start: its length + rest, or with travel round a meetup.
+const footprintAt = (b, time, durationMin) => {
+  if (!time) return [];
+  const dur = durationMin && durationMin > 0 ? durationMin : 30;
+  if (!isMeetup(b)) return occupiedSlots(time, dur + bufferFor(b));
+  return occupiedSlots(toHHMM(Math.max(0, toMin(time) - TRAVEL_BEFORE_MIN)), TRAVEL_BEFORE_MIN + dur + TRAVEL_AFTER_MIN);
+};
+// A booking's full footprint on the grid.
+const footprintSlots = (b) => footprintAt(b, b.time, b.durationMin);
 
 // A slot held while someone pays (status 'awaiting_payment', see server/midtrans.js)
 // blocks it only until its hold runs out; an unpaid hold after that frees it again.
@@ -122,7 +135,7 @@ export async function rescheduleBooking(id, { date, time, durationMin }, opts = 
 
   const dur = durationMin && durationMin > 0 ? Math.round(durationMin) : (booking.durationMin || 30);
   const newId = slotId(date, time);
-  const wanted = occupiedSlots(time, dur + bufferFor(booking));
+  const wanted = footprintAt(booking, time, dur);
 
   // Availability from our store, minus this booking's current footprint.
   const taken = await dbTakenSlots(date);
@@ -183,7 +196,7 @@ export async function createBooking(input) {
   };
 
   // A scheduled booking blocks every 30-min slot it spans; reject if any overlap.
-  const wanted = hasSlot ? occupiedSlots(data.time, (data.durationMin || 30) + bufferFor(data)) : [];
+  const wanted = hasSlot ? footprintAt(data, data.time, data.durationMin) : [];
 
   if (db) {
     const ref = db.collection(COLLECTION).doc(id);
@@ -314,13 +327,16 @@ export async function updatePayment(id, paymentStatus) {
     const ref = db.collection(COLLECTION).doc(id);
     const snap = await ref.get();
     if (!snap.exists) return null;
-    await ref.update({ paymentStatus: ps });
-    b = { ...snap.data(), paymentStatus: ps };
+    // when it was first marked paid: an order's delivery clock starts there
+    const paidAt = ps === 'paid' && !snap.data().paidAt ? { paidAt: new Date().toISOString() } : {};
+    await ref.update({ paymentStatus: ps, ...paidAt });
+    b = { ...snap.data(), paymentStatus: ps, ...paidAt };
   } else {
     const all = readAll();
     b = all.find((x) => x.id === id);
     if (!b) return null;
     b.paymentStatus = ps;
+    if (ps === 'paid' && !b.paidAt) b.paidAt = new Date().toISOString();
     writeAll(all);
   }
   return ps === 'paid' ? sendHeldInvite(b) : b;

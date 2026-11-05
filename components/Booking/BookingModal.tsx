@@ -10,7 +10,7 @@ import PencilRule from '../UI/PencilRule';
 import PaintProgress from '../UI/PaintProgress';
 import { paperCut, PaperShadow } from '../UI/PaperEdge';
 import { FaWhatsapp } from 'react-icons/fa';
-import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan, BookingInput, Booking } from '../../services/booking';
+import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotNeed, BookingInput, Booking } from '../../services/booking';
 import { paypalConfig, PayPalConfig } from '../../services/paypal';
 import PayPalButtons from './PayPalButtons';
 import { midtransConfig, MidtransConfig, loadSnap, startMidtrans, midtransStatus, releaseMidtrans } from '../../services/midtrans';
@@ -864,7 +864,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     <div className="grid grid-cols-3 gap-x-3 gap-y-1.5">
                       {visibleSlots.map((slot) => {
                         // Block this start if the session would run past closing time or overlaps a taken slot.
-                        const span = slotSpan(slot, durationMin || 30);
+                        // the session plus what it needs round it (rest, or travel for a meetup)
+                        const span = slotNeed(service?.id || '', slot, durationMin || 30);
                         const isTaken = addMinutes(slot, durationMin || 30) > CLOSING_TIME || span.some((x) => taken.includes(x));
                         return (
                           <button

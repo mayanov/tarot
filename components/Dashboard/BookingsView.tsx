@@ -7,7 +7,7 @@ import Segmented from './ui/Segmented';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, Booking, CalEvent } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
-import { fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf } from './lib/format';
+import { fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
 
 // Services offered — id drives revenue colour/stacking; name is the display label.
@@ -304,6 +304,24 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
 // One view behind two menu items: Schedule (sessions with a time, on the week grid)
 // and Orders (readings and chats with no fixed time). Kept as one component so the
 // bookings load once and switching between the two is instant.
+// Under an order's date: how long it has waited for its reading, against what the site
+// promises (lib/format orderClock). Overdue is the one in colour.
+const ClockNote: React.FC<{ b: Booking; now: number }> = ({ b, now }) => {
+    const c = orderClock(b);
+    const cls = 'text-[0.7rem] leading-tight mt-0.5';
+    if (c.kind === 'unpaid') return <div className={`${cls} text-text-subtle`}>Not paid yet</div>;
+    if (c.kind === 'waiting') return <div className={`${cls} text-text-subtle`}>Waiting {spanLabel(now - c.since)}</div>;
+    const left = c.due - now;
+    const due = new Date(c.due).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
+    if (left < 0) return <div title={`Was due ${due} WIB`} className={`${cls} font-semibold text-coral-deep`}>Overdue {spanLabel(-left)}</div>;
+    return <div title={`Due ${due} WIB`} className={`${cls} ${left < 6 * 3_600_000 ? 'font-semibold text-text-light' : 'text-text-subtle'}`}>{spanLabel(left)} left</div>;
+};
+// most urgent first: due soonest, then the longest waiting, then the unpaid (newest first)
+const urgency = (b: Booking) => {
+    const c = orderClock(b);
+    return c.kind === 'due' ? c.due : c.kind === 'waiting' ? c.since + 24 * 3_600_000 : Number.MAX_SAFE_INTEGER;
+};
+
 const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
@@ -439,7 +457,18 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
         () => bookings.filter((b) => !(b.date && b.time)).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')),
         [bookings],
     );
-    const activeOrders = useMemo(() => orders.filter((b) => b.status !== 'done' && b.status !== 'cancelled'), [orders]);
+    const activeOrders = useMemo(
+        () => orders.filter((b) => b.status !== 'done' && b.status !== 'cancelled').sort((a, b) => urgency(a) - urgency(b)),
+        [orders],
+    );
+    // the clocks on Orders move on by themselves
+    const [now, setNow] = useState(() => Date.now());
+    useEffect(() => {
+        if (tab !== 'orders') return;
+        setNow(Date.now());
+        const iv = window.setInterval(() => setNow(Date.now()), 60_000);
+        return () => clearInterval(iv);
+    }, [tab]);
     const doneOrders = useMemo(() => orders.filter((b) => b.status === 'done' || b.status === 'cancelled'), [orders]);
 
     // Jump to the week of the nearest upcoming session once data loads.
@@ -707,13 +736,13 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
             {/* ---------------- ORDERS (no fixed time) — one aligned list ---------------- */}
             {!initialLoading && tab === 'orders' && (() => {
                 const list = orderView === 'active' ? activeOrders : doneOrders;
-                const COLS = 'md:grid md:grid-cols-[5.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4';
+                const COLS = 'md:grid md:grid-cols-[6.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4';
                 return (
                     <Card className="overflow-hidden">
                         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
                             <Segmented size="sm" value={orderView} onChange={setOrderView}
                                 options={[{ id: 'active', label: 'To do', count: activeOrders.length }, { id: 'done', label: 'Done', count: doneOrders.length }]} />
-                            <span className="text-xs text-text-subtle">Newest first</span>
+                            <span className="text-xs text-text-subtle">{orderView === 'active' ? 'Most urgent first' : 'Newest first'}</span>
                         </div>
 
                         {list.length > 0 && (
@@ -736,7 +765,10 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
                                 return (
                                     <div key={b.id} onClick={() => setSelectedId(b.id)}
                                         className={`${COLS} px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5`}>
-                                        <div className="text-xs text-text-subtle tabular-nums col-span-2 md:col-span-1">{fmtDate(b.createdAt)}</div>
+                                        <div className="tabular-nums col-span-2 md:col-span-1">
+                                            <div className="text-xs text-text-subtle">{fmtDate(b.createdAt)}</div>
+                                            {orderView === 'active' && <ClockNote b={b} now={now} />}
+                                        </div>
                                         <div className="min-w-0">
                                             <div className="text-sm font-medium text-text-light truncate">
                                                 {b.name || '—'}

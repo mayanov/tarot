@@ -115,3 +115,41 @@ export const phoneOf = (contact?: string) => {
     const rest = c.replace(/[^\s:·]+@[^\s·]+/, '').replace(/Email:/i, '').replace(/·/g, ' ').trim();
     return /\d{6,}/.test(rest.replace(/[\s-]/g, '')) ? rest : '';
 };
+
+// ---- how long an order (no fixed time) has waited, against what the site promises ----
+// 3-Card / 5-Card: "within 24 hours" (Services, FAQ); Edisi Spesial: "2 hari kerja".
+// Chat has no stated deadline. The clock starts when it's paid (paidAt, or the order
+// time for one paid in the form).
+const PROMISE: Record<string, { hours?: number; workDays?: number }> = {
+    '3card': { hours: 24 },
+    '5card': { hours: 24 },
+    special: { workDays: 2 },
+};
+const HOUR = 3_600_000;
+// Jakarta weekday (0 Sun … 6 Sat) of an instant
+const jktDay = (ms: number) => new Date(ms + 7 * HOUR).getUTCDay();
+const addWorkDays = (from: number, n: number) => {
+    let t = from;
+    while (n > 0) { t += 24 * HOUR; const d = jktDay(t); if (d !== 0 && d !== 6) n--; }
+    return t;
+};
+export type OrderClock =
+    | { kind: 'unpaid' }
+    | { kind: 'waiting'; since: number }
+    | { kind: 'due'; since: number; due: number };
+export const orderClock = (b: Booking): OrderClock => {
+    if (b.paymentStatus !== 'paid') return { kind: 'unpaid' };
+    const since = Date.parse(b.paidAt || b.createdAt || '') || Date.now();
+    const p = PROMISE[b.serviceId];
+    if (!p) return { kind: 'waiting', since };
+    return { kind: 'due', since, due: p.workDays ? addWorkDays(since, p.workDays) : since + (p.hours || 24) * HOUR };
+};
+/** '45 min', '5 h', '2 d 3 h' */
+export const spanLabel = (ms: number) => {
+    const min = Math.max(0, Math.round(ms / 60_000));
+    if (min < 60) return `${min} min`;
+    const h = Math.floor(min / 60);
+    if (h < 48) return `${h} h`;
+    const d = Math.floor(h / 24), rest = h % 24;
+    return rest ? `${d} d ${rest} h` : `${d} d`;
+};

@@ -31,6 +31,18 @@ export const slotSpan = (start: string, durationMin: number): string[] => {
   return out;
 };
 
+// What a session needs free around it, as the server counts it (server/bookingStore.js):
+// 15 min rest after a call or live session; travel 1 h before and 30 min after a meetup.
+export const slotNeed = (serviceId: string, start: string, durationMin: number): string[] => {
+  const dur = durationMin && durationMin > 0 ? durationMin : 30;
+  if (serviceId === 'meetup') {
+    const [h, m] = start.split(':').map(Number);
+    const from = Math.max(0, h * 60 + m - 60);
+    return slotSpan(`${String(Math.floor(from / 60)).padStart(2, '0')}:${String(from % 60).padStart(2, '0')}`, (h * 60 + m - from) + dur + 30);
+  }
+  return slotSpan(start, dur + (serviceId === 'call' || serviceId === 'live' ? 15 : 0));
+};
+
 export interface Booking extends BookingInput {
   id: string;
   ref?: string; // stable, opaque public reference (e.g. "MYV-3F9A2C7B1D")
@@ -45,6 +57,7 @@ export interface Booking extends BookingInput {
   paymentMethod?: string; // how it was paid online: 'PayPal', 'Midtrans · qris', …
   paidEmailSentAt?: string; // when the customer was emailed that their payment came through
   inviteOnPay?: boolean; // its calendar invite goes out once it's marked paid
+  paidAt?: string; // when it was first marked paid (an order's delivery clock starts there)
 }
 
 // Admin — manually record an order (e.g. taken over WhatsApp) so it appears in
