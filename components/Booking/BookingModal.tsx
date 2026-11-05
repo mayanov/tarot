@@ -738,10 +738,15 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               <div className="letterpress text-[12px] text-ink/50">
                 {t('Langkah', 'Step')} {cur + 1} {t('dari', 'of')} {seq.length} · <span className="font-elegant italic text-[14px] text-moon">{stepLabels[step]}</span>
               </div>
-              <div className="relative mt-1.5">
-                <PencilRule collapse={false} weight="fine" className="text-ink/35" />
-                <div className="absolute inset-0 text-moon transition-[clip-path] duration-500" style={{ clipPath: `inset(0 ${100 - ((cur + 1) / seq.length) * 100}% 0 0)` }}>
-                  <PencilRule collapse={false} />
+              {/* a band painted across the sheet, filled in watercolour as far as you've
+                  got: the whole strip laid in pale first, the steps done in the purple */}
+              <div className="relative isolate mt-2 h-3">
+                <PaintSwatch round className="text-moon opacity-[0.09]" />
+                {/* the stroke grows (not clipped), so its end stays a ragged brush end */}
+                <div className="absolute inset-y-0 left-0 isolate transition-[width] duration-700 ease-out" style={{ width: `${((cur + 1) / seq.length) * 100}%` }}>
+                  <PaintSwatch round className="text-moon opacity-[0.55]" />
+                  {/* a second, narrower pass laid over the first, a touch off */}
+                  <span className="absolute inset-y-[22%] left-[1.5%] right-[5%]"><PaintSwatch round className="text-plum opacity-[0.35]" /></span>
                 </div>
               </div>
             </div>
