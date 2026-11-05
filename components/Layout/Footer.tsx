@@ -77,7 +77,7 @@ const Footer: React.FC<FooterProps> = ({ isIndonesian = false }) => {
                 {/* small print, under a line drawn in white pencil */}
                 <PencilRule weight="fine" className="text-cream/30" />
                 <div style={rise(200)} className="py-6 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 text-xs text-cream/50">
-                    <span className="letterpress">© {year} Mayanov Tarot · Jakarta</span>
+                    <span className="letterpress on-dark">© {year} Mayanov Tarot{isIndonesian && ' · Jakarta'}</span>
                     <nav className="flex items-center gap-6" aria-label="Social">
                         <a
                             href="https://www.instagram.com/mayanov_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={icon}
