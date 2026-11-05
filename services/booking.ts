@@ -44,6 +44,7 @@ export interface Booking extends BookingInput {
   waConfirmSentAt?: string; // when the dashboard's WhatsApp confirmation was sent
   paymentMethod?: string; // how it was paid online: 'PayPal', 'Midtrans · qris', …
   paidEmailSentAt?: string; // when the customer was emailed that their payment came through
+  inviteOnPay?: boolean; // its calendar invite goes out once it's marked paid
 }
 
 // Admin — manually record an order (e.g. taken over WhatsApp) so it appears in

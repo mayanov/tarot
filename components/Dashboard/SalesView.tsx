@@ -147,7 +147,9 @@ const SalesView: React.FC = () => {
         setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paymentStatus: next } : x))); // optimistic
         try {
             const token = localStorage.getItem('authToken') || undefined;
-            await updatePaymentStatus(b.id, next, token);
+            // the server's copy: marking a session paid also confirms it and sends its invite
+            const saved = await updatePaymentStatus(b.id, next, token);
+            setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, ...saved } : x)));
         } catch (e) {
             setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paymentStatus: b.paymentStatus } : x))); // revert
             setError('Could not update payment. Try again.');

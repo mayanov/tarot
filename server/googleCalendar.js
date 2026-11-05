@@ -119,7 +119,9 @@ const emailOf = (booking) => ((booking?.contact || '').match(/Email:\s*([^\s@·]
 // invite to the customer — calls with a Google Meet link — only possible when signed
 // in as the calendar's owner.
 const INVITE_SERVICES = new Set(['call', 'live', 'meetup']);
-const invites = (booking) => authMode === 'owner' && INVITE_SERVICES.has(booking?.serviceId) && Boolean(emailOf(booking));
+// A booking still waiting for its payment (inviteOnPay) gets a plain event on Mayanov's
+// calendar instead, holding the time; the invite goes out once it's marked paid.
+const invites = (booking) => authMode === 'owner' && INVITE_SERVICES.has(booking?.serviceId) && Boolean(emailOf(booking)) && !booking?.inviteOnPay;
 const isIndonesian = (booking) => booking?.market === 'ID';
 
 // What the customer reads: the invite's title and its note, in their language. The

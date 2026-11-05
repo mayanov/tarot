@@ -306,21 +306,47 @@ export async function getAllBookings() {
 }
 
 // Set a booking's payment status ('unpaid' | 'paid'). Reporting-only — no calendar side effects.
+// Marking a call / meetup / live session paid also sends its held-back invite (below).
 export async function updatePayment(id, paymentStatus) {
   const ps = paymentStatus === 'paid' ? 'paid' : 'unpaid';
+  let b;
   if (db) {
     const ref = db.collection(COLLECTION).doc(id);
     const snap = await ref.get();
     if (!snap.exists) return null;
     await ref.update({ paymentStatus: ps });
-    return { ...snap.data(), paymentStatus: ps };
+    b = { ...snap.data(), paymentStatus: ps };
+  } else {
+    const all = readAll();
+    b = all.find((x) => x.id === id);
+    if (!b) return null;
+    b.paymentStatus = ps;
+    writeAll(all);
   }
-  const all = readAll();
-  const b = all.find((x) => x.id === id);
-  if (!b) return null;
-  b.paymentStatus = ps;
-  writeAll(all);
-  return b;
+  return ps === 'paid' ? sendHeldInvite(b) : b;
+}
+
+// A call, meetup or live session booked on the site waits for its payment before the
+// customer is invited (inviteOnPay, set by POST /api/bookings): until then it's pending,
+// with a plain event on Mayanov's calendar holding the time. Once paid, that event is
+// swapped for the real invite (Meet link for calls and live), and the booking confirmed.
+// The new event is made before the old one goes, so the calendar sync never sees the
+// session vanish and cancels it. Once per booking.
+async function sendHeldInvite(b) {
+  if (!b?.inviteOnPay || b.paymentStatus !== 'paid' || b.status === 'cancelled' || !b.date || !b.time) return b;
+  if (!(await claimOnce(`invite_${b.ref || b.id}`))) return b;
+  const fields = { inviteOnPay: false, ...(b.status === 'pending' ? { status: 'confirmed' } : {}) };
+  const oldEventId = b.gcalEventId;
+  try {
+    const eventId = await gcal.createEvent({ ...b, ...fields });
+    if (eventId) fields.gcalEventId = eventId;
+    await patch(b.id, fields);
+    if (eventId && oldEventId) await gcal.deleteEvent(oldEventId);
+  } catch (e) {
+    console.error('[bookings] invite after payment failed:', b.id, e.message);
+    await patch(b.id, fields);
+  }
+  return { ...b, ...fields };
 }
 
 export async function updateStatus(id, status) {

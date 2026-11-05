@@ -1017,7 +1017,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   <h3 className="letterpress font-serif font-semibold text-ink text-lg mb-3">{t('Pembayaran', 'Payment')}</h3>
                   {paymentPanel()}
                   <p className="letterpress mt-4 text-[13px] text-ink/60 leading-relaxed">
-                    {t('Setelah konfirmasi, kirim bukti pembayaran via WhatsApp. Tanpa pembayaran, booking otomatis dibatalkan.', 'After confirming, send your payment proof via WhatsApp. Without payment, the booking is cancelled automatically.')}
+                    {invited && t(`Undangan kalender${service?.id === 'meetup' ? '' : ' dan link Google Meet'} dikirim ke email-mu setelah pembayaran kami terima. `, '')}{t('Setelah konfirmasi, kirim bukti pembayaran via WhatsApp. Tanpa pembayaran, booking otomatis dibatalkan.', 'After confirming, send your payment proof via WhatsApp. Without payment, the booking is cancelled automatically.')}
                   </p>
                 </div>
               )}
@@ -1067,7 +1067,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 {paidHere
                   ? <>Terima kasih, {name || 'kamu'}! Pembayaranmu sudah masuk.<br />{scheduled ? 'Sampai ketemu di sesi nanti ✨' : 'Sampai ngobrol nanti ✨'}</>
                   : isIndonesian
-                  ? <>Terima kasih, {name || 'kamu'}. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk konfirmasi.</>
+                  ? <>Terima kasih, {name || 'kamu'}. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk konfirmasi.{invited && <><br />Undangan kalender{service?.id === 'meetup' ? '' : ' & link Google Meet'} dikirim ke {email.trim()} setelah pembayaranmu masuk.</>}</>
                   : live
                   ? <>Thank you, {name || 'friend'}. Your time is booked. One last step: message me on WhatsApp to pay, and the Google Meet link comes to {email.trim()}.</>
                   : <>Thank you, {name || 'friend'}. One last step: pay on PayPal, and your reading is on its way to {email.trim()}.</>}

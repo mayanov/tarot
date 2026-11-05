@@ -370,7 +370,10 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
         setPayBusy(b.id);
         setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paymentStatus: next } : x)));
         try {
-            await updatePaymentStatus(b.id, next, localStorage.getItem('authToken') || undefined);
+            // the server's copy: marking a session paid also confirms it and sends its invite
+            const saved = await updatePaymentStatus(b.id, next, localStorage.getItem('authToken') || undefined);
+            setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, ...saved } : x)));
+            if (saved.inviteOnPay === false && b.inviteOnPay) flash('Paid. Confirmed and the calendar invite is sent.', 'ok');
         } catch {
             setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paymentStatus: b.paymentStatus } : x)));
             flash('Could not update payment. Try again.', 'err');
@@ -691,6 +694,9 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
                                         <StatusControl b={b} />
                                     </div>
                                 </div>
+                                {b.inviteOnPay && b.status !== 'cancelled' && (
+                                    <p className="text-xs text-text-subtle">The calendar invite{b.serviceId === 'meetup' ? '' : ' and Meet link'} go out when you mark it paid.</p>
+                                )}
                                 <WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} />
                             </div>
                         </div>
