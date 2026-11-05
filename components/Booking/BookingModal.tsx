@@ -108,13 +108,15 @@ const durationFromText = (s?: string | null): number | null => {
 
 // Payment details shown on the success step (Indonesian market) — only while the API
 // has no Midtrans keys; with them, the review step takes the payment itself.
-// TODO: replace these placeholders with the real values, and drop the QRIS
-// image at public/payment-qris.png.
+// The QRIS: the code alone (public/payment-qris.png, cropped from the sticker so it
+// scans at this size) and the whole sticker to save (public/payment-qris-full.jpg).
 const PAYMENT = {
   bankName: 'BCA',
-  accountNumber: '0000000000',
-  accountHolder: 'Mayanov Tarot',
+  accountNumber: '2671708182',
+  accountHolder: 'Maya Noviana',
   qrSrc: '/payment-qris.png',
+  qrFull: '/payment-qris-full.jpg',
+  qrName: 'MAYANOV TAROT',
   waNumber: '6287786280310', // business WhatsApp (same as the footer / floating button)
 };
 
@@ -652,7 +654,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
       {payTab === 'qris' ? (
         <div className="mt-4 flex flex-col items-center gap-2">
           {/* the code, printed on a slip of white card laid on the sheet */}
-          <div className="relative isolate w-44 h-44">
+          <div className="relative isolate w-48 h-48">
           <PaperShadow radius="0.5rem" />
           <div className="relative w-full h-full rounded-lg bg-white grid place-items-center overflow-hidden" style={paperCut(37, 8, 12)}>
             <span className="letterpress text-[11px] text-ink/45 text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
@@ -660,7 +662,11 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
             {!qrMissing && <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={() => setQrMissing(true)} />}
           </div>
           </div>
-          <span className="letterpress text-xs text-ink/55">{t('Scan dengan aplikasi bank atau e-wallet', 'Scan with any banking or e-wallet app')}</span>
+          <span className="letterpress text-xs text-ink/55">{PAYMENT.qrName} · {t('scan dengan aplikasi bank atau e-wallet', 'scan with any banking or e-wallet app')}</span>
+          {/* on a phone they can't scan their own screen: save the sticker, then pick it in the app */}
+          <a href={PAYMENT.qrFull} download="QRIS-Mayanov-Tarot.jpg" target="_blank" rel="noopener" className="letterpress text-sm font-medium text-ink/70 hover:text-ink underline underline-offset-4 transition-colors">
+            {t('Simpan gambar QRIS', 'Save the QRIS image')}
+          </a>
         </div>
       ) : (
         <div className="relative mt-4">
