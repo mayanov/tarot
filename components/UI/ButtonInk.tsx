@@ -160,6 +160,37 @@ export const MarkerFrame: React.FC<{ className?: string }> = ({ className = '' }
   );
 };
 
+/** the way you'd mark a choice on a printed form: a loop drawn round it in ink, by
+    hand (it starts at the top left, goes round and runs a little past where it began),
+    over a pale drop of wash. Fills its (relative isolate) parent, spilling a few px past it */
+export const InkLoop: React.FC<{ className?: string }> = ({ className = '' }) => {
+  const { id, seed } = useInkId();
+  return (
+    <span aria-hidden className={`pointer-events-none absolute -inset-x-[7px] -inset-y-[5px] -z-10 ${className}`}>
+      {/* the wash, laid in first, a little off the loop */}
+      <span className="absolute inset-[16%_9%_10%_7%] opacity-[0.14]"><PaintSwatch round /></span>
+      <svg className="block h-full w-full overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none">
+        <defs>
+          {/* the paper's tooth: the pen skips a little here and there */}
+          <filter id={`${id}l`} x="-10%" y="-20%" width="120%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9 1.6" numOctaves="2" seed={seed} result="g" />
+            <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.4 1.7" result="ga" />
+            <feComposite in="SourceGraphic" in2="ga" operator="in" />
+          </filter>
+        </defs>
+        <g filter={`url(#${id}l)`} fill="none" stroke="currentColor" strokeLinecap="round" vectorEffect="non-scaling-stroke">
+          <path
+            d={seed % 2
+              ? 'M17 7.5C34 1.8 77 1.2 91 9.6C102 16.4 98.5 31.8 79 36.2C57 40.6 21 39.6 7.6 31.4C-2.6 24.6 3.4 11.6 23 5.4C31 3.2 41 2.6 52 3.2'
+              : 'M12 10.2C27 2.4 74 0.9 90.4 8.1C102.6 14.6 100.2 30.4 82 35.4C60 41.2 24 40.4 9.4 33.2C-2 27.2 1.4 13.8 19 7.2C28 4.2 38 3.4 47 3.6'}
+            strokeWidth="1.5" strokeOpacity="0.85" vectorEffect="non-scaling-stroke"
+          />
+        </g>
+      </svg>
+    </span>
+  );
+};
+
 interface ButtonInkProps {
   kind: 'primary' | 'secondary';
   /** the background the button sits on: light paper, or a dark one (sky, cards, footer) */

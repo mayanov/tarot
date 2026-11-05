@@ -4,7 +4,8 @@ import 'react-day-picker/style.css';
 import { X, Check, CalendarDays, Clock, Copy } from 'lucide-react';
 import PencilArrow from '../UI/PencilArrow';
 import CelestialMark from '../UI/CelestialMark';
-import { PaintSwatch, PencilFrame, MarkerFrame } from '../UI/ButtonInk';
+import { PaintSwatch, MarkerFrame, InkLoop } from '../UI/ButtonInk';
+import WatercolorWash from '../UI/WatercolorWash';
 import PencilRule from '../UI/PencilRule';
 import { paperCut, PaperShadow } from '../UI/PaperEdge';
 import { FaWhatsapp } from 'react-icons/fa';
@@ -566,15 +567,29 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   // fields are lines to write on, ruled in pencil (.pencil-field), not boxes; the line
   // darkens to the brand purple while you write on it
   const field = 'pencil-field w-full bg-transparent px-1 pt-2 pb-2.5 font-elegant text-[17px] text-ink placeholder-ink/30 focus:outline-none';
-  // options are boxed in marker; the chosen one is painted over (put {chipInk(active)}
-  // as the first child)
-  const chip = (active: boolean) => `group/chip relative isolate flex flex-col text-center px-2 py-2.5 transition-colors ${active ? 'text-cream' : 'text-ink/75 hover:text-moon'}`;
+  // options are words on the paper, not boxes: hovering one lays a pale wash under it,
+  // and the chosen one is circled in ink, as you'd mark a printed form (put
+  // {chipInk(active)} as the first child)
+  const chip = (active: boolean) => `group/chip flex flex-col items-center text-center px-2 py-1.5 transition-colors ${active ? 'text-moon' : 'text-ink/80 hover:text-moon'}`;
   const chipInk = (active: boolean) => active
-    ? <PaintSwatch className="text-moon" />
-    : <MarkerFrame className="text-ink/45 transition-colors group-hover/chip:text-moon/80" />;
-  // painted on the paper like the site's buttons: put {swatch} as the first child
-  const primaryBtn = 'group/btn relative isolate inline-flex items-center gap-1.5 px-6 py-2.5 text-cream text-sm font-semibold disabled:opacity-40 disabled:pointer-events-none';
-  const swatch = <PaintSwatch className="transition-colors duration-300 text-moon group-hover/btn:text-plum" />;
+    ? <InkLoop className="text-moon" />
+    : <PaintSwatch round className="text-moon opacity-0 transition-opacity duration-300 group-hover/chip:opacity-[0.12]" />;
+  // painted on the paper like the site's buttons (a swatch ruled round in marker): put
+  // {swatch} as the first child. Not ready yet → only the marker outline, the paint not in
+  const primaryBtn = 'group/btn relative isolate inline-flex items-center gap-1.5 px-6 py-2.5 text-cream text-sm font-semibold transition-colors duration-300 disabled:text-ink/40 disabled:pointer-events-none';
+  const swatch = (
+    <>
+      <PaintSwatch className="transition-[color,opacity] duration-300 text-moon group-hover/btn:text-plum group-disabled/btn:opacity-0" />
+      <MarkerFrame className="transition-colors duration-300 text-plum group-hover/btn:text-ink group-disabled/btn:text-ink/30" />
+    </>
+  );
+  // something went wrong: said on a rose watercolour wash, not in a tinted box
+  const errorNote = (msg: string) => (
+    <div role="alert" className="relative isolate mb-4 px-4 py-3.5 text-sm text-ink leading-relaxed">
+      <WatercolorWash className="-z-10" />
+      {msg}
+    </div>
+  );
 
   // the bottom bar: running total on the left (once known), the next action on the right
   const bottomBar = (action: React.ReactNode) => (
@@ -641,8 +656,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           <span className="text-xs text-ink/55">{t('Scan dengan aplikasi bank atau e-wallet', 'Scan with any banking or e-wallet app')}</span>
         </div>
       ) : (
-        <div className="relative isolate mt-4 flex items-center justify-between gap-4 px-4 py-3.5">
-          <PencilFrame className="text-ink/30" />
+        <div className="relative mt-4">
+          {rule}
+          <div className="flex items-center justify-between gap-4 py-3.5">
           <div className="min-w-0">
             <div className="letterpress text-xs text-ink/55">{PAYMENT.bankName} · a.n. {PAYMENT.accountHolder}</div>
             <div className="letterpress mt-1 font-serif font-semibold text-lg text-ink tabular-nums tracking-wide">{PAYMENT.accountNumber}</div>
@@ -652,6 +668,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? t('Tersalin', 'Copied') : t('Salin', 'Copy')}
           </button>
+          </div>
+          {rule}
         </div>
       )}
     </div>
@@ -767,7 +785,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           {/* STEP 1 — date → duration → time */}
           {step === 1 && (
             <div>
-              {error && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
+              {error && errorNote(error)}
 
               {(service?.id === 'meetup' || service?.id === 'call') && (
                 <p className="mb-4 flex items-center gap-2 text-[13px] text-ink/60">
@@ -811,9 +829,11 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                           const [pName, ...pRest] = p.split(' · ');
                           return (
                             <button key={p} type="button" onClick={() => { setPkg(p); setTime(null); }} className={chip(pkg === p)}>
-                              {chipInk(pkg === p)}
-                              <span className="text-[13px] font-medium leading-snug">{pName}</span>
-                              <span className={`mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-cream/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
+                              <span className="relative isolate flex flex-col items-center px-4 py-1">
+                                {chipInk(pkg === p)}
+                                <span className="font-serif font-semibold text-[15px] leading-snug">{pName}</span>
+                                <span className={`mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-moon/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
+                              </span>
                             </button>
                           );
                         })}
@@ -827,25 +847,11 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     <p className="text-sm text-ink/55 py-2">{t('Pilih tanggal dulu untuk melihat jam.', 'Pick a date to see available times.')}</p>
                   ) : needsPackage && !pkg ? (
                     <p className="text-sm text-ink/55 py-2">{t('Pilih durasi dulu untuk melihat jam.', 'Choose a duration to see available times.')}</p>
-                  ) : time ? (
-                    <div className="relative isolate flex items-center justify-between gap-3 px-4 py-3">
-                      <PaintSwatch className="text-moon" />
-                      {showLocal ? (
-                        <span className="flex flex-col font-serif font-semibold text-lg leading-tight text-cream tabular-nums">
-                          {localRange(toISODate(date), time)}
-                          <span className="font-sans font-normal text-xs text-cream/70">{time} – {addMinutes(time, durationMin || 30)} Jakarta time</span>
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-2 font-serif font-semibold text-lg text-cream tabular-nums">
-                          {time} – {addMinutes(time, durationMin || 30)}
-                        </span>
-                      )}
-                      <button type="button" onClick={() => setTime(null)} className="text-xs text-cream/75 hover:text-cream underline underline-offset-2">{t('Ubah', 'Change')}</button>
-                    </div>
                   ) : visibleSlots.length === 0 ? (
                     <p className="text-sm text-ink/55 py-2">{t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}</p>
                   ) : (
-                    <div className="grid grid-cols-3 gap-x-3.5 gap-y-3">
+                    <>
+                    <div className="grid grid-cols-3 gap-x-3 gap-y-1.5">
                       {visibleSlots.map((slot) => {
                         // Block this start if the session would run past closing time or overlaps a taken slot.
                         const span = slotSpan(slot, durationMin || 30);
@@ -855,14 +861,28 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                             key={slot}
                             disabled={isTaken}
                             onClick={() => setTime(slot)}
-                            className={`group/slot relative isolate py-2 ${showLocal ? 'text-[13px]' : 'text-sm'} font-medium transition-colors tabular-nums ${isTaken ? 'text-ink/25 line-through cursor-not-allowed' : 'text-ink hover:text-moon'}`}
+                            aria-pressed={time === slot}
+                            className={`group/slot py-1.5 font-serif ${showLocal ? 'text-[14px]' : 'text-[15px]'} font-semibold transition-colors tabular-nums ${isTaken ? 'text-ink/25 line-through decoration-ink/30 cursor-not-allowed' : time === slot ? 'text-moon' : 'text-ink/80 hover:text-moon'}`}
                           >
-                            {!isTaken && <MarkerFrame className="text-ink/25 transition-colors group-hover/slot:text-moon/80" />}
-                            {showLocal ? localClock(toISODate(date), slot) : slot}
+                            <span className="relative isolate inline-block px-3 py-1">
+                              {!isTaken && (time === slot
+                                ? <InkLoop className="text-moon" />
+                                : <PaintSwatch round className="text-moon opacity-0 transition-opacity duration-300 group-hover/slot:opacity-[0.12]" />)}
+                              {showLocal ? localClock(toISODate(date), slot) : slot}
+                            </span>
                           </button>
                         );
                       })}
                     </div>
+                    {/* the chosen time, written out with its end */}
+                    {time && (
+                      <p className="mt-3 font-elegant italic text-[15px] text-ink/70 leading-snug">
+                        {showLocal
+                          ? <>Your session: <span className="not-italic font-serif font-semibold text-moon tabular-nums">{localRange(toISODate(date), time)}</span><span className="block text-[13px] text-ink/50">{time} – {addMinutes(time, durationMin || 30)} Jakarta time</span></>
+                          : <>{t('Sesimu', 'Your session')}: <span className="not-italic font-serif font-semibold text-moon tabular-nums">{time} – {addMinutes(time, durationMin || 30)}</span></>}
+                      </p>
+                    )}
+                    </>
                   )}
                 </div>
               </div>
@@ -879,7 +899,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           {/* STEP 2 — details */}
           {step === 2 && (
             <div>
-              {error && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
+              {error && errorNote(error)}
               {scheduled && date && (
                 <p className="mb-5 flex items-center gap-2 text-[13px] text-ink/60">
                   <CalendarDays className="w-4 h-4 text-moon" />
@@ -898,9 +918,11 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                         const [pName, ...pRest] = p.split(' · ');
                         return (
                           <button key={p} type="button" onClick={() => setPkg(p)} className={chip(pkg === p)}>
-                            {chipInk(pkg === p)}
-                            <span className="text-[13px] font-medium leading-snug">{pName}</span>
-                            <span className={`mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-cream/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
+                            <span className="relative isolate flex flex-col items-center px-4 py-1">
+                              {chipInk(pkg === p)}
+                              <span className="font-serif font-semibold text-[15px] leading-snug">{pName}</span>
+                              <span className={`mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-moon/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
+                            </span>
                           </button>
                         );
                       })}
@@ -961,7 +983,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           {/* STEP 3 — review: one summary list, payment tabs, one line of terms */}
           {step === 3 && (
             <div>
-              {error && !payInForm && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
+              {error && !payInForm && errorNote(error)}
 
               <h3 className="font-serif font-semibold text-ink text-lg">{t('Ringkasan', 'Summary')}</h3>
               <div className="mt-2">
@@ -1004,7 +1026,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                       ? <>Pay {totalPrice} with PayPal or a card. Your time is held while you pay and booked once the payment goes through; the Google Meet link is sent to {email.trim()}.</>
                       : <>Pay {totalPrice} with PayPal or a card. Your booking is made once the payment goes through, and your reading is sent to {email.trim()}.</>}
                   </p>
-                  {error && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
+                  {error && errorNote(error)}
                   <PayPalButtons config={ppConfig!} input={bookingInput(service)} onStart={() => setError('')} onPaid={paidWithPayPal} onError={payPalFailed} onIssue={(r) => trackPaymentIssue(r, 'PayPal', 'Global')} />
                 </div>
               ) : !isIndonesian && (
@@ -1033,8 +1055,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           {step === 4 && (
             <div className="text-center py-4">
               <div className="relative isolate mx-auto w-14 h-14 grid place-items-center text-moon mb-4">
-                <PaintSwatch round />
-                <Check className="w-7 h-7 text-cream" />
+                <PaintSwatch round className="opacity-[0.16]" />
+                <Check className="w-8 h-8" strokeWidth={1.9} />
               </div>
               <h3 className="font-serif font-semibold text-2xl text-ink">{paidHere ? 'Booking terkonfirmasi!' : t('Booking diterima!', 'You’re booked!')}</h3>
               <p className="mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
