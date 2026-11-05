@@ -464,9 +464,9 @@ app.get('/api/availability', async (req, res) => {
     }
 });
 
-// Calls and live sessions are sent a calendar invite (server/googleCalendar.js), so
-// their booking must carry an email ("Email: …" in the contact line the form builds).
-const INVITED_SERVICES = new Set(['call', 'live']);
+// Calls, live sessions and meetups are sent a calendar invite (server/googleCalendar.js),
+// so their booking must carry an email ("Email: …" in the contact line the form builds).
+const INVITED_SERVICES = new Set(['call', 'live', 'meetup']);
 const missingEmail = (serviceId, contact) =>
     INVITED_SERVICES.has(String(serviceId)) && !/Email:\s*[^\s@·]+@[^\s@·]+\.[^\s@·]{2,}/.test(String(contact || ''));
 

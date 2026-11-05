@@ -115,9 +115,10 @@ const descriptionFor = (booking) => [
 
 // The customer's email, from the contact line the form builds ("WA: … · Email: …").
 const emailOf = (booking) => ((booking?.contact || '').match(/Email:\s*([^\s@·]+@[^\s·]+)/) || [])[1] || '';
-// Calls (Panggilan Online) and Live Sessions become a real invite to the customer,
-// with a Google Meet link — only possible when signed in as the calendar's owner.
-const INVITE_SERVICES = new Set(['call', 'live']);
+// Calls (Panggilan Online), Live Sessions and meetups (Sesi Tatap Muka) become a real
+// invite to the customer — calls with a Google Meet link — only possible when signed
+// in as the calendar's owner.
+const INVITE_SERVICES = new Set(['call', 'live', 'meetup']);
 const invites = (booking) => authMode === 'owner' && INVITE_SERVICES.has(booking?.serviceId) && Boolean(emailOf(booking));
 const isIndonesian = (booking) => booking?.market === 'ID';
 
@@ -126,16 +127,40 @@ const isIndonesian = (booking) => booking?.market === 'ID';
 // HTML (Google shows it formatted, in the calendar and in the invitation email).
 const WHATSAPP = 'https://wa.me/6287786280310';
 const SITE = 'https://tarotreadingbymayanov.com';
+// the meetup's area and the recommended spot (as on the site's Tatap Muka card)
+const MEETUP_AREA = 'Jakarta Selatan';
+const MEETUP_MAP = 'https://maps.app.goo.gl/LE2YwZiM2exhqunh8';
 const esc = (t) => String(t || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const minutesOf = (booking) => (booking.durationMin > 0 ? booking.durationMin : 60);
 
+// (the meetup's title keeps "Tatap Muka": reading an event back relies on it)
 const inviteTitle = (booking) =>
-  `🔮 ${isIndonesian(booking) ? 'Sesi Tarot Online' : 'Live Tarot Reading'} · Mayanov × ${String(booking.name || '').trim().slice(0, 40)}`;
+  `🔮 ${isMeetup(booking) ? 'Sesi Tarot Tatap Muka' : isIndonesian(booking) ? 'Sesi Tarot Online' : 'Live Tarot Reading'} · Mayanov × ${String(booking.name || '').trim().slice(0, 40)}`;
+
+const durationText = (min) => (min % 60 === 0 ? `${min / 60} jam` : `${min} menit`);
 
 const inviteDescription = (booking) => {
   const min = minutesOf(booking);
   const q = String(booking.question || '').trim();
-  const lines = isIndonesian(booking)
+  const lines = isMeetup(booking)
+    ? [
+        `<b>Sesi tarot tatap muka kamu bersama Mayanov</b> · ${durationText(min)}, di ${MEETUP_AREA}`,
+        '',
+        '<b>Tempat</b>',
+        `Tempat persisnya dikonfirmasi lewat WhatsApp sebelum sesi. Rekomendasi tempat Mayanov: <a href="${MEETUP_MAP}">lihat di Google Maps</a>.`,
+        'Datang 5–10 menit lebih awal ya, biar bisa mulai tepat waktu.',
+        '',
+        '<b>Sebelum sesi</b>',
+        'Siapkan satu atau dua hal yang paling ingin kamu tanyakan saat ini.',
+        q ? `Yang sudah kamu tulis: <i>“${esc(q)}”</i>` : '',
+        '',
+        '<b>Perlu ganti jadwal?</b>',
+        `Kabari Mayanov lewat <a href="${WHATSAPP}">WhatsApp</a> paling lambat 24 jam sebelumnya, nanti dicarikan waktu lain.`,
+        '',
+        `Sampai ketemu ✨`,
+        `<a href="${SITE}">Mayanov Tarot</a> · Booking ${esc(booking.id)}`,
+      ]
+    : isIndonesian(booking)
     ? [
         `<b>Sesi tarot online kamu bersama Mayanov</b> · ${min} menit`,
         '',
@@ -180,6 +205,7 @@ const scheduledBody = (booking, invite = invites(booking)) => {
   const serviceLabel = (booking.serviceName || booking.serviceId || '').split(' · ')[0].trim();
   return {
     summary: invite ? inviteTitle(booking) : `${serviceLabel} — ${booking.name}`,
+    ...(invite && isMeetup(booking) ? { location: `${MEETUP_AREA} (tempat dikonfirmasi lewat WhatsApp)` } : {}),
     description: invite ? inviteDescription(booking) : descriptionFor(booking),
     start: { dateTime: rfc3339(booking.date, booking.time), timeZone: TZ },
     end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur + (invite ? 0 : restBufferFor(booking)))), timeZone: TZ },
@@ -257,14 +283,15 @@ export async function createEvent(booking) {
   let url = eventsUrl();
   let restId = null;
   if (scheduled && invites(booking)) {
-    restId = await insertEvent(restBody(body.end.dateTime, booking));
+    // a meetup has its travel blocks instead of a rest, and no Meet link
+    if (!isMeetup(booking)) restId = await insertEvent(restBody(body.end.dateTime, booking));
     body.attendees = [{ email: emailOf(booking), displayName: booking.name }];
-    body.conferenceData = { createRequest: { requestId: `${booking.id}-${Date.now()}`, conferenceSolutionKey: { type: 'hangoutsMeet' } } };
+    if (!isMeetup(booking)) body.conferenceData = { createRequest: { requestId: `${booking.id}-${Date.now()}`, conferenceSolutionKey: { type: 'hangoutsMeet' } } };
     body.guestsCanModify = false;
     body.guestsCanInviteOthers = false;
     body.reminders = { useDefault: true };
     body.extendedProperties = { private: { mtInvite: '1', mtBookingId: String(booking.id), ...(restId ? { mtRestId: restId } : {}) } };
-    url += '?conferenceDataVersion=1&sendUpdates=all';
+    url += isMeetup(booking) ? '?sendUpdates=all' : '?conferenceDataVersion=1&sendUpdates=all';
   }
 
   try {
