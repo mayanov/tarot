@@ -1,8 +1,8 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { stopLenis, startLenis } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
-import CelestialMark from '../UI/CelestialMark';
+import { WaningMoon } from '../UI/CelestialMark';
 import { skyPainted, TWILIGHT } from './WatercolorSky';
 
 interface LoaderProps {
@@ -18,7 +18,7 @@ interface LoaderProps {
 // the hero's crescent will be, the moon-phase divider pencilled on in cream as the page
 // loads, the rules drawn outward and the moons outlined and shaded in pair by pair (the
 // outer pair first, the full moon last, right where the crescent goes). Once everything
-// is in, nothing moves: the rest of the divider fades, the full moon wanes into the
+// is in, the rest of the divider fades and the full moon wanes into the
 // crescent where it is, and the hero's words come in under the title.
 //
 // The sky runs a timelapse while it loads: it opens on a sunset (peach and rose under
@@ -54,32 +54,52 @@ const DUSK_MS = 2600;
 // under its shading (Background), so only the sky itself changes.
 export const SUNSET_IMG = `${import.meta.env.BASE_URL}sky-sunset.webp`;
 export const DUSK_IMG = `${import.meta.env.BASE_URL}sky-dusk.webp`;
+// the full moon's frame: the crescent's 64-unit box, sized so its lit disc (62.5% of it)
+// is the 18px moon's disc (14/16 of it)
+const MOON_FRAME = 18 * (14 / 16) / 0.625;
 const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 // One moon pencilled in: its outline drawn round as `draw` goes 0 → 1, then its lit part
-// shaded in. Same geometry as the divider's Phase (MoonPhaseDivider).
+// shaded with diagonal hatching, stroke by stroke (as the hero's crescent is shaded).
+// Same geometry as the divider's Phase (MoonPhaseDivider).
+const PHASE_HATCH = Array.from({ length: 11 }, (_, n) => {
+  const i = -9 + n * 1.8;
+  const j = ((Math.sin(i * 5.1) + 1) * 0.25).toFixed(2);
+  return `M${i.toFixed(1)} ${16 + +j} L${(i + 16).toFixed(1)} ${-j}`;
+});
 const DrawnPhase: React.FC<{ p: number; waning?: boolean; size: number; draw: number }> = ({ p, waning = false, size, draw }) => {
+  const id = useId().replace(/:/g, '');
   const r = 7, c = 8;
   const rx = Math.abs(1 - 2 * p) * r;
   const lit = `M ${c} ${c - r} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${rx} ${r} 0 0 ${p > 0.5 ? 1 : 0} ${c} ${c - r} Z`;
   const outline = Math.min(1, draw / 0.6);         // the first 60%: the outline
   const shade = Math.max(0, (draw - 0.5) / 0.5);    // then the shading
+  const n = PHASE_HATCH.length;
   return (
     <svg viewBox="0 0 16 16" width={size} height={size} className="shrink-0 overflow-visible" style={waning ? { transform: 'scaleX(-1)' } : undefined}>
+      <defs><clipPath id={`lit-${id}`}><path d={lit} /></clipPath></defs>
       <circle
         cx={c} cy={c} r={r} fill="none" stroke="currentColor" strokeOpacity={0.55} strokeWidth={0.9}
-        pathLength={1} strokeDasharray="1" strokeDashoffset={1 - outline}
+        pathLength={1} strokeDasharray="1 2" strokeDashoffset={1 - outline}
         transform={`rotate(-90 ${c} ${c})`} strokeLinecap="round"
       />
-      {p >= 1
-        ? <circle cx={c} cy={c} r={r} fill="currentColor" opacity={shade} />
-        : <path d={lit} fill="currentColor" opacity={shade} />}
+      {/* (a waning moon is drawn mirrored: its hatching is mirrored back, so every
+          moon is shaded the same way round) */}
+      <g clipPath={`url(#lit-${id})`}>
+        <g stroke="currentColor" strokeWidth={0.5} strokeLinecap="round" transform={waning ? `matrix(-1 0 0 1 ${2 * c} 0)` : undefined}>
+          {PHASE_HATCH.map((d, k) => {
+            const o = Math.min(1, Math.max(0, shade * n - k));
+            return o > 0 ? <path key={k} d={d} opacity={0.8 * o} /> : null;
+          })}
+        </g>
+      </g>
     </svg>
   );
 };
 
 const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches;
   const [shown, setShown] = useState(false);      // the drawing has started
   const [pct, setPct] = useState(0);              // progress, 0–100
   const [complete, setComplete] = useState(false);
@@ -363,37 +383,33 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
               </div>
             </div>
           </div>
-          {/* (the pencil's filter is let go of as the moon moves off, or it'd clip it
-              to the row; and it's left off on touch screens, where working it out
-              again for every step of the drawing makes the phone stutter) */}
-          <div className={`${clearing ? '' : '[@media(pointer:fine)]:[filter:url(#pencil-icon)]'} flex items-center gap-2.5 md:gap-3`}>
+          {/* (each moon carries the pencil's filter itself, so nothing clips the full
+              moon as it moves off; it's left off the small ones on touch screens, where
+              working it out again for every step of the drawing makes the phone stutter) */}
+          <div className="flex items-center gap-2.5 md:gap-3">
             {PHASES.map((ph, i) => {
-              const full = ph.p === 1;
-              return (
-                <div
-                  key={i}
-                  ref={full ? moonRef : undefined}
-                  className={full ? 'relative' : undefined}
-                  style={full
-                    ? { opacity: landed ? 0 : 1, ...flight }
-                    : fades}
-                >
-                  <div style={full ? { opacity: clearing ? 0 : 1, transition: `opacity ${CARRY_MS * 0.6}ms ease ${CARRY_DELAY_MS + CARRY_MS * 0.2}ms` } : undefined}>
-                    <DrawnPhase p={ph.p} waning={ph.waning} size={full ? 18 : 13} draw={drawOf(i)} />
+              if (ph.p !== 1) {
+                return (
+                  <div key={i} className="[@media(pointer:fine)]:[filter:url(#pencil-icon)]" style={fades}>
+                    <DrawnPhase p={ph.p} waning={ph.waning} size={13} draw={drawOf(i)} />
                   </div>
-                  {/* on its way up the full moon wanes into the hero's crescent (the same
-                      mark, its lit disc laid over this one's: 62.5% of its width, at 41%) */}
-                  {full && clearing && (
-                    <span
-                      className="absolute"
-                      style={{
-                        width: 18 * 1.4, left: 9 - 18 * 1.4 * 0.414, top: 9 - 18 * 1.4 * 0.5,
-                        animation: `bakedIn ${CARRY_MS * 0.6}ms ease ${CARRY_DELAY_MS + CARRY_MS * 0.2}ms both`,
-                      }}
-                    >
-                      <CelestialMark name="crescent" className="block w-full" />
-                    </span>
-                  )}
+                );
+              }
+              // the full moon: on its way up it wanes into the hero's crescent, the dark
+              // sliding across it to just where the crescent's inner curve is. It's drawn
+              // in the crescent's own frame, its lit disc over this 18px box's moon
+              // (62.5% of the frame's width, at 41%)
+              return (
+                <div key={i} ref={moonRef} className="relative shrink-0" style={{ width: 18, height: 18, opacity: landed ? 0 : 1, ...flight }}>
+                  <WaningMoon
+                    draw={drawOf(i)}
+                    wane={clearing}
+                    waneMs={CARRY_MS * 0.75}
+                    waneDelay={CARRY_DELAY_MS + CARRY_MS * 0.05}
+                    pencil={fine || clearing}
+                    className="absolute block"
+                    style={{ width: MOON_FRAME, height: MOON_FRAME, left: 9 - MOON_FRAME * 0.4134, top: 9 - MOON_FRAME / 2 }}
+                  />
                 </div>
               );
             })}

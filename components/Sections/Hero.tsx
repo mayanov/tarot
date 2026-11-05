@@ -118,7 +118,8 @@ const Hero: React.FC<HeroProps> = ({ isIndonesian = false }) => {
         {/* the crescent takes over from the loader's moon as it lands here */}
         <div style={{ opacity: shown ? 1 : 0, transition: `opacity 700ms ease ${REVEAL_FLIGHT_MS - 300}ms` }}>
           <div ref={moonRef} data-hero-moon className={`will-change-transform${sd && ' hero-sd-lift'}`} style={{ ['--fade' as string]: '35vh', ['--speed' as string]: 0.45 }}>
-          <CelestialMark name="crescent" className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
+          {/* its sparkle is pencilled on once the loader's moon has waned into it */}
+          <CelestialMark name="crescent" sparkleIn={shown ? REVEAL_FLIGHT_MS - 100 : false} className="w-11 md:w-[3.4rem] text-cream/85 mb-7 md:mb-9 [filter:drop-shadow(0_6px_34px_rgba(6,4,14,0.55))]" />
           </div>
         </div>
 

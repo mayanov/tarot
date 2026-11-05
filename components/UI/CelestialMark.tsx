@@ -9,6 +9,9 @@ interface CelestialMarkProps {
   className?: string;
   /** If provided, the mark is exposed to assistive tech with this label; otherwise it's decorative. */
   title?: string;
+  /** Crescent only: false hides the sparkle; a number pencils it on, stroke by stroke,
+   *  starting that many ms from now (the hero, after the loader's moon has waned). */
+  sparkleIn?: number | false;
 }
 
 /**
@@ -26,14 +29,91 @@ const SPARKLE = 'M0,-1 C0.06,-0.3 0.3,-0.06 1,0 C0.3,0.06 0.06,0.3 0,1 C-0.06,0.
 // as a hand goes round twice), shaded with diagonal hatching, each stroke a little
 // uneven. The shape is unchanged — the loader's moon lands on its lit disc (Loader.tsx).
 const CRESCENT = 'M37 15 A20 20 0 1 0 37 49 A18 18 0 0 1 37 15 Z';
-const HATCH = Array.from({ length: 43 }, (_, n) => {
-  const i = -20 + n * 2.1;
+// the crescent is this lit disc with the dark disc taken out of it
+const LIT = { cx: 26.46, cy: 32, r: 20 };
+const DARK = { cx: 42.92, cy: 32, r: 18 };
+const HATCH_LINES = Array.from({ length: 34 }, (_, n) => {
+  const i = -36 + n * 2.1;
   const j = ((Math.sin(i * 7.3) + 1) * 0.6).toFixed(2);
-  return `M${i.toFixed(1)} ${64 + +j} L${(i + 64).toFixed(1)} ${-j}`;
-}).join(' ');
+  return { i, d: `M${i.toFixed(1)} ${64 + +j} L${(i + 64).toFixed(1)} ${-j}` };
+});
+const HATCH = HATCH_LINES.map((l) => l.d).join(' ');
+// the strokes that cross the lit disc, in the order a hand shades it (left to right)
+const DISC_HATCH = HATCH_LINES.filter((l) => Math.abs(l.i + 64 - (LIT.cx + LIT.cy)) < LIT.r * Math.SQRT2).map((l) => l.d);
+// the sparkle, stroke by stroke: up and down, across, the two small diagonals
+const SPARK = [
+  { d: 'M49 12.5 L49 25.5', w: 0.9, o: 1 },
+  { d: 'M42.5 19 L55.5 19', w: 0.9, o: 1 },
+  { d: 'M46.6 16.6 L51.4 21.4', w: 0.5, o: 0.7 },
+  { d: 'M51.4 16.6 L46.6 21.4', w: 0.5, o: 0.7 },
+];
+const SPARK_STEP_MS = 150;
+const SPARK_STROKE_MS = 280;
 
-const CelestialMark: React.FC<CelestialMarkProps> = ({ name = 'sparkle', className = '', title }) => {
+/**
+ * The loader's full moon, which wanes into the crescent (Loader). While the page loads
+ * it's pencilled in: its outline drawn round as `draw` goes 0 → 1, then shaded with the
+ * crescent's own hatching, stroke by stroke. When `wane` turns on, the dark disc slides
+ * in from the right, the pencil tracing its edge, and stops exactly where the
+ * crescent's inner curve is, so it ends as the crescent (without its sparkle).
+ */
+export const WaningMoon: React.FC<{
+  draw: number; wane: boolean; waneMs: number; waneDelay: number; pencil: boolean;
+  className?: string; style?: React.CSSProperties;
+}> = ({ draw, wane, waneMs, waneDelay, pencil, className = '', style }) => {
+  const id = useId().replace(/:/g, '');
+  const outline = Math.min(1, draw / 0.6);
+  const shade = Math.max(0, (draw - 0.5) / 0.5);
+  const n = DISC_HATCH.length;
+  const slide: React.CSSProperties = {
+    transform: `translateX(${wane ? 0 : 24}px)`,
+    transition: wane ? `transform ${waneMs}ms cubic-bezier(0.45, 0, 0.25, 1) ${waneDelay}ms` : 'none',
+  };
+  return (
+    <svg viewBox="0 0 64 64" fill="none" className={className} style={style} overflow="visible" aria-hidden>
+      <defs>
+        <clipPath id={`disc-${id}`}><circle cx={LIT.cx} cy={LIT.cy} r={LIT.r} /></clipPath>
+        <mask id={`dark-${id}`} maskUnits="userSpaceOnUse" x={-10} y={-10} width={84} height={84}>
+          <rect x={-10} y={-10} width={84} height={84} fill="white" />
+          <circle cx={DARK.cx} cy={DARK.cy} r={DARK.r} fill="black" style={slide} />
+        </mask>
+      </defs>
+      <g filter={pencil ? 'url(#pencil-icon)' : undefined} stroke="currentColor" strokeLinecap="round">
+        <g mask={`url(#dark-${id})`}>
+          <g clipPath={`url(#disc-${id})`} strokeWidth={0.55}>
+            {DISC_HATCH.map((d, k) => {
+              const o = Math.min(1, Math.max(0, shade * n - k));
+              return o > 0 ? <path key={k} d={d} opacity={0.75 * o} /> : null;
+            })}
+          </g>
+          <circle
+            cx={LIT.cx} cy={LIT.cy} r={LIT.r} strokeWidth={1.1}
+            pathLength={1} strokeDasharray="1 2" strokeDashoffset={1 - outline}
+            transform={`rotate(-90 ${LIT.cx} ${LIT.cy})`}
+          />
+          <circle cx={LIT.cx - 0.4} cy={LIT.cy + 0.3} r={19.6} strokeWidth={0.6} opacity={0.6 * Math.max(0, outline * 2 - 1)} />
+        </g>
+        {/* the edge of the dark, traced as it comes across (only over the lit disc) */}
+        <g clipPath={`url(#disc-${id})`}>
+          <circle cx={DARK.cx} cy={DARK.cy} r={DARK.r} strokeWidth={1.1} style={slide} />
+        </g>
+      </g>
+    </svg>
+  );
+};
+
+const CelestialMark: React.FC<CelestialMarkProps> = ({ name = 'sparkle', className = '', title, sparkleIn }) => {
   const clip = `crescent-${useId().replace(/:/g, '')}`;
+  const still = sparkleIn === undefined || (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  // each of the crescent's sparkle strokes pencilled on in turn (sparkleIn), or simply there
+  const spark = (k: number): React.SVGProps<SVGPathElement> => still ? {} : {
+    pathLength: 1,
+    strokeDasharray: '1 2',
+    style: {
+      strokeDashoffset: sparkleIn === false ? 1 : 0,
+      transition: sparkleIn === false ? 'none' : `stroke-dashoffset ${SPARK_STROKE_MS}ms cubic-bezier(0.5, 0, 0.3, 1) ${sparkleIn + k * SPARK_STEP_MS}ms`,
+    },
+  };
   const a11y = title ? { role: 'img', 'aria-label': title } : { 'aria-hidden': true as const };
   const box = name === 'sparkle' ? '0 0 24 24' : '0 0 64 64';
 
@@ -83,9 +163,11 @@ const CelestialMark: React.FC<CelestialMarkProps> = ({ name = 'sparkle', classNa
             <path d={HATCH} clipPath={`url(#${clip})`} strokeWidth={0.55} opacity={0.75} />
             <path d={CRESCENT} strokeWidth={1.1} />
             <path d="M36.4 15.6 A19.6 19.6 0 1 0 37.4 48.6" strokeWidth={0.6} opacity={0.6} transform="rotate(-2 32 32)" />
-            <path d="M49 12.5 L49 25.5 M42.5 19 L55.5 19" strokeWidth={0.9} />
-            <path d="M46.6 16.6 L51.4 21.4 M51.4 16.6 L46.6 21.4" strokeWidth={0.5} opacity={0.7} />
-            <circle cx="54" cy="31" r="0.9" strokeWidth={0.8} />
+            {SPARK.map((s, k) => <path key={k} d={s.d} strokeWidth={s.w} opacity={s.o} {...spark(k)} />)}
+            <circle
+              cx="54" cy="31" r="0.9" strokeWidth={0.8}
+              style={still ? undefined : { opacity: sparkleIn === false ? 0 : 1, transition: sparkleIn === false ? 'none' : `opacity 300ms ease ${sparkleIn + SPARK.length * SPARK_STEP_MS}ms` }}
+            />
           </g>
         </>
       )}
