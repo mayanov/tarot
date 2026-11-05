@@ -152,6 +152,47 @@ const scheduledBody = (booking, invite = invites(booking)) => {
   };
 };
 
+// An invite is only the session, so Mayanov's rest after it is its own private event
+// (no guests: the customer never sees it), linked from the invite (mtRestId) so it
+// moves and goes with it. Kept busy, so the calendar shows the time as taken.
+const restBody = (endDateTime, booking) => {
+  const end = Date.parse(endDateTime);
+  return {
+    summary: `☕ Istirahat — ${booking?.name || 'sesi'}`,
+    description: 'Jeda 15 menit setelah sesi (dibuat otomatis oleh situs booking).',
+    start: { dateTime: new Date(end).toISOString(), timeZone: TZ },
+    end: { dateTime: new Date(end + REST_BUFFER_MIN * 60000).toISOString(), timeZone: TZ },
+    reminders: { useDefault: false, overrides: [] },
+    extendedProperties: { private: { mtRest: '1' } },
+  };
+};
+
+// Fetch an event (null if it can't be read).
+async function getEvent(eventId) {
+  const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
+  return r.ok ? r.json() : null;
+}
+
+// Put an invite's rest right after it again (after a move here or in Google Calendar).
+async function placeRest(invite) {
+  const restId = invite?.extendedProperties?.private?.mtRestId;
+  if (!restId || !invite.end?.dateTime) return;
+  const { start, end } = restBody(invite.end.dateTime);
+  const r = await fetch(`${eventsUrl()}/${encodeURIComponent(restId)}`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ start, end }),
+  });
+  if (!r.ok) console.error('[gcal] rest move failed', r.status, await r.text());
+}
+
+// After a session was moved in Google Calendar (read back by the reconcile): its rest follows.
+export async function alignRest(eventId) {
+  const c = getClient();
+  if (!c || !eventId || authMode !== 'owner') return;
+  try { await placeRest(await getEvent(eventId)); } catch (e) { console.error('[gcal] alignRest error:', e.message); }
+}
+
 // Create a calendar item for a booking. Returns the Google event id, or null.
 // - Scheduled bookings (date + time) -> a timed event that blocks the slot.
 // - Async bookings (chat/email/special, no time) -> an all-day reminder "task" on the
@@ -180,13 +221,15 @@ export async function createEvent(booking) {
   // An invite: the customer as a guest (Google emails them), a Meet link, and a tag so
   // reading it back knows there's no rest tail on it.
   let url = eventsUrl();
+  let restId = null;
   if (scheduled && invites(booking)) {
+    restId = await insertEvent(restBody(body.end.dateTime, booking));
     body.attendees = [{ email: emailOf(booking), displayName: booking.name }];
     body.conferenceData = { createRequest: { requestId: `${booking.id}-${Date.now()}`, conferenceSolutionKey: { type: 'hangoutsMeet' } } };
     body.guestsCanModify = false;
     body.guestsCanInviteOthers = false;
     body.reminders = { useDefault: true };
-    body.extendedProperties = { private: { mtInvite: '1', mtBookingId: String(booking.id) } };
+    body.extendedProperties = { private: { mtInvite: '1', mtBookingId: String(booking.id), ...(restId ? { mtRestId: restId } : {}) } };
     url += '?conferenceDataVersion=1&sendUpdates=all';
   }
 
@@ -196,11 +239,12 @@ export async function createEvent(booking) {
       headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (!r.ok) { console.error('[gcal] createEvent failed', r.status, await r.text()); return null; }
+    if (!r.ok) { console.error('[gcal] createEvent failed', r.status, await r.text()); if (restId) await deleteEvent(restId); return null; }
     const data = await r.json();
     return data.id || null;
   } catch (e) {
     console.error('[gcal] createEvent error:', e.message);
+    if (restId) await deleteEvent(restId);
     return null;
   }
 }
@@ -302,6 +346,12 @@ export async function sweepOrphanTransport(activeBookingIds) {
     const r = await fetch(`${eventsUrl()}?${params}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
     if (!r.ok) return 0;
     const data = await r.json();
+    // rest events whose session is gone (cancelled in Google Calendar, say)
+    const live = (data.items || []).filter((ev) => ev.status !== 'cancelled');
+    const restOf = new Set(live.map((ev) => ev.extendedProperties?.private?.mtRestId).filter(Boolean));
+    for (const ev of live) {
+      if (ev.extendedProperties?.private?.mtRest === '1' && !restOf.has(ev.id) && Date.parse(ev.start?.dateTime) > now.getTime()) { await deleteEvent(ev.id); removed++; }
+    }
     for (const ev of data.items || []) {
       if (ev.status === 'cancelled') continue;
       const isTransport = ev.extendedProperties?.private?.mtTransport === '1' || /^🚗\s*Transport/.test(ev.summary || '');
@@ -322,6 +372,11 @@ export async function deleteEvent(eventId) {
   const c = getClient();
   if (!c || !eventId) return;
   try {
+    // an invite's rest goes with it
+    if (authMode === 'owner') {
+      const restId = (await getEvent(eventId).catch(() => null))?.extendedProperties?.private?.mtRestId;
+      if (restId && restId !== eventId) await deleteEvent(restId);
+    }
     // sendUpdates: an invited customer gets Google's cancellation email (no-op otherwise)
     const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}?sendUpdates=all`, {
       method: 'DELETE',
@@ -362,14 +417,15 @@ export async function updateEvent(eventId, booking) {
   try {
     // Kept as it was made: an invite stays an invite (and the move emails the customer;
     // their guest entry and Meet link stay as they are), an event without guests stays one.
-    const cur = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
-    const invite = cur.ok ? (await cur.json()).extendedProperties?.private?.mtInvite === '1' : invites(booking);
+    const cur = await getEvent(eventId);
+    const invite = cur ? cur.extendedProperties?.private?.mtInvite === '1' : invites(booking);
     const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}?sendUpdates=all`, {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(scheduledBody(booking, invite)),
     });
     if (!r.ok) console.error('[gcal] updateEvent failed', r.status, await r.text());
+    else if (invite) await placeRest(await r.json());
   } catch (e) {
     console.error('[gcal] updateEvent error:', e.message);
   }

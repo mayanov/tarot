@@ -255,6 +255,7 @@ export async function reconcileWithCalendar() {
       if (movedTime || movedDur) {
         try {
           await rescheduleBooking(b.id, { date: info.date, time: info.time, durationMin: info.durationMin || b.durationMin }, { skipCalendar: true });
+          await gcal.alignRest(b.gcalEventId); // an invite's rest follows it
           changed++;
         } catch (e) { console.error('[bookings] reverse reschedule skipped:', e.message); }
       }
