@@ -7,6 +7,7 @@ import { btnPrimaryDark, btnPrimaryLight } from '../UI/buttons';
 import ButtonInk, { MarkerFrame } from '../UI/ButtonInk';
 import PencilRule from '../UI/PencilRule';
 import CelestialMark from '../UI/CelestialMark';
+import LogoMark from '../UI/LogoMark';
 import { MoonWatermark, moonNow } from './MenuMoon';
 
 interface HeaderProps {
@@ -275,17 +276,11 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
   // Brand mark — badge always; full wordmark eases in once scrolled.
   const Wordmark: React.FC<{ onDark?: boolean }> = ({ onDark = true }) => (
     <div className="flex items-center gap-2 cursor-pointer group whitespace-nowrap" onClick={handleLogoClick}>
-      {/* the badge's ring is drawn in pencil; on hover it fills with paint */}
-      <span className={`relative grid place-items-center w-7 h-7 shrink-0 font-serif text-base leading-none transition-colors duration-500 ${onDark ? 'text-cream group-hover:text-ink' : 'text-ink group-hover:text-cream'}`}>
-        <svg aria-hidden className={`absolute inset-0 h-full w-full overflow-visible [filter:url(#pencil-icon)] ${onDark ? 'text-cream/70' : 'text-ink/45'}`}>
-          <circle cx="50%" cy="50%" r="48%" className={`opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${onDark ? 'fill-cream' : 'fill-ink'}`} />
-          <circle cx="50%" cy="50%" r="48%" fill="none" stroke="currentColor" strokeWidth="1.4" />
-        </svg>
-        <span className="letterpress relative">M</span>
-      </span>
+      {/* the logo mark (handwritten M on a watercolour moon); it tilts a little on hover */}
+      <LogoMark onDark={onDark} className={`w-9 h-9 shrink-0 transition-transform duration-500 group-hover:-rotate-6 ${onDark ? '[filter:drop-shadow(0_1px_6px_rgba(0,0,0,0.35))]' : ''}`} />
       <span className={`overflow-hidden whitespace-nowrap transition-[max-width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled || menuOpen ? 'max-w-[220px]' : 'max-w-0'}`}>
-        <span className={`letterpress pl-0.5 text-base font-serif font-bold uppercase tracking-tight ${onDark ? 'on-dark text-cream' : 'text-ink'}`}>
-          Mayanov <span className={onDark ? 'text-cream/55' : 'text-ink/45'}>Tarot</span>
+        <span className={`letterpress pl-0.5 text-lg font-serif font-medium ${onDark ? 'on-dark text-cream' : 'text-ink'}`}>
+          Mayanov <span className={onDark ? 'text-cream/60' : 'text-ink/50'}>Tarot</span>
         </span>
       </span>
     </div>
