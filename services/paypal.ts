@@ -9,6 +9,8 @@ export interface PayPalConfig {
   enabled: boolean;
   clientId?: string;
   currency?: string;
+  /** local development with PAYPAL_SIMULATE=1: a stand-in for PayPal (services/paypalSim.ts) */
+  simulate?: boolean;
 }
 
 let config: Promise<PayPalConfig> | null = null;
@@ -20,8 +22,10 @@ export const paypalConfig = (): Promise<PayPalConfig> =>
 
 let sdk: Promise<any> | null = null;
 /** PayPal's own script (buttons + card form), loaded only when the review step needs it */
-export const loadPayPal = (c: PayPalConfig): Promise<any> =>
-  (sdk ??= new Promise((resolve, reject) => {
+export const loadPayPal = (c: PayPalConfig, serviceIdOf: () => string = () => ''): Promise<any> =>
+  c.simulate
+    ? import('./paypalSim').then((m) => m.simulatedPayPal(serviceIdOf))
+    : (sdk ??= new Promise((resolve, reject) => {
     const s = document.createElement('script');
     s.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(c.clientId || '')}&currency=${c.currency || 'USD'}&intent=capture&components=buttons&disable-funding=paylater,credit`;
     s.onload = () => resolve((window as any).paypal);

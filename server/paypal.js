@@ -20,8 +20,16 @@ export const READINGS = {
 export const HOLD_MIN = 20;
 const CURRENCY = 'USD';
 
-export const configured = () => Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_SECRET);
-export const publicConfig = () => ({ clientId: process.env.PAYPAL_CLIENT_ID, env: LIVE ? 'live' : 'sandbox', currency: CURRENCY });
+// PAYPAL_SIMULATE=1 (local development only, never on Vercel): no PayPal at all — the
+// form shows a stand-in PayPal window and these orders are made up, so the whole flow
+// (the slot hold, the booking, the thank-you page) can be tried without keys.
+export const SIMULATE = process.env.PAYPAL_SIMULATE === '1' && !process.env.VERCEL;
+const simOrders = new Map(); // made-up order id → service
+
+export const configured = () => SIMULATE || Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_SECRET);
+export const publicConfig = () => SIMULATE
+    ? { simulate: true, clientId: 'simulated', env: 'sandbox', currency: CURRENCY }
+    : { clientId: process.env.PAYPAL_CLIENT_ID, env: LIVE ? 'live' : 'sandbox', currency: CURRENCY };
 
 let token = null; // { value, expires }
 async function accessToken() {
@@ -56,6 +64,11 @@ async function call(method, path, body) {
 export async function createOrder(serviceId) {
     const r = READINGS[serviceId];
     if (!r) throw new Error('UNKNOWN_SERVICE');
+    if (SIMULATE) {
+        const id = `SIM-${Date.now().toString(36).toUpperCase()}`;
+        simOrders.set(id, serviceId);
+        return id;
+    }
     const order = await call('POST', '/v2/checkout/orders', {
         intent: 'CAPTURE',
         purchase_units: [{
@@ -71,6 +84,11 @@ export async function createOrder(serviceId) {
 // Captures the order (or reads it back if it was already captured, e.g. a retried
 // request) and returns what was actually paid, for the caller to check.
 export async function captureOrder(orderId) {
+    if (SIMULATE) {
+        const serviceId = simOrders.get(orderId);
+        if (!serviceId) throw new Error('UNKNOWN_ORDER');
+        return { completed: true, serviceId, amount: READINGS[serviceId].value, currency: CURRENCY, captureId: `${orderId}-CAPTURE`, payerEmail: 'simulated-buyer@example.com' };
+    }
     const path = `/v2/checkout/orders/${encodeURIComponent(orderId)}`;
     let order;
     try {

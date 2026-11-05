@@ -30,7 +30,7 @@ const PayPalButtons: React.FC<Props> = ({ config, input, onStart, onPaid, onErro
     let order: string | null = null;
     let orderFail: string | null = null;
     const letGo = () => { if (order) releasePayPalOrder(order); order = null; };
-    loadPayPal(config)
+    loadPayPal(config, () => latest.current.input.serviceId)
       .then((paypal) => {
         if (!alive || !box.current) return;
         buttons = paypal.Buttons({
