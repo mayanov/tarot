@@ -309,7 +309,9 @@ const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, p
           {/* RIGHT — language toggle + the Pesan/Menu pair (joined) */}
           <div className={`flex items-stretch gap-2.5 transition-opacity duration-300 ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {onSwitchRegion && (
-              <div className="hidden md:flex mr-1">
+              // its own breathing room before the button (the pencil loop round the
+              // chosen one reaches past the label)
+              <div className="hidden md:flex items-center mr-5 lg:mr-7">
                 <RegionSwitcher isIndonesian={isIndonesian} onSwitch={onSwitchRegion} light={onPaper} />
               </div>
             )}
