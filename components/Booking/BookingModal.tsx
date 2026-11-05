@@ -7,7 +7,7 @@ import CelestialMark from '../UI/CelestialMark';
 import { PaintSwatch, MarkerFrame, InkLoop } from '../UI/ButtonInk';
 import WatercolorWash from '../UI/WatercolorWash';
 import PencilRule from '../UI/PencilRule';
-import BrushProgress from '../UI/BrushProgress';
+import PencilProgress from '../UI/PencilProgress';
 import { paperCut, PaperShadow } from '../UI/PaperEdge';
 import { FaWhatsapp } from 'react-icons/fa';
 import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotSpan, BookingInput, Booking } from '../../services/booking';
@@ -741,7 +741,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               </div>
               {/* a band painted across the sheet, filled in watercolour as far as you've
                   got: the whole strip laid in pale first, the steps done in the purple */}
-              <BrushProgress value={(cur + 1) / seq.length} className="mt-1.5" />
+              <PencilProgress value={(cur + 1) / seq.length} className="mt-1.5" />
             </div>
           )}
         </div>
