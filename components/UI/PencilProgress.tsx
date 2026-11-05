@@ -1,9 +1,9 @@
 import React from 'react';
-import PencilRule from './PencilRule';
+import { PencilFrame } from './ButtonInk';
 
 /**
- * Progress shaded in with a pencil: a faint hand-ruled line to run along, and over it,
- * as far as you've got, a band of quick slanted strokes (a first pass, then a lighter
+ * Progress shaded in with a pencil: a long box sketched in pencil, like one on a printed
+ * form, and inside it, as far as you've got, a band of quick slanted strokes (a first pass, then a lighter
  * cross pass, as you'd shade in a box on a form), their ends ragged where the hand
  * didn't stop at the same place each time, the paper's tooth breaking the graphite up.
  */
@@ -11,11 +11,9 @@ const PencilProgress: React.FC<{ value: number; className?: string }> = ({ value
   const id = React.useId().replace(/:/g, '');
   const pct = Math.max(0.06, Math.min(1, value)) * 100;
   return (
-    <div className={`relative h-4 ${className}`}>
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-ink/30">
-        <PencilRule collapse={false} weight="fine" />
-      </div>
-      <div className="absolute inset-y-0 left-0 text-moon transition-[width] duration-700 ease-out" style={{ width: `${pct}%` }}>
+    <div className={`relative isolate h-5 ${className}`}>
+      <PencilFrame className="text-ink/35" />
+      <div className="absolute inset-y-[2px] left-[2px] text-moon transition-[width] duration-700 ease-out" style={{ width: `calc(${pct}% - 4px)` }}>
         <svg aria-hidden className="block h-full w-full overflow-visible">
           <defs>
             {/* the strokes: one every ~4px, slanted, each a little longer or shorter */}
@@ -36,10 +34,10 @@ const PencilProgress: React.FC<{ value: number; className?: string }> = ({ value
             {/* the band's top and bottom edges uneven, where each stroke started and stopped */}
             <filter id={`${id}e`} x="-4%" y="-60%" width="108%" height="220%">
               <feTurbulence type="fractalNoise" baseFrequency="0.25 0.02" numOctaves="2" seed="5" result="n" />
-              <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G" />
+              <feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G" />
             </filter>
             <mask id={`${id}m`}>
-              <rect x="0" y="12%" width="100%" height="76%" fill="#fff" filter={`url(#${id}e)`} />
+              <rect x="0" y="0" width="100%" height="100%" fill="#fff" filter={`url(#${id}e)`} />
             </mask>
           </defs>
           <g filter={`url(#${id}p)`} mask={`url(#${id}m)`}>
