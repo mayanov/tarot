@@ -9,6 +9,7 @@ import path from 'path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'url';
 import * as gcal from './googleCalendar.js';
+import * as whatsapp from './whatsapp.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -388,9 +389,24 @@ export async function holdStillFree(hold) {
 // A held booking whose payment has gone through: it becomes a real one — confirmed,
 // paid, shown in the dashboard, and on the calendar (holds stay off it). Safe to call
 // twice (the webhook and the visitor's own check can both land).
+// Claims a one-time step (e.g. confirming one payment): true for the first caller only,
+// even when two arrive together (Midtrans's notice and the visitor's own status check).
+const claimedLocally = new Set();
+async function claimOnce(key) {
+  if (db) {
+    try { await db.collection('once').doc(key).create({ at: new Date().toISOString() }); return true; }
+    catch (e) { if (e.code === 6 || /already exists/i.test(e.message)) return false; throw e; }
+  }
+  if (claimedLocally.has(key)) return false;
+  claimedLocally.add(key);
+  return true;
+}
+
 export async function confirmPaidHold(booking, payment) {
   if (!booking.holdOnly) return booking;
   const fields = { status: 'confirmed', paymentStatus: 'paid', holdOnly: false, holdUntil: null, ...payment };
+  // the other caller is confirming it right now: same result, without a second invite/message
+  if (!(await claimOnce(`confirm_${booking.id}_${booking.midtransOrderId || booking.paypalOrderId || ''}`))) return { ...booking, ...fields };
   await patch(booking.id, fields);
   const confirmed = { ...booking, ...fields };
   try {
@@ -399,6 +415,16 @@ export async function confirmPaidHold(booking, payment) {
     const cal = { ...(eventId ? { gcalEventId: eventId } : {}), ...(transportIds.length ? { gcalTransportIds: transportIds } : {}) };
     if (Object.keys(cal).length) { await patch(booking.id, cal); Object.assign(confirmed, cal); }
   } catch (e) { console.error('[bookings] calendar for paid booking failed:', e.message); }
+  // Indonesian bookings: the booking confirmation on the customer's WhatsApp
+  if (confirmed.market === 'ID' && whatsapp.configured()) {
+    try {
+      const waMessageId = await whatsapp.sendBookingConfirmation(confirmed);
+      await patch(booking.id, { waConfirmSentAt: new Date().toISOString(), waMessageId });
+    } catch (e) {
+      console.error('[bookings] WhatsApp confirmation failed:', e.message);
+      await patch(booking.id, { waConfirmError: e.message.slice(0, 300) }).catch(() => {});
+    }
+  }
   return confirmed;
 }
 
