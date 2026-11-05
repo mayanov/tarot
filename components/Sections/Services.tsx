@@ -718,6 +718,7 @@ const BOOKING_MAP: Record<string, string> = {
     'Sesi Tatap Muka': 'meetup',
     '3-Card Spread': '3card',
     '5-Card Deep': '5card',
+    'Live Session': 'live',
 };
 
 // `returnToCard` (a pricelist card index) lets the booking form's "back" reopen that card.
@@ -919,6 +920,21 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                         desc: "The bigger picture — hidden influences and what's coming next, read in depth.",
                         features: <>5-card spread · high-res photo · priority 24h · <span className="text-cream font-medium">1 qty = 1 question</span></>,
                         book: [{ href: 'https://www.paypal.com/ncp/payment/V6U4QMAU642KA', onClick: handleBookDeep }],
+                    },
+                ],
+            },
+            {
+                // the call, as on the live site: 30 minutes on Google Meet, booked for a time
+                id: '', theme: 2, numeral: 'III', type: 'Live Session', tags: ['Google Meet', '30 min'],
+                blurb: 'Talk it out with me, live on a call.',
+                points: ['Ask as many questions as we can fit', 'Real-time connection & feedback', 'No scripts, just natural flow', 'On Google Meet, Monday–Friday'],
+                steps: ['Tap “Book a Reading”, pick a day & time (shown in your time zone)', 'Leave your name, date of birth, WhatsApp & email, then pay', 'At your time, we meet on Google Meet; the link comes by email'],
+                priceLabel: '$45',
+                offers: [
+                    {
+                        name: 'Live Session', sub: '30 min', price: '$45',
+                        desc: "Want to talk it out? Let's hop on a Google Meet call and dive deep into your situation together.",
+                        book: [],
                     },
                 ],
             },

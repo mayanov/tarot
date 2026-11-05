@@ -507,13 +507,59 @@ app.get('/api/paypal/config', (req, res) => {
 
 app.post('/api/paypal/orders', async (req, res) => {
     if (!paypal.configured()) return res.status(503).json({ error: 'PayPal not configured' });
-    const { serviceId } = req.body || {};
-    if (!paypal.READINGS[serviceId]) return res.status(400).json({ error: 'Unknown service' });
+    const { serviceId, date, time, name, dob, contact, question } = req.body || {};
+    const reading = paypal.READINGS[serviceId];
+    if (!reading) return res.status(400).json({ error: 'Unknown service' });
+    // a live session is for a time: check it before anything is charged
+    if (reading.durationMin && (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || !/^\d{2}:\d{2}$/.test(String(time)) || !name || !contact)) {
+        return res.status(400).json({ error: 'Missing date or time' });
+    }
+    let id;
     try {
-        res.status(201).json({ id: await paypal.createOrder(serviceId) });
+        id = await paypal.createOrder(serviceId);
     } catch (e) {
         console.error('PayPal order failed:', e.message);
-        res.status(502).json({ error: 'Could not start the payment' });
+        return res.status(502).json({ error: 'Could not start the payment' });
+    }
+    if (reading.durationMin) {
+        // its slot is held while PayPal's window is open, so nobody else takes it meanwhile
+        try {
+            await bookingStore.createBooking({
+                serviceId,
+                serviceName: reading.name,
+                date,
+                time,
+                durationMin: reading.durationMin,
+                name: String(name).slice(0, 120),
+                dob: /^\d{4}-\d{2}-\d{2}$/.test(String(dob || '')) ? String(dob) : '',
+                contact: String(contact).slice(0, 160),
+                question: String(question || '').slice(0, 2000),
+                market: 'Global',
+                status: 'awaiting_payment',
+                holdOnly: true,
+                holdUntil: new Date(Date.now() + paypal.HOLD_MIN * 60_000).toISOString(),
+                amountDue: reading.value,
+                paypalOrderId: id,
+                skipCalendar: true,
+            });
+        } catch (e) {
+            if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
+            console.error('PayPal hold failed:', e);
+            return res.status(500).json({ error: 'Failed to start booking' });
+        }
+    }
+    res.status(201).json({ id });
+});
+
+// PayPal's window closed without paying: a live session's slot is let go straight away
+app.post('/api/paypal/orders/:id/release', async (req, res) => {
+    try {
+        const hold = await bookingStore.findByPayPalOrder(String(req.params.id || '').slice(0, 64));
+        if (hold?.holdOnly) await bookingStore.releaseHold(hold);
+        res.json({ ok: true });
+    } catch (e) {
+        console.error('PayPal release failed:', e.message);
+        res.json({ ok: false }); // the hold runs out on its own
     }
 });
 
@@ -523,8 +569,23 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
     const { serviceId, name, dob, contact, question } = req.body || {};
     const reading = paypal.READINGS[serviceId];
     // checked before taking the money, so a bad form never ends in a paid order with no booking
-    if (!reading || !name || !contact || !String(question || '').trim()) {
+    // (an email reading needs the question; a live session is asked in person)
+    if (!reading || !name || !contact || (!reading.durationMin && !String(question || '').trim())) {
         return res.status(400).json({ error: 'Missing required fields' });
+    }
+    // a live session: its slot must still be its own, or the payment isn't taken
+    let hold = null;
+    if (reading.durationMin) {
+        try {
+            hold = await bookingStore.findByPayPalOrder(orderId);
+            if (hold && !hold.holdOnly) return res.json(hold); // a retried request, already booked
+            if (!hold || hold.serviceId !== serviceId || !(await bookingStore.holdStillFree(hold))) {
+                return res.status(409).json({ error: 'SLOT_TAKEN' });
+            }
+        } catch (e) {
+            console.error('PayPal hold check failed:', orderId, e.message);
+            return res.status(500).json({ error: 'CAPTURE_FAILED' });
+        }
     }
     let paid;
     try {
@@ -539,6 +600,20 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
         return res.status(402).json({ error: 'CAPTURE_FAILED' });
     }
     try {
+        if (hold) {
+            // the held slot becomes the booking: confirmed, paid, on the calendar
+            const booking = await bookingStore.confirmPaidHold(hold, {
+                name: String(name).slice(0, 120),
+                dob: /^\d{4}-\d{2}-\d{2}$/.test(String(dob || '')) ? String(dob) : '',
+                contact: String(contact).slice(0, 160),
+                question: String(question || '').slice(0, 2000),
+                paymentMethod: 'PayPal',
+                paypalCaptureId: paid.captureId,
+                paypalPayer: paid.payerEmail,
+                paidAt: new Date().toISOString(),
+            });
+            return res.status(201).json(booking);
+        }
         // a retried request for an order already turned into a booking gets that booking back
         const existing = (await bookingStore.getAllBookings()).find((b) => b.paypalOrderId === orderId);
         if (existing) return res.json(existing);

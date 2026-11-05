@@ -34,7 +34,7 @@ const occupiedSlots = (time, durationMin) => {
 
 // Extra breathing time (minutes) reserved AFTER a session, per service. Those slots
 // become unavailable for the next booking too, so sessions aren't back-to-back.
-const SESSION_BUFFER_MIN = { call: 15 };
+const SESSION_BUFFER_MIN = { call: 15, live: 15 };
 const bufferFor = (b) => SESSION_BUFFER_MIN[b?.serviceId] || 0;
 // A booking's full footprint on the grid: its own duration + its service buffer.
 const footprintSlots = (b) => occupiedSlots(b.time, (b.durationMin || 30) + bufferFor(b));
@@ -373,6 +373,16 @@ async function patch(id, fields) {
 
 /** the booking a Midtrans payment belongs to (its hold), or null */
 export const findByMidtransOrder = (orderId) => findBy('midtransOrderId', orderId);
+/** the booking (or hold) a PayPal order belongs to, or null */
+export const findByPayPalOrder = (orderId) => findBy('paypalOrderId', orderId);
+
+/** whether a hold's slot is still its own: unexpired, or expired with nobody in it since */
+export async function holdStillFree(hold) {
+  if (!hold || hold.status === 'cancelled') return false;
+  if (!hold.holdUntil || Date.parse(hold.holdUntil) >= Date.now()) return true;
+  const taken = new Set(await getTakenSlots(hold.date)); // (an expired hold isn't counted)
+  return !footprintSlots(hold).some((s) => taken.has(s));
+}
 
 // A held booking whose payment has gone through: it becomes a real one — confirmed,
 // paid, shown in the dashboard, and on the calendar (holds stay off it). Safe to call

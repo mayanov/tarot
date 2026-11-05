@@ -426,7 +426,7 @@ function App() {
   // Back from PayPal after paying for a global reading (the return URL set on the
   // PayPal payment links): the thank-you page instead of the home page.
   const paid = params.get('payment_success');
-  if (paid === '3card' || paid === '5card') {
+  if (paid === '3card' || paid === '5card' || paid === 'live') {
     return (
       <React.Suspense fallback={<div className="min-h-screen bg-cream" />}>
         <ThankYou reading={paid} />

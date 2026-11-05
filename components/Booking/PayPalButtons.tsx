@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { Booking, BookingInput } from '../../services/booking';
-import { PayPalConfig, loadPayPal, createPayPalOrder, capturePayPalOrder } from '../../services/paypal';
+import { PayPalConfig, loadPayPal, createPayPalOrder, capturePayPalOrder, releasePayPalOrder } from '../../services/paypal';
 
 interface Props {
   config: PayPalConfig;
@@ -25,28 +25,48 @@ const PayPalButtons: React.FC<Props> = ({ config, input, onStart, onPaid, onErro
   useEffect(() => {
     let alive = true;
     let buttons: any = null;
+    // the order open right now (a live session's slot is held for it), and why making
+    // one failed, if it did (PayPal only reports that it failed)
+    let order: string | null = null;
+    let orderFail: string | null = null;
+    const letGo = () => { if (order) releasePayPalOrder(order); order = null; };
     loadPayPal(config)
       .then((paypal) => {
         if (!alive || !box.current) return;
         buttons = paypal.Buttons({
           style: { layout: 'vertical', color: 'black', shape: 'rect', label: 'pay', height: 44, tagline: false },
-          createOrder: () => { latest.current.onStart(); return createPayPalOrder(latest.current.input.serviceId); },
+          createOrder: async () => {
+            latest.current.onStart();
+            letGo();
+            orderFail = null;
+            try {
+              order = await createPayPalOrder(latest.current.input);
+              return order;
+            } catch (e) {
+              orderFail = e instanceof Error ? e.message : 'ORDER_FAILED';
+              throw e;
+            }
+          },
           onApprove: async (data: { orderID: string }, actions: { restart: () => void }) => {
             try {
-              latest.current.onPaid(await capturePayPalOrder(data.orderID, latest.current.input));
+              const booking = await capturePayPalOrder(data.orderID, latest.current.input);
+              order = null; // paid: its slot is the booking now
+              latest.current.onPaid(booking);
             } catch (e) {
               const code = e instanceof Error ? e.message : 'CAPTURE_FAILED';
               if (code === 'DECLINED') { latest.current.onIssue?.('declined'); return actions.restart(); }
+              letGo();
               latest.current.onError(code);
             }
           },
-          onCancel: () => latest.current.onIssue?.('closed'),
-          onError: () => latest.current.onError('PAYPAL'),
+          onCancel: () => { letGo(); latest.current.onIssue?.('closed'); },
+          onError: () => { letGo(); latest.current.onError(orderFail || 'PAYPAL'); },
         });
         return buttons.render(box.current).then(() => { if (alive) setReady(true); });
       })
       .catch(() => { if (alive) latest.current.onError('PAYPAL_SDK'); });
-    return () => { alive = false; buttons?.close?.().catch?.(() => {}); };
+    // (leaving the review step with PayPal's window still open lets the slot go too)
+    return () => { alive = false; letGo(); buttons?.close?.().catch?.(() => {}); };
   }, [config]);
 
   return (

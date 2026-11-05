@@ -149,6 +149,7 @@ export const SERVICE_TRACK_NAME: Record<string, string> = {
     meetup: 'Sesi Tatap Muka',
     '3card': '3-Card Spread',
     '5card': '5-Card Deep',
+    live: 'Live Session',
 };
 // The birthday promo appears in both markets; the global one gets its own name.
 // Prefixed so it doesn't mix with the old pricelist (still on the live site),

@@ -112,6 +112,7 @@ const MENU_SERVICES_ID: MenuService[] = [
 const MENU_SERVICES_EN: MenuService[] = [
   { id: '3card', name: '3-Card Spread', short: '3-Card', price: '$12', mark: 'constellation' },
   { id: '5card', name: '5-Card Deep', short: '5-Card', price: '$20', mark: 'star' },
+  { id: 'live', name: 'Live Session', short: 'Live Call', price: '$45', mark: 'sparkle' },
 ];
 
 const Header: React.FC<HeaderProps> = ({ isIndonesian = false, onSwitchRegion, paper = false, noBooking = false }) => {

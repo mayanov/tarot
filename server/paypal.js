@@ -1,4 +1,4 @@
-// PayPal Checkout (Orders v2) for the global email readings: the booking form shows
+// PayPal Checkout (Orders v2) for the global readings and live sessions: the booking form shows
 // PayPal's buttons, the order is created and captured here (never trusting a price
 // from the browser), and only a completed capture becomes a booking — saved as paid.
 //
@@ -9,11 +9,15 @@
 const LIVE = process.env.PAYPAL_ENV === 'live';
 const API = LIVE ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
 
-// What each reading costs — the only source of the amount charged.
+// What each reading costs — the only source of the amount charged. A session with a
+// length (the live call) is booked for a time: its slot is held while the buyer pays.
 export const READINGS = {
     '3card': { name: '3-Card Spread', value: '12.00' },
     '5card': { name: '5-Card Deep', value: '20.00' },
+    live: { name: 'Live Session', value: '45.00', durationMin: 30 },
 };
+// How long a live session's slot is held while PayPal's window is open
+export const HOLD_MIN = 20;
 const CURRENCY = 'USD';
 
 export const configured = () => Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_SECRET);

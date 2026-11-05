@@ -6,13 +6,14 @@ import PencilRule from '../UI/PencilRule';
 import { btnPrimaryLight } from '../UI/buttons';
 import { trackEvent, SERVICE_TRACK_NAME } from '../../services/analytics';
 
-// Where PayPal sends a global visitor back to (/?payment_success=3card|5card) after
+// Where PayPal sends a global visitor back to (/?payment_success=3card|5card|live) after
 // paying for the reading they booked: the site's paper, set like the 404 page, with
 // what happens next. The sale is counted here, once per visit, since this is the only
 // point that knows the payment went through.
 const READINGS = {
     '3card': { name: '3-Card Spread', value: 12, mark: 'constellation', when: 'within 24 hours' },
     '5card': { name: '5-Card Deep', value: 20, mark: 'star', when: 'within a few days' },
+    live: { name: 'Live Session', value: 45, mark: 'sparkle', when: '' },
 } as const;
 
 export type PaidReading = keyof typeof READINGS;
@@ -33,7 +34,12 @@ const ThankYou: React.FC<{ reading: PaidReading }> = ({ reading }) => {
             'Purchase', { value: r.value, currency: 'USD', content_name: item });
     }, [reading, r]);
 
-    const steps = [
+    // the live session is a time we meet; the readings come by email
+    const steps = reading === 'live' ? [
+        'Your time is booked, and it’s in my calendar.',
+        'The Google Meet link comes to your email before the session, with a WhatsApp reminder.',
+        'Need to move it? Message me on WhatsApp or email tarotreadingbymayanov@gmail.com at least 24 hours before.',
+    ] : [
         'Your question from the booking form is with me — there’s nothing more to send.',
         `Your reading arrives by email ${r.when}. If it isn’t there, check your spam folder.`,
         'Want to add something? Message me on WhatsApp or email tarotreadingbymayanov@gmail.com.',
@@ -54,7 +60,9 @@ const ThankYou: React.FC<{ reading: PaidReading }> = ({ reading }) => {
                     <PencilRule collapse={false} className="mt-4 w-16 text-moon/50" />
 
                     <p className="letterpress mt-4 text-ink/65 text-[17px] leading-relaxed">
-                        Your reading is confirmed. I’ll sit with your cards and write back soon.
+                        {reading === 'live'
+                            ? 'Your live session is confirmed. I look forward to talking it through with you.'
+                            : 'Your reading is confirmed. I’ll sit with your cards and write back soon.'}
                     </p>
 
                     <ol className="mt-8 [@media(max-height:740px)]:mt-4 w-full text-left">
