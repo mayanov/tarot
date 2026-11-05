@@ -37,7 +37,7 @@ const NAV_GROUPS: { label: string; items: { id: string; name: string; icon: Reac
     ] },
     { label: 'Insights', items: [
         { id: 'analytics', name: 'Analytics', icon: BarChart2 },
-        { id: 'revenue', name: 'Dashboard', icon: Wallet },
+        { id: 'revenue', name: 'Revenue', icon: Wallet },
     ] },
     { label: 'Website', items: [
         { id: 'events', name: 'Events', icon: Sparkles },

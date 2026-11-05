@@ -2,32 +2,15 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking as amountOf, fmtMoney, fmtDate } from './lib/format';
+import { amountForBooking as amountOf, fmtMoney, fmtDate, serviceLabel, serviceTitle, sessionWhen, paymentMethodOf, phoneOf, emailOf } from './lib/format';
 import WaConfirmButton from './WaConfirmButton';
-
-// The form's contact line is "WA: 0812… · Email: a@b.co"; a manual order may be a bare number.
-const emailOf = (contact?: string) => ((contact || '').match(/[^\s:·]+@[^\s·]+/) || [])[0] || '';
-const phoneOf = (contact?: string) => {
-    const c = contact || '';
-    const wa = (c.match(/WA:\s*([^·]+)/i) || [])[1];
-    if (wa) return wa.trim();
-    const rest = c.replace(/[^\s:·]+@[^\s·]+/, '').replace(/Email:/i, '').replace(/·/g, ' ').trim();
-    return /\d{6,}/.test(rest.replace(/[\s-]/g, '')) ? rest : '';
-};
-import { StatusPill } from './lib/status';
+import { StatusPill, PaymentPill } from './lib/status';
 import Card from './ui/Card';
 import PageHeader from './ui/PageHeader';
 import Button from './ui/Button';
 import { SearchInput, Select } from './ui/Field';
 
-// Turn a stored serviceName ("Konsultasi via Chat · 3 Pertanyaan") into a clean label.
-const serviceLabel = (b: Booking) => {
-    const parts = (b.serviceName || '').split(' · ');
-    return parts.length > 1 ? `${parts[0]} — ${parts.slice(1).join(' · ')}` : (b.serviceName || b.serviceId);
-};
-
-// Base service name (first segment) — used to group orders for the Service filter.
-const serviceBase = (b: Booking) => ((b.serviceName || '').split(' · ')[0] || b.serviceId || '').trim();
+type Market = 'ID' | 'Global';
 
 const SalesView: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -46,6 +29,8 @@ const SalesView: React.FC = () => {
     const [custQuery, setCustQuery] = useState('');
     const custRef = useRef<HTMLDivElement>(null);
     const [savingId, setSavingId] = useState<string | null>(null);
+    // one market at a time, so rupiah and dollars never share a list or a total
+    const [market, setMarket] = useState<Market>('ID');
 
     // close the date popover on outside click / Escape
     useEffect(() => {
@@ -81,18 +66,21 @@ const SalesView: React.FC = () => {
     };
     useEffect(() => { load(); }, []);
 
-    // All orders except cancelled — newest booking date first (API already sorts desc).
-    const orders = useMemo(() => bookings.filter((b) => b.status !== 'cancelled'), [bookings]);
+    // This market's orders except cancelled — newest booking date first (API already sorts desc).
+    const live = useMemo(() => bookings.filter((b) => b.status !== 'cancelled'), [bookings]);
+    const countBy = useMemo(() => ({ ID: live.filter((b) => b.market === 'ID').length, Global: live.filter((b) => b.market !== 'ID').length }), [live]);
+    const orders = useMemo(() => live.filter((b) => (b.market === 'ID' ? 'ID' : 'Global') === market), [live, market]);
+    const cur = market === 'ID' ? 'IDR' : 'USD';
 
-    // Totals split by paid/unpaid and currency.
+    // Collected vs still owed, in this market's currency.
     const totals = useMemo(() => {
-        const t = { paidIDR: 0, unpaidIDR: 0, paidUSD: 0, unpaidUSD: 0 };
+        const t = { paid: 0, unpaid: 0, paidCount: 0, unpaidCount: 0 };
         orders.forEach((b) => {
+            const paid = b.paymentStatus === 'paid';
+            paid ? t.paidCount++ : t.unpaidCount++;
             const a = amountOf(b);
             if (!a) return;
-            const paid = b.paymentStatus === 'paid';
-            if (a.currency === 'IDR') { paid ? (t.paidIDR += a.amount) : (t.unpaidIDR += a.amount); }
-            else { paid ? (t.paidUSD += a.amount) : (t.unpaidUSD += a.amount); }
+            paid ? (t.paid += a.amount) : (t.unpaid += a.amount);
         });
         return t;
     }, [orders]);
@@ -100,7 +88,7 @@ const SalesView: React.FC = () => {
     // Distinct services present in the data, for the Service dropdown.
     const serviceOptions = useMemo(() => {
         const set = new Set<string>();
-        orders.forEach((b) => { const s = serviceBase(b); if (s) set.add(s); });
+        orders.forEach((b) => { const s = serviceTitle(b); if (s) set.add(s); });
         return Array.from(set).sort((a, b) => a.localeCompare(b));
     }, [orders]);
 
@@ -123,7 +111,7 @@ const SalesView: React.FC = () => {
         const toTs = dateTo ? new Date(dateTo + 'T23:59:59').getTime() : null;
         return orders.filter((b) => {
             if (payFilter !== 'all' && (b.paymentStatus || 'unpaid') !== payFilter) return false;
-            if (serviceFilter !== 'all' && serviceBase(b) !== serviceFilter) return false;
+            if (serviceFilter !== 'all' && serviceTitle(b) !== serviceFilter) return false;
             if (sourceFilter !== 'all' && (b.source === 'manual' ? 'manual' : 'booking') !== sourceFilter) return false;
             if (customerFilter !== 'all' && (b.name || '').trim() !== customerFilter) return false;
             if (fromTs || toTs) {
@@ -167,30 +155,41 @@ const SalesView: React.FC = () => {
         }
     };
 
-    const outstanding = totals.unpaidIDR > 0 || totals.unpaidUSD > 0;
+    const outstanding = totals.unpaidCount > 0;
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
-            <PageHeader title="Sales" subtitle={`${orders.length} orders · mark payments as they come in`} onRefresh={load} refreshing={loading} />
+            <PageHeader title="Sales" subtitle={`${orders.length} ${market === 'ID' ? 'Indonesia' : 'Global'} orders · mark payments as they come in`} onRefresh={load} refreshing={loading} />
 
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
+
+            {/* market: rupiah and dollars are kept apart */}
+            <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
+                {(['ID', 'Global'] as const).map((m) => (
+                    <button key={m} onClick={() => { setMarket(m); setServiceFilter('all'); setCustomerFilter('all'); }}
+                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ${market === m ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>
+                        {m === 'ID' ? 'Indonesia · IDR' : 'Global · USD'}
+                        <span className={`text-[0.7rem] tabular-nums ${market === m ? 'text-white/70' : 'text-text-subtle'}`}>{countBy[m]}</span>
+                    </button>
+                ))}
+            </div>
 
             {/* summary cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Card className="p-4">
-                    <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><CheckCircle2 size={14} className="text-sage" /> Paid</div>
-                    <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.paidIDR, 'IDR')}</div>
-                    {totals.paidUSD > 0 && <div className="text-sm text-text-subtle tabular-nums">{fmtMoney(totals.paidUSD, 'USD')}</div>}
+                    <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><CheckCircle2 size={14} className="text-sage" /> Collected</div>
+                    <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.paid, cur)}</div>
+                    <div className="text-xs text-text-subtle mt-0.5">{totals.paidCount} paid {totals.paidCount === 1 ? 'order' : 'orders'}</div>
                 </Card>
                 <Card className="p-4">
                     <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><AlertCircle size={14} className="text-coral-deep" /> Outstanding</div>
-                    <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.unpaidIDR, 'IDR')}</div>
-                    {totals.unpaidUSD > 0 && <div className="text-sm text-text-subtle tabular-nums">{fmtMoney(totals.unpaidUSD, 'USD')}</div>}
+                    <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.unpaid, cur)}</div>
+                    <div className="text-xs text-text-subtle mt-0.5">{totals.unpaidCount} unpaid {totals.unpaidCount === 1 ? 'order' : 'orders'}</div>
                 </Card>
                 <Card className="p-4">
-                    <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><Wallet size={14} className="text-blue" /> Collected total</div>
-                    <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.paidIDR, 'IDR')}</div>
-                    {totals.paidUSD > 0 && <div className="text-sm text-text-subtle tabular-nums">{fmtMoney(totals.paidUSD, 'USD')}</div>}
+                    <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><Wallet size={14} className="text-blue" /> Total booked</div>
+                    <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.paid + totals.unpaid, cur)}</div>
+                    <div className="text-xs text-text-subtle mt-0.5">{orders.length} {orders.length === 1 ? 'order' : 'orders'}, cancelled left out</div>
                 </Card>
             </div>
 
@@ -284,68 +283,55 @@ const SalesView: React.FC = () => {
             {/* table */}
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[1080px]">
+                    <table className="w-full text-sm min-w-[940px]">
                         <thead>
                             <tr className="text-left text-text-subtle text-xs uppercase tracking-wider border-b border-adm-line">
-                                <th className="font-semibold px-4 py-3">Booking date</th>
+                                <th className="font-semibold px-4 py-3">Booked</th>
                                 <th className="font-semibold px-4 py-3">Customer</th>
-                                <th className="font-semibold px-4 py-3">WhatsApp</th>
-                                <th className="font-semibold px-4 py-3">Email</th>
                                 <th className="font-semibold px-4 py-3">Service</th>
-                                <th className="font-semibold px-4 py-3">Source</th>
                                 <th className="font-semibold px-4 py-3 text-right">Amount</th>
                                 <th className="font-semibold px-4 py-3">Status</th>
-                                <th className="font-semibold px-4 py-3 text-right">Payment</th>
+                                <th className="font-semibold px-4 py-3">Payment</th>
+                                <th className="font-semibold px-4 py-3 text-right">WhatsApp</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading && filtered.length === 0 && (
-                                <tr><td colSpan={9}><InlineLoader /></td></tr>
+                                <tr><td colSpan={7}><InlineLoader /></td></tr>
                             )}
                             {!loading && filtered.length === 0 && (
-                                <tr><td colSpan={9} className="text-center text-text-subtle py-16">No orders found.</td></tr>
+                                <tr><td colSpan={7} className="text-center text-text-subtle py-16">No orders found.</td></tr>
                             )}
                             {filtered.map((b) => {
                                 const a = amountOf(b);
                                 const paid = b.paymentStatus === 'paid';
+                                const phone = phoneOf(b.contact);
+                                const email = emailOf(b.contact);
+                                const when = sessionWhen(b);
+                                const method = paymentMethodOf(b);
                                 return (
-                                    <tr key={b.id} className="border-b border-adm-line last:border-0 hover:bg-adm-hover/50">
+                                    <tr key={b.id} className="border-b border-adm-line last:border-0 hover:bg-adm-hover/50 align-top">
                                         <td className="px-4 py-3 whitespace-nowrap text-text-subtle tabular-nums">{fmtDate(b.createdAt)}</td>
-                                        <td className="px-4 py-3">
-                                            <div className="font-semibold text-text-light">{b.name || '—'}</div>
+                                        <td className="px-4 py-3 min-w-[12rem]">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-semibold text-text-light">{b.name || '—'}</span>
+                                                {b.source === 'manual' && <span className="text-[0.6rem] uppercase tracking-wider px-1.5 py-0.5 rounded bg-adm-hover text-text-subtle">Manual</span>}
+                                            </div>
+                                            {phone && <div className="text-xs text-text-subtle tabular-nums mt-0.5">{phone}</div>}
+                                            {email && <div className="text-xs text-text-subtle truncate max-w-[16rem]">{email}</div>}
                                         </td>
-                                        <td className="px-4 py-3 text-text-subtle whitespace-nowrap tabular-nums">
-                                            <div>{phoneOf(b.contact) || '—'}</div>
-                                            {b.status !== 'cancelled' && (
-                                                <div className="mt-1.5">
-                                                    <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
-                                                </div>
-                                            )}
+                                        <td className="px-4 py-3 min-w-[12rem]">
+                                            <div className="text-text-light">{serviceLabel(b)}</div>
+                                            {when && <div className="text-xs text-text-subtle tabular-nums mt-0.5">Session {when}</div>}
                                         </td>
-                                        <td className="px-4 py-3 text-text-subtle whitespace-nowrap">{emailOf(b.contact) || '—'}</td>
-                                        <td className="px-4 py-3 text-text-light">
-                                            {serviceLabel(b)}
+                                        <td className="px-4 py-3 text-right whitespace-nowrap">
+                                            <div className="tabular-nums text-text-light font-medium">{a ? fmtMoney(a.amount, a.currency) : '—'}</div>
+                                            {method && <div className="text-xs text-text-subtle mt-0.5">{method}</div>}
                                         </td>
-                                        <td className="px-4 py-3 whitespace-nowrap">
-                                            <span className={`inline-block text-[0.6rem] uppercase tracking-wider px-1.5 py-0.5 rounded ${b.source === 'manual' ? 'bg-adm-hover text-text-subtle' : 'bg-lilac/10 text-lilac'}`}>
-                                                {b.source === 'manual' ? 'Manual' : 'From booking'}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-right tabular-nums text-text-light">{a ? fmtMoney(a.amount, a.currency) : '—'}</td>
-                                        <td className="px-4 py-3">
-                                            <StatusPill status={b.status} />
-                                        </td>
-                                        <td className="px-4 py-3 text-right">
-                                            <button
-                                                onClick={() => togglePaid(b)}
-                                                disabled={savingId === b.id}
-                                                title="Click to toggle"
-                                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors disabled:opacity-50 ${paid
-                                                    ? 'bg-sage/15 text-sage border-sage/40 hover:bg-sage/25'
-                                                    : 'bg-coral/15 text-coral-deep border-coral/40 hover:bg-coral/25'}`}>
-                                                {paid ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
-                                                {paid ? 'Paid' : 'Unpaid'}
-                                            </button>
+                                        <td className="px-4 py-3"><StatusPill status={b.status} /></td>
+                                        <td className="px-4 py-3"><PaymentPill paid={paid} onToggle={() => togglePaid(b)} busy={savingId === b.id} /></td>
+                                        <td className="px-4 py-3 text-right whitespace-nowrap">
+                                            <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
                                         </td>
                                     </tr>
                                 );

@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshCcw, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
-import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, Booking, CalEvent } from '../../services/booking';
+import { RefreshCcw, MessageSquare, ShoppingBag, ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
+import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, Booking, CalEvent } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
-import { fmtDate } from './lib/format';
-import { STATUS_STYLE } from './lib/status';
+import { fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf } from './lib/format';
+import { StatusSelect, PaymentPill } from './lib/status';
 
 // Services offered — id drives revenue colour/stacking; name is the display label.
 const MANUAL_SERVICES: { id: string; name: string }[] = [
@@ -54,15 +54,6 @@ const fmtOptPrice = (o: SvcOpt) => fmtAmt(o.amount, o.currency);
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const toHHMM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
-
-const STATUSES: Booking['status'][] = ['pending', 'confirmed', 'done', 'cancelled'];
-
-// Orders whose serviceName carries no package/price — supply a display name + price.
-const ORDER_OVERRIDE: Record<string, { title?: string; price?: string }> = {
-    'Edisi Spesial': { title: 'New Year Reading', price: 'Rp 250K' },
-    '3-Card Spread': { price: '$12' },
-    '5-Card Deep': { price: '$20' },
-};
 
 // Calendar block colours per status.
 const BLOCK_STYLE: Record<Booking['status'], string> = {
@@ -366,6 +357,20 @@ const BookingsView: React.FC = () => {
         } catch { /* ignore */ }
     };
 
+    // mark a booking paid / unpaid (the same switch as on Sales)
+    const [payBusy, setPayBusy] = useState<string | null>(null);
+    const togglePaid = async (b: Booking) => {
+        const next = b.paymentStatus === 'paid' ? 'unpaid' : 'paid';
+        setPayBusy(b.id);
+        setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paymentStatus: next } : x)));
+        try {
+            await updatePaymentStatus(b.id, next, localStorage.getItem('authToken') || undefined);
+        } catch {
+            setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paymentStatus: b.paymentStatus } : x)));
+            flash('Could not update payment. Try again.', 'err');
+        } finally { setPayBusy(null); }
+    };
+
     // the confirmation went out from Mayanov's WhatsApp: show it on the booking
     const markWaSent = (id: string, at: string) =>
         setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, waConfirmSentAt: at } : x)));
@@ -458,24 +463,9 @@ const BookingsView: React.FC = () => {
     const todayISO = toISO(new Date());
     const weekLabel = `${weekDays[0].toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} – ${weekDays[6].toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
-    // Click a status to set it — active chip uses its colour, the rest are muted.
+    // the status as one pill; pick another from its menu
     const StatusControl: React.FC<{ b: Booking }> = ({ b }) => (
-        <div className="flex flex-wrap gap-1.5">
-            {STATUSES.map((s) => {
-                const active = b.status === s;
-                return (
-                    <button
-                        key={s}
-                        onClick={() => !active && changeStatus(b.id, s)}
-                        className={`px-2.5 py-1 rounded-full text-[0.65rem] uppercase tracking-wider font-semibold border transition-colors ${
-                            active ? STATUS_STYLE[s] : 'border-adm-line-2 text-text-subtle hover:text-text-light hover:border-adm-line-3'
-                        }`}
-                    >
-                        {s}
-                    </button>
-                );
-            })}
-        </div>
+        <StatusSelect status={b.status} onChange={(s) => s !== b.status && changeStatus(b.id, s)} />
     );
 
     const TABS: { id: 'calendar' | 'orders'; label: string; count: number }[] = [
@@ -492,7 +482,7 @@ const BookingsView: React.FC = () => {
             <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Bookings</h1>
-                    <p className="text-text-subtle text-sm">{scheduled.length} scheduled · {orders.length} orders</p>
+                    <p className="text-text-subtle text-sm">{calendarSessions.length} scheduled · {orders.length} orders (cancelled left out of the schedule)</p>
                 </div>
                 <div className="flex items-center gap-2.5 shrink-0">
                     <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
@@ -616,13 +606,21 @@ const BookingsView: React.FC = () => {
                                                         <div
                                                             key={b.id}
                                                             onPointerDown={(e) => beginDrag(e, b, di)}
-                                                            title={`${b.time}–${endStr} · ${b.serviceName} · ${b.name} — drag to reschedule`}
+                                                            title={`${b.time}–${endStr} · ${serviceLabel(b)} · ${b.name}${b.paymentStatus === 'paid' ? '' : ' · unpaid'} — click for details, drag to reschedule`}
                                                             className={`absolute left-1 right-1 rounded-md border px-1.5 py-1 text-left overflow-hidden transition-shadow cursor-grab active:cursor-grabbing touch-none ${BLOCK_STYLE[b.status]} ${selectedId === b.id ? 'ring-2 ring-black/60' : ''} ${drag?.id === b.id ? 'opacity-30' : ''}`}
                                                             style={{ top, height }}
                                                         >
-                                                            <div className="text-[9px] font-semibold leading-none tabular-nums opacity-90">{b.time}–{endStr}</div>
-                                                            <div className="text-[11px] font-semibold leading-tight truncate mt-0.5">{b.serviceName.split(' · ')[0]}</div>
-                                                            {height > 40 && <div className="text-[10px] leading-tight truncate opacity-90">{b.name}</div>}
+                                                            {b.paymentStatus !== 'paid' && <span title="Unpaid" className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-coral-deep" />}
+                                                            {height < 34 ? (
+                                                                // a 30-minute session: one line, the time and who
+                                                                <div className="text-[10px] font-semibold leading-tight truncate pr-2"><span className="tabular-nums opacity-80">{b.time}</span> {b.name}</div>
+                                                            ) : (
+                                                                <>
+                                                                    <div className="text-[9px] font-semibold leading-none tabular-nums opacity-90 pr-2">{b.time}–{endStr}</div>
+                                                                    <div className="text-[11px] font-semibold leading-tight truncate mt-0.5">{b.name}</div>
+                                                                    {height > 44 && <div className="text-[10px] leading-tight truncate opacity-90">{serviceLabel(b)}</div>}
+                                                                </>
+                                                            )}
                                                         </div>
                                                     );
                                                 })}
@@ -658,9 +656,11 @@ const BookingsView: React.FC = () => {
             {/* selected booking detail — modal popover */}
             {selectedBooking && (() => {
                 const b = selectedBooking;
-                const parts = b.serviceName.split(' · ');
-                const svcBase = parts[0];
-                const svcRest = parts.slice(1).join(' · ');
+                const svcBase = serviceTitle(b);
+                const svcRest = [packageOf(b), amountLabel(b)].filter((x) => x && x !== '—').join(' · ');
+                const phone = phoneOf(b.contact);
+                const email = emailOf(b.contact);
+                const method = paymentMethodOf(b);
                 const endStr = b.durationMin
                     ? (() => { const e = toMin(b.time) + b.durationMin; return `${String(Math.floor(e / 60)).padStart(2, '0')}:${String(e % 60).padStart(2, '0')}`; })()
                     : '';
@@ -693,16 +693,26 @@ const BookingsView: React.FC = () => {
                             {/* details */}
                             <div className="p-4 grid grid-cols-2 gap-x-4 gap-y-4">
                                 <Field label="Name" value={b.name} />
-                                {b.dob && <Field label="Date of Birth" value={fmtDate(b.dob)} />}
-                                <div className="col-span-2"><Field label="Contact" value={b.contact} /></div>
+                                {b.dob && <Field label="Date of birth" value={fmtDate(b.dob)} />}
+                                <Field label="WhatsApp" value={phone || '—'} />
+                                <Field label="Email" value={email || '—'} />
                                 {b.question && <div className="col-span-2"><Field label="Question" value={b.question} italic /></div>}
                                 <div className="col-span-2"><WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} /></div>
                             </div>
 
-                            {/* status footer */}
-                            <div className="px-5 py-4 border-t border-adm-line bg-adm-hover">
-                                <div className="text-xs uppercase tracking-wider text-text-subtle mb-2">Update status</div>
-                                <StatusControl b={b} />
+                            {/* status + payment footer */}
+                            <div className="px-5 py-4 border-t border-adm-line bg-adm-hover grid grid-cols-2 gap-4">
+                                <div>
+                                    <div className="text-xs uppercase tracking-wider text-text-subtle mb-2">Status</div>
+                                    <StatusControl b={b} />
+                                </div>
+                                <div>
+                                    <div className="text-xs uppercase tracking-wider text-text-subtle mb-2">Payment</div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
+                                        {method && <span className="text-xs text-text-subtle">{method}</span>}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -739,23 +749,24 @@ const BookingsView: React.FC = () => {
                         return (
                             <div className="grid gap-3">
                                 {list.map((b) => {
-                                    const parts = b.serviceName.split(' · ');
-                                    const override = ORDER_OVERRIDE[parts[0]] || {};
-                                    const item = override.title || (parts.length > 1 ? parts[1] : parts[0]); // chat → "3 Pertanyaan"
-                                    const price = (parts.length > 2 ? parts.slice(2).join(' · ') : '') || override.price || b.price || '';
-                                    const created = b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                                    const phone = phoneOf(b.contact);
+                                    const email = emailOf(b.contact);
+                                    const method = paymentMethodOf(b);
                                     return (
                                         <div key={b.id} className="bg-surface-1 border border-adm-line rounded-2xl p-4 flex flex-col lg:flex-row lg:items-start gap-4">
-                                            {/* customer + order */}
+                                            {/* who and what */}
                                             <div className="flex-1 min-w-0">
                                                 <div className="text-text-subtle text-xs mb-1.5 flex flex-wrap items-center gap-x-2">
-                                                    <span>{created} · <span className="uppercase">{b.market}</span></span>
-                                                    {b.ref && <span className="font-mono text-[0.65rem] px-1.5 py-0.5 rounded bg-adm-hover text-text-subtle">{b.ref}</span>}
+                                                    <span>Ordered {fmtDate(b.createdAt)}</span>
+                                                    <span className="px-1.5 py-0.5 rounded bg-adm-hover-2 text-[0.6rem] uppercase tracking-wider">{b.market === 'ID' ? 'ID' : 'Global'}</span>
+                                                    {b.source === 'manual' && <span className="px-1.5 py-0.5 rounded bg-adm-hover text-[0.6rem] uppercase tracking-wider">Manual</span>}
                                                 </div>
-                                                <div className="text-lg font-serif font-bold text-text-light leading-tight">{b.name} - {item}</div>
-                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-text-subtle">
-                                                    {b.dob && <span className="flex items-center gap-1.5"><Cake size={13} /> {fmtDate(b.dob)}</span>}
-                                                    <span className="truncate">{b.contact}</span>
+                                                <div className="text-lg font-serif font-bold text-text-light leading-tight">{b.name || '—'}</div>
+                                                <div className="text-sm text-lilac mt-0.5">{serviceLabel(b)}</div>
+                                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-text-subtle tabular-nums">
+                                                    {phone && <span>{phone}</span>}
+                                                    {email && <span className="truncate">{email}</span>}
+                                                    {!phone && !email && <span className="truncate">{b.contact}</span>}
                                                 </div>
                                                 {b.question && (
                                                     <div className="mt-2 flex items-start gap-1.5 text-sm text-text-subtle/80">
@@ -763,12 +774,21 @@ const BookingsView: React.FC = () => {
                                                         <span className="italic">{b.question}</span>
                                                     </div>
                                                 )}
-                                                <div className="mt-3"><WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} /></div>
+                                                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                                                    <WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} />
+                                                    {b.dob && <span className="text-xs text-text-subtle">Born {fmtDate(b.dob)}</span>}
+                                                </div>
                                             </div>
-                                            {/* price + status */}
-                                            <div className="shrink-0 flex flex-col items-start lg:items-end gap-2.5">
-                                                {price && <div className="text-base font-serif font-bold text-coral-deep whitespace-nowrap">{price}</div>}
-                                                <StatusControl b={b} />
+                                            {/* money and state */}
+                                            <div className="shrink-0 flex flex-col items-start lg:items-end gap-2">
+                                                <div className="lg:text-right">
+                                                    <div className="text-base font-serif font-bold text-text-light whitespace-nowrap tabular-nums">{amountLabel(b)}</div>
+                                                    {method && <div className="text-xs text-text-subtle">{method}</div>}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
+                                                    <StatusControl b={b} />
+                                                </div>
                                             </div>
                                         </div>
                                     );

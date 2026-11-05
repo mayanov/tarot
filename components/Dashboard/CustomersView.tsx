@@ -2,13 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCcw, Search, Phone, Mail, X, Repeat } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking, fmtIDR, fmtUSD, fmtDate } from './lib/format';
-import { StatusPill } from './lib/status';
-
-const SERVICE_LABEL: Record<string, string> = {
-    chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'New Year Reading',
-    '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
-};
+import { amountForBooking, fmtMoney, fmtDate, serviceLabel, sessionWhen } from './lib/format';
+import { StatusPill, PaymentPill } from './lib/status';
 
 // ---- contact parsing ----
 const extractPhone = (contact?: string) => {
@@ -50,8 +45,8 @@ interface Customer {
     phone: string;
     email: string;
     bookings: Booking[];
-    totalIDR: number;
-    totalUSD: number;
+    paid: number;   // what they've actually paid, in their market's currency
+    owed: number;   // booked but not paid yet
     lastSeen: string;
     firstSeen: string;
     services: string[];
@@ -64,6 +59,9 @@ const CustomersView: React.FC = () => {
     const [q, setQ] = useState('');
     const [sort, setSort] = useState<'spent' | 'recent' | 'bookings'>('spent');
     const [selected, setSelected] = useState<Customer | null>(null);
+    // one market at a time, so rupiah and dollar customers aren't ranked together
+    const [market, setMarket] = useState<'ID' | 'Global'>('ID');
+    const cur = market === 'ID' ? 'IDR' : 'USD';
 
     const load = async () => {
         setLoading(true); setError('');
@@ -84,7 +82,7 @@ const CustomersView: React.FC = () => {
         const map = new Map<string, Customer>();
         // Only real clients: build the directory from confirmed/done bookings.
         // Pending & cancelled are excluded (they may not be genuine).
-        const realBookings = bookings.filter((b) => b.status === 'confirmed' || b.status === 'done');
+        const realBookings = bookings.filter((b) => (b.status === 'confirmed' || b.status === 'done') && (b.market === 'ID' ? 'ID' : 'Global') === market);
         // Newest first so "name/phone" reflects the latest booking.
         const sorted = [...realBookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         for (const b of sorted) {
@@ -93,16 +91,15 @@ const CustomersView: React.FC = () => {
             const key = normPhone(phone) || email.toLowerCase() || `id:${b.id}`;
             let c = map.get(key);
             if (!c) {
-                c = { key, clientId: clientIdFor(key), name: b.name || '—', phone, email, bookings: [], totalIDR: 0, totalUSD: 0, lastSeen: '', firstSeen: '', services: [] };
+                c = { key, clientId: clientIdFor(key), name: b.name || '—', phone, email, bookings: [], paid: 0, owed: 0, lastSeen: '', firstSeen: '', services: [] };
                 map.set(key, c);
             }
             c.bookings.push(b);
             if (!c.phone && phone) c.phone = phone;
             if (!c.email && email) c.email = email;
+            // "spent" is money that came in; an unpaid booking only counts as owed
             const amt = amountForBooking(b);
-            if (amt && (b.status === 'confirmed' || b.status === 'done')) {
-                if (amt.currency === 'IDR') c.totalIDR += amt.amount; else c.totalUSD += amt.amount;
-            }
+            if (amt) { if (b.paymentStatus === 'paid') c.paid += amt.amount; else c.owed += amt.amount; }
             if (!c.services.includes(b.serviceId)) c.services.push(b.serviceId);
         }
         // derive first/last seen
@@ -112,7 +109,7 @@ const CustomersView: React.FC = () => {
             c.lastSeen = dates[dates.length - 1] || '';
         }
         return [...map.values()];
-    }, [bookings]);
+    }, [bookings, market]);
 
     const filtered = useMemo(() => {
         const needle = q.trim().toLowerCase();
@@ -122,24 +119,19 @@ const CustomersView: React.FC = () => {
         return [...list].sort((a, b) =>
             sort === 'recent' ? b.lastSeen.localeCompare(a.lastSeen)
                 : sort === 'bookings' ? b.bookings.length - a.bookings.length
-                    : (b.totalIDR - a.totalIDR) || (b.totalUSD - a.totalUSD));
+                    : (b.paid - a.paid) || (b.owed - a.owed));
     }, [customers, q, sort]);
 
     const repeatCount = useMemo(() => customers.filter((c) => c.bookings.filter((b) => b.status !== 'cancelled').length > 1).length, [customers]);
 
-    const spentLabel = (c: Customer) => {
-        const parts = [];
-        if (c.totalIDR) parts.push(fmtIDR(c.totalIDR));
-        if (c.totalUSD) parts.push(fmtUSD(c.totalUSD));
-        return parts.join(' + ') || '—';
-    };
+    const spentLabel = (c: Customer) => (c.paid ? fmtMoney(c.paid, cur) : '—');
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Customers</h1>
-                    <p className="text-text-subtle text-sm">{customers.length} unique clients · {repeatCount} returning · grouped by phone number.</p>
+                    <p className="text-text-subtle text-sm">{customers.length} {market === 'ID' ? 'Indonesia' : 'Global'} clients · {repeatCount} returning · grouped by phone number (email if none).</p>
                 </div>
                 <button onClick={load} className="p-2.5 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light hover:border-adm-line-3 transition-colors" title="Refresh">
                     <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
@@ -147,6 +139,16 @@ const CustomersView: React.FC = () => {
             </div>
 
             {error && <div className="text-sm text-red-600 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
+
+            {/* market */}
+            <div className="inline-flex rounded-full border border-adm-line-2 p-0.5 bg-surface-1">
+                {(['ID', 'Global'] as const).map((m) => (
+                    <button key={m} onClick={() => setMarket(m)}
+                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${market === m ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>
+                        {m === 'ID' ? 'Indonesia · IDR' : 'Global · USD'}
+                    </button>
+                ))}
+            </div>
 
             {/* toolbar */}
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
@@ -168,35 +170,33 @@ const CustomersView: React.FC = () => {
             {/* list */}
             <div className="rounded-2xl bg-surface-1 border border-adm-line overflow-hidden">
                 <div className="hidden md:grid grid-cols-12 gap-3 px-5 py-3 text-[0.7rem] uppercase tracking-wider text-text-subtle border-b border-adm-line">
-                    <div className="col-span-2">ID</div>
                     <div className="col-span-3">Customer</div>
-                    <div className="col-span-2">Phone</div>
-                    <div className="col-span-1 text-center">Repeat</div>
-                    <div className="col-span-2 text-right">Spent</div>
-                    <div className="col-span-1 text-right">Since</div>
+                    <div className="col-span-2">WhatsApp</div>
+                    <div className="col-span-1 text-center">Bookings</div>
+                    <div className="col-span-2 text-right">Paid</div>
+                    <div className="col-span-2 text-right">Unpaid</div>
+                    <div className="col-span-1 text-right">First</div>
                     <div className="col-span-1 text-right">Last</div>
                 </div>
                 {filtered.length === 0 ? (
                     loading ? <InlineLoader /> : <p className="text-sm text-text-subtle py-12 text-center">No customers found.</p>
                 ) : filtered.map((c) => {
-                    const active = c.bookings.filter((b) => b.status !== 'cancelled').length;
+                    const count = c.bookings.length;
                     return (
                         <button key={c.key} onClick={() => setSelected(c)}
                             className="w-full grid grid-cols-2 md:grid-cols-12 gap-2 md:gap-3 px-5 py-3.5 text-left border-b border-adm-line last:border-0 hover:bg-adm-hover transition-colors items-center">
-                            <div className="col-span-2 md:col-span-2 min-w-0">
-                                <span className="font-mono text-[0.7rem] text-text-subtle">{c.clientId}</span>
-                            </div>
                             <div className="col-span-2 md:col-span-3 min-w-0">
                                 <div className="font-medium text-text-light truncate">{c.name}</div>
                                 {c.email && <div className="text-xs text-text-subtle truncate">{c.email}</div>}
                             </div>
                             <div className="col-span-1 md:col-span-2 text-sm text-text-subtle tabular-nums truncate">{c.phone || '—'}</div>
                             <div className="col-span-1 md:col-span-1 md:text-center text-sm tabular-nums">
-                                <span className={`inline-flex items-center gap-1 ${active > 1 ? 'text-lilac font-semibold' : 'text-text-light'}`}>
-                                    {active > 1 && <Repeat size={11} />}{active}
+                                <span className={`inline-flex items-center gap-1 ${count > 1 ? 'text-lilac font-semibold' : 'text-text-light'}`} title={count > 1 ? 'Returning client' : undefined}>
+                                    {count > 1 && <Repeat size={11} />}{count}
                                 </span>
                             </div>
                             <div className="col-span-1 md:col-span-2 md:text-right text-sm text-text-light tabular-nums">{spentLabel(c)}</div>
+                            <div className={`col-span-1 md:col-span-2 md:text-right text-sm tabular-nums ${c.owed ? 'text-coral-deep' : 'text-text-subtle'}`}>{c.owed ? fmtMoney(c.owed, cur) : '—'}</div>
                             <div className="col-span-1 md:col-span-1 md:text-right text-xs text-text-subtle">{fmtDate(c.firstSeen)}</div>
                             <div className="col-span-1 md:col-span-1 md:text-right text-xs text-text-subtle">{fmtDate(c.lastSeen)}</div>
                         </button>
@@ -221,7 +221,7 @@ const CustomersView: React.FC = () => {
                         </div>
                         <div className="px-6 py-4 grid grid-cols-3 gap-3 border-b border-adm-line">
                             <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Bookings</div><div className="text-lg font-bold text-text-light tabular-nums">{selected.bookings.length}</div></div>
-                            <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Total spent</div><div className="text-lg font-bold text-text-light tabular-nums">{spentLabel(selected)}</div></div>
+                            <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Paid</div><div className="text-lg font-bold text-text-light tabular-nums">{spentLabel(selected)}</div>{selected.owed > 0 && <div className="text-xs text-coral-deep tabular-nums">{fmtMoney(selected.owed, cur)} unpaid</div>}</div>
                             <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Client since</div><div className="text-lg font-bold text-text-light">{fmtDate(selected.firstSeen)}</div></div>
                         </div>
                         <div className="px-6 py-4 space-y-2">
@@ -231,11 +231,12 @@ const CustomersView: React.FC = () => {
                                 return (
                                     <div key={b.id} className="flex items-center justify-between gap-3 rounded-xl border border-adm-line px-4 py-2.5">
                                         <div className="min-w-0">
-                                            <div className="text-sm font-medium text-text-light truncate">{SERVICE_LABEL[b.serviceId] || b.serviceName}</div>
-                                            <div className="text-xs text-text-subtle">{b.date ? `${fmtDate(b.date)}${b.time ? ` · ${b.time}` : ''}` : `Ordered ${fmtDate(b.createdAt)}`}</div>
+                                            <div className="text-sm font-medium text-text-light truncate">{serviceLabel(b)}</div>
+                                            <div className="text-xs text-text-subtle tabular-nums">{sessionWhen(b) ? `Session ${sessionWhen(b)}` : `Ordered ${fmtDate(b.createdAt)}`}</div>
                                         </div>
                                         <div className="flex items-center gap-3 shrink-0">
-                                            <span className="text-sm text-text-light tabular-nums">{amt ? (amt.currency === 'IDR' ? fmtIDR(amt.amount) : fmtUSD(amt.amount)) : '—'}</span>
+                                            <span className="text-sm text-text-light tabular-nums">{amt ? fmtMoney(amt.amount, amt.currency) : '—'}</span>
+                                            <PaymentPill paid={b.paymentStatus === 'paid'} />
                                             <StatusPill status={b.status} />
                                         </div>
                                     </div>

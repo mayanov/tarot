@@ -59,3 +59,59 @@ export const fmtDate = (iso?: string): string => {
     if (!y || !m || !d) return '—';
     return `${String(d).padStart(2, '0')} ${new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short' })} ${y}`;
 };
+
+// ---- one way to describe a booking, on every page ----
+
+// Short admin names per service (the same ones the Revenue charts use).
+export const SERVICE_NAME: Record<string, string> = {
+    chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'Edisi Spesial',
+    '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
+};
+
+const isPricePart = (s: string) => /^(Rp|\$)\s?[\d.,]/i.test(s.trim());
+const nameParts = (b: Booking) => (b.serviceName || '').split(/\s+[·—]\s+/).map((p) => p.trim()).filter(Boolean);
+
+/** the service on its own: "Chat", "Call / Video", "3-Card Spread" */
+export const serviceTitle = (b: Booking) => SERVICE_NAME[b.serviceId] || nameParts(b)[0] || b.serviceId || '—';
+
+/** what was picked within it, without the price: "3 Pertanyaan", "30 Menit", or '' */
+export const packageOf = (b: Booking) => nameParts(b).slice(1).filter((p) => !isPricePart(p)).join(' · ');
+
+/** "Chat · 3 Pertanyaan", "Meetup · 2 Jam", "Live Session" (the price lives in its own column) */
+export const serviceLabel = (b: Booking) => [serviceTitle(b), packageOf(b)].filter(Boolean).join(' · ');
+
+const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+
+/** when the session happens: "08 Nov 2026 · 13:00–15:00", or '' for an order without a time */
+export const sessionWhen = (b: Booking) => {
+    if (!b.date || !b.time) return '';
+    const [h, m] = b.time.split(':').map(Number);
+    const dur = b.durationMin > 0 ? b.durationMin : 30;
+    return `${fmtDate(b.date)} · ${b.time}–${hhmm(h * 60 + m + dur)}`;
+};
+
+/** how it was paid: "PayPal", "Midtrans · QRIS", "Transfer / QRIS", "Manual", or '' while unpaid */
+export const paymentMethodOf = (b: Booking) => {
+    if (b.paymentMethod) {
+        return b.paymentMethod.replace(/·\s*(\w+)/, (_, w: string) => `· ${w.length <= 4 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1).replace(/_/g, ' ')}`);
+    }
+    if (b.paymentStatus !== 'paid') return '';
+    if (b.source === 'manual') return 'Manual';
+    return b.market === 'ID' ? 'Transfer / QRIS' : 'PayPal';
+};
+
+/** the booking's amount, formatted ("Rp 220.000", "$45"), or '—' */
+export const amountLabel = (b: Booking) => {
+    const a = amountForBooking(b);
+    return a ? fmtMoney(a.amount, a.currency) : '—';
+};
+
+// The form's contact line is "WA: 0812… · Email: a@b.co"; a manual order may be a bare number.
+export const emailOf = (contact?: string) => ((contact || '').match(/[^\s:·<>]+@[^\s·<>]+\.[a-z]{2,}/i) || [])[0] || '';
+export const phoneOf = (contact?: string) => {
+    const c = contact || '';
+    const wa = (c.match(/WA:\s*([^·]+)/i) || [])[1];
+    if (wa) return wa.trim();
+    const rest = c.replace(/[^\s:·]+@[^\s·]+/, '').replace(/Email:/i, '').replace(/·/g, ' ').trim();
+    return /\d{6,}/.test(rest.replace(/[\s-]/g, '')) ? rest : '';
+};

@@ -155,7 +155,7 @@ const RevenueView: React.FC = () => {
 
     const otherCurrency: Currency = currency === 'IDR' ? 'USD' : 'IDR';
     const otherTotal = useMemo(() => bookings
-        .filter((b) => b.status === 'confirmed' || b.status === 'done')
+        .filter((b) => b.paymentStatus === 'paid' && b.status !== 'cancelled')
         .map((b) => ({ day: (b.createdAt || '').slice(0, 10), amt: amountForBooking(b) }))
         .filter((r) => r.amt && r.amt.currency === otherCurrency && r.day >= startISO && r.day <= endISO)
         .reduce((s, r) => s + r.amt!.amount, 0), [bookings, otherCurrency, startISO, endISO]);
@@ -170,7 +170,7 @@ const RevenueView: React.FC = () => {
             const c = map.get(key) || { key, name: b.name || '(no name)', contact: b.contact || '', count: 0, spend: 0, first: created || '9999', last: '' };
             c.count += 1;
             const amt = amountForBooking(b);
-            if (amt && amt.currency === currency) c.spend += amt.amount;
+            if (amt && amt.currency === currency && b.paymentStatus === 'paid') c.spend += amt.amount;
             if (created && created < c.first) c.first = created;
             if (created >= c.last) { c.last = created; c.name = b.name || c.name; c.contact = b.contact || c.contact; }
             map.set(key, c);
@@ -281,10 +281,10 @@ const RevenueView: React.FC = () => {
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Dashboard</h1>
+                    <h1 className="text-2xl font-serif font-bold text-text-light mb-2">Revenue</h1>
                     <p className="text-text-subtle text-sm">
                         {tab === 'revenue'
-                            ? 'Realized revenue from confirmed & completed bookings, by order date.'
+                            ? 'Money that came in: bookings marked paid (cancelled left out), by order date.'
                             : "Who's booking — totals, repeat rate, and your top customers."}
                     </p>
                 </div>
