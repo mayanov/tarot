@@ -31,10 +31,11 @@ interface AnalyticsDashboardProps {
 // operations → money → insights → admin). Data-driven so it stays tidy.
 const NAV_GROUPS: { label: string; items: { id: string; name: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] }[] = [
     { label: 'Operations', items: [
+        // the day's work first (who's coming, what to answer), then money, then people
         { id: 'schedule', name: 'Schedule', icon: Calendar },
         { id: 'orders', name: 'Orders', icon: Inbox },
-        { id: 'customers', name: 'Customers', icon: Contact },
         { id: 'sales', name: 'Sales', icon: Receipt },
+        { id: 'customers', name: 'Customers', icon: Contact },
     ] },
     { label: 'Insights', items: [
         { id: 'analytics', name: 'Analytics', icon: BarChart2 },
