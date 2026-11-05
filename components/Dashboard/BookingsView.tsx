@@ -301,11 +301,13 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
     );
 };
 
-const BookingsView: React.FC = () => {
+// One view behind two menu items: Schedule (sessions with a time, on the week grid)
+// and Orders (readings and chats with no fixed time). Kept as one component so the
+// bookings load once and switching between the two is instant.
+const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [tab, setTab] = useState<'calendar' | 'orders'>('calendar');
     const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [orderView, setOrderView] = useState<'active' | 'done'>('active');
@@ -472,10 +474,6 @@ const BookingsView: React.FC = () => {
         <StatusSelect status={b.status} onChange={(s) => s !== b.status && changeStatus(b.id, s)} />
     );
 
-    const TABS: { id: 'calendar' | 'orders'; label: string; count: number }[] = [
-        { id: 'calendar', label: 'Schedule', count: calendarSessions.length },
-        { id: 'orders', label: 'Orders', count: orders.length },
-    ];
 
     const navBtn = 'grid place-items-center w-9 h-9 rounded-lg bg-adm-hover text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors';
 
@@ -484,12 +482,11 @@ const BookingsView: React.FC = () => {
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <PageHeader
-                title="Bookings"
+                title={tab === 'calendar' ? 'Schedule' : 'Orders'}
                 subtitle={tab === 'calendar' ? 'Sessions with a time. Click one for details, drag it to move it.' : 'Readings and chats with no fixed time. Click a row for details.'}
                 onRefresh={load}
                 refreshing={loading}
             >
-                <Segmented value={tab} options={TABS} onChange={setTab} />
                 <Button onClick={() => setShowAdd(true)} title="Add booking">
                     <Plus size={16} /> <span className="hidden sm:inline">Add booking</span>
                 </Button>
