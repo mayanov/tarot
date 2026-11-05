@@ -92,7 +92,7 @@ export const trackEvent = (
 // be reported without registering a custom one. The Pixel's Contact goes only with
 // the "get in touch" buttons, not the promo's or the payment proof's (those are part
 // of buying, already counted as checkout).
-export type WhatsAppPlace = 'floating' | 'menu' | 'footer' | 'faq' | 'promo' | 'payment_proof';
+export type WhatsAppPlace = 'floating' | 'menu' | 'footer' | 'faq' | 'promo' | 'payment_proof' | 'after_paid';
 export const WHATSAPP_PLACES: Record<WhatsAppPlace, string> = {
     floating: 'Floating button',
     menu: 'Menu',
@@ -100,9 +100,10 @@ export const WHATSAPP_PLACES: Record<WhatsAppPlace, string> = {
     faq: 'FAQ',
     promo: 'Promo card',
     payment_proof: 'Payment proof (after booking)',
+    after_paid: 'After paying (booking done)',
 };
 export const trackWhatsApp = (place: WhatsAppPlace, market: 'ID' | 'Global') => {
-    const pixel = place !== 'promo' && place !== 'payment_proof';
+    const pixel = place !== 'promo' && place !== 'payment_proof' && place !== 'after_paid';
     trackEvent(
         'contact',
         { method: 'WhatsApp', market, location: place, link_text: place },

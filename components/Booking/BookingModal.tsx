@@ -540,6 +540,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     ? `Hi Mayanov, I've just booked:\n• ${waServiceLine} (Jakarta time)\n• Name: ${name}\n• Total: ${totalPrice}\n\nHow can I pay? 🙏`
     : `Hi Mayanov, I've just booked:\n• ${waServiceLine}\n• Name: ${name}\n• Total: ${totalPrice}\n\nHere's my payment proof 🙏`;
   const waLink = `https://wa.me/${PAYMENT.waNumber}?text=${encodeURIComponent(waMessage)}`;
+  // already paid here: just a way to reach Mayanov, with the booking for reference
+  const waPaidLink = `https://wa.me/${PAYMENT.waNumber}?text=${encodeURIComponent(`Halo Mayanov, aku sudah booking & bayar:\n• ${waServiceLine}\n• Nama: ${name}\n\n`)}`;
 
   // ---- shared bits of the layout ----
   const label = 'block text-[13px] font-medium text-ink/75 mb-1.5';
@@ -1019,7 +1021,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               <h3 className="font-serif font-semibold text-2xl text-ink">{paidHere ? 'Booking terkonfirmasi!' : t('Booking diterima!', 'You’re booked!')}</h3>
               <p className="mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
                 {paidHere
-                  ? <>Terima kasih, {name || 'kamu'}. Pembayaranmu sudah masuk dan booking-mu tercatat. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk detail sesinya.</>
+                  ? <>Terima kasih, {name || 'kamu'}! Pembayaranmu sudah masuk.<br />{scheduled ? 'Sampai ketemu di sesi nanti ✨' : 'Sampai ngobrol nanti ✨'}</>
                   : isIndonesian
                   ? <>Terima kasih, {name || 'kamu'}. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk konfirmasi.</>
                   : live
@@ -1038,6 +1040,16 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 </div>
                 {rule}
               </div>
+
+              {paidHere && (
+                <div className="mt-6 flex flex-col items-center gap-2">
+                  <a href={waPaidLink} target="_blank" rel="noopener noreferrer" onClick={() => trackWhatsApp('after_paid', 'ID')} className={`${primaryBtn} px-8 py-3`}>
+                    {swatch}
+                    <span className="inline-flex items-center gap-2"><FaWhatsapp size={18} /> Hubungi via WhatsApp</span>
+                  </a>
+                  <span className="text-[13px] text-ink/50">Ada yang perlu ditanyakan? Chat aja.</span>
+                </div>
+              )}
 
               {!paidHere && <>
               {isIndonesian && showPay && <div className="mt-5 text-left">{paymentPanel()}</div>}
