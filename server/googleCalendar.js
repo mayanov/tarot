@@ -121,22 +121,56 @@ const INVITE_SERVICES = new Set(['call', 'live']);
 const invites = (booking) => authMode === 'owner' && INVITE_SERVICES.has(booking?.serviceId) && Boolean(emailOf(booking));
 const isIndonesian = (booking) => booking?.market === 'ID';
 
-// What the customer reads in their invite (the owner's notes follow, below a line).
+// What the customer reads: the invite's title and its note, in their language. The
+// title is shared with Mayanov's own calendar, so it names both of them. The note is
+// HTML (Google shows it formatted, in the calendar and in the invitation email).
+const WHATSAPP = 'https://wa.me/6287786280310';
+const SITE = 'https://tarotreadingbymayanov.com';
+const esc = (t) => String(t || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const minutesOf = (booking) => (booking.durationMin > 0 ? booking.durationMin : 60);
+
+const inviteTitle = (booking) =>
+  `🔮 ${isIndonesian(booking) ? 'Sesi Tarot Online' : 'Live Tarot Reading'} · Mayanov × ${String(booking.name || '').trim().slice(0, 40)}`;
+
 const inviteDescription = (booking) => {
-  const id = isIndonesian(booking);
-  const intro = id
+  const min = minutesOf(booking);
+  const q = String(booking.question || '').trim();
+  const lines = isIndonesian(booking)
     ? [
-        'Terima kasih sudah booking sesi dengan Mayanov Tarot ✨',
-        'Masuk lewat link Google Meet di undangan ini pada jamnya (atau lewat WhatsApp, kalau sudah disepakati begitu).',
-        'Perlu ganti jadwal? Kabari lewat WhatsApp paling lambat 24 jam sebelumnya.',
+        `<b>Sesi tarot online kamu bersama Mayanov</b> · ${min} menit`,
+        '',
+        '<b>Cara bergabung</b>',
+        'Klik <i>Gabung dengan Google Meet</i> di undangan ini, 1–2 menit sebelum mulai. Kamera boleh dimatikan; cari tempat yang tenang dan pakai earphone kalau bisa.',
+        'Kalau sudah sepakat lewat WhatsApp Call, Mayanov yang akan menelepon kamu di jam ini.',
+        '',
+        '<b>Sebelum sesi</b>',
+        'Siapkan satu atau dua hal yang paling ingin kamu tanyakan saat ini.',
+        q ? `Yang sudah kamu tulis: <i>“${esc(q)}”</i>` : '',
+        '',
+        '<b>Perlu ganti jadwal?</b>',
+        `Kabari Mayanov lewat <a href="${WHATSAPP}">WhatsApp</a> paling lambat 24 jam sebelumnya, nanti dicarikan waktu lain.`,
+        '',
+        `Sampai ketemu ✨`,
+        `<a href="${SITE}">Mayanov Tarot</a> · Booking ${esc(booking.id)}`,
       ]
     : [
-        'Thank you for booking with Mayanov Tarot ✨',
-        'Join with the Google Meet link in this invitation at the time above.',
-        'Need to reschedule? Message on WhatsApp at least 24 hours before.',
+        `<b>Your live tarot reading with Mayanov</b> · ${min} minutes on Google Meet`,
+        '',
+        '<b>Joining</b>',
+        'Click <i>Join with Google Meet</i> in this invitation a minute or two before we start. Camera is optional; a quiet spot and headphones help.',
+        '',
+        '<b>Before we meet</b>',
+        'Have the one or two questions that matter most to you right now in mind.',
+        q ? `What you wrote: <i>“${esc(q)}”</i>` : '',
+        '',
+        '<b>Need another time?</b>',
+        `Message Mayanov on <a href="${WHATSAPP}">WhatsApp</a> at least 24 hours before and we’ll find a new slot.`,
+        '',
+        `See you soon ✨`,
+        `<a href="${SITE}">Mayanov Tarot</a> · Booking ${esc(booking.id)}`,
       ];
-  const q = booking.question ? `${id ? 'Pertanyaanmu' : 'Your question'}: ${booking.question}` : '';
-  return [...intro, '', q, `Booking ID: ${booking.id}`].filter((l, i, a) => l || a[i - 1]).join('\n');
+  // (no doubled blank line where there's no question)
+  return lines.filter((l, i, all) => l !== '' || all[i - 1] !== '').join('<br>');
 };
 
 // The event body for a timed (scheduled) booking: the owner's own events carry the
@@ -145,7 +179,7 @@ const scheduledBody = (booking, invite = invites(booking)) => {
   const dur = booking.durationMin && booking.durationMin > 0 ? booking.durationMin : 60;
   const serviceLabel = (booking.serviceName || booking.serviceId || '').split(' · ')[0].trim();
   return {
-    summary: invite ? `Mayanov Tarot · ${serviceLabel} — ${booking.name}` : `${serviceLabel} — ${booking.name}`,
+    summary: invite ? inviteTitle(booking) : `${serviceLabel} — ${booking.name}`,
     description: invite ? inviteDescription(booking) : descriptionFor(booking),
     start: { dateTime: rfc3339(booking.date, booking.time), timeZone: TZ },
     end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur + (invite ? 0 : restBufferFor(booking)))), timeZone: TZ },
@@ -158,7 +192,7 @@ const scheduledBody = (booking, invite = invites(booking)) => {
 const restBody = (endDateTime, booking) => {
   const end = Date.parse(endDateTime);
   return {
-    summary: `☕ Istirahat — ${booking?.name || 'sesi'}`,
+    summary: `☕ Jeda setelah sesi${booking?.name ? ` ${booking.name}` : ''}`,
     description: 'Jeda 15 menit setelah sesi (dibuat otomatis oleh situs booking).',
     start: { dateTime: new Date(end).toISOString(), timeZone: TZ },
     end: { dateTime: new Date(end + REST_BUFFER_MIN * 60000).toISOString(), timeZone: TZ },
