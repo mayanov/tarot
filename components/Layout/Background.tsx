@@ -26,7 +26,7 @@ const Background: React.FC = () => {
     <div ref={rootRef} className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* the sky itself, painted in watercolour (blue up the left, a violet heart, a
           rose bloom upper-right, teal lower-right), drifting very slowly */}
-      <WatercolorSky palette={TWILIGHT} stars={false} eager className="absolute inset-0" />
+      <WatercolorSky palette={TWILIGHT} eager className="absolute inset-0" />
       {/* the loader's timelapse: a sunset and a dusk over the twilight (the same clouds,
           other light), which the loader thins away in turn as the page loads (data-sky);
           under the shading below, so only the sky changes; placed as WatercolorSky places

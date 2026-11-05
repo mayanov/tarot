@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import WatercolorSky, { NIGHT, PLUM, SUNRISE } from '../Layout/WatercolorSky';
-import PaintedStars from '../Layout/PaintedStars';
 
 interface TarotIntroProps {
   isIndonesian?: boolean;
@@ -8,8 +7,8 @@ interface TarotIntroProps {
 
 
 // The sky is a timelapse: three painted skies (night, dawn, sunrise) stacked and
-// crossfaded by scroll, with the sun's glow rising from below and the stars going
-// out — all opacity/transform, so it's compositor-cheap.
+// crossfaded by scroll, with the sun's glow rising from below
+// — all opacity/transform, so it's compositor-cheap.
 const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1);
 const smoothstep = (t: number) => { const x = clamp01(t); return x * x * (3 - 2 * x); };
 const fade = (p: number, a: number, b: number) => smoothstep((p - a) / (b - a));
@@ -30,7 +29,6 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
   const dawnRef = useRef<HTMLDivElement>(null);
   const sunriseRef = useRef<HTMLDivElement>(null);
   const sunRef = useRef<HTMLDivElement>(null);
-  const starsRef = useRef<HTMLDivElement>(null);
   const stackRef = useRef<HTMLDivElement>(null);
   const paraRef = useRef<HTMLParagraphElement>(null);
   const affirmRef = useRef<HTMLDivElement>(null);
@@ -49,11 +47,10 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
       if (!el) return;
       const total = el.offsetHeight - window.innerHeight; // pinned range
       const p = total > 0 ? clamp01(-el.getBoundingClientRect().top / total) : 0;
-      // the timelapse: night gives way to dawn, dawn to sunrise, the sun climbs and the
-      // stars go out (continuous motion, so it never feels frozen)
+      // the timelapse: night gives way to dawn, dawn to sunrise, the sun climbs
+      // (continuous motion, so it never feels frozen)
       if (dawnRef.current) dawnRef.current.style.opacity = fade(p, 0.05, 0.5).toFixed(3);
       if (sunriseRef.current) sunriseRef.current.style.opacity = fade(p, 0.45, 0.92).toFixed(3);
-      if (starsRef.current) starsRef.current.style.opacity = (1 - fade(p, 0.3, 0.8)).toFixed(3);
       if (sunRef.current) {
         const s = fade(p, 0.2, 1);
         sunRef.current.style.opacity = s.toFixed(3);
@@ -92,12 +89,12 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
     >
       <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
         {/* sky — night, with dawn and then sunrise painted over it, faded in by scroll */}
-        <WatercolorSky palette={NIGHT} stars={false} className="absolute inset-0" />
+        <WatercolorSky palette={NIGHT} className="absolute inset-0" />
         <div ref={dawnRef} aria-hidden className="absolute inset-0 will-change-[opacity]" style={{ opacity: reduce ? 1 : 0 }}>
-          <WatercolorSky palette={PLUM} stars={false} className="absolute inset-0" />
+          <WatercolorSky palette={PLUM} className="absolute inset-0" />
         </div>
         <div ref={sunriseRef} aria-hidden className="absolute inset-0 will-change-[opacity]" style={{ opacity: 0 }}>
-          <WatercolorSky palette={SUNRISE} stars={false} className="absolute inset-0" />
+          <WatercolorSky palette={SUNRISE} className="absolute inset-0" />
         </div>
         {/* the sun's glow, rising from below the bottom edge */}
         <div
@@ -112,11 +109,6 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
         {/* a soft shade behind the words, so cream text holds on the brightest sky */}
         <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 45% at 50% 48%, rgba(24,14,48,0.32), transparent 75%)' }} />
 
-        {/* stars flicked on in gouache (PaintedStars) — one static layer; it fades out
-            with the night as the dawn comes up */}
-        <div ref={starsRef} aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden will-change-[opacity]" style={{ opacity: reduce ? 0.5 : 1 }}>
-          <PaintedStars seed={20161005} flecks={170} sparkles={7} className="absolute inset-0 h-full w-full" style={{ transform: 'translateZ(0)' }} />
-        </div>
 
 
         <div ref={stackRef} className="mx-auto px-8 relative z-10 w-full max-w-3xl text-center will-change-transform">

@@ -1,4 +1,3 @@
-import PaintedStars from './PaintedStars';
 import React, { useEffect, useRef, useState } from 'react';
 import { afterIntro } from '../UI/introGate';
 
@@ -7,7 +6,7 @@ import { afterIntro } from '../UI/introGate';
 // backruns, granulation and the paper's tooth, and a few dots of white gouache.
 //
 // Performance: the painting is built as SVG text and drawn once, at idle time, into a
-// JPEG bitmap. Everything that moves afterwards (the slow drift, twinkling stars,
+// JPEG bitmap. Everything that moves afterwards (the slow drift,
 // crossfades between skies) is a plain transform/opacity on that one bitmap —
 // compositor-only, and paused while the sky is off screen — so scrolling stays smooth.
 
@@ -186,7 +185,7 @@ const bitmap = (p: SkyPalette, eager = false) => {
 /** the bitmap of a sky painted at once (the hero's): the loader waits on it */
 export const skyPainted = (p: SkyPalette) => bitmap(p, true);
 
-const WatercolorSky: React.FC<{ palette?: SkyPalette; stars?: boolean; eager?: boolean; className?: string; style?: React.CSSProperties; skyRef?: React.Ref<HTMLDivElement> }> = ({ palette: p = DUSK, stars = true, eager = false, className = '', style, skyRef }) => {
+const WatercolorSky: React.FC<{ palette?: SkyPalette; eager?: boolean; className?: string; style?: React.CSSProperties; skyRef?: React.Ref<HTMLDivElement> }> = ({ palette: p = DUSK, eager = false, className = '', style, skyRef }) => {
   const [src, setSrc] = useState<string>();
   const [onScreen, setOnScreen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -215,8 +214,6 @@ const WatercolorSky: React.FC<{ palette?: SkyPalette; stars?: boolean; eager?: b
             style={play}
           />
         )}
-        {/* stars flicked on in gouache over the darker upper sky */}
-        {stars && <PaintedStars seed={42} flecks={70} sparkles={4} yMax={0.38} className="absolute inset-0 h-full w-full" />}
       </div>
     </div>
   );
