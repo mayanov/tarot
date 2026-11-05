@@ -483,7 +483,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const whatsappValid = waDigits.length >= 8;
   // Email is optional, but if given it must look like name@domain.tld
   // global readings are delivered by email, so there it's required
-  const emailValid = (isIndonesian && email.trim() === '') || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+  // Calls and live sessions get a calendar invite (with the Meet link), so they need an email
+  const emailNeeded = !isIndonesian || service?.id === 'call';
+  const emailValid = (!emailNeeded && email.trim() === '') || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
   const scheduled = service?.scheduled ?? true;
   // a global reading is done by email, without a session: it needs the question
   // (a live session's questions are asked in it)
@@ -913,9 +915,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   )}
                 </label>
                 <label className="block">
-                  <span className={label}>Email {isIndonesian && <span className="text-ink/40 font-normal">(opsional)</span>}</span>
+                  <span className={label}>Email {emailNeeded ? (service?.id === 'call' || live) && <span className="text-ink/40 font-normal">{t('(untuk undangan kalender)', '(for your calendar invite)')}</span> : <span className="text-ink/40 font-normal">(opsional)</span>}</span>
                   <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" className={field} placeholder={t('nama@email.com', 'you@email.com')} />
-                  {!emailValid && (
+                  {!emailValid && email.trim() !== '' && (
                     <span className="block mt-1.5 text-xs text-ink/70">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
                   )}
                 </label>

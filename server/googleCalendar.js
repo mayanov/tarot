@@ -3,14 +3,16 @@
 // - Pushes a calendar event when a scheduled booking is created (and removes it on cancel).
 // - Reads the owner's busy times so those slots disappear from the booking form.
 //
-// Auth reuses the Firebase service account (FIREBASE_SERVICE_ACCOUNT) with the Calendar
-// scope. The owner must share their Google Calendar with the service account's
-// client_email ("Make changes to events") and set GOOGLE_CALENDAR_ID.
+// Auth: signed in as the calendar's owner when GOOGLE_OAUTH_CLIENT_ID / _SECRET /
+// _REFRESH_TOKEN are set (scripts/google-calendar-auth.mjs) — then calls and live
+// sessions invite the customer with a Google Meet link. Otherwise the Firebase service
+// account (FIREBASE_SERVICE_ACCOUNT), which the owner shares the calendar with ("Make
+// changes to events"); events then carry no guests. GOOGLE_CALENDAR_ID either way.
 //
 // Everything here fails soft: if the calendar isn't configured or an API call errors,
 // bookings still work — they just don't sync.
 
-import { JWT } from 'google-auth-library';
+import { JWT, OAuth2Client } from 'google-auth-library';
 
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || '';
 const TZ = process.env.BOOKING_TIMEZONE || 'Asia/Jakarta';
@@ -35,10 +37,23 @@ const nextDay = (isoDate) => {
 
 let jwtClient = null;
 let disabledReason = null;
+// 'owner': signed in as the calendar's owner (OAuth, scripts/google-calendar-auth.mjs),
+// which is what lets an event invite the customer and carry a Google Meet link — a
+// service account can't invite guests to a personal Gmail calendar. 'service': the
+// Firebase service account the calendar is shared with (events without guests).
+let authMode = null;
 
 function getClient() {
   if (jwtClient) return jwtClient;
   if (disabledReason) return null;
+  const { GOOGLE_OAUTH_CLIENT_ID: oid, GOOGLE_OAUTH_CLIENT_SECRET: osecret, GOOGLE_OAUTH_REFRESH_TOKEN: orefresh } = process.env;
+  if (oid && osecret && orefresh && CALENDAR_ID) {
+    jwtClient = new OAuth2Client({ clientId: oid, clientSecret: osecret });
+    jwtClient.setCredentials({ refresh_token: orefresh });
+    authMode = 'owner';
+    console.log(`[gcal] Calendar sync enabled as the owner (calendar: ${CALENDAR_ID}); sessions invite their customer`);
+    return jwtClient;
+  }
   let raw = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GOOGLE_CREDENTIALS_JSON;
   if (!raw) { disabledReason = 'no service-account credentials'; return null; }
   if (!CALENDAR_ID) { disabledReason = 'GOOGLE_CALENDAR_ID not set'; return null; }
@@ -46,6 +61,7 @@ function getClient() {
     if (!raw.trim().startsWith('{')) raw = Buffer.from(raw, 'base64').toString('utf8');
     const sa = JSON.parse(raw);
     jwtClient = new JWT({ email: sa.client_email, key: sa.private_key, scopes: SCOPES });
+    authMode = 'service';
     console.log(`[gcal] Calendar sync enabled (calendar: ${CALENDAR_ID}, sa: ${sa.client_email})`);
     return jwtClient;
   } catch (e) {
@@ -57,7 +73,7 @@ function getClient() {
 
 export function calendarStatus() {
   const enabled = Boolean(getClient());
-  return { enabled, calendarId: enabled ? CALENDAR_ID : null, reason: enabled ? null : disabledReason };
+  return { enabled, calendarId: enabled ? CALENDAR_ID : null, reason: enabled ? null : disabledReason, invitesCustomers: enabled && authMode === 'owner' };
 }
 
 async function accessToken() {
@@ -97,15 +113,42 @@ const descriptionFor = (booking) => [
   `Booking ID: ${booking.id}`,
 ].filter(Boolean).join('\n');
 
-// The event body for a timed (scheduled) booking, incl. the rest buffer.
-const scheduledBody = (booking) => {
+// The customer's email, from the contact line the form builds ("WA: … · Email: …").
+const emailOf = (booking) => ((booking?.contact || '').match(/Email:\s*([^\s@·]+@[^\s·]+)/) || [])[1] || '';
+// Calls (Panggilan Online) and Live Sessions become a real invite to the customer,
+// with a Google Meet link — only possible when signed in as the calendar's owner.
+const INVITE_SERVICES = new Set(['call', 'live']);
+const invites = (booking) => authMode === 'owner' && INVITE_SERVICES.has(booking?.serviceId) && Boolean(emailOf(booking));
+const isIndonesian = (booking) => booking?.market === 'ID';
+
+// What the customer reads in their invite (the owner's notes follow, below a line).
+const inviteDescription = (booking) => {
+  const id = isIndonesian(booking);
+  const intro = id
+    ? [
+        'Terima kasih sudah booking sesi dengan Mayanov Tarot ✨',
+        'Masuk lewat link Google Meet di undangan ini pada jamnya (atau lewat WhatsApp, kalau sudah disepakati begitu).',
+        'Perlu ganti jadwal? Kabari lewat WhatsApp paling lambat 24 jam sebelumnya.',
+      ]
+    : [
+        'Thank you for booking with Mayanov Tarot ✨',
+        'Join with the Google Meet link in this invitation at the time above.',
+        'Need to reschedule? Message on WhatsApp at least 24 hours before.',
+      ];
+  const q = booking.question ? `${id ? 'Pertanyaanmu' : 'Your question'}: ${booking.question}` : '';
+  return [...intro, '', q, `Booking ID: ${booking.id}`].filter((l, i, a) => l || a[i - 1]).join('\n');
+};
+
+// The event body for a timed (scheduled) booking: the owner's own events carry the
+// rest buffer; an invite is exactly the session, since the customer sees it.
+const scheduledBody = (booking, invite = invites(booking)) => {
   const dur = booking.durationMin && booking.durationMin > 0 ? booking.durationMin : 60;
   const serviceLabel = (booking.serviceName || booking.serviceId || '').split(' · ')[0].trim();
   return {
-    summary: `${serviceLabel} — ${booking.name}`,
-    description: descriptionFor(booking),
+    summary: invite ? `Mayanov Tarot · ${serviceLabel} — ${booking.name}` : `${serviceLabel} — ${booking.name}`,
+    description: invite ? inviteDescription(booking) : descriptionFor(booking),
     start: { dateTime: rfc3339(booking.date, booking.time), timeZone: TZ },
-    end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur + restBufferFor(booking))), timeZone: TZ },
+    end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur + (invite ? 0 : restBufferFor(booking)))), timeZone: TZ },
   };
 };
 
@@ -134,8 +177,21 @@ export async function createEvent(booking) {
     };
   }
 
+  // An invite: the customer as a guest (Google emails them), a Meet link, and a tag so
+  // reading it back knows there's no rest tail on it.
+  let url = eventsUrl();
+  if (scheduled && invites(booking)) {
+    body.attendees = [{ email: emailOf(booking), displayName: booking.name }];
+    body.conferenceData = { createRequest: { requestId: `${booking.id}-${Date.now()}`, conferenceSolutionKey: { type: 'hangoutsMeet' } } };
+    body.guestsCanModify = false;
+    body.guestsCanInviteOthers = false;
+    body.reminders = { useDefault: true };
+    body.extendedProperties = { private: { mtInvite: '1', mtBookingId: String(booking.id) } };
+    url += '?conferenceDataVersion=1&sendUpdates=all';
+  }
+
   try {
-    const r = await fetch(eventsUrl(), {
+    const r = await fetch(url, {
       method: 'POST',
       headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -266,7 +322,8 @@ export async function deleteEvent(eventId) {
   const c = getClient();
   if (!c || !eventId) return;
   try {
-    const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}`, {
+    // sendUpdates: an invited customer gets Google's cancellation email (no-op otherwise)
+    const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}?sendUpdates=all`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${await accessToken()}` },
     });
@@ -303,10 +360,14 @@ export async function updateEvent(eventId, booking) {
   const c = getClient();
   if (!c || !eventId || !booking?.date || !booking?.time) return;
   try {
-    const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}`, {
+    // Kept as it was made: an invite stays an invite (and the move emails the customer;
+    // their guest entry and Meet link stay as they are), an event without guests stays one.
+    const cur = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
+    const invite = cur.ok ? (await cur.json()).extendedProperties?.private?.mtInvite === '1' : invites(booking);
+    const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}?sendUpdates=all`, {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(scheduledBody(booking)),
+      body: JSON.stringify(scheduledBody(booking, invite)),
     });
     if (!r.ok) console.error('[gcal] updateEvent failed', r.status, await r.text());
   } catch (e) {
@@ -331,7 +392,8 @@ export async function eventInfo(eventId) {
       const s = toLocal(ev.start.dateTime);
       const durTotal = Math.round((Date.parse(ev.end.dateTime) - Date.parse(ev.start.dateTime)) / 60000);
       // Meetup events carry no rest tail (travel blocks are separate), so don't subtract one.
-      const buf = /tatap muka/i.test(ev.summary || '') ? 0 : REST_BUFFER_MIN;
+      // Invites are exactly the session too.
+      const buf = /tatap muka/i.test(ev.summary || '') || ev.extendedProperties?.private?.mtInvite === '1' ? 0 : REST_BUFFER_MIN;
       const durationMin = Math.max(30, durTotal - buf);
       return s ? { status: 'exists', scheduled: true, date: s.date, time: s.time, durationMin } : { status: 'exists', scheduled: true };
     }

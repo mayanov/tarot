@@ -464,12 +464,19 @@ app.get('/api/availability', async (req, res) => {
     }
 });
 
+// Calls and live sessions are sent a calendar invite (server/googleCalendar.js), so
+// their booking must carry an email ("Email: …" in the contact line the form builds).
+const INVITED_SERVICES = new Set(['call', 'live']);
+const missingEmail = (serviceId, contact) =>
+    INVITED_SERVICES.has(String(serviceId)) && !/Email:\s*[^\s@·]+@[^\s@·]+\.[^\s@·]{2,}/.test(String(contact || ''));
+
 // Public: create a booking.
 app.post('/api/bookings', async (req, res) => {
     const { serviceId, serviceName, date, time, durationMin, name, dob, contact, question, market } = req.body || {};
     if (!serviceId || !name || !contact) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
+    if (missingEmail(serviceId, contact)) return res.status(400).json({ error: 'EMAIL_REQUIRED' });
     if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         return res.status(400).json({ error: 'Invalid date' });
     }
@@ -514,6 +521,7 @@ app.post('/api/paypal/orders', async (req, res) => {
     if (reading.durationMin && (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || !/^\d{2}:\d{2}$/.test(String(time)) || !name || !contact)) {
         return res.status(400).json({ error: 'Missing date or time' });
     }
+    if (missingEmail(serviceId, contact)) return res.status(400).json({ error: 'EMAIL_REQUIRED' });
     let id;
     try {
         id = await paypal.createOrder(serviceId);
@@ -570,7 +578,7 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
     const reading = paypal.READINGS[serviceId];
     // checked before taking the money, so a bad form never ends in a paid order with no booking
     // (an email reading needs the question; a live session is asked in person)
-    if (!reading || !name || !contact || (!reading.durationMin && !String(question || '').trim())) {
+    if (!reading || !name || !contact || (!reading.durationMin && !String(question || '').trim()) || missingEmail(serviceId, contact)) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
     // a live session: its slot must still be its own, or the payment isn't taken
@@ -681,6 +689,7 @@ app.post('/api/midtrans/checkout', async (req, res) => {
     const { serviceId, pkg, date, time, name, dob, contact, question, phone, email } = req.body || {};
     const q = midtrans.quote(serviceId, String(pkg || ''));
     if (!q || !name || !contact) return res.status(400).json({ error: 'Missing required fields' });
+    if (missingEmail(serviceId, contact)) return res.status(400).json({ error: 'EMAIL_REQUIRED' });
     if (q.scheduled && (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || !/^\d{2}:\d{2}$/.test(String(time)))) {
         return res.status(400).json({ error: 'Missing date or time' });
     }
