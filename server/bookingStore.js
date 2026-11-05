@@ -391,7 +391,7 @@ export async function holdStillFree(hold) {
 // Claims a one-time step (e.g. confirming one payment): true for the first caller only,
 // even when two arrive together (Midtrans's notice and the visitor's own status check).
 const claimedLocally = new Set();
-async function claimOnce(key) {
+export async function claimOnce(key) {
   if (db) {
     try { await db.collection('once').doc(key).create({ at: new Date().toISOString() }); return true; }
     catch (e) { if (e.code === 6 || /already exists/i.test(e.message)) return false; throw e; }
@@ -417,22 +417,28 @@ export async function confirmPaidHold(booking, payment) {
   return confirmed;
 }
 
-/** Admin sent the booking confirmation from their own WhatsApp (the dashboard's button) */
-export async function markWhatsAppConfirmed(id) {
+// notes when something was sent for a booking (field → now)
+async function stamp(id, field) {
   const at = new Date().toISOString();
   if (db) {
     const ref = db.collection(COLLECTION).doc(id);
     if (!(await ref.get()).exists) return null;
-    await ref.update({ waConfirmSentAt: at });
-    return { id, waConfirmSentAt: at };
+    await ref.update({ [field]: at });
+    return { id, [field]: at };
   }
   const all = readAll();
   const b = all.find((x) => x.id === id);
   if (!b) return null;
-  b.waConfirmSentAt = at;
+  b[field] = at;
   writeAll(all);
-  return { id, waConfirmSentAt: at };
+  return { id, [field]: at };
 }
+
+/** Admin sent the booking confirmation from their own WhatsApp (the dashboard's button) */
+export const markWhatsAppConfirmed = (id) => stamp(id, 'waConfirmSentAt');
+
+/** The customer was emailed that their payment came through (server/mailer.js) */
+export const markPaidEmailSent = (id) => stamp(id, 'paidEmailSentAt');
 
 /** an unpaid hold whose payment failed or expired: the slot is free again */
 export async function releaseHold(booking) {

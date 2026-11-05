@@ -13,6 +13,7 @@ import * as userStore from './userStore.js';
 import * as gcal from './googleCalendar.js';
 import * as paypal from './paypal.js';
 import * as midtrans from './midtrans.js';
+import * as mailer from './mailer.js';
 import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
@@ -571,6 +572,19 @@ app.post('/api/paypal/orders/:id/release', async (req, res) => {
     }
 });
 
+// "payment received" email for a paid email reading (3-Card / 5-Card), once per booking
+async function emailPaidReading(booking, amount) {
+    try {
+        if (!(await bookingStore.claimOnce(`paidmail_${booking.id}`))) return;
+        if (await mailer.sendPaidReading(booking, amount)) {
+            const st = await bookingStore.markPaidEmailSent(booking.id);
+            if (st) booking.paidEmailSentAt = st.paidEmailSentAt;
+        }
+    } catch (e) {
+        console.error('[mail] paid reading email failed:', booking.id, e.message);
+    }
+}
+
 app.post('/api/paypal/orders/:id/capture', async (req, res) => {
     if (!paypal.configured()) return res.status(503).json({ error: 'PayPal not configured' });
     const orderId = String(req.params.id || '').slice(0, 64);
@@ -642,6 +656,10 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
             paypalCaptureId: paid.captureId,
             paypalPayer: paid.payerEmail,
         });
+        // an email reading: tell the customer straight away that it's paid and coming.
+        // Sent before answering (a serverless function stops once it has answered), once
+        // per booking; a failed email never undoes the booking.
+        await emailPaidReading(booking, reading.value);
         res.status(201).json(booking);
     } catch (e) {
         // paid but not saved: keep every detail in the log so it can be entered by hand
