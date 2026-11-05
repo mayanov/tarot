@@ -118,6 +118,11 @@ const PAYMENT = {
   waNumber: '6287786280310', // business WhatsApp (same as the footer / floating button)
 };
 
+// Indonesian bookings are paid by hand for now: QRIS or bank transfer (PAYMENT), the
+// proof sent on WhatsApp. Midtrans (pay inside the form) is built and kept, switched off:
+// set this to true to bring it back (its keys stay in Vercel).
+const MIDTRANS_ON = false;
+
 // Global readings are paid with PayPal's buttons on the review step (services/paypal.ts)
 // when the API has PayPal keys; until then, once booked, on these payment links, which
 // send the visitor back to /?payment_success=<id> (the thank-you page).
@@ -328,7 +333,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
   useEffect(() => {
     if (!isIndonesian) paypalConfig().then(setPpConfig);
-    else midtransConfig().then(setMtConfig);
+    else if (MIDTRANS_ON) midtransConfig().then(setMtConfig);
   }, [isIndonesian]);
 
   // Load taken slots when a date is picked.
@@ -548,8 +553,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   // global reading + PayPal keys on the server → paid right here on the review step
   const payInForm = !isIndonesian && !!ppConfig?.enabled && !!service && PAYPAL_IN_FORM.has(service.id);
   const live = service?.id === 'live';
-  // ID + Midtrans keys on the server → paid right here on the review step too
-  const midtransHere = isIndonesian && !!mtConfig?.enabled;
+  // ID + Midtrans switched on (MIDTRANS_ON) and its keys on the server → paid right here
+  // on the review step too; otherwise QRIS / bank transfer and the proof on WhatsApp
+  const midtransHere = MIDTRANS_ON && isIndonesian && !!mtConfig?.enabled;
 
   // WhatsApp deep link for the success step — prefilled with the booking so the
   // customer just attaches their payment proof.
