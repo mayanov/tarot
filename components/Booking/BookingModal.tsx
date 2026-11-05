@@ -539,9 +539,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     : live
     ? `Hi Mayanov, I've just booked:\n• ${waServiceLine} (Jakarta time)\n• Name: ${name}\n• Total: ${totalPrice}\n\nHow can I pay? 🙏`
     : `Hi Mayanov, I've just booked:\n• ${waServiceLine}\n• Name: ${name}\n• Total: ${totalPrice}\n\nHere's my payment proof 🙏`;
-  const waLink = `https://wa.me/${PAYMENT.waNumber}?text=${encodeURIComponent(waMessage)}`;
+  const waLink = `https://api.whatsapp.com/send?phone=${PAYMENT.waNumber}&text=${encodeURIComponent(waMessage)}`;
   // already paid here: just a way to reach Mayanov, with the booking for reference
-  const waPaidLink = `https://wa.me/${PAYMENT.waNumber}?text=${encodeURIComponent(`Halo Mayanov, aku sudah booking & bayar:\n• ${waServiceLine}\n• Nama: ${name}\n\n`)}`;
+  const waPaidLink = `https://api.whatsapp.com/send?phone=${PAYMENT.waNumber}&text=${encodeURIComponent(`Halo Mayanov, aku sudah booking & bayar:\n• ${waServiceLine}\n• Nama: ${name}\n\n`)}`;
 
   // ---- shared bits of the layout ----
   const label = 'block text-[13px] font-medium text-ink/75 mb-1.5';

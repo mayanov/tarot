@@ -7,7 +7,7 @@ import type { Booking } from '../../services/booking';
 // ordinary WhatsApp message, so it costs nothing and needs no Meta setup. The dashboard
 // remembers when it was sent (POST /api/admin/bookings/:id/wa-confirmed).
 
-/** The customer's number as wa.me wants it (0812… → 62812…), or '' */
+/** The customer's number as WhatsApp links want it (0812… → 62812…), or '' */
 export const waNumberOf = (contact?: string) => {
   const raw = ((contact || '').match(/WA:\s*([^·]+)/i) || [])[1] || '';
   let d = raw.replace(/\D/g, '');
@@ -47,9 +47,8 @@ export const confirmationText = (b: Booking) => {
         `Layanan: ${service}`,
         `Jadwal: ${scheduleOf(b, true)}`,
         total ? `Total: ${total}${paid ? ' (lunas)' : ''}` : null,
-        b.ref ? `Kode booking: ${b.ref}` : null,
         '',
-        'Kalau ada yang perlu ditanyakan atau mau ganti jadwal, balas saja pesan ini ya. Sampai ketemu!',
+        'Kalo ada yang mau ditanya bisa langsung chat aja yaa. See you! ☺️',
       ].filter((l) => l !== null).join('\n')
     : [
         `Hi ${first}, your booking with Mayanov Tarot is confirmed ✨`,
@@ -57,9 +56,8 @@ export const confirmationText = (b: Booking) => {
         `Service: ${service}`,
         `When: ${scheduleOf(b, false)}`,
         total ? `Total: ${total}${paid ? ' (paid)' : ''}` : null,
-        b.ref ? `Booking code: ${b.ref}` : null,
         '',
-        'If you have any questions or need another time, just reply here. See you soon!',
+        'If there’s anything you’d like to ask, just message me here. See you! ☺️',
       ].filter((l) => l !== null).join('\n');
 };
 
@@ -72,7 +70,9 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void }> = 
   if (!number) return null;
   const send = async () => {
     // open WhatsApp first (in the click, so it isn't blocked as a pop-up), then record it
-    window.open(`https://wa.me/${number}?text=${encodeURIComponent(confirmationText(b))}`, '_blank', 'noopener');
+    // api.whatsapp.com rather than wa.me: wa.me's redirect garbles emoji into "�" on
+    // WhatsApp Web and the desktop app
+    window.open(`https://api.whatsapp.com/send?phone=${number}&text=${encodeURIComponent(confirmationText(b))}`, '_blank', 'noopener');
     setBusy(true);
     try {
       const token = localStorage.getItem('authToken');
