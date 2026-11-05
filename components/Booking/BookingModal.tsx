@@ -515,14 +515,23 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     const to = localClock(iso, addMinutes(start, durationMin || 30)).split(' ').slice(-2).join(' ');
     return `${from.replace(/ (AM|PM)$/, (m) => (to.endsWith(m.trim()) ? '' : m))}–${to} ${localZone(iso)}`;
   };
-  // the schedule rows of the summaries: Jakarta's time, and theirs when it differs
+  // the session's length, as part of its schedule line ("30 menit", "2 jam", "1 hour")
+  const lengthText = (min: number) =>
+    isIndonesian
+      ? (min % 60 === 0 ? `${min / 60} jam` : `${min} menit`)
+      : (min % 60 === 0 ? `${min / 60} hour${min > 60 ? 's' : ''}` : `${min} min`);
+  // the schedule rows of the summaries: Jakarta's time, and theirs when it differs, with
+  // the length on the first (no separate Duration row)
   const scheduleRows = () => {
     if (!scheduled || !date) return null;
     const iso = toISODate(date);
+    const len = durationMin ? ` (${lengthText(durationMin)})` : '';
     const jakarta = `${fmtLongDate(iso, isIndonesian ? 'id' : 'en')} · ${time ? timeRange(time) : ''}`;
-    if (!showLocal || !time) return row(t('Jadwal', 'Schedule'), jakarta);
-    return <>{row('Your time', localRange(iso, time))}{row('Jakarta time', jakarta)}</>;
+    if (!showLocal || !time) return row(t('Jadwal', 'Schedule'), jakarta + len);
+    return <>{row('Your time', localRange(iso, time) + len)}{row('Jakarta time', jakarta)}</>;
   };
+  // the service, with its package when it has no time (chat: "· 1 Pertanyaan")
+  const serviceLine = () => `${service?.name || ''}${pkg && !scheduled ? ` · ${pkg.split(' · ')[0]}` : ''}`;
 
   const totalPrice = pkg ? priceFromText(pkg) : (service?.price || '');
   // global reading + PayPal keys on the server → paid right here on the review step
@@ -946,8 +955,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
               <h3 className="font-serif font-semibold text-ink text-lg">{t('Ringkasan', 'Summary')}</h3>
               <div className="mt-2">
-                {row(t('Layanan', 'Service'), service?.name)}
-                {pkg && row(scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package'), pkg.split(' · ')[0])}
+                {row(t('Layanan', 'Service'), serviceLine())}
                 {scheduleRows()}
                 {row(t('Nama', 'Name'), name)}
                 {row(t('Tanggal lahir', 'Date of birth'), fmtLongDate(dob, isIndonesian ? 'id' : 'en'))}
@@ -1030,8 +1038,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               </p>
 
               <div className="mt-5 text-left">
-                {row(t('Layanan', 'Service'), service?.name)}
-                {pkg && row(scheduled ? t('Durasi', 'Duration') : t('Paket', 'Package'), pkg.split(' · ')[0])}
+                {row(t('Layanan', 'Service'), serviceLine())}
                 {scheduleRows()}
                 {rule}
                 <div className="flex items-center justify-between gap-4 py-3">
