@@ -563,10 +563,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const waPaidLink = `https://api.whatsapp.com/send?phone=${PAYMENT.waNumber}&text=${encodeURIComponent(`Halo Mayanov, aku sudah booking & bayar:\n• ${waServiceLine}\n• Nama: ${name}\n\n`)}`;
 
   // ---- shared bits of the layout ----
-  const label = 'block text-[13px] font-medium text-ink/75 mb-1.5';
+  const label = 'letterpress block text-[13px] font-medium text-ink/75 mb-1.5';
   // fields are lines to write on, ruled in pencil (.pencil-field), not boxes; the line
   // darkens to the brand purple while you write on it
-  const field = 'pencil-field w-full bg-transparent px-1 pt-2 pb-2.5 font-elegant text-[17px] text-ink placeholder-ink/30 focus:outline-none';
+  const field = 'letterpress pencil-field w-full bg-transparent px-1 pt-2 pb-2.5 font-elegant text-[17px] text-ink placeholder-ink/30 focus:outline-none';
   // options are words on the paper, not boxes: hovering one lays a pale wash under it,
   // and the chosen one is circled in ink, as you'd mark a printed form (put
   // {chipInk(active)} as the first child)
@@ -585,7 +585,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   );
   // something went wrong: said on a rose watercolour wash, not in a tinted box
   const errorNote = (msg: string) => (
-    <div role="alert" className="relative isolate mb-4 px-4 py-3.5 text-sm text-ink leading-relaxed">
+    <div role="alert" className="letterpress relative isolate mb-4 px-4 py-3.5 text-sm text-ink leading-relaxed">
       <WatercolorWash className="-z-10" />
       {msg}
     </div>
@@ -629,7 +629,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   // Payment (Indonesian market): QRIS | Transfer Bank as two tabs
   const paymentPanel = () => !isIndonesian ? null : (
     <div>
-      <div className="flex gap-6 text-sm font-medium">
+      <div className="letterpress flex gap-6 text-sm font-medium">
         {([['qris', 'QRIS'], ['bank', t('Transfer Bank', 'Bank transfer')]] as const).map(([id, lbl]) => (
           <button
             key={id}
@@ -648,12 +648,12 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           <div className="relative isolate w-44 h-44">
           <PaperShadow radius="0.5rem" />
           <div className="relative w-full h-full rounded-lg bg-white grid place-items-center overflow-hidden" style={paperCut(37, 8, 12)}>
-            <span className="text-[11px] text-ink/45 text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
+            <span className="letterpress text-[11px] text-ink/45 text-center px-3">{t('QRIS akan tampil di sini', 'QRIS shown here')}</span>
             {/* hidden via state (not by removing the node), so switching tabs can't trip React */}
             {!qrMissing && <img src={PAYMENT.qrSrc} alt="QRIS" className="absolute inset-0 w-full h-full object-contain bg-white" onError={() => setQrMissing(true)} />}
           </div>
           </div>
-          <span className="text-xs text-ink/55">{t('Scan dengan aplikasi bank atau e-wallet', 'Scan with any banking or e-wallet app')}</span>
+          <span className="letterpress text-xs text-ink/55">{t('Scan dengan aplikasi bank atau e-wallet', 'Scan with any banking or e-wallet app')}</span>
         </div>
       ) : (
         <div className="relative mt-4">
@@ -666,7 +666,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           <button type="button" onClick={copyAccount} className="group/copy relative isolate shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-ink hover:text-moon transition-colors">
             <MarkerFrame className="text-ink/45 transition-colors group-hover/copy:text-moon/80" />
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? t('Tersalin', 'Copied') : t('Salin', 'Copy')}
+            <span className="letterpress">{copied ? t('Tersalin', 'Copied') : t('Salin', 'Copy')}</span>
           </button>
           </div>
           {rule}
@@ -735,7 +735,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           </div>
           {step < 4 && (
             <div className="px-5 md:px-6 pb-2">
-              <div className="text-[12px] text-ink/50">
+              <div className="letterpress text-[12px] text-ink/50">
                 {t('Langkah', 'Step')} {cur + 1} {t('dari', 'of')} {seq.length} · <span className="font-elegant italic text-[14px] text-moon">{stepLabels[step]}</span>
               </div>
               <div className="relative mt-1.5">
@@ -771,8 +771,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                       <span className="letterpress block mt-1 text-[13px] text-ink/55 leading-snug">{s.meta}</span>
                     </span>
                     <span className="shrink-0 text-right">
-                      <span className="block text-[11px] text-ink/45 leading-none">{s.packages?.length ? t('mulai', 'from') : ' '}</span>
-                      <span className="block mt-1 font-serif font-semibold text-ink leading-none">{fromPrice(s)}</span>
+                      <span className="letterpress block text-[11px] text-ink/45 leading-none">{s.packages?.length ? t('mulai', 'from') : ' '}</span>
+                      <span className="letterpress block mt-1 font-serif font-semibold text-ink leading-none">{fromPrice(s)}</span>
                     </span>
                     <PencilArrow weight="semibold" className="w-4 h-4 text-ink group-hover:text-moon group-hover:translate-x-0.5 transition-all" />
                   </button>
@@ -788,7 +788,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {error && errorNote(error)}
 
               {(service?.id === 'meetup' || service?.id === 'call') && (
-                <p className="mb-4 flex items-center gap-2 text-[13px] text-ink/60">
+                <p className="letterpress mb-4 flex items-center gap-2 text-[13px] text-ink/60">
                   <CalendarDays className="w-4 h-4 shrink-0 text-moon" />
                   {service.id === 'meetup'
                     ? t('Sesi tatap muka hanya tersedia hari Jumat & Minggu.', 'In-person sessions are available on Fridays & Sundays only.')
@@ -796,7 +796,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 </p>
               )}
               {live && (
-                <p className="mb-4 flex items-start gap-2 text-[13px] text-ink/60 leading-relaxed">
+                <p className="letterpress mb-4 flex items-start gap-2 text-[13px] text-ink/60 leading-relaxed">
                   <CalendarDays className="w-4 h-4 mt-0.5 shrink-0 text-moon" />
                   <span>Live sessions run Monday–Friday, 11:00–20:00 Jakarta time (GMT+7).{showLocal && <> Times below are shown on your clock ({localZone(toISODate(date!))}).</>}</span>
                 </p>
@@ -831,8 +831,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                             <button key={p} type="button" onClick={() => { setPkg(p); setTime(null); }} className={chip(pkg === p)}>
                               <span className="relative isolate flex flex-col items-center px-4 py-1">
                                 {chipInk(pkg === p)}
-                                <span className="font-serif font-semibold text-[15px] leading-snug">{pName}</span>
-                                <span className={`mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-moon/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
+                                <span className="letterpress font-serif font-semibold text-[15px] leading-snug">{pName}</span>
+                                <span className={`letterpress mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-moon/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
                               </span>
                             </button>
                           );
@@ -844,11 +844,11 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   {/* 3. time */}
                   <span className={`${label} flex items-center gap-1.5`}><Clock className="w-3.5 h-3.5" /> {t('Jam', 'Time')}</span>
                   {!date ? (
-                    <p className="text-sm text-ink/55 py-2">{t('Pilih tanggal dulu untuk melihat jam.', 'Pick a date to see available times.')}</p>
+                    <p className="letterpress text-sm text-ink/55 py-2">{t('Pilih tanggal dulu untuk melihat jam.', 'Pick a date to see available times.')}</p>
                   ) : needsPackage && !pkg ? (
-                    <p className="text-sm text-ink/55 py-2">{t('Pilih durasi dulu untuk melihat jam.', 'Choose a duration to see available times.')}</p>
+                    <p className="letterpress text-sm text-ink/55 py-2">{t('Pilih durasi dulu untuk melihat jam.', 'Choose a duration to see available times.')}</p>
                   ) : visibleSlots.length === 0 ? (
-                    <p className="text-sm text-ink/55 py-2">{t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}</p>
+                    <p className="letterpress text-sm text-ink/55 py-2">{t('Slot hari ini sudah lewat. Silakan pilih tanggal lain ya.', 'No slots left today. Please pick another date.')}</p>
                   ) : (
                     <>
                     <div className="grid grid-cols-3 gap-x-3 gap-y-1.5">
@@ -868,7 +868,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                               {!isTaken && (time === slot
                                 ? <InkLoop className="text-moon" />
                                 : <PaintSwatch round className="text-moon opacity-0 transition-opacity duration-300 group-hover/slot:opacity-[0.12]" />)}
-                              {showLocal ? localClock(toISODate(date), slot) : slot}
+                              <span className="letterpress">{showLocal ? localClock(toISODate(date), slot) : slot}</span>
                             </span>
                           </button>
                         );
@@ -876,7 +876,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     </div>
                     {/* the chosen time, written out with its end */}
                     {time && (
-                      <p className="mt-3 font-elegant italic text-[15px] text-ink/70 leading-snug">
+                      <p className="letterpress mt-3 font-elegant italic text-[15px] text-ink/70 leading-snug">
                         {showLocal
                           ? <>Your session: <span className="not-italic font-serif font-semibold text-moon tabular-nums">{localRange(toISODate(date), time)}</span><span className="block text-[13px] text-ink/50">{time} – {addMinutes(time, durationMin || 30)} Jakarta time</span></>
                           : <>{t('Sesimu', 'Your session')}: <span className="not-italic font-serif font-semibold text-moon tabular-nums">{time} – {addMinutes(time, durationMin || 30)}</span></>}
@@ -890,7 +890,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {bottomBar(
                 <button onClick={() => setStep(2)} disabled={!date || !time || (needsPackage && !pkg)} className={primaryBtn}>
                   {swatch}
-                  {t('Lanjut', 'Continue')} <PencilArrow press="inherit" weight="semibold" className="w-4 h-4" />
+                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{t('Lanjut', 'Continue')} <PencilArrow press="inherit" weight="semibold" className="w-4 h-4" /></span>
                 </button>
               )}
             </div>
@@ -901,7 +901,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
             <div>
               {error && errorNote(error)}
               {scheduled && date && (
-                <p className="mb-5 flex items-center gap-2 text-[13px] text-ink/60">
+                <p className="letterpress mb-5 flex items-center gap-2 text-[13px] text-ink/60">
                   <CalendarDays className="w-4 h-4 text-moon" />
                   {showLocal && time
                     ? <>{localRange(toISODate(date), time)} · {fmtLongDate(toISODate(date), 'en')} {timeRange(time)} Jakarta time</>
@@ -920,8 +920,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                           <button key={p} type="button" onClick={() => setPkg(p)} className={chip(pkg === p)}>
                             <span className="relative isolate flex flex-col items-center px-4 py-1">
                               {chipInk(pkg === p)}
-                              <span className="font-serif font-semibold text-[15px] leading-snug">{pName}</span>
-                              <span className={`mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-moon/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
+                              <span className="letterpress font-serif font-semibold text-[15px] leading-snug">{pName}</span>
+                              <span className={`letterpress mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-moon/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
                             </span>
                           </button>
                         );
@@ -948,21 +948,21 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     <input value={dobYear} onChange={(e) => setDobYear(e.target.value.replace(/\D/g, '').slice(0, 4))} inputMode="numeric" aria-label={t('Tahun', 'Year')} placeholder={t('Tahun', 'Year')} className={`${field} text-center`} />
                   </div>
                   {dobDay && dobMonth && dobYear.length === 4 && !dob && (
-                    <span className="block mt-1.5 text-xs text-ink/70">{t('Tanggal lahir tidak valid.', 'That date isn’t valid.')}</span>
+                    <span className="letterpress block mt-1.5 text-xs text-ink/70">{t('Tanggal lahir tidak valid.', 'That date isn’t valid.')}</span>
                   )}
                 </div>
                 <label className="block">
                   <span className={label}>WhatsApp</span>
                   <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value.replace(/[^\d+\s-]/g, ''))} type="tel" inputMode="tel" className={field} placeholder={t('cth. 0812 3456 7890', 'e.g. +62 812 3456 7890')} />
                   {whatsapp.trim() !== '' && !whatsappValid && (
-                    <span className="block mt-1.5 text-xs text-ink/70">{t('Masukkan nomor telepon yang valid (min. 8 angka).', 'Enter a valid phone number (at least 8 digits).')}</span>
+                    <span className="letterpress block mt-1.5 text-xs text-ink/70">{t('Masukkan nomor telepon yang valid (min. 8 angka).', 'Enter a valid phone number (at least 8 digits).')}</span>
                   )}
                 </label>
                 <label className="block">
                   <span className={label}>Email {emailNeeded ? invited && <span className="text-ink/40 font-normal">{t('(untuk undangan kalender)', '(for your calendar invite)')}</span> : <span className="text-ink/40 font-normal">(opsional)</span>}</span>
                   <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" className={field} placeholder={t('nama@email.com', 'you@email.com')} />
                   {!emailValid && email.trim() !== '' && (
-                    <span className="block mt-1.5 text-xs text-ink/70">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
+                    <span className="letterpress block mt-1.5 text-xs text-ink/70">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
                   )}
                 </label>
                 <label className="block">
@@ -974,7 +974,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {bottomBar(
                 <button onClick={() => setStep(3)} disabled={!detailsValid} className={primaryBtn}>
                   {swatch}
-                  {t('Lanjut', 'Continue')} <PencilArrow press="inherit" weight="semibold" className="w-4 h-4" />
+                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{t('Lanjut', 'Continue')} <PencilArrow press="inherit" weight="semibold" className="w-4 h-4" /></span>
                 </button>
               )}
             </div>
@@ -985,7 +985,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
             <div>
               {error && !payInForm && errorNote(error)}
 
-              <h3 className="font-serif font-semibold text-ink text-lg">{t('Ringkasan', 'Summary')}</h3>
+              <h3 className="letterpress font-serif font-semibold text-ink text-lg">{t('Ringkasan', 'Summary')}</h3>
               <div className="mt-2">
                 {row(t('Layanan', 'Service'), serviceLine())}
                 {scheduleRows()}
@@ -999,8 +999,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
               {midtransHere && (
                 <div className="mt-6">
-                  <h3 className="font-serif font-semibold text-ink text-lg mb-1">Pembayaran</h3>
-                  <p className="text-[13px] text-ink/60 leading-relaxed">
+                  <h3 className="letterpress font-serif font-semibold text-ink text-lg mb-1">Pembayaran</h3>
+                  <p className="letterpress text-[13px] text-ink/60 leading-relaxed">
                     {payWait
                       ? <>Menunggu pembayaranmu masuk… Kalau sudah bayar, tunggu sebentar di sini. {scheduled ? 'Jadwalmu kami tahan selama 30 menit.' : ''}</>
                       : <>Bayar {totalPrice} lewat QRIS, e-wallet (GoPay, ShopeePay, dll.), atau transfer bank. Booking-mu langsung tercatat begitu pembayaran masuk.</>}
@@ -1010,9 +1010,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
               {isIndonesian && !midtransHere && (
                 <div className="mt-6">
-                  <h3 className="font-serif font-semibold text-ink text-lg mb-3">{t('Pembayaran', 'Payment')}</h3>
+                  <h3 className="letterpress font-serif font-semibold text-ink text-lg mb-3">{t('Pembayaran', 'Payment')}</h3>
                   {paymentPanel()}
-                  <p className="mt-4 text-[13px] text-ink/60 leading-relaxed">
+                  <p className="letterpress mt-4 text-[13px] text-ink/60 leading-relaxed">
                     {t('Setelah konfirmasi, kirim bukti pembayaran via WhatsApp. Tanpa pembayaran, booking otomatis dibatalkan.', 'After confirming, send your payment proof via WhatsApp. Without payment, the booking is cancelled automatically.')}
                   </p>
                 </div>
@@ -1020,8 +1020,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
               {payInForm && service ? (
                 <div className="mt-6">
-                  <h3 className="font-serif font-semibold text-ink text-lg mb-1">Payment</h3>
-                  <p className="mb-4 text-[13px] text-ink/60 leading-relaxed">
+                  <h3 className="letterpress font-serif font-semibold text-ink text-lg mb-1">Payment</h3>
+                  <p className="letterpress mb-4 text-[13px] text-ink/60 leading-relaxed">
                     {live
                       ? <>Pay {totalPrice} with PayPal or a card. Your time is held while you pay and booked once the payment goes through; the Google Meet link is sent to {email.trim()}.</>
                       : <>Pay {totalPrice} with PayPal or a card. Your booking is made once the payment goes through, and your reading is sent to {email.trim()}.</>}
@@ -1030,7 +1030,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   <PayPalButtons config={ppConfig!} input={bookingInput(service)} onStart={() => setError('')} onPaid={paidWithPayPal} onError={payPalFailed} onIssue={(r) => trackPaymentIssue(r, 'PayPal', 'Global')} />
                 </div>
               ) : !isIndonesian && (
-                <p className="mt-6 text-[13px] text-ink/60 leading-relaxed">
+                <p className="letterpress mt-6 text-[13px] text-ink/60 leading-relaxed">
                   {live
                     ? <>Confirming books your time. I’ll message you on WhatsApp to arrange the payment of {totalPrice}, then send the Google Meet link to your email.</>
                     : <>Next, you’ll pay {totalPrice} securely on PayPal. Your reading is sent to your email once payment is through.</>}
@@ -1040,12 +1040,12 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {payInForm ? bottomBar(null) : midtransHere ? bottomBar(
                 <button onClick={payMidtrans} disabled={submitting} className={primaryBtn}>
                   {swatch}
-                  {submitting ? 'Membuka pembayaran…' : payWait ? 'Lanjutkan pembayaran' : `Bayar ${totalPrice}`}
+                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{submitting ? 'Membuka pembayaran…' : payWait ? 'Lanjutkan pembayaran' : `Bayar ${totalPrice}`}</span>
                 </button>
               ) : bottomBar(
                 <button onClick={submit} disabled={submitting} className={primaryBtn}>
                   {swatch}
-                  {submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', live ? 'Confirm booking' : 'Confirm & pay')}
+                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', live ? 'Confirm booking' : 'Confirm & pay')}</span>
                 </button>
               )}
             </div>
@@ -1058,8 +1058,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 <PaintSwatch round className="opacity-[0.16]" />
                 <Check className="w-8 h-8" strokeWidth={1.9} />
               </div>
-              <h3 className="font-serif font-semibold text-2xl text-ink">{paidHere ? 'Booking terkonfirmasi!' : t('Booking diterima!', 'You’re booked!')}</h3>
-              <p className="mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
+              <h3 className="letterpress-lg font-serif font-semibold text-2xl text-ink">{paidHere ? 'Booking terkonfirmasi!' : t('Booking diterima!', 'You’re booked!')}</h3>
+              <p className="letterpress mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
                 {paidHere
                   ? <>Terima kasih, {name || 'kamu'}! Pembayaranmu sudah masuk.<br />{scheduled ? 'Sampai ketemu di sesi nanti ✨' : 'Sampai ngobrol nanti ✨'}</>
                   : isIndonesian
@@ -1074,8 +1074,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 {scheduleRows()}
                 {rule}
                 <div className="flex items-center justify-between gap-4 py-3">
-                  <span className="text-sm font-medium text-ink">Total</span>
-                  <span className="font-serif font-semibold text-lg text-ink">{totalPrice || '—'}</span>
+                  <span className="letterpress text-sm font-medium text-ink">Total</span>
+                  <span className="letterpress font-serif font-semibold text-lg text-ink">{totalPrice || '—'}</span>
                 </div>
                 {rule}
               </div>
@@ -1084,16 +1084,16 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 <div className="mt-6 flex flex-col items-center gap-2">
                   <a href={waPaidLink} target="_blank" rel="noopener noreferrer" onClick={() => trackWhatsApp('after_paid', 'ID')} className={`${primaryBtn} px-8 py-3`}>
                     {swatch}
-                    <span className="inline-flex items-center gap-2"><FaWhatsapp size={18} /> Hubungi via WhatsApp</span>
+                    <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]"><span className="inline-flex items-center gap-2"><FaWhatsapp size={18} /> Hubungi via WhatsApp</span></span>
                   </a>
-                  <span className="text-[13px] text-ink/50">Ada yang perlu ditanyakan? Chat aja.</span>
+                  <span className="letterpress text-[13px] text-ink/50">Ada yang perlu ditanyakan? Chat aja.</span>
                 </div>
               )}
 
               {!paidHere && <>
               {isIndonesian && showPay && <div className="mt-5 text-left">{paymentPanel()}</div>}
 
-              <p className="mt-5 text-[13px] text-ink/60 max-w-sm mx-auto leading-relaxed">
+              <p className="letterpress mt-5 text-[13px] text-ink/60 max-w-sm mx-auto leading-relaxed">
                 {t('Kirim bukti pembayaran via WhatsApp. Tanpa pembayaran, booking otomatis dibatalkan.', 'Without payment, the booking is cancelled automatically.')}
               </p>
 
@@ -1101,17 +1101,17 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               <div className="mt-5 flex flex-col items-center gap-3">
                 <a href={PAYPAL[service.id]} className={`${primaryBtn} px-8 py-3`}>
                   {swatch}
-                  Pay {totalPrice} with PayPal
+                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">Pay {totalPrice} with PayPal</span>
                 </a>
               </div>
               ) : (
               <div className="mt-5 flex flex-col items-center gap-3">
                 <a href={waLink} target="_blank" rel="noopener noreferrer" onClick={() => trackWhatsApp('payment_proof', isIndonesian ? 'ID' : 'Global')} className={`${primaryBtn} px-8 py-3`}>
                   {swatch}
-                  <span className="inline-flex items-center gap-2"><FaWhatsapp size={18} /> {t('Kirim Bukti Pembayaran', live ? 'Arrange Payment' : 'Send Payment Proof')}</span>
+                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]"><span className="inline-flex items-center gap-2"><FaWhatsapp size={18} /> {t('Kirim Bukti Pembayaran', live ? 'Arrange Payment' : 'Send Payment Proof')}</span></span>
                 </a>
                 {isIndonesian && (
-                  <button onClick={() => setShowPay((v) => !v)} className="text-sm font-medium text-ink/70 hover:text-ink underline underline-offset-4 transition-colors">
+                  <button onClick={() => setShowPay((v) => !v)} className="letterpress text-sm font-medium text-ink/70 hover:text-ink underline underline-offset-4 transition-colors">
                     {showPay ? t('Sembunyikan detail pembayaran', 'Hide payment details') : t('Lihat detail pembayaran', 'View payment details')}
                   </button>
                 )}

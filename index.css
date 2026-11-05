@@ -416,6 +416,12 @@ html.booting .boot-hide { opacity: 0; pointer-events: none; transition: none; }
   --rdp-day_button-border-radius: 8px;
   margin: 0;
 }
+.booking-cal .rdp-month_caption,
+.booking-cal .rdp-weekday,
+.booking-cal .rdp-day_button {
+  /* the calendar printed on the sheet like the rest of the form */
+  filter: url(#letterpress);
+}
 .booking-cal .rdp-month_caption {
   font-family: theme('fontFamily.serif');
   font-weight: 600;
@@ -583,6 +589,9 @@ html[data-print='offset'] .letterpress { filter: url(#offset); }
   .letterpress { filter: url(#letterpress-m); }
   .letterpress-lg { filter: url(#letterpress-lg-m); }
   .letterpress.on-dark { filter: none; }
+  .booking-cal .rdp-month_caption,
+  .booking-cal .rdp-weekday,
+  .booking-cal .rdp-day_button { filter: url(#letterpress-m); }
 }
 html[data-print='riso'] .letterpress-lg { filter: url(#riso-lg); }
 html[data-print='offset'] .letterpress-lg { filter: url(#offset-lg); }
