@@ -34,8 +34,13 @@ export const parseAmount = (token: string | null): { amount: number; currency: C
 };
 
 // Best amount for a booking: explicit price, else a token in the service name, else the fallback.
-export const amountForBooking = (b: Booking) =>
-    parseAmount(priceToken(b.price) || priceToken(b.serviceName) || SERVICE_PRICE_FALLBACK[b.serviceId] || null);
+// What was charged when paid online (Midtrans: rupiah; PayPal: dollars, e.g. "45.00")
+// is exact, so it comes first; otherwise the price written in the service name.
+export const amountForBooking = (b: Booking): { amount: number; currency: Cur } | null => {
+    const due = Number(b.amountDue);
+    if (due > 0) return { amount: due, currency: b.market === 'ID' ? 'IDR' : 'USD' };
+    return parseAmount(priceToken(b.price) || priceToken(b.serviceName) || SERVICE_PRICE_FALLBACK[b.serviceId] || null);
+};
 
 // Money formatting. `compact` yields chart-friendly short forms (e.g. "Rp 1.2jt").
 export const fmtIDR = (v: number, compact = false) =>

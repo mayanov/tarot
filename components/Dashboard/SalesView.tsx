@@ -3,6 +3,16 @@ import { Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } 
 import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking as amountOf, fmtMoney, fmtDate } from './lib/format';
+
+// The form's contact line is "WA: 0812… · Email: a@b.co"; a manual order may be a bare number.
+const emailOf = (contact?: string) => ((contact || '').match(/[^\s:·]+@[^\s·]+/) || [])[0] || '';
+const phoneOf = (contact?: string) => {
+    const c = contact || '';
+    const wa = (c.match(/WA:\s*([^·]+)/i) || [])[1];
+    if (wa) return wa.trim();
+    const rest = c.replace(/[^\s:·]+@[^\s·]+/, '').replace(/Email:/i, '').replace(/·/g, ' ').trim();
+    return /\d{6,}/.test(rest.replace(/[\s-]/g, '')) ? rest : '';
+};
 import { StatusPill } from './lib/status';
 import Card from './ui/Card';
 import PageHeader from './ui/PageHeader';
@@ -273,12 +283,13 @@ const SalesView: React.FC = () => {
             {/* table */}
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[940px]">
+                    <table className="w-full text-sm min-w-[1080px]">
                         <thead>
                             <tr className="text-left text-text-subtle text-xs uppercase tracking-wider border-b border-adm-line">
                                 <th className="font-semibold px-4 py-3">Booking date</th>
                                 <th className="font-semibold px-4 py-3">Customer</th>
                                 <th className="font-semibold px-4 py-3">WhatsApp</th>
+                                <th className="font-semibold px-4 py-3">Email</th>
                                 <th className="font-semibold px-4 py-3">Service</th>
                                 <th className="font-semibold px-4 py-3">Source</th>
                                 <th className="font-semibold px-4 py-3 text-right">Amount</th>
@@ -288,10 +299,10 @@ const SalesView: React.FC = () => {
                         </thead>
                         <tbody>
                             {loading && filtered.length === 0 && (
-                                <tr><td colSpan={8}><InlineLoader /></td></tr>
+                                <tr><td colSpan={9}><InlineLoader /></td></tr>
                             )}
                             {!loading && filtered.length === 0 && (
-                                <tr><td colSpan={8} className="text-center text-text-subtle py-16">No orders found.</td></tr>
+                                <tr><td colSpan={9} className="text-center text-text-subtle py-16">No orders found.</td></tr>
                             )}
                             {filtered.map((b) => {
                                 const a = amountOf(b);
@@ -302,7 +313,8 @@ const SalesView: React.FC = () => {
                                         <td className="px-4 py-3">
                                             <div className="font-semibold text-text-light">{b.name || '—'}</div>
                                         </td>
-                                        <td className="px-4 py-3 text-text-subtle whitespace-nowrap">{b.contact || '—'}</td>
+                                        <td className="px-4 py-3 text-text-subtle whitespace-nowrap tabular-nums">{phoneOf(b.contact) || '—'}</td>
+                                        <td className="px-4 py-3 text-text-subtle whitespace-nowrap">{emailOf(b.contact) || '—'}</td>
                                         <td className="px-4 py-3 text-text-light">
                                             {serviceLabel(b)}
                                         </td>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaWhatsapp } from 'react-icons/fa';
 import type { Booking } from '../../services/booking';
+import { amountForBooking, fmtMoney } from './lib/format';
 
 // "Send confirmation" for a booking: opens Mayanov's own WhatsApp (app or web) on the
 // customer's chat with the confirmation already typed, to send with one tap. An
@@ -27,12 +28,8 @@ const scheduleOf = (b: Booking, id: boolean) => {
   return `${day} · ${b.time}–${hhmm(h * 60 + m + (b.durationMin > 0 ? b.durationMin : 60))} ${id ? 'WIB' : '(Jakarta time)'}`;
 };
 
-// the form's service line is "Name · Package · Price" (a Midtrans one "Name · Package")
-const totalOf = (b: Booking) => {
-  const parts = (b.serviceName || '').split(' · ');
-  if (b.amountDue && b.amountDue > 0) return b.market === 'ID' ? `Rp ${b.amountDue.toLocaleString('id-ID')}` : `$${b.amountDue}`;
-  return parts.find((p) => /^(Rp|\$)/i.test(p.trim())) || b.price || '';
-};
+// the same amount the Sales and Revenue pages count (paid online → the exact charge)
+const totalOf = (b: Booking) => { const a = amountForBooking(b); return a ? fmtMoney(a.amount, a.currency) : ''; };
 
 export const confirmationText = (b: Booking) => {
   const id = b.market === 'ID';
