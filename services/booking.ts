@@ -121,38 +121,48 @@ export async function getTakenSlots(date: string): Promise<string[]> {
   }
 }
 
+/** Saves a booking. Throws SLOT_TAKEN, EMAIL_REQUIRED, SAVE_FAILED (the server said no)
+ *  or NETWORK: a booking the server didn't keep is never shown as booked. */
 export async function createBooking(input: BookingInput): Promise<Booking> {
+  let res: Response;
   try {
-    const res = await fetch(`${API_BASE}/api/bookings`, {
+    res = await fetch(`${API_BASE}/api/bookings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
     });
-    if (res.status === 409) throw new Error('SLOT_TAKEN');
-    if (!res.ok) throw new Error(`HTTP_${res.status}`);
-    return await res.json();
   } catch (e) {
-    if (e instanceof Error && e.message === 'SLOT_TAKEN') throw e;
-    // network/other error → local fallback
+    // only local development without the API keeps it in this browser instead
+    if (!import.meta.env.DEV) throw new Error('NETWORK');
     console.warn('[booking] create API unavailable, using local fallback', e);
-    const all = readLocal();
-    const takenSet = new Set(
-      all.filter((b) => b.date === input.date && b.status !== 'cancelled')
-        .flatMap((b) => slotSpan(b.time, b.durationMin)),
-    );
-    if (input.date && input.time && slotSpan(input.time, input.durationMin).some((s) => takenSet.has(s))) {
-      throw new Error('SLOT_TAKEN');
-    }
-    const booking: Booking = {
-      ...input,
-      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `bk_${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      status: 'confirmed',
-    };
-    all.push(booking);
-    writeLocal(all);
-    return booking;
+    return createLocal(input);
   }
+  if (res.status === 409) throw new Error('SLOT_TAKEN');
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error === 'EMAIL_REQUIRED' ? 'EMAIL_REQUIRED' : 'SAVE_FAILED');
+  }
+  return await res.json();
+}
+
+function createLocal(input: BookingInput): Booking {
+  const all = readLocal();
+  const takenSet = new Set(
+    all.filter((b) => b.date === input.date && b.status !== 'cancelled')
+      .flatMap((b) => slotSpan(b.time, b.durationMin)),
+  );
+  if (input.date && input.time && slotSpan(input.time, input.durationMin).some((s) => takenSet.has(s))) {
+    throw new Error('SLOT_TAKEN');
+  }
+  const booking: Booking = {
+    ...input,
+    id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `bk_${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    status: 'confirmed',
+  };
+  all.push(booking);
+  writeLocal(all);
+  return booking;
 }
 
 // Admin — requires the admin JWT (same token the dashboard uses).

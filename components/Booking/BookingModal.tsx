@@ -464,11 +464,20 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
       else trackEvent('add_payment_info', { item_name: trackName, market: 'Global' }, 'AddPaymentInfo', { content_name: trackName });
       setStep(4);
     } catch (err) {
-      trackPaymentIssue(err instanceof Error && err.message === 'SLOT_TAKEN' ? 'slot_taken' : 'failed', 'Manual', market);
-      setError(err instanceof Error && err.message === 'SLOT_TAKEN'
-        ? t('Maaf, slot itu baru saja terisi. Pilih waktu lain ya.', 'Sorry, that slot was just taken. Please pick another time.')
-        : t('Ada kendala. Coba lagi sebentar.', 'Something went wrong. Please try again.'));
-      setStep(1);
+      // nothing was booked: say so and stay where it can be put right (never a fake "booked")
+      const code = err instanceof Error ? err.message : '';
+      trackPaymentIssue(code === 'SLOT_TAKEN' ? 'slot_taken' : 'failed', 'Manual', market);
+      if (code === 'SLOT_TAKEN') {
+        setError(t('Maaf, slot itu baru saja terisi. Pilih waktu lain ya.', 'Sorry, that slot was just taken. Please pick another time.'));
+        setStep(1);
+      } else if (code === 'EMAIL_REQUIRED') {
+        setError(t('Email dibutuhkan untuk undangan kalender sesimu. Isi email-mu ya.', 'An email is needed for your calendar invite. Please add yours.'));
+        setStep(2);
+      } else {
+        setError(code === 'NETWORK'
+          ? t('Koneksi terputus, booking belum tersimpan. Coba lagi ya.', 'Connection lost, so nothing was booked yet. Please try again.')
+          : t('Booking belum tersimpan, ada kendala. Coba lagi sebentar, atau hubungi kami via WhatsApp.', 'Nothing was booked yet, something went wrong. Please try again in a moment, or message us on WhatsApp.'));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -870,6 +879,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           {/* STEP 2 — details */}
           {step === 2 && (
             <div>
+              {error && <div className="relative isolate mb-4 text-sm text-ink px-4 py-3"><PaintSwatch className="text-[#b5435a] opacity-[0.14]" />{error}</div>}
               {scheduled && date && (
                 <p className="mb-5 flex items-center gap-2 text-[13px] text-ink/60">
                   <CalendarDays className="w-4 h-4 text-moon" />
