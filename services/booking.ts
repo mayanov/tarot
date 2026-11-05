@@ -40,6 +40,8 @@ export interface Booking extends BookingInput {
   price?: string; // explicit price token for manual orders (e.g. "Rp 300000", "$20")
   source?: string; // 'manual' for admin-entered orders (e.g. WhatsApp)
   paymentStatus?: 'unpaid' | 'paid'; // reporting: whether the order has been paid
+  amountDue?: number; // what a paid-online booking cost (rupiah for Midtrans)
+  waConfirmSentAt?: string; // when the dashboard's WhatsApp confirmation was sent
 }
 
 // Admin — manually record an order (e.g. taken over WhatsApp) so it appears in

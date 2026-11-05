@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw, MessageSquare, ShoppingBag, Cake, ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, Booking, CalEvent } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
+import WaConfirmButton from './WaConfirmButton';
 import { fmtDate } from './lib/format';
 import { STATUS_STYLE } from './lib/status';
 
@@ -365,6 +366,10 @@ const BookingsView: React.FC = () => {
         } catch { /* ignore */ }
     };
 
+    // the confirmation went out from Mayanov's WhatsApp: show it on the booking
+    const markWaSent = (id: string, at: string) =>
+        setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, waConfirmSentAt: at } : x)));
+
     // ---- drag-to-reschedule (weekly grid) ----
     const beginDrag = (e: React.PointerEvent, b: Booking, di: number) => {
         if (e.button !== 0) return;
@@ -691,6 +696,7 @@ const BookingsView: React.FC = () => {
                                 {b.dob && <Field label="Date of Birth" value={fmtDate(b.dob)} />}
                                 <div className="col-span-2"><Field label="Contact" value={b.contact} /></div>
                                 {b.question && <div className="col-span-2"><Field label="Question" value={b.question} italic /></div>}
+                                <div className="col-span-2"><WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} /></div>
                             </div>
 
                             {/* status footer */}
@@ -757,6 +763,7 @@ const BookingsView: React.FC = () => {
                                                         <span className="italic">{b.question}</span>
                                                     </div>
                                                 )}
+                                                <div className="mt-3"><WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} /></div>
                                             </div>
                                             {/* price + status */}
                                             <div className="shrink-0 flex flex-col items-start lg:items-end gap-2.5">

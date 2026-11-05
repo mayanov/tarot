@@ -9,7 +9,6 @@ import path from 'path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'url';
 import * as gcal from './googleCalendar.js';
-import * as whatsapp from './whatsapp.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -415,17 +414,24 @@ export async function confirmPaidHold(booking, payment) {
     const cal = { ...(eventId ? { gcalEventId: eventId } : {}), ...(transportIds.length ? { gcalTransportIds: transportIds } : {}) };
     if (Object.keys(cal).length) { await patch(booking.id, cal); Object.assign(confirmed, cal); }
   } catch (e) { console.error('[bookings] calendar for paid booking failed:', e.message); }
-  // Indonesian bookings: the booking confirmation on the customer's WhatsApp
-  if (confirmed.market === 'ID' && whatsapp.configured()) {
-    try {
-      const waMessageId = await whatsapp.sendBookingConfirmation(confirmed);
-      await patch(booking.id, { waConfirmSentAt: new Date().toISOString(), waMessageId });
-    } catch (e) {
-      console.error('[bookings] WhatsApp confirmation failed:', e.message);
-      await patch(booking.id, { waConfirmError: e.message.slice(0, 300) }).catch(() => {});
-    }
-  }
   return confirmed;
+}
+
+/** Admin sent the booking confirmation from their own WhatsApp (the dashboard's button) */
+export async function markWhatsAppConfirmed(id) {
+  const at = new Date().toISOString();
+  if (db) {
+    const ref = db.collection(COLLECTION).doc(id);
+    if (!(await ref.get()).exists) return null;
+    await ref.update({ waConfirmSentAt: at });
+    return { id, waConfirmSentAt: at };
+  }
+  const all = readAll();
+  const b = all.find((x) => x.id === id);
+  if (!b) return null;
+  b.waConfirmSentAt = at;
+  writeAll(all);
+  return { id, waConfirmSentAt: at };
 }
 
 /** an unpaid hold whose payment failed or expired: the slot is free again */

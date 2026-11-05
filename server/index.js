@@ -936,6 +936,19 @@ app.post('/api/admin/bookings/:id/payment', verifyToken, async (req, res) => {
     }
 });
 
+// Admin: the booking confirmation was sent from Mayanov's own WhatsApp (dashboard button,
+// a wa.me link — an ordinary message, so nothing is charged). Only records when.
+app.post('/api/admin/bookings/:id/wa-confirmed', verifyToken, async (req, res) => {
+    try {
+        const updated = await bookingStore.markWhatsAppConfirmed(req.params.id);
+        if (!updated) return res.status(404).json({ error: 'Not found' });
+        res.json(updated);
+    } catch (e) {
+        console.error('mark WhatsApp confirmation failed:', e);
+        res.status(500).json({ error: 'Failed to save' });
+    }
+});
+
 // Admin: update a booking's status (pending | confirmed | cancelled | done).
 app.post('/api/admin/bookings/:id/status', verifyToken, async (req, res) => {
     const { status } = req.body || {};
