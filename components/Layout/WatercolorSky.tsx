@@ -1,3 +1,4 @@
+import PaintedStars from './PaintedStars';
 import React, { useEffect, useRef, useState } from 'react';
 import { afterIntro } from '../UI/introGate';
 
@@ -58,12 +59,6 @@ const BAND: Streak = [880, 200, 1100, 90, -16, 0.12];
 // pale backruns, where water crept back into a drying wash
 const BLOOMS: [number, number, number, number][] = [[560, 250, 140, 50], [1120, 210, 160, 46], [1460, 470, 140, 54]];
 
-// small gouache dots, kept to the darker upper sky — [x%, y%, size px]
-const STARS: [number, number, number][] = [
-  [8.8, 9.4, 4.8], [20.6, 5.9, 3.4], [32.5, 14.4, 4.2], [43.1, 6.9, 2.8], [56.9, 12.5, 5],
-  [67.5, 4.7, 3.4], [78.8, 11.3, 4], [90.6, 7.2, 4.6], [96.6, 20.3, 3], [13.1, 25.8, 3],
-  [47.5, 23.4, 3.6], [74.4, 25, 2.8], [3.8, 34.4, 3.6], [86.9, 33.6, 3.4], [38.1, 30.6, 2.6],
-];
 
 export type SkyPalette = {
   ground: string;     // flat colour under everything
@@ -220,18 +215,8 @@ const WatercolorSky: React.FC<{ palette?: SkyPalette; stars?: boolean; eager?: b
             style={play}
           />
         )}
-        {/* gouache stars, twinkling (opacity only) */}
-        {stars && STARS.map(([x, y, s], i) => (
-          <span
-            key={i}
-            className="absolute rounded-full motion-safe:animate-[starPulse_var(--d)_ease-in-out_infinite]"
-            style={{
-              left: `${x}%`, top: `${y}%`, width: s, height: s,
-              background: 'radial-gradient(circle, rgba(248,242,255,0.95) 0%, rgba(248,242,255,0.5) 45%, transparent 75%)',
-              '--d': `${4 + (i % 5) * 1.3}s`, animationDelay: `${(i * 0.7) % 5}s`, ...play,
-            } as React.CSSProperties}
-          />
-        ))}
+        {/* stars flicked on in gouache over the darker upper sky */}
+        {stars && <PaintedStars seed={42} flecks={70} sparkles={4} yMax={0.38} className="absolute inset-0 h-full w-full" />}
       </div>
     </div>
   );

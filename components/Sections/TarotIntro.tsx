@@ -1,29 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import WatercolorSky, { NIGHT, PLUM, SUNRISE } from '../Layout/WatercolorSky';
+import PaintedStars from '../Layout/PaintedStars';
 
 interface TarotIntroProps {
   isIndonesian?: boolean;
 }
 
-// Deterministic starfield for this section's night sky (own seed, so it's a
-// different star pattern from the hero background and the painted skies elsewhere).
-const mulberry32 = (seed: number) => () => {
-  seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
-  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-};
-const starField = (rng: () => number, count: number, rMin: number, rMax: number, oMin: number, oMax: number) =>
-  Array.from({ length: count }, () => [
-    +(rng() * 100).toFixed(2), +(rng() * 100).toFixed(2),
-    +(rMin + rng() * (rMax - rMin)).toFixed(2), +(oMin + rng() * (oMax - oMin)).toFixed(2),
-  ] as const);
-const toStars = (dots: readonly (readonly [number, number, number, number])[]) =>
-  dots.map(([x, y, r, o]) => `radial-gradient(${r}px ${r}px at ${x}% ${y}%, rgba(255,255,255,${o}) 0%, rgba(255,255,255,0) 60%)`).join(',');
-const srng = mulberry32(20161005);
-const STARS_STATIC = starField(srng, 300, 0.4, 1.1, 0.3, 0.72);
-const STARS_TWINKLE_A = starField(srng, 90, 0.8, 1.5, 0.55, 0.95);
-const STARS_TWINKLE_B = starField(srng, 70, 0.6, 1.1, 0.4, 0.82);
 
 // The sky is a timelapse: three painted skies (night, dawn, sunrise) stacked and
 // crossfaded by scroll, with the sun's glow rising from below and the stars going
@@ -130,12 +112,10 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
         {/* a soft shade behind the words, so cream text holds on the brightest sky */}
         <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(70% 45% at 50% 48%, rgba(24,14,48,0.32), transparent 75%)' }} />
 
-        {/* starfield — each layer promoted to its own compositor layer so the sky
-            crossfade never re-rasterizes them and twinkle stays composite-only */}
+        {/* stars flicked on in gouache (PaintedStars) — one static layer; it fades out
+            with the night as the dawn comes up */}
         <div ref={starsRef} aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden will-change-[opacity]" style={{ opacity: reduce ? 0.5 : 1 }}>
-          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_STATIC), transform: 'translateZ(0)' }} />
-          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_A), transform: 'translateZ(0)', animation: reduce ? undefined : 'skyTwinkle 4.5s ease-in-out infinite' }} />
-          <div className="absolute inset-0" style={{ backgroundImage: toStars(STARS_TWINKLE_B), transform: 'translateZ(0)', animation: reduce ? undefined : 'skyTwinkle 6.5s ease-in-out 1.2s infinite' }} />
+          <PaintedStars seed={20161005} flecks={170} sparkles={7} className="absolute inset-0 h-full w-full" style={{ transform: 'translateZ(0)' }} />
         </div>
 
 
