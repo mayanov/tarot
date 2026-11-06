@@ -490,6 +490,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     if (!service) return;
     if (service.scheduled && (!date || !time)) return;
     setSubmitting(true); setError('');
+    let leaving = false; // on the way to PayPal: the button keeps saying so
     try {
       await createBooking(bookingInput(service));
       const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
@@ -497,6 +498,13 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
       // bought once PayPal sends them back (the thank-you page counts it there).
       if (isIndonesian) trackEvent('purchase', { item_name: trackName, market: 'ID', transaction_id: `bk-${Date.now()}` }, 'Schedule', { content_name: trackName });
       else trackEvent('add_payment_info', { item_name: trackName, market: 'Global' }, 'AddPaymentInfo', { content_name: trackName });
+      // a global reading: saved as pending, then straight on to PayPal; nothing says
+      // "booked" until they've paid (PayPal sends them back to the thank-you page)
+      if (!isIndonesian && PAYPAL[service.id]) {
+        leaving = true;
+        window.location.assign(PAYPAL[service.id]);
+        return;
+      }
       setStep(4);
     } catch (err) {
       // nothing was booked: say so and stay where it can be put right (never a fake "booked")
@@ -514,7 +522,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           : t('Booking belum tersimpan, ada kendala. Coba lagi sebentar, atau hubungi kami via WhatsApp.', 'Nothing was booked yet, something went wrong. Please try again in a moment, or message us on WhatsApp.'));
       }
     } finally {
-      setSubmitting(false);
+      if (!leaving) setSubmitting(false);
     }
   };
 
@@ -777,9 +785,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   <PencilArrow dir="left" weight="semibold" className="w-5 h-5" />
                 </button>
               )}
-              <div className="letterpress font-serif font-semibold text-ink text-[1.2rem] md:text-[1.3rem] leading-tight truncate">
+              {/* the last step speaks for itself: no title above it */}
+              {step < 4 && <div className="letterpress font-serif font-semibold text-ink text-[1.2rem] md:text-[1.3rem] leading-tight truncate">
                 {step === 0 ? t('Pilih layanan', 'Choose a service') : (service?.name ?? t('Booking Sesi', 'Book a Session'))}
-              </div>
+              </div>}
             </div>
             <button onClick={close} aria-label="Close" className="shrink-0 text-ink/50 hover:text-ink transition-colors">
               <X className="w-5 h-5" />
@@ -1132,7 +1141,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               ) : bottomBar(
                 <button onClick={submit} disabled={submitting} className={primaryBtn}>
                   {swatch}
-                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', live ? 'Hold my time' : 'Continue to payment')}</span>
+                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{submitting ? t('Menyimpan…', live ? 'Booking…' : 'Opening PayPal…') : t('Konfirmasi', live ? 'Hold my time' : `Pay ${totalPrice} with PayPal`)}</span>
                 </button>
               )}
             </div>
@@ -1141,18 +1150,22 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           {/* STEP 4 — done */}
           {step === 4 && (
             <div className="text-center py-4">
+              {/* a global booking reaching here isn't paid yet (a live session paid on
+                  WhatsApp): no tick, no "booked", just the step that's left */}
+              {(isIndonesian || paidHere) && (
               <div className="relative isolate mx-auto w-14 h-14 grid place-items-center text-moon mb-4">
                 <PaintSwatch round className="opacity-[0.16]" />
                 <Check className="w-8 h-8" strokeWidth={1.9} />
               </div>
-              <h3 className="letterpress-lg font-serif font-semibold text-2xl text-ink">{paidHere ? 'Booking terkonfirmasi!' : t('Booking diterima!', 'You’re booked!')}</h3>
+              )}
+              <h3 className="letterpress-lg font-serif font-semibold text-2xl text-ink">{paidHere ? 'Booking terkonfirmasi!' : t('Booking diterima!', 'One last step')}</h3>
               <p className="letterpress mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
                 {paidHere
                   ? <>Terima kasih, {name || 'kamu'}! Pembayaranmu sudah masuk.<br />{scheduled ? 'Sampai ketemu di sesi nanti ✨' : 'Sampai ngobrol nanti ✨'}</>
                   : isIndonesian
                   ? <>Terima kasih, {name || 'kamu'}. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk konfirmasi.{invited && <><br />Undangan kalender{service?.id === 'meetup' ? '' : ' & link Google Meet'} dikirim ke {email.trim()} setelah pembayaranmu masuk.</>}</>
                   : live
-                  ? <>Thank you, {name || 'friend'}. Your time is held. One last step: message me on WhatsApp to pay. Your booking is confirmed once it’s paid, and the Google Meet link comes to {email.trim()}.</>
+                  ? <>Thank you, {name || 'friend'}. Your time is held: message me on WhatsApp to pay. Your booking is confirmed once it’s paid, and the Google Meet link comes to {email.trim()}.</>
                   : <>Thank you, {name || 'friend'}. One last step: pay on PayPal. Once payment comes through, a confirmation email arrives at {email.trim()}: reply to it with your question, and your reading comes within 24 hours.</>}
               </p>
 

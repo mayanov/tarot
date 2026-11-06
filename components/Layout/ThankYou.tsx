@@ -40,8 +40,8 @@ const ThankYou: React.FC<{ reading: PaidReading }> = ({ reading }) => {
         'The Google Meet link comes to your email before the session, with a WhatsApp reminder.',
         'Need to move it? Message me on WhatsApp or email tarotreadingbymayanov@gmail.com at least 24 hours before.',
     ] : [
-        'Your question from the booking form is with me — there’s nothing more to send.',
-        `Your reading arrives by email ${r.when}. If it isn’t there, check your spam folder.`,
+        'A confirmation email is on its way. Reply to it with your question and a little context.',
+        `Your reading arrives by email ${r.when} of your reply. If it isn’t there, check your spam folder.`,
         'Want to add something? Message me on WhatsApp or email tarotreadingbymayanov@gmail.com.',
     ];
 
