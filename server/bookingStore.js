@@ -148,6 +148,7 @@ export async function rescheduleBooking(id, { date, time, durationMin }, opts = 
   if (wanted.some((s) => taken.has(s))) { const e = new Error('SLOT_TAKEN'); e.code = 'SLOT_TAKEN'; throw e; }
 
   const updated = { ...booking, id: newId, date, time, durationMin: dur };
+  if (newId !== booking.id) await keepAside(newId);
 
   if (db) {
     if (newId !== booking.id) {
@@ -181,6 +182,29 @@ export async function rescheduleBooking(id, { date, time, durationMin }, opts = 
   return updated;
 }
 
+// A session's id is its date and time, so a new booking (or one moved) at a time an
+// old cancelled booking had would overwrite it. The old one is kept instead, under an
+// id of its own, so cancelled bookings are never lost. (Only called once the time has
+// been checked free, so whatever is there no longer holds it.)
+async function keepAside(id) {
+  const old = db ? (await db.collection(COLLECTION).doc(id).get()).data() : readAll().find((b) => b.id === id);
+  if (!old) return;
+  const moved = {
+    ...old,
+    id: `${id}~${crypto.randomBytes(3).toString('hex')}`,
+    // (an unpaid booking past its hour that hadn't been marked cancelled yet)
+    ...(old.status !== 'cancelled' ? { status: 'cancelled', cancelReason: old.cancelReason || 'unpaid' } : {}),
+  };
+  if (db) {
+    await db.collection(COLLECTION).doc(moved.id).set(moved);
+    await db.collection(COLLECTION).doc(id).delete();
+  } else {
+    const all = readAll().filter((b) => b.id !== id);
+    all.push(moved);
+    writeAll(all);
+  }
+}
+
 export async function createBooking(input) {
   // `skipCalendar` (admin manual records) and any overrides are pulled out;
   // the rest is stored as-is. createdAt/status may be supplied (manual back-dated
@@ -211,6 +235,7 @@ export async function createBooking(input) {
         const err = new Error('SLOT_TAKEN'); err.code = 'SLOT_TAKEN'; throw err;
       }
     }
+    if (hasSlot) await keepAside(id);
     await ref.set(booking);
     if (!skipCalendar) {
       const eventId = await gcal.createEvent(booking);
@@ -231,7 +256,8 @@ export async function createBooking(input) {
       const err = new Error('SLOT_TAKEN'); err.code = 'SLOT_TAKEN'; throw err;
     }
   }
-  const cleaned = hasSlot ? all.filter((b) => b.id !== id) : all;
+  if (hasSlot) await keepAside(id);
+  const cleaned = hasSlot ? readAll() : all;
   cleaned.push(booking);
   writeAll(cleaned);
   if (!skipCalendar) {
@@ -382,6 +408,8 @@ async function sendHeldInvite(b) {
 }
 
 export async function updateStatus(id, status) {
+  const current = db ? (await db.collection(COLLECTION).doc(id).get()).data() : readAll().find((x) => x.id === id);
+  if (current?.status === 'cancelled' && status !== 'cancelled') return restoreBooking(current, status);
   if (db) {
     const ref = db.collection(COLLECTION).doc(id);
     const snap = await ref.get();
@@ -410,6 +438,28 @@ export async function updateStatus(id, status) {
   }
   writeAll(all);
   return b;
+}
+
+// A cancelled booking brought back (its status changed in the dashboard): only if its
+// time is still free, so nothing is double-booked; then it's a normal booking again,
+// back on the calendar.
+async function restoreBooking(b, status) {
+  if (b.date && b.time) {
+    const taken = await dbTakenSlots(b.date); // (a cancelled booking isn't counted)
+    if (footprintSlots(b).some((s) => taken.has(s))) { const e = new Error('SLOT_TAKEN'); e.code = 'SLOT_TAKEN'; throw e; }
+  }
+  const fields = { status, cancelReason: null, holdUntil: null, holdOnly: false };
+  await patch(b.id, fields);
+  const restored = { ...b, ...fields };
+  if (b.date && b.time && !b.gcalEventId) {
+    try {
+      const eventId = await gcal.createEvent(restored);
+      const transportIds = await gcal.createTransportEvents(restored);
+      const cal = { ...(eventId ? { gcalEventId: eventId } : {}), ...(transportIds.length ? { gcalTransportIds: transportIds } : {}) };
+      if (Object.keys(cal).length) { await patch(b.id, cal); Object.assign(restored, cal); }
+    } catch (e) { console.error('[bookings] calendar for restored booking failed:', e.message); }
+  }
+  return restored;
 }
 
 async function findBy(field, value) {

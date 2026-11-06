@@ -58,6 +58,7 @@ export interface Booking extends BookingInput {
   paidEmailSentAt?: string; // when the customer was emailed that their payment came through
   inviteOnPay?: boolean; // its calendar invite goes out once it's marked paid
   paidAt?: string; // when it was first marked paid (an order's delivery clock starts there)
+  cancelReason?: 'unpaid' | 'closed' | 'failed' | null; // 'unpaid': not paid within the hour
 }
 
 // Admin — manually record an order (e.g. taken over WhatsApp) so it appears in

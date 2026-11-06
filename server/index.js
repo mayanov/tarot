@@ -1006,6 +1006,8 @@ app.post('/api/admin/bookings/:id/status', verifyToken, async (req, res) => {
         if (!updated) return res.status(404).json({ error: 'Not found' });
         res.json(updated);
     } catch (e) {
+        // bringing back a cancelled session whose time someone else has since booked
+        if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
         console.error('update status failed:', e);
         res.status(500).json({ error: 'Failed to update status' });
     }

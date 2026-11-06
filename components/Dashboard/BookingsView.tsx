@@ -328,7 +328,7 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
     const [error, setError] = useState('');
     const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [orderView, setOrderView] = useState<'active' | 'done'>('active');
+    const [orderView, setOrderView] = useState<'active' | 'done' | 'cancelled'>('active');
     const [notice, setNotice] = useState<{ text: string; kind: 'ok' | 'err' } | null>(null);
     const [calEvents, setCalEvents] = useState<CalEvent[]>([]);
     const [showAdd, setShowAdd] = useState(false);
@@ -372,13 +372,16 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
     const changeStatus = async (id: string, status: Booking['status']) => {
         try {
             const token = localStorage.getItem('authToken');
-            await fetch(`/api/admin/bookings/${id}/status`, {
+            const res = await fetch(`/api/admin/bookings/${id}/status`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
                 body: JSON.stringify({ status }),
             });
-            setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
-        } catch { /* ignore */ }
+            // a cancelled session can't come back onto a time that's been booked since
+            if (res.status === 409) { flash('That time has been booked by someone else since, so it stays cancelled.', 'err'); return; }
+            if (!res.ok) { flash('Could not change the status.', 'err'); return; }
+            setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status, ...(status !== 'cancelled' ? { cancelReason: null } : {}) } : b)));
+        } catch { flash('Could not change the status.', 'err'); }
     };
 
     // mark a booking paid / unpaid (the same switch as on Sales)
@@ -469,7 +472,12 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
         const iv = window.setInterval(() => setNow(Date.now()), 60_000);
         return () => clearInterval(iv);
     }, [tab]);
-    const doneOrders = useMemo(() => orders.filter((b) => b.status === 'done' || b.status === 'cancelled'), [orders]);
+    const doneOrders = useMemo(() => orders.filter((b) => b.status === 'done'), [orders]);
+    // every cancelled booking, sessions and readings alike, newest first: kept, never deleted
+    const cancelledBookings = useMemo(
+        () => bookings.filter((b) => b.status === 'cancelled').sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')),
+        [bookings],
+    );
 
     // Jump to the week of the nearest upcoming session once data loads.
     useEffect(() => {
@@ -665,6 +673,9 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
                     {calendarSessions.length === 0 && !loading && !error && (
                         <p className="text-center text-text-subtle text-sm py-4">No scheduled sessions yet.</p>
                     )}
+                    {cancelledBookings.some((b) => b.date && b.time) && (
+                        <p className="text-center text-text-subtle text-xs">Cancelled sessions leave the calendar and free their time. They're kept under Orders → Cancelled.</p>
+                    )}
 
                 </div>
             )}
@@ -735,14 +746,14 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
 
             {/* ---------------- ORDERS (no fixed time) — one aligned list ---------------- */}
             {!initialLoading && tab === 'orders' && (() => {
-                const list = orderView === 'active' ? activeOrders : doneOrders;
+                const list = orderView === 'active' ? activeOrders : orderView === 'done' ? doneOrders : cancelledBookings;
                 const COLS = 'md:grid md:grid-cols-[6.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4';
                 return (
                     <Card className="overflow-hidden">
                         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
                             <Segmented size="sm" value={orderView} onChange={setOrderView}
-                                options={[{ id: 'active', label: 'To do', count: activeOrders.length }, { id: 'done', label: 'Done', count: doneOrders.length }]} />
-                            <span className="text-xs text-text-subtle">{orderView === 'active' ? 'Most urgent first' : 'Newest first'}</span>
+                                options={[{ id: 'active', label: 'To do', count: activeOrders.length }, { id: 'done', label: 'Done', count: doneOrders.length }, { id: 'cancelled', label: 'Cancelled', count: cancelledBookings.length }]} />
+                            <span className="text-xs text-text-subtle">{orderView === 'active' ? 'Most urgent first' : orderView === 'cancelled' ? 'Sessions & readings · newest first' : 'Newest first'}</span>
                         </div>
 
                         {list.length > 0 && (
@@ -754,7 +765,7 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
                         {!error && !loading && list.length === 0 && (
                             <div className="text-center py-16 text-text-subtle">
                                 <ShoppingBag size={32} className="mx-auto mb-3 opacity-40" />
-                                <p className="text-sm">{orderView === 'active' ? 'Nothing waiting. All orders are answered.' : 'No finished orders yet.'}</p>
+                                <p className="text-sm">{orderView === 'active' ? 'Nothing waiting. All orders are answered.' : orderView === 'cancelled' ? 'Nothing cancelled.' : 'No finished orders yet.'}</p>
                             </div>
                         )}
 
@@ -768,6 +779,8 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
                                         <div className="tabular-nums col-span-2 md:col-span-1">
                                             <div className="text-xs text-text-subtle">{fmtDate(b.createdAt)}</div>
                                             {orderView === 'active' && <ClockNote b={b} now={now} />}
+                                            {orderView === 'cancelled' && b.date && b.time && <div className="text-xs text-text-light">Session {fmtDate(b.date)} · {b.time}</div>}
+                                            {orderView === 'cancelled' && b.cancelReason === 'unpaid' && <div className="text-[0.7rem] text-mauve">Not paid within 1 hour</div>}
                                         </div>
                                         <div className="min-w-0">
                                             <div className="text-sm font-medium text-text-light truncate">
