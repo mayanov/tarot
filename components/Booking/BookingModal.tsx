@@ -48,12 +48,13 @@ const DISABLED_DOWS: Record<string, number[]> = {
 const instantOf = (iso: string, hhmm: string) => new Date(`${iso}T${hhmm}:00+07:00`);
 /** whether this visitor's clock differs from Jakarta's at that moment */
 const awayFromJakarta = (iso: string, hhmm = '12:00') => -instantOf(iso, hhmm).getTimezoneOffset() !== 420;
-/** a Jakarta slot on the visitor's own clock ('9:00 PM', or 'Thu 11:00 PM' when it falls on another day) */
-const localClock = (iso: string, hhmm: string) => {
-  const d = instantOf(iso, hhmm);
-  const clock = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  return toISODate(d) === iso ? clock : `${d.toLocaleDateString('en-US', { weekday: 'short' })} ${clock}`;
-};
+/** a Jakarta slot on the visitor's own clock ('9:00 PM') */
+const localClock = (iso: string, hhmm: string) =>
+  instantOf(iso, hhmm).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+/** the weekday of a Jakarta date (0 = Sunday), wherever the visitor is */
+const jakartaDow = (iso: string) => new Date(`${iso}T12:00:00+07:00`).getUTCDay();
+/** the visitor's day before / of / after a date, as ISO dates */
+const aroundDay = (d: Date) => [-1, 0, 1].map((o) => toISODate(new Date(d.getFullYear(), d.getMonth(), d.getDate() + o)));
 /** the visitor's time zone, as a short name ('GMT-5', 'CET') */
 const localZone = (iso: string) =>
   instantOf(iso, '12:00').toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || '';
@@ -168,7 +169,11 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const [service, setService] = useState<ServiceOption | null>(null);
   const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState<string | null>(null);
-  const [taken, setTaken] = useState<string[]>([]);
+  // the Jakarta date of the chosen slot: on the global form the calendar is the visitor's
+  // own, so a slot on their Monday evening can be Jakarta's Tuesday morning
+  const [slotDay, setSlotDay] = useState('');
+  // taken slots, per Jakarta date
+  const [taken, setTaken] = useState<Record<string, string[]>>({});
   const [pkg, setPkg] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
@@ -185,6 +190,19 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const [ppConfig, setPpConfig] = useState<PayPalConfig | null>(null); // global: PayPal Checkout available?
   const [mtConfig, setMtConfig] = useState<MidtransConfig | null>(null); // ID: Midtrans available?
   const mtOrder = useRef<{ token: string; orderId: string } | null>(null); // the payment open right now
+  // the month of birth can be typed as its number: "8" → August, "1" then "2" → December
+  const monthTyped = useRef({ buf: '', at: 0 });
+  const typeMonth = (e: React.KeyboardEvent) => {
+    if (!/^\d$/.test(e.key)) return;
+    e.preventDefault();
+    const r = monthTyped.current;
+    const now = Date.now();
+    let buf = now - r.at < 1200 ? r.buf + e.key : e.key;
+    if (Number(buf) > 12 || buf.length > 2) buf = e.key;
+    monthTyped.current = { buf, at: now };
+    const n = Number(buf);
+    if (n >= 1 && n <= 12) setDobMonth(String(n));
+  };
   const [payWait, setPayWait] = useState(false); // ID: waiting for a payment to come in
   const [paidHere, setPaidHere] = useState(false); // paid inside the form (the done step says so)
   const [showPay, setShowPay] = useState(false); // reveal payment details on the success step
@@ -345,16 +363,19 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
   // Load taken slots when a date is picked.
   useEffect(() => {
-    if (!date) { setTaken([]); return; }
+    if (!date) { setTaken({}); return; }
     let active = true;
-    getTakenSlots(toISODate(date)).then((s) => { if (active) setTaken(s); });
+    const days = isIndonesian ? [toISODate(date)] : aroundDay(date);
+    Promise.all(days.map((d) => getTakenSlots(d))).then((lists) => {
+      if (active) setTaken(Object.fromEntries(days.map((d, i) => [d, lists[i]])));
+    });
     return () => { active = false; };
-  }, [date]);
+  }, [date, isIndonesian]);
 
   const bookingInput = (s: ServiceOption): BookingInput => ({
     serviceId: s.id,
     serviceName: pkg ? `${s.name} · ${pkg}` : s.name,
-    date: s.scheduled && date ? toISODate(date) : '',
+    date: s.scheduled && jkIso ? jkIso : '',
     time: s.scheduled ? (time || '') : '',
     durationMin: s.scheduled ? (durationFromText(pkg) ?? durationFromText(s.meta) ?? 30) : 0,
     name: name.trim(),
@@ -428,7 +449,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
         mtOrder.current = await startMidtrans({
           serviceId: service.id,
           pkg: pkg ? pkg.split(' · ')[0] : '',
-          date: service.scheduled && date ? toISODate(date) : '',
+          date: service.scheduled && jkIso ? jkIso : '',
           time: service.scheduled ? (time || '') : '',
           name: name.trim(), dob,
           contact: bookingInput(service).contact,
@@ -514,14 +535,25 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const scheduled = service?.scheduled ?? true;
   // a global reading is done by email, without a session: it needs the question
   // (a live session's questions are asked in it)
-  const detailsValid = (isIndonesian || scheduled || question.trim().length > 0) && name.trim().length > 1 && dob.trim() !== '' && whatsappValid && emailValid && (!needsPackage || !!pkg);
+  const detailsValid = name.trim().length > 1 && dob.trim() !== '' && whatsappValid && emailValid && (!needsPackage || !!pkg);
 
   // Time slots: the earliest bookable one is 2 hours out (Jakarta time, wherever the
   // visitor is)
   const cutoff = Date.now() + 120 * 60_000;
-  const visibleSlots = date ? SLOT_TIMES.filter((slot) => instantOf(toISODate(date), slot).getTime() >= cutoff) : SLOT_TIMES;
-  // a global visitor in another time zone sees each Jakarta time on their own clock too
-  const showLocal = !isIndonesian && !!date && awayFromJakarta(toISODate(date));
+  const slotsOn = (d: Date) => {
+    const local = toISODate(d);
+    return (isIndonesian ? [local] : aroundDay(d))
+      .flatMap((iso) => SLOT_TIMES.map((hhmm) => ({ iso, hhmm, at: instantOf(iso, hhmm).getTime() })))
+      .filter(({ iso, at }) => at >= cutoff && (isIndonesian || (toISODate(new Date(at)) === local
+        && !(DISABLED_DOWS[service?.id || ''] || []).includes(jakartaDow(iso)))))
+      .sort((a, b) => a.at - b.at);
+  };
+  const visibleSlots = date ? slotsOn(date) : [];
+  // the chosen session's Jakarta date
+  const jkIso = time && slotDay ? slotDay : date ? toISODate(date) : '';
+  // a global visitor in another time zone: the calendar and times are on their own clock
+  const awayZone = !isIndonesian && awayFromJakarta(toISODate(date || new Date())) ? localZone(toISODate(date || new Date())) : '';
+  const showLocal = !!awayZone && !!date;
 
   // Duration for the chosen option — drives the "start–end" slot labels and which
   // starts fit before closing. Until a package is picked, assume its shortest one
@@ -533,11 +565,12 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     ? (durationFromText(pkg) ?? (Number.isFinite(shortestPackageMin) ? shortestPackageMin : null))
     : durationFromText(service?.meta);
   const timeRange = (start: string) => (durationMin ? `${start}–${addMinutes(start, durationMin)}` : start);
-  // the session's time on the visitor's clock ('Thu 9:00–9:30 PM GMT-5')
+  // the session on the visitor's clock, with their day ('Mon, 16 Nov · 9:00–9:30 PM GMT-5')
   const localRange = (iso: string, start: string) => {
+    const day = instantOf(iso, start).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
     const from = localClock(iso, start);
-    const to = localClock(iso, addMinutes(start, durationMin || 30)).split(' ').slice(-2).join(' ');
-    return `${from.replace(/ (AM|PM)$/, (m) => (to.endsWith(m.trim()) ? '' : m))}–${to} ${localZone(iso)}`;
+    const to = localClock(iso, addMinutes(start, durationMin || 30));
+    return `${day} · ${from.replace(/ (AM|PM)$/, (m) => (to.endsWith(m.trim()) ? '' : m))}–${to} ${localZone(iso)}`;
   };
   // the session's length, as part of its schedule line ("30 menit", "2 jam", "1 hour")
   const lengthText = (min: number) =>
@@ -548,7 +581,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   // the length on the first (no separate Duration row)
   const scheduleRows = () => {
     if (!scheduled || !date) return null;
-    const iso = toISODate(date);
+    const iso = jkIso;
     const len = durationMin ? ` (${lengthText(durationMin)})` : '';
     const jakarta = `${fmtLongDate(iso, isIndonesian ? 'id' : 'en')} · ${time ? timeRange(time) : ''}`;
     if (!showLocal || !time) return row(t('Jadwal', 'Schedule'), jakarta + len);
@@ -567,7 +600,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
   // WhatsApp deep link for the success step — prefilled with the booking so the
   // customer just attaches their payment proof.
-  const waServiceLine = `${service?.name || ''}${pkg ? ` · ${pkg.split(' · ')[0]}` : ''}${scheduled && date ? ` · ${toISODate(date)} ${time ? timeRange(time) : ''}` : ''}`;
+  const waServiceLine = `${service?.name || ''}${pkg ? ` · ${pkg.split(' · ')[0]}` : ''}${scheduled && date ? ` · ${jkIso} ${time ? timeRange(time) : ''}` : ''}`;
   const waMessage = isIndonesian
     ? `Halo Mayanov, saya sudah booking:\n• ${waServiceLine}\n• Nama: ${name}\n• Total: ${totalPrice}\n\nIni bukti pembayaran saya 🙏`
     : live
@@ -814,7 +847,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {live && (
                 <p className="letterpress mb-4 flex items-start gap-2 text-[13px] text-ink/60 leading-relaxed">
                   <CalendarDays className="w-4 h-4 mt-0.5 shrink-0 text-moon" />
-                  <span>Live sessions run Monday–Friday, 11:00–20:00 Jakarta time (GMT+7).{showLocal && <> Times below are shown on your clock ({localZone(toISODate(date!))}).</>}</span>
+                  <span>{awayZone ? <>The calendar and times are in your time zone ({awayZone}). Live sessions run Monday–Friday, 11:00–20:00 Jakarta time (GMT+7).</> : <>Live sessions run Monday–Friday, 11:00–20:00 Jakarta time (GMT+7).</>}</span>
                 </p>
               )}
               <div className="md:grid md:grid-cols-2 md:gap-6 md:items-start">
@@ -826,7 +859,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                       mode="single"
                       selected={date}
                       onSelect={(d) => { setDate(d); setTime(null); }}
-                      disabled={service && DISABLED_DOWS[service.id]
+                      disabled={!isIndonesian
+                        ? [{ before: new Date() }, (d: Date) => slotsOn(d).length === 0]
+                        : service && DISABLED_DOWS[service.id]
                         ? [{ before: new Date() }, { dayOfWeek: DISABLED_DOWS[service.id] }]
                         : { before: new Date() }}
                       weekStartsOn={1}
@@ -868,24 +903,25 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   ) : (
                     <>
                     <div className="grid grid-cols-3 gap-x-3 gap-y-1.5">
-                      {visibleSlots.map((slot) => {
+                      {visibleSlots.map(({ iso, hhmm: slot }) => {
                         // Block this start if the session would run past closing time or overlaps a taken slot.
                         // the session plus what it needs round it (rest, or travel for a meetup)
                         const span = slotNeed(service?.id || '', slot, durationMin || 30);
-                        const isTaken = addMinutes(slot, durationMin || 30) > CLOSING_TIME || span.some((x) => taken.includes(x));
+                        const isTaken = addMinutes(slot, durationMin || 30) > CLOSING_TIME || span.some((x) => (taken[iso] || []).includes(x));
+                        const chosen = time === slot && jkIso === iso;
                         return (
                           <button
-                            key={slot}
+                            key={iso + slot}
                             disabled={isTaken}
-                            onClick={() => setTime(slot)}
-                            aria-pressed={time === slot}
-                            className={`group/slot py-1.5 font-serif ${showLocal ? 'text-[14px]' : 'text-[15px]'} font-semibold transition-colors tabular-nums ${isTaken ? 'text-ink/25 line-through decoration-ink/30 cursor-not-allowed' : time === slot ? 'text-moon' : 'text-ink/80 hover:text-moon'}`}
+                            onClick={() => { setTime(slot); setSlotDay(iso); }}
+                            aria-pressed={chosen}
+                            className={`group/slot py-1.5 font-serif ${showLocal ? 'text-[14px]' : 'text-[15px]'} font-semibold transition-colors tabular-nums ${isTaken ? 'text-ink/25 line-through decoration-ink/30 cursor-not-allowed' : chosen ? 'text-moon' : 'text-ink/80 hover:text-moon'}`}
                           >
                             <span className="relative isolate inline-block px-3 py-1">
-                              {!isTaken && (time === slot
+                              {!isTaken && (chosen
                                 ? <InkLoop className="text-moon" />
                                 : <PaintSwatch round className="text-moon opacity-0 transition-opacity duration-300 group-hover/slot:opacity-[0.12]" />)}
-                              <span className="letterpress">{showLocal ? localClock(toISODate(date), slot) : slot}</span>
+                              <span className="letterpress">{showLocal ? localClock(iso, slot) : slot}</span>
                             </span>
                           </button>
                         );
@@ -895,7 +931,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     {time && (
                       <p className="letterpress mt-3 font-elegant italic text-[15px] text-ink/70 leading-snug">
                         {showLocal
-                          ? <>Your session: <span className="not-italic font-serif font-semibold text-moon tabular-nums">{localRange(toISODate(date), time)}</span><span className="block text-[13px] text-ink/50">{time} – {addMinutes(time, durationMin || 30)} Jakarta time</span></>
+                          ? <>Your session: <span className="not-italic font-serif font-semibold text-moon tabular-nums">{localRange(jkIso, time)}</span><span className="block text-[13px] text-ink/50">{fmtLongDate(jkIso, 'en')} · {time} – {addMinutes(time, durationMin || 30)} Jakarta time</span></>
                           : <>{t('Sesimu', 'Your session')}: <span className="not-italic font-serif font-semibold text-moon tabular-nums">{time} – {addMinutes(time, durationMin || 30)}</span></>}
                       </p>
                     )}
@@ -921,8 +957,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 <p className="letterpress mb-5 flex items-center gap-2 text-[13px] text-ink/60">
                   <CalendarDays className="w-4 h-4 text-moon" />
                   {showLocal && time
-                    ? <>{localRange(toISODate(date), time)} · {fmtLongDate(toISODate(date), 'en')} {timeRange(time)} Jakarta time</>
-                    : <>{fmtLongDate(toISODate(date), isIndonesian ? 'id' : 'en')} · {time && timeRange(time)}{pkg ? ` · ${pkg.split(' · ')[0]}` : ''}</>}
+                    ? <>{localRange(jkIso, time)} · {fmtLongDate(jkIso, 'en')} {timeRange(time)} Jakarta time</>
+                    : <>{fmtLongDate(jkIso, isIndonesian ? 'id' : 'en')} · {time && timeRange(time)}{pkg ? ` · ${pkg.split(' · ')[0]}` : ''}</>}
                 </p>
               )}
 
@@ -956,7 +992,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   <div className="grid grid-cols-[4.5rem_1fr_5.5rem] gap-2">
                     <input value={dobDay} onChange={(e) => setDobDay(e.target.value.replace(/\D/g, '').slice(0, 2))} inputMode="numeric" aria-label={t('Tanggal', 'Day')} placeholder={t('Tgl', 'Day')} className={`${field} text-center`} />
                     <div className="relative">
-                      <select value={dobMonth} onChange={(e) => setDobMonth(e.target.value)} aria-label={t('Bulan', 'Month')} className={`${field} appearance-none pr-6 ${dobMonth ? '' : 'text-ink/35'}`}>
+                      <select value={dobMonth} onChange={(e) => setDobMonth(e.target.value)} onKeyDown={typeMonth} aria-label={t('Bulan', 'Month')} className={`${field} appearance-none pr-6 ${dobMonth ? '' : 'text-ink/35'}`}>
                         <option value="">{t('Bulan', 'Month')}</option>
                         {(isIndonesian ? MONTHS_ID : MONTHS_EN).map((m, i) => <option key={m} value={String(i + 1)} className="text-ink">{m}</option>)}
                       </select>
@@ -1005,16 +1041,17 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   </div>
                 )}
                 <label className="block">
-                  <span className={label}>Email {emailNeeded ? invited && <span className="text-ink/40 font-normal">{t('(untuk undangan kalender)', '(for your calendar invite)')}</span> : <span className="text-ink/40 font-normal">(opsional)</span>}</span>
+                  <span className={label}>Email {!isIndonesian && !live ? <span className="text-ink/40 font-normal">(your confirmation and reading come here)</span> : emailNeeded ? invited && <span className="text-ink/40 font-normal">{t('(untuk undangan kalender)', '(for your calendar invite)')}</span> : <span className="text-ink/40 font-normal">(opsional)</span>}</span>
                   <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" className={field} placeholder={t('nama@email.com', 'you@email.com')} />
                   {!emailValid && email.trim() !== '' && (
                     <span className="letterpress block mt-1.5 text-xs text-ink/70">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
                   )}
                 </label>
-                <label className="block">
-                  <span className={label}>{t('Pertanyaanmu', 'Your question')} {(isIndonesian || live) && <span className="text-ink/40 font-normal">{t('(opsional)', '(optional)')}</span>}</span>
-                  <textarea value={question} onChange={(e) => setQuestion(e.target.value.slice(0, 2000))} rows={2} className={`${field} resize-none`} placeholder={t('Boleh dikosongkan, kita bisa cari bareng saat sesi.', live ? 'What’s on your mind? We can also find it together in the session.' : 'What would you like the cards to look at? A little context helps.')} />
-                </label>
+                {/* an email reading's question comes by replying to the confirmation email */}
+                {(isIndonesian || live) && <label className="block">
+                  <span className={label}>{t('Pertanyaanmu', 'Your question')} <span className="text-ink/40 font-normal">{t('(opsional)', '(optional)')}</span></span>
+                  <textarea value={question} onChange={(e) => setQuestion(e.target.value.slice(0, 2000))} rows={2} className={`${field} resize-none`} placeholder={t('Boleh dikosongkan, kita bisa cari bareng saat sesi.', live ? 'What’s on your mind? We can also find it together in the session.' : '')} />
+                </label>}
               </div>
 
               {bottomBar(
@@ -1070,7 +1107,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   <p className="letterpress mb-4 text-[13px] text-ink/60 leading-relaxed">
                     {live
                       ? <>Pay {totalPrice} with PayPal or a card. Your time is held while you pay and booked once the payment goes through; the Google Meet link is sent to {email.trim()}.</>
-                      : <>Pay {totalPrice} with PayPal or a card. Your booking is made once the payment goes through, and your reading is sent to {email.trim()}.</>}
+                      : <>Pay {totalPrice} with PayPal or a card. Your booking is made once the payment goes through. Then reply to my confirmation email with your question, and your reading comes to {email.trim()} within 24 hours.</>}
                   </p>
                   {error && errorNote(error)}
                   <PayPalButtons config={ppConfig!} input={bookingInput(service)} onStart={() => setError('')} onPaid={paidWithPayPal} onError={payPalFailed} onIssue={(r) => trackPaymentIssue(r, 'PayPal', 'Global')} />
@@ -1079,7 +1116,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 <p className="letterpress mt-6 text-[13px] text-ink/60 leading-relaxed">
                   {live
                     ? <>This holds your time. I’ll message you on WhatsApp to arrange the payment of {totalPrice}; your booking is confirmed once it’s paid, and the Google Meet link comes to your email.</>
-                    : <>Next, you’ll pay {totalPrice} securely on PayPal. Your booking is confirmed once payment is through, and your reading is sent to your email.</>}
+                    : <>Next, you’ll pay {totalPrice} securely on PayPal. Your booking is confirmed once payment is through; then reply to my confirmation email with your question, and your reading comes by email.</>}
                 </p>
               )}
 
@@ -1112,7 +1149,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   ? <>Terima kasih, {name || 'kamu'}. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk konfirmasi.{invited && <><br />Undangan kalender{service?.id === 'meetup' ? '' : ' & link Google Meet'} dikirim ke {email.trim()} setelah pembayaranmu masuk.</>}</>
                   : live
                   ? <>Thank you, {name || 'friend'}. Your time is held. One last step: message me on WhatsApp to pay. Your booking is confirmed once it’s paid, and the Google Meet link comes to {email.trim()}.</>
-                  : <>Thank you, {name || 'friend'}. One last step: pay on PayPal. Your booking is confirmed once payment comes through, and your reading is sent to {email.trim()}.</>}
+                  : <>Thank you, {name || 'friend'}. One last step: pay on PayPal. Once payment comes through, a confirmation email arrives at {email.trim()}: reply to it with your question, and your reading comes within 24 hours.</>}
               </p>
 
               <div className="mt-5 text-left">

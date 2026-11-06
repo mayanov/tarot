@@ -45,7 +45,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
     {
       cat: 'Process',
       question: "How does an email reading work?",
-      answer: "After you purchase a reading via PayPal, I will receive your request. Please ensure you include your question in the notes or reply to the confirmation email. I will then meditate on your query, pull the cards, and send you a detailed PDF report including a photo of your spread within 24 hours."
+      answer: "After you purchase a reading via PayPal, I will receive your request. You'll get a confirmation email: reply to it with your question and a little context. I will then meditate on your query, pull the cards, and send you a detailed PDF report including a photo of your spread within 24 hours."
     },
     {
       cat: 'Questions',

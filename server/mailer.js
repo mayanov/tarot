@@ -118,15 +118,27 @@ export function paidEmail(booking, amount) {
   const method = /^paypal/i.test(booking.paymentMethod || '') ? 'PayPal' : '';
   const reading = WHEN[booking.serviceId]; // an email reading (3-Card / 5-Card)
   const question = reading ? String(booking.question || '').trim() : '';
-  const subject = `Your ${service} is booked ✨`;
+  // an email reading without its question yet: the customer replies to this email with it
+  const ask = reading && !question;
+  // the booking code first, so every email (and every reply, "Re: …") is easy to find
+  const subject = `${booking.ref ? `${booking.ref} · ` : ''}Your ${service} is booked${ask ? ': reply with your question' : ''} ✨`;
 
   const paras = [
     `Hi ${first},`,
     `Thank you, your payment${price ? ` of **${price}**` : ''} has come through and your ${service} is booked.`,
-    reading
+    ask
+      ? null
+      : reading
       ? `I’ll sit down with the cards for your question and send your reading to this email **${reading}**.`
       : NEXT[booking.serviceId] || 'I’ll be in touch about the next step soon.',
+  ].filter(Boolean);
+  // the one thing left to do: reply with the question and some context
+  const askTitle = 'One more step: reply to this email';
+  const askItems = [
+    ['Your question', 'what you’d like the cards to look at.'],
+    ['A little context', 'what’s going on, who’s involved, and what you’re hoping to understand. The more I know, the clearer your reading.'],
   ];
+  const askAfter = `Once your reply is in, I’ll sit down with the cards and send your reading to this email **${reading}**.`;
   const rows = [
     [reading ? 'Reading' : 'Session', service],
     ['When', reading ? '' : scheduleOf(booking)],
@@ -134,12 +146,15 @@ export function paidEmail(booking, amount) {
     ['Paid with', method],
     ['Booking code', booking.ref],
   ].filter(([, v]) => v);
-  const closing = reading
+  const closing = ask
+    ? 'Just hit reply. Keep the subject as it is, so your question finds your booking.'
+    : reading
     ? 'If you’d like to add anything to your question, just reply to this email.'
     : 'Any questions before then? Just reply to this email.';
 
   const text = [
     ...paras.map((p) => p.replace(/\*\*/g, '')).flatMap((p) => [p, '']),
+    ...(ask ? [`${askTitle.toUpperCase()}`, ...askItems.map(([k, v]) => `- ${k}: ${v}`), '', askAfter.replace(/\*\*/g, ''), ''] : []),
     question ? `Your question:\n“${question}”\n` : null,
     ...rows.map(([k, v]) => `${k}: ${v}`),
     '',
@@ -164,6 +179,13 @@ export function paidEmail(booking, amount) {
 <tr><td style="padding:16px 36px 4px;font-family:${sans};font-size:15px;line-height:1.65;color:#3d3436;">
 ${paras.map((p) => `  <p style="margin:0 0 14px;">${rich(p)}</p>`).join('\n')}
 </td></tr>
+${ask ? `<tr><td style="padding:4px 36px 6px;">
+  <div style="background:#efe7f6;border-radius:6px;padding:18px 20px;font-family:${sans};font-size:15px;line-height:1.6;color:#3d3436;">
+    <div style="font-family:${serif};font-size:19px;font-weight:600;color:#6B3FA0;margin:0 0 10px;">${esc(askTitle)}</div>
+${askItems.map(([k, v]) => `    <p style="margin:0 0 8px;"><strong style="color:#2B2426;">${esc(k)}:</strong> ${esc(v)}</p>`).join('\n')}
+    <p style="margin:12px 0 0;">${rich(askAfter)}</p>
+  </div>
+</td></tr>` : ''}
 ${question ? `<tr><td style="padding:6px 36px 6px;">
   <div style="border-left:2px solid #b9a3d6;padding:4px 0 4px 16px;font-family:${serif};font-style:italic;font-size:17px;line-height:1.5;color:#2B2426;">“${esc(question).replace(/\n/g, '<br>')}”</div>
 </td></tr>` : ''}

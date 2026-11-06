@@ -601,8 +601,8 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
     const { serviceId, name, dob, contact, question } = req.body || {};
     const reading = paypal.READINGS[serviceId];
     // checked before taking the money, so a bad form never ends in a paid order with no booking
-    // (an email reading needs the question; a live session is asked in person)
-    if (!reading || !name || !contact || (!reading.durationMin && !String(question || '').trim()) || missingEmail(serviceId, contact)) {
+    // (an email reading's question comes by replying to the confirmation email)
+    if (!reading || !name || !contact || missingEmail(serviceId, contact)) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
     // a live session: its slot must still be its own, or the payment isn't taken
@@ -659,7 +659,7 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
             name: String(name).slice(0, 120),
             dob: /^\d{4}-\d{2}-\d{2}$/.test(String(dob || '')) ? String(dob) : '',
             contact: String(contact).slice(0, 160),
-            question: String(question).slice(0, 2000),
+            question: String(question || '').slice(0, 2000),
             market: 'Global',
             paymentStatus: 'paid',
             paymentMethod: paypal.SIMULATE ? 'PayPal (simulated)' : 'PayPal',

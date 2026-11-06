@@ -248,7 +248,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
           <WatercolorWash variant="stroke" />
         </div>
         {/* a large, faint opening quote mark */}
-        <div aria-hidden className="pointer-events-none text-center font-elegant text-moon/30 text-[5rem] md:text-[7rem] leading-[0.28] select-none"><span className="print-ink mix-blend-multiply inline-block py-[0.5em] -my-[0.5em]">&ldquo;</span></div>
+        <div aria-hidden className="pointer-events-none text-center font-elegant text-moon/60 text-[5rem] md:text-[7rem] leading-[0.28] select-none"><span className="print-ink mix-blend-multiply inline-block py-[0.5em] -my-[0.5em]">&ldquo;</span></div>
 
         <div className="relative grid max-w-3xl lg:max-w-4xl xl:max-w-[72rem] 2xl:max-w-[80rem] mx-auto mt-5 md:mt-7">
           {reviews.map((r, i) => {
@@ -270,7 +270,8 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                 }}
                 className={`flex flex-col items-center text-center ${active ? '' : 'pointer-events-none'}`}
               >
-                <p className="letterpress-lg font-elegant text-ink text-[1.3rem] md:text-[1.9rem] leading-[1.42] tracking-[-0.005em]">
+                {/* the customer's own words, in italic: set apart from the headings and Mayanov's voice */}
+                <p className="letterpress-lg font-elegant italic text-plum text-[1.3rem] md:text-[1.9rem] leading-[1.42] tracking-[-0.005em]">
                   {r.text}
                 </p>
                 {/* signed by hand, in the same script as Mayanov's signature in About */}

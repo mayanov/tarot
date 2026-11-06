@@ -897,7 +897,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 id: '', theme: 0, numeral: 'I', type: '3-Card Spread', tags: ['Quick', '24h'],
                 blurb: 'A quick check-in on one question.',
                 points: ['Three-card spread', 'Photo of your spread', 'Written reading within 24h'],
-                steps: ['Tap “Book a Reading” and leave your name, date of birth & WhatsApp', 'I’ll reach out on WhatsApp to confirm and take your question', 'Get a photo of your spread and a written reading within 24h'],
+                steps: ['Tap “Book a Reading”, leave your name, date of birth, WhatsApp & email, and pay', 'Reply to my confirmation email with your question and a little context', 'Get a photo of your spread and a written reading within 24h'],
                 priceLabel: '$12',
                 offers: [
                     {
@@ -912,7 +912,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 id: '', theme: 1, numeral: 'II', type: '5-Card Deep', tags: ['In-depth', 'Popular'],
                 blurb: 'An in-depth look at one question.',
                 points: ['Bigger picture & hidden influences', "What's coming next", 'High-res photo of your cards', 'Priority delivery within 24h'],
-                steps: ['Tap “Book a Reading” and leave your name, date of birth & WhatsApp', 'I’ll reach out on WhatsApp to confirm and take your question', 'Get a high-res photo of your cards and an in-depth reading within 24h'],
+                steps: ['Tap “Book a Reading”, leave your name, date of birth, WhatsApp & email, and pay', 'Reply to my confirmation email with your question and a little context', 'Get a high-res photo of your cards and an in-depth reading within 24h'],
                 priceLabel: '$20',
                 offers: [
                     {
