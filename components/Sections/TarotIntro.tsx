@@ -89,10 +89,12 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
     <section
       ref={sectionRef}
       id="tarot-intro"
-      className={`relative text-cream ${reduce ? 'py-24 md:py-32' : ''}`}
+      className="relative text-cream"
       style={{ height: reduce ? undefined : '200vh', background: '#05061a' }}
     >
-      <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen h-[100svh] overflow-hidden'} flex items-center`}>
+      {/* (unpinned, the padding is inside the sky's box, so the sky fills the whole section: on the
+          section itself it showed as dark bands above and below) */}
+      <div className={`${reduce ? 'relative overflow-hidden py-24 md:py-32' : 'sticky top-0 h-screen h-[100svh] overflow-hidden'} flex items-center`}>
         {/* sky — night, with dawn and then sunrise painted over it, faded in by scroll */}
         {/* (standing still, only the dawn shows: the night under it and the sunrise
             over it, unseen, aren't painted at all) */}
