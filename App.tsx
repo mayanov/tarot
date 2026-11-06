@@ -7,7 +7,7 @@ import TarotIntro from './components/Sections/TarotIntro';
 import Footer from './components/Layout/Footer';
 import WatercolorSky from './components/Layout/WatercolorSky';
 import Loader from './components/Layout/Loader';
-import { afterIntro } from './components/UI/introGate';
+import { paintsMayStart } from './components/UI/introGate';
 import SectionTracker from './components/UI/SectionTracker';
 import { trackEvent, setUserProperties, trackPageView, trackWhatsApp } from './services/analytics';
 import { initLenis, destroyLenis, initParallax, destroyParallax, smoothScrollTo, smoothScrollToId, touchScreen, cssScrollTimeline } from './components/UI/scroll';
@@ -49,7 +49,8 @@ const BookingGate: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => {
     const onOpen = (e: Event) => { pending.current = e as CustomEvent; setWanted(true); };
     window.addEventListener('open-booking', onOpen);
     // (a late call after it's already wanted just sets the same state again)
-    afterIntro().then(() => {
+    // the form's code is fetched behind the loader, so it opens at once
+    paintsMayStart().then(() => {
       const ric = (window as { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
       if (ric) ric(() => setWanted(true)); else window.setTimeout(() => setWanted(true), 1500);
     });

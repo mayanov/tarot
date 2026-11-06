@@ -3,6 +3,7 @@ import CelestialMark from '../UI/CelestialMark';
 import CardStock from '../UI/CardStock';
 import CardWash, { DECK_WASH } from '../UI/CardWash';
 import { PaperShadow, paperCut } from '../UI/PaperEdge';
+import { trackPaint } from '../UI/introGate';
 
 // The photo band above "Event & collaboration": the photos as tarot cards dealt
 // loosely on the paper — a tarot card like the About portrait, in the same twilight plum (numeral at
@@ -28,6 +29,12 @@ const EASE = 'cubic-bezier(0.16,1,0.3,1)';
 const cq = (px: number) => `${(px / 2.56).toFixed(3)}cqw`;
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
 
+
+// each photo is counted, so the loader only hands over once they're all in
+const trackPhoto = (img: HTMLImageElement | null) => {
+  if (!img || (img.complete && img.naturalWidth)) return;
+  trackPaint(new Promise<void>((r) => { img.addEventListener('load', () => r(), { once: true }); img.addEventListener('error', () => r(), { once: true }); }));
+};
 
 const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -102,7 +109,10 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {
                   <img
                     src={src}
                     alt={isIndonesian ? `Sesi tarot Mayanov di event ${i + 1}` : `Mayanov tarot session at event ${i + 1}`}
-                    loading="lazy"
+                    // fetched behind the loader (it waits for them), after the hero's own things
+                    loading="eager"
+                    fetchPriority="low"
+                    ref={trackPhoto}
                     decoding="async"
                     // soft vintage tone that clears on hover
                     className="absolute inset-0 w-full h-full object-cover [filter:sepia(0.22)_saturate(0.85)_contrast(1.05)] group-hover:[filter:none] transition-[filter] duration-700"

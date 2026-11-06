@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { afterIntro } from '../UI/introGate';
+import { paintsMayStart, trackPaint } from '../UI/introGate';
 
 // A sky painted in watercolour rather than photographed: a graded wash, long
 // wet-in-wet streaks laid across it like cloud (edges bled and dried darker), pale
@@ -148,8 +148,8 @@ export const paintSvg = (p: SkyPalette) => svg(`
   <rect width="${W}" height="${H}" filter="url(#paper)" opacity="0.42" style="mix-blend-mode:multiply"/>`);
 
 // Each palette is painted once per page load into a plain JPEG bitmap (at 1.5× the
-// sheet), queued for idle time after the intro (introGate) so the heavy filters never
-// run during the loader or a scroll. The hero's sky is `eager`: painted at once, first
+// sheet), queued for idle time behind the loader once the hero's own things are ready
+// (introGate); the loader waits for them, so the heavy filters never run during a scroll. The hero's sky is `eager`: painted at once, first
 // thing (the loader waits for it, see skyPainted), while nothing is moving yet. Until
 // it's ready a sky shows its flat ground colour, then fades the painting in.
 const SCALE = 1.5;
@@ -174,7 +174,7 @@ const bitmap = (p: SkyPalette, eager = false) => {
     return v;
   }
   if (!v) {
-    const start = eager ? Promise.resolve() : queue.then(afterIntro).then(idle);
+    const start = eager ? Promise.resolve() : queue.then(paintsMayStart).then(idle);
     v = start.then(() => new Promise<string>((resolve) => {
       const src = paintSvg(p);
       const img = new Image();
@@ -189,7 +189,7 @@ const bitmap = (p: SkyPalette, eager = false) => {
       img.onerror = () => resolve(src);
       img.src = src;
     }));
-    if (!eager) queue = v;
+    if (!eager) queue = trackPaint(v);
     bitmaps.set(p, v);
   }
   return v;

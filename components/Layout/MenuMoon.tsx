@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useState } from 'react';
-import { afterIntro } from '../UI/introGate';
+import { paintsMayStart, trackPaint } from '../UI/introGate';
 
 // Tonight's moon, for the menu: a faint photo moon printed into the paper, lit to the
 // real phase. Same terminator as the divider's Phase glyphs (a half disc closed by an
@@ -29,7 +29,14 @@ export const MoonWatermark: React.FC<{ moon: MoonNow; className?: string; style?
   // the photo is only seen in the menu, which can't open before the intro's over: it's
   // fetched then, not while the page is loading
   const [img, setImg] = useState<string>();
-  useEffect(() => { let live = true; afterIntro().then(() => { if (live) setImg(MOON_IMG); }); return () => { live = false; }; }, []);
+  // fetched behind the loader once the hero is ready (the loader waits for it)
+  useEffect(() => {
+    let live = true;
+    paintsMayStart()
+      .then(() => trackPaint(new Promise<void>((r) => { const i = new Image(); i.onload = i.onerror = () => r(); i.src = MOON_IMG; })))
+      .then(() => { if (live) setImg(MOON_IMG); });
+    return () => { live = false; };
+  }, []);
   const r = 98, c = 100;
   const rx = Math.abs(1 - 2 * moon.p) * r;
   const lit = `M ${c} ${c - r} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${rx} ${r} 0 0 ${moon.p > 0.5 ? 1 : 0} ${c} ${c - r} Z`;

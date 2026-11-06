@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { afterIntro } from './introGate';
+import { paintsMayStart, trackPaint } from './introGate';
 
 /**
  * Paints a heavy SVG decoration (a watercolour wash: noise, displacement, wide blurs)
@@ -14,8 +14,8 @@ import { afterIntro } from './introGate';
  * it for decorations that don't change on hover.
  */
 
-// one bake at a time, each in idle time after the intro (introGate), so painting them
-// never lands on the loader, the hero's entrance or a scroll
+// one bake at a time, each in idle time behind the loader once the hero's own things
+// are ready (introGate); the loader waits for them all, so none lands on a scroll
 let queue: Promise<unknown> = Promise.resolve();
 const idle = () => new Promise<void>((r) => {
   const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
@@ -23,7 +23,7 @@ const idle = () => new Promise<void>((r) => {
 });
 
 const bake = (svg: SVGSVGElement, w: number, h: number, bleed: number): Promise<string | null> =>
-  (queue = queue.then(afterIntro).then(idle).then(() => new Promise<string | null>((resolve) => {
+  trackPaint(queue = queue.then(paintsMayStart).then(idle).then(() => new Promise<string | null>((resolve) => {
     const W = w + bleed * 2, H = h + bleed * 2;
     const clone = svg.cloneNode(true) as SVGSVGElement;
     clone.removeAttribute('class');
@@ -50,7 +50,7 @@ const bake = (svg: SVGSVGElement, w: number, h: number, bleed: number): Promise<
     };
     img.onerror = () => resolve(null);
     img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(doc)}`;
-  })));
+  }))) as Promise<string | null>;
 
 /** `blend`: a mix-blend-mode for the picture, for a drawing whose layers blend with
     what's under it (they're flattened in the picture, then blended as one) */

@@ -4,6 +4,7 @@ import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import { WaningMoon } from '../UI/CelestialMark';
 import { skyPainted, TWILIGHT } from './WatercolorSky';
+import { paintsSettled, paintProgress, trackPaint } from '../UI/introGate';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -39,10 +40,14 @@ export const REVEAL_FLIGHT_MS = CARRY_DELAY_MS + CARRY_MS;
 const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
 
 // Loading is REAL: progress comes from the work the page actually waits on.
-const TASKS = ['fonts', 'paper', 'sky', 'app', 'page'] as const;
+// the hero's own things first; then 'rest': everything further down the page painted
+// and fetched (introGate), so nothing is still appearing once the visitor lands
+const TASKS = ['fonts', 'paper', 'sky', 'app', 'page', 'rest'] as const;
+const FIRST = TASKS.filter((t) => t !== 'rest');
 const MIN_CLIMB_MS = 1600;    // even on a fast connection the drawing takes this long (no flash)
 const SETTLE_MS = 450;        // the finished drawing (at 100%) holds a beat before the hand-off
 const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
+const REST_TIMEOUT_MS = 14000; // …nor on the rest of the page (a slow phone takes a few seconds)
 const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
 // The timelapse: once the skies are in, sunset turns to dusk and dusk to the hero's
 // twilight over this long (the hand-off waits for it, so it's always seen through)
@@ -160,10 +165,23 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   useEffect(() => {
     let cancelled = false;
     const safe = (task: string) => () => { if (!cancelled) mark(task); };
-    const timers = TASKS.map((task) => window.setTimeout(safe(task), TASK_TIMEOUT_MS));
-    // fonts (the hero title's size depends on them)
+    const timers = FIRST.map((task) => window.setTimeout(safe(task), TASK_TIMEOUT_MS));
+    // fonts: every face the page uses, not only the ones on screen now (the hero title's
+    // size depends on them, and none should swap in later further down). The two
+    // handwriting faces' stylesheets load without holding up the page, so they're
+    // waited for first.
     const fonts = (document as any).fonts;
-    if (fonts?.ready) fonts.ready.then(safe('fonts')).catch(safe('fonts')); else safe('fonts')();
+    const sheets = [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][media="print"]')]
+      .map((l) => new Promise<void>((r) => { l.addEventListener('load', () => r(), { once: true }); l.addEventListener('error', () => r(), { once: true }); window.setTimeout(r, 4000); }));
+    Promise.all(sheets)
+      .then(() => {
+        if (!fonts?.load) return;
+        const faces = ['300', '400', '500', '600', '700'].map((w) => `${w} 1em Switzer`)
+          .concat(['400 1em Alegreya', 'italic 400 1em Alegreya', '400 1em "Mrs Saint Delafield"', '400 1em "Reenie Beanie"']);
+        return Promise.all(faces.map((f) => fonts.load(f).catch(() => {})));
+      })
+      .then(() => fonts?.ready)
+      .then(safe('fonts'), safe('fonts'));
     // the paper's grain: every light section under the hero is printed on it
     const img = new Image();
     img.onload = safe('paper');
@@ -189,6 +207,23 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   // the app's own startup (location check) — passed in as `ready`
   useEffect(() => { if (ready) mark('app'); }, [ready]);
 
+  // the hero's own things are in: the rest of the page is finished behind the drawing
+  // (the washes and skies further down painted, the remaining photos fetched), and the
+  // drawing only completes once all of it is
+  const firstDone = FIRST.every((t) => done[t]);
+  useEffect(() => {
+    if (!firstDone) return;
+    let cancelled = false;
+    window.dispatchEvent(new CustomEvent('mt:loaded'));
+    for (const img of Array.from(document.images)) {
+      if (!img.getAttribute('src') || (img.complete && img.naturalWidth)) continue;
+      img.loading = 'eager';
+      trackPaint(new Promise<void>((r) => { img.addEventListener('load', () => r(), { once: true }); img.addEventListener('error', () => r(), { once: true }); }));
+    }
+    paintsSettled(REST_TIMEOUT_MS).then(() => { if (!cancelled) mark('rest'); });
+    return () => { cancelled = true; };
+  }, [firstDone]);
+
   const doneCount = TASKS.filter((t) => done[t]).length;
   const doneRef = useRef(0);
   doneRef.current = doneCount;
@@ -210,7 +245,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     const stop = () => { cancelAnimationFrame(raf); clearInterval(iv); };
     const tick = () => {
       const now = performance.now();
-      const real = doneRef.current / TASKS.length;
+      // (the rest of the page counts by how much of it is done)
+      const real = (doneRef.current + (doneRef.current < TASKS.length && doneRef.current >= FIRST.length ? paintProgress() * 0.98 : 0)) / TASKS.length;
       const allDone = real >= 1;
       const timeCap = Math.min(1, (now - t0) / climb) * 100;
       const creep = allDone ? 0 : 12 * (1 - Math.exp(-(now - lastDoneAt.current) / 1800));
