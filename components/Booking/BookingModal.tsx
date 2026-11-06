@@ -1001,7 +1001,11 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     <input value={dobYear} onChange={(e) => setDobYear(e.target.value.replace(/\D/g, '').slice(0, 4))} inputMode="numeric" aria-label={t('Tahun', 'Year')} placeholder={t('Tahun', 'Year')} className={`${field} text-center`} />
                   </div>
                   {dobDay && dobMonth && dobYear.length === 4 && !dob && (
-                    <span className="letterpress block mt-1.5 text-xs text-ink/70">{t('Tanggal lahir tidak valid.', 'That date isn’t valid.')}</span>
+                    <span className="letterpress block mt-1.5 text-xs text-ink/70">
+                      {new Date(Number(dobYear), Number(dobMonth) - 1, Number(dobDay) || 1) > new Date()
+                        ? t('Tanggal itu belum terjadi. Cek lagi tahunnya ya.', 'That date is in the future. Please check the year.')
+                        : t('Tanggal lahir tidak valid.', 'That date isn’t valid.')}
+                    </span>
                   )}
                 </div>
                 {isIndonesian ? (
