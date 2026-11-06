@@ -80,11 +80,14 @@ const CustomersView: React.FC = () => {
     };
     useEffect(() => { load(); }, []);
 
+    // a client's bookings that weren't cancelled
+    const liveCount = (c: Customer) => c.bookings.filter((b) => b.status !== 'cancelled').length;
+
     const customers = useMemo<Customer[]>(() => {
         const map = new Map<string, Customer>();
-        // Only real clients: build the directory from confirmed/done bookings.
-        // Pending & cancelled are excluded (they may not be genuine).
-        const realBookings = bookings.filter((b) => (b.status === 'confirmed' || b.status === 'done') && (b.market === 'ID' ? 'ID' : 'Global') === market);
+        // Every booking of the market, cancelled ones too, so a client's history is whole;
+        // only people with a real booking (paid, or confirmed/done) are listed below.
+        const realBookings = bookings.filter((b) => (b.market === 'ID' ? 'ID' : 'Global') === market);
         // Newest first so "name/phone" reflects the latest booking.
         const sorted = [...realBookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         for (const b of sorted) {
@@ -100,9 +103,15 @@ const CustomersView: React.FC = () => {
             if (!c.phone && phone) c.phone = phone;
             if (!c.email && email) c.email = email;
             // "spent" is money that came in; an unpaid booking only counts as owed
+            if (b.status === 'cancelled') continue; // in their history, not in the money or services
             const amt = amountForBooking(b);
             if (amt) { if (b.paymentStatus === 'paid') c.paid += amt.amount; else c.owed += amt.amount; }
             if (!c.services.includes(b.serviceId)) c.services.push(b.serviceId);
+        }
+        // someone who only ever cancelled (or never got past pending, unpaid) isn't a client
+        for (const [key, c] of map) {
+            const real = c.bookings.some((b) => b.status !== 'cancelled' && (b.paymentStatus === 'paid' || b.status === 'confirmed' || b.status === 'done'));
+            if (!real) map.delete(key);
         }
         // derive first/last seen
         for (const c of map.values()) {
@@ -120,11 +129,11 @@ const CustomersView: React.FC = () => {
             c.name.toLowerCase().includes(needle) || c.phone.replace(/\s/g, '').includes(needle.replace(/\s/g, '')) || c.email.toLowerCase().includes(needle));
         return [...list].sort((a, b) =>
             sort === 'recent' ? b.lastSeen.localeCompare(a.lastSeen)
-                : sort === 'bookings' ? b.bookings.length - a.bookings.length
+                : sort === 'bookings' ? liveCount(b) - liveCount(a)
                     : (b.paid - a.paid) || (b.owed - a.owed));
     }, [customers, q, sort]);
 
-    const repeatCount = useMemo(() => customers.filter((c) => c.bookings.filter((b) => b.status !== 'cancelled').length > 1).length, [customers]);
+    const repeatCount = useMemo(() => customers.filter((c) => liveCount(c) > 1).length, [customers]);
 
     const spentLabel = (c: Customer) => (c.paid ? fmtMoney(c.paid, cur) : '—');
 
@@ -167,7 +176,7 @@ const CustomersView: React.FC = () => {
                 {filtered.length === 0 ? (
                     loading ? <InlineLoader /> : <p className="text-sm text-text-subtle py-12 text-center">No customers found.</p>
                 ) : filtered.map((c) => {
-                    const count = c.bookings.length;
+                    const count = liveCount(c);
                     return (
                         <button key={c.key} onClick={() => setSelected(c)}
                             className="w-full grid grid-cols-2 md:grid-cols-12 gap-2 md:gap-3 px-5 py-3.5 text-left border-b border-adm-line last:border-0 hover:bg-adm-hover transition-colors items-center">
@@ -206,7 +215,7 @@ const CustomersView: React.FC = () => {
                             <button onClick={() => setSelected(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light"><X size={16} /></button>
                         </div>
                         <div className="px-6 py-4 grid grid-cols-3 gap-3 border-b border-adm-line">
-                            <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Bookings</div><div className="text-lg font-bold text-text-light tabular-nums">{selected.bookings.length}</div></div>
+                            <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Bookings</div><div className="text-lg font-bold text-text-light tabular-nums">{liveCount(selected)}</div>{selected.bookings.length > liveCount(selected) && <div className="text-xs text-text-subtle tabular-nums">+{selected.bookings.length - liveCount(selected)} cancelled</div>}</div>
                             <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Paid</div><div className="text-lg font-bold text-text-light tabular-nums">{spentLabel(selected)}</div>{selected.owed > 0 && <div className="text-xs text-coral-deep tabular-nums">{fmtMoney(selected.owed, cur)} unpaid</div>}</div>
                             <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Client since</div><div className="text-lg font-bold text-text-light">{fmtDate(selected.firstSeen)}</div></div>
                         </div>

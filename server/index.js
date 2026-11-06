@@ -471,6 +471,12 @@ const INVITED_SERVICES = new Set(['call', 'live', 'meetup']);
 const missingEmail = (serviceId, contact) =>
     INVITED_SERVICES.has(String(serviceId)) && !/Email:\s*[^\s@·]+@[^\s@·]+\.[^\s@·]{2,}/.test(String(contact || ''));
 
+// Bookings are for ages 18 and over (the form checks too; this catches anything else).
+const underAge = (dob) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dob || ''));
+    return !!m && new Date(+m[1] + 18, +m[2] - 1, +m[3]) > new Date();
+};
+
 // Public: create a booking.
 app.post('/api/bookings', async (req, res) => {
     const { serviceId, serviceName, date, time, durationMin, name, dob, contact, question, market } = req.body || {};
@@ -478,6 +484,7 @@ app.post('/api/bookings', async (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
     if (missingEmail(serviceId, contact)) return res.status(400).json({ error: 'EMAIL_REQUIRED' });
+    if (underAge(req.body?.dob)) return res.status(400).json({ error: 'UNDER_18' });
     if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         return res.status(400).json({ error: 'Invalid date' });
     }
@@ -530,6 +537,7 @@ app.post('/api/paypal/orders', async (req, res) => {
         return res.status(400).json({ error: 'Missing date or time' });
     }
     if (missingEmail(serviceId, contact)) return res.status(400).json({ error: 'EMAIL_REQUIRED' });
+    if (underAge(req.body?.dob)) return res.status(400).json({ error: 'UNDER_18' });
     let id;
     try {
         id = await paypal.createOrder(serviceId);
@@ -722,6 +730,7 @@ app.post('/api/midtrans/checkout', async (req, res) => {
     const q = midtrans.quote(serviceId, String(pkg || ''));
     if (!q || !name || !contact) return res.status(400).json({ error: 'Missing required fields' });
     if (missingEmail(serviceId, contact)) return res.status(400).json({ error: 'EMAIL_REQUIRED' });
+    if (underAge(req.body?.dob)) return res.status(400).json({ error: 'UNDER_18' });
     if (q.scheduled && (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || !/^\d{2}:\d{2}$/.test(String(time)))) {
         return res.status(400).json({ error: 'Missing date or time' });
     }

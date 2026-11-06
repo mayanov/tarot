@@ -66,6 +66,9 @@ const toISODate = (d: Date) => {
   return `${y}-${m}-${day}`;
 };
 
+// Bookings are for adults only: not yet 18 on today's date.
+const isUnder18 = (y: number, m: number, d: number) => new Date(y + 18, m - 1, d) > new Date();
+
 // Add minutes to a 'HH:mm' string → 'HH:mm'.
 const addMinutes = (hhmm: string, mins: number) => {
   const [h, m] = hhmm.split(':').map(Number);
@@ -261,7 +264,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     const ok = d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && dobYear.length === 4;
     if (!ok) { setDob(''); return; }
     const dt = new Date(y, m - 1, d);
-    if (dt.getDate() !== d || dt > new Date()) { setDob(''); return; }
+    if (dt.getDate() !== d || dt > new Date() || isUnder18(y, m, d)) { setDob(''); return; }
     setDob(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
   }, [dobDay, dobMonth, dobYear]);
 
@@ -1015,6 +1018,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     <span className="letterpress block mt-1.5 text-xs text-ink/70">
                       {new Date(Number(dobYear), Number(dobMonth) - 1, Number(dobDay) || 1) > new Date()
                         ? t('Tanggal itu belum terjadi. Cek lagi tahunnya ya.', 'That date is in the future. Please check the year.')
+                        : isUnder18(Number(dobYear), Number(dobMonth), Number(dobDay)) && new Date(Number(dobYear), Number(dobMonth) - 1, Number(dobDay)).getDate() === Number(dobDay)
+                        ? t('Maaf, booking hanya untuk usia 18 tahun ke atas.', 'Sorry, bookings are only for ages 18 and over.')
                         : t('Tanggal lahir tidak valid.', 'That date isn’t valid.')}
                     </span>
                   )}
@@ -1062,11 +1067,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     <span className="letterpress block mt-1.5 text-xs text-ink/70">{t('Format email tidak valid (cth. nama@email.com).', 'Invalid email format (e.g. name@email.com).')}</span>
                   )}
                 </label>
-                {/* an email reading's question comes by replying to the confirmation email */}
-                {(isIndonesian || live) && <label className="block">
-                  <span className={label}>{t('Pertanyaanmu', 'Your question')} <span className="text-ink/40 font-normal">{t('(opsional)', '(optional)')}</span></span>
-                  <textarea value={question} onChange={(e) => setQuestion(e.target.value.slice(0, 2000))} rows={2} className={`${field} resize-none`} placeholder={t('Boleh dikosongkan, kita bisa cari bareng saat sesi.', live ? 'What’s on your mind? We can also find it together in the session.' : '')} />
-                </label>}
+                {/* no question field: it's asked on WhatsApp, by email, or in the session */}
               </div>
 
               {bottomBar(
