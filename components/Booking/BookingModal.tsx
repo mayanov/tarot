@@ -577,15 +577,15 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     isIndonesian
       ? (min % 60 === 0 ? `${min / 60} jam` : `${min} menit`)
       : (min % 60 === 0 ? `${min / 60} hour${min > 60 ? 's' : ''}` : `${min} min`);
-  // the schedule rows of the summaries: Jakarta's time, and theirs when it differs, with
-  // the length on the first (no separate Duration row)
+  // the schedule row of the summaries: on the visitor's own clock when they're away from
+  // Jakarta (Jakarta's time isn't shown to them), with the length (no separate Duration row)
   const scheduleRows = () => {
     if (!scheduled || !date) return null;
     const iso = jkIso;
     const len = durationMin ? ` (${lengthText(durationMin)})` : '';
     const jakarta = `${fmtLongDate(iso, isIndonesian ? 'id' : 'en')} · ${time ? timeRange(time) : ''}`;
     if (!showLocal || !time) return row(t('Jadwal', 'Schedule'), jakarta + len);
-    return <>{row('Your time', localRange(iso, time) + len)}{row('Jakarta time', jakarta)}</>;
+    return row(t('Jadwal', 'Schedule'), localRange(iso, time) + len);
   };
   // the service, with its package when it has no time (chat: "· 1 Pertanyaan")
   const serviceLine = () => `${service?.name || ''}${pkg && !scheduled ? ` · ${pkg.split(' · ')[0]}` : ''}`;
@@ -847,7 +847,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {live && (
                 <p className="letterpress mb-4 flex items-start gap-2 text-[13px] text-ink/60 leading-relaxed">
                   <CalendarDays className="w-4 h-4 mt-0.5 shrink-0 text-moon" />
-                  <span>{awayZone ? <>The calendar and times are in your time zone ({awayZone}). Live sessions run Monday–Friday, 11:00–20:00 Jakarta time (GMT+7).</> : <>Live sessions run Monday–Friday, 11:00–20:00 Jakarta time (GMT+7).</>}</span>
+                  <span>{awayZone ? <>The calendar and times are in your time zone ({awayZone}).</> : <>Live sessions run Monday–Friday, 11:00–20:00 Jakarta time (GMT+7).</>}</span>
                 </p>
               )}
               <div className="md:grid md:grid-cols-2 md:gap-6 md:items-start">
@@ -931,7 +931,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     {time && (
                       <p className="letterpress mt-3 font-elegant italic text-[15px] text-ink/70 leading-snug">
                         {showLocal
-                          ? <>Your session: <span className="not-italic font-serif font-semibold text-moon tabular-nums">{localRange(jkIso, time)}</span><span className="block text-[13px] text-ink/50">{fmtLongDate(jkIso, 'en')} · {time} – {addMinutes(time, durationMin || 30)} Jakarta time</span></>
+                          ? <>Your session: <span className="not-italic font-serif font-semibold text-moon tabular-nums">{localRange(jkIso, time)}</span></>
                           : <>{t('Sesimu', 'Your session')}: <span className="not-italic font-serif font-semibold text-moon tabular-nums">{time} – {addMinutes(time, durationMin || 30)}</span></>}
                       </p>
                     )}
@@ -957,7 +957,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 <p className="letterpress mb-5 flex items-center gap-2 text-[13px] text-ink/60">
                   <CalendarDays className="w-4 h-4 text-moon" />
                   {showLocal && time
-                    ? <>{localRange(jkIso, time)} · {fmtLongDate(jkIso, 'en')} {timeRange(time)} Jakarta time</>
+                    ? <>{localRange(jkIso, time)}</>
                     : <>{fmtLongDate(jkIso, isIndonesian ? 'id' : 'en')} · {time && timeRange(time)}{pkg ? ` · ${pkg.split(' · ')[0]}` : ''}</>}
                 </p>
               )}
