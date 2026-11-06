@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FadeInProps } from '../../types';
+import { touchScreen } from './scroll';
 
 type Dir = 'up' | 'down' | 'left' | 'right' | 'none' | 'blur' | 'scale' | 'zoom';
 
@@ -39,6 +40,9 @@ const FadeIn: React.FC<Props> = ({ children, delay = 0, className = '', dir = 'u
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setIsVisible(true); return; }
+    // on a phone, start as soon as any of it nears the screen (a quick flick otherwise
+    // outruns the reveal, and the words sit blank on screen until it catches up)
+    const touch = touchScreen();
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -46,7 +50,7 @@ const FadeIn: React.FC<Props> = ({ children, delay = 0, className = '', dir = 'u
           if (domRef.current) observer.unobserve(domRef.current);
         }
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    }, touch ? { threshold: 0, rootMargin: '0px 0px 15% 0px' } : { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
 
     const el = domRef.current;
     if (el) observer.observe(el);
@@ -59,7 +63,12 @@ const FadeIn: React.FC<Props> = ({ children, delay = 0, className = '', dir = 'u
     return () => clearTimeout(t);
   }, [isVisible, delay, duration]);
 
-  const v = VARIANT[dir];
+  // a phone gets the same entrances without the blur (redrawing a blur every frame is
+  // what made the FAQ and "why" sections smear and stutter there), and a bit quicker
+  const [touch] = useState(touchScreen);
+  const base = VARIANT[dir];
+  const v = touch ? { t: base.t } : base;
+  if (touch) duration = Math.min(duration, 0.7);
   // scale the translate distance when requested (leaves scale()-only variants alone)
   const hidden = distance !== 1 && v.t.startsWith('translate3d')
     ? v.t.replace(/-?\d+(\.\d+)?px/g, (m) => `${(parseFloat(m) * distance).toFixed(0)}px`)

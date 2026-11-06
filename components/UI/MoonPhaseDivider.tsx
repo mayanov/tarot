@@ -30,13 +30,13 @@ const MoonPhaseDivider: React.FC<{ className?: string }> = ({ className = '' }) 
   <div aria-hidden className={`mx-auto px-8 ${className}`}>
     <FadeIn dir="none">
       <div className="print-ink mix-blend-multiply flex items-center gap-4 md:gap-6 text-moon">
-        <PencilRule fade="start" className="flex-1 text-moon/70" />
-        <div className="flex items-center gap-2.5 md:gap-3.5">
+        <PencilRule fade="start" className="flex-1 min-w-0 !shrink text-moon/70" />
+        <div className="flex shrink-0 items-center gap-2.5 md:gap-3.5">
           {PHASES.map((ph, i) => (
             <Phase key={i} p={ph.p} waning={ph.waning} size={ph.p === 1 ? 18 : 13} />
           ))}
         </div>
-        <PencilRule fade="end" className="flex-1 text-moon/70" />
+        <PencilRule fade="end" className="flex-1 min-w-0 !shrink text-moon/70" />
       </div>
     </FadeIn>
   </div>

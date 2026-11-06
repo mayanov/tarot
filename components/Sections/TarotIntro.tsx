@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import WatercolorSky, { NIGHT, PLUM, SUNRISE } from '../Layout/WatercolorSky';
+import { touchScreen } from '../UI/scroll';
 
 interface TarotIntroProps {
   isIndonesian?: boolean;
@@ -22,8 +23,12 @@ const fade = (p: number, a: number, b: number) => smoothstep((p - a) / (b - a));
  * stays smooth. Reduced-motion collapses it to a calm static section.
  */
 const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
+  // On a phone it's the calm, unpinned version too: the pinned panel was sized to the
+  // screen with the address bar showing, so a black strip opened under it once the bar
+  // hid, and three stacked skies redrawn by a scroll listener lagged behind the finger
+  // (blank black frames while the phone caught up).
   const [reduce] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    () => typeof window !== 'undefined' && (window.matchMedia('(prefers-reduced-motion: reduce)').matches || touchScreen())
   );
   const sectionRef = useRef<HTMLElement>(null);
   const dawnRef = useRef<HTMLDivElement>(null);

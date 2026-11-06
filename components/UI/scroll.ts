@@ -3,7 +3,9 @@ import Lenis from 'lenis';
 let lenis: Lenis | null = null;
 
 // Initialise buttery inertia scrolling once, and keep the rAF loop running.
-export function initLenis(): Lenis {
+// Not on a phone: there the finger already scrolls natively, and Lenis running beside
+// it only fights it (the page jumping when content above grows or shrinks).
+export function initLenis(): Lenis | null {
     if (lenis) return lenis;
     // Always start a fresh load at the top (don't let the browser restore the
     // previous scroll position on refresh).
@@ -11,6 +13,7 @@ export function initLenis(): Lenis {
         history.scrollRestoration = 'manual';
     }
     window.scrollTo(0, 0);
+    if (touchScreen()) return null;
     lenis = new Lenis({
         lerp: 0.09,
         wheelMultiplier: 1,
@@ -72,6 +75,7 @@ let parallaxCleanup: (() => void) | null = null;
 export function initParallax() {
     if (parallaxCleanup) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (touchScreen()) return; // a scroll listener lags behind a phone's scroll (below)
     let raf = 0;
     const update = () => {
         raf = 0;

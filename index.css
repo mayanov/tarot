@@ -31,6 +31,13 @@ body {
   background-color: #0A0916;
 }
 
+/* Nothing may push the page wider than the screen: on a phone, overflow-x: hidden on
+   the body still lets the page be dragged sideways (the footer slid off screen). clip
+   on both cuts it off without making either a scroll box, so sticky panels still work. */
+html, body {
+  overflow-x: clip;
+}
+
 /* ---- Lenis smooth scroll ---- */
 html.lenis,
 html.lenis body {
