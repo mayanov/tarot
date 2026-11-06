@@ -52,10 +52,15 @@ const footprintAt = (b, time, durationMin) => {
 // A booking's full footprint on the grid.
 const footprintSlots = (b) => footprintAt(b, b.time, b.durationMin);
 
-// A slot held while someone pays (status 'awaiting_payment', see server/midtrans.js)
-// blocks it only until its hold runs out; an unpaid hold after that frees it again.
-const blocksSlot = (b) => b.status !== 'cancelled'
-  && !(b.status === 'awaiting_payment' && b.holdUntil && Date.parse(b.holdUntil) < Date.now());
+// A booking being paid for is pending + unpaid, with an hour to pay (holdUntil). Paid in
+// time, it's confirmed; not paid by then, it's cancelled (expireUnpaid) and its slot freed.
+// ('awaiting_payment' is how older holds were saved.)
+export const PAY_WITHIN_MIN = 60;
+export const payBy = () => new Date(Date.now() + PAY_WITHIN_MIN * 60_000).toISOString();
+const unpaidExpired = (b) => b.paymentStatus !== 'paid'
+  && (b.status === 'pending' || b.status === 'awaiting_payment')
+  && !!b.holdUntil && Date.parse(b.holdUntil) < Date.now();
+const blocksSlot = (b) => b.status !== 'cancelled' && !unpaidExpired(b);
 
 // ---- Firestore init (only if a service account is provided) ----
 let db = null;
@@ -340,9 +345,13 @@ export async function updatePayment(id, paymentStatus) {
     writeAll(all);
   }
   if (ps !== 'paid') return b;
-  // a global booking waits for its payment (confirmOnPay): paid → confirmed
-  if (b.confirmOnPay && b.status === 'pending' && !b.inviteOnPay) {
-    const fields = { status: 'confirmed', confirmOnPay: false };
+  // a booking still in its payment step, marked paid by hand: confirmed like a paid one
+  if (b.holdOnly && await holdStillFree(b)) return confirmPaidHold(b, {});
+  // a global booking waits for its payment (confirmOnPay): paid → confirmed. A reading
+  // cancelled for not being paid within the hour comes back once it's marked paid.
+  const lateReading = b.status === 'cancelled' && b.cancelReason === 'unpaid' && !b.date;
+  if (b.confirmOnPay && (b.status === 'pending' || lateReading) && !b.inviteOnPay) {
+    const fields = { status: 'confirmed', confirmOnPay: false, cancelReason: null };
     await patch(b.id, fields);
     return { ...b, ...fields };
   }
@@ -426,10 +435,13 @@ export const findByMidtransOrder = (orderId) => findBy('midtransOrderId', orderI
 /** the booking (or hold) a PayPal order belongs to, or null */
 export const findByPayPalOrder = (orderId) => findBy('paypalOrderId', orderId);
 
-/** whether a hold's slot is still its own: unexpired, or expired with nobody in it since */
+/** whether a hold's slot is still its own: unexpired, or expired with nobody in it since
+ *  (a payment landing just after the hour, even once it's been cancelled for it, still counts) */
 export async function holdStillFree(hold) {
-  if (!hold || hold.status === 'cancelled') return false;
-  if (!hold.holdUntil || Date.parse(hold.holdUntil) >= Date.now()) return true;
+  if (!hold) return false;
+  if (hold.status === 'cancelled' && hold.cancelReason !== 'unpaid') return false;
+  if (hold.status !== 'cancelled' && (!hold.holdUntil || Date.parse(hold.holdUntil) >= Date.now())) return true;
+  if (!hold.date || !hold.time) return true; // an email reading holds no time
   const taken = new Set(await getTakenSlots(hold.date)); // (an expired hold isn't counted)
   return !footprintSlots(hold).some((s) => taken.has(s));
 }
@@ -452,7 +464,7 @@ export async function claimOnce(key) {
 
 export async function confirmPaidHold(booking, payment) {
   if (!booking.holdOnly) return booking;
-  const fields = { status: 'confirmed', paymentStatus: 'paid', holdOnly: false, holdUntil: null, ...payment };
+  const fields = { status: 'confirmed', paymentStatus: 'paid', holdOnly: false, holdUntil: null, cancelReason: null, ...payment };
   // the other caller is confirming it right now: same result, without a second invite/message
   if (!(await claimOnce(`confirm_${booking.id}_${booking.midtransOrderId || booking.paypalOrderId || ''}`))) return { ...booking, ...fields };
   await patch(booking.id, fields);
@@ -489,8 +501,27 @@ export const markWhatsAppConfirmed = (id) => stamp(id, 'waConfirmSentAt');
 /** The customer was emailed that their payment came through (server/mailer.js) */
 export const markPaidEmailSent = (id) => stamp(id, 'paidEmailSentAt');
 
-/** an unpaid hold whose payment failed or expired: the slot is free again */
-export async function releaseHold(booking) {
+/** an unpaid hold whose payment window was closed or failed: the slot is free again
+ *  (these are left out of the dashboard; the customer usually just tries again) */
+export async function releaseHold(booking, reason = 'closed') {
   if (!booking.holdOnly || booking.status === 'cancelled') return;
-  await patch(booking.id, { status: 'cancelled' });
+  await patch(booking.id, { status: 'cancelled', cancelReason: reason });
+}
+
+/** Cancels every booking still unpaid an hour after it was made (its holdUntil).
+ *  Run before the dashboard lists bookings; returns how many were cancelled. */
+export async function expireUnpaid() {
+  const rows = db
+    ? (await db.collection(COLLECTION).where('status', 'in', ['pending', 'awaiting_payment']).get()).docs.map((d) => d.data())
+    : readAll();
+  let n = 0;
+  for (const b of rows.filter(unpaidExpired)) {
+    try {
+      // a booking that put a hold on the calendar (a live session on a payment link) loses it too
+      if (!b.holdOnly) await updateStatus(b.id, 'cancelled');
+      await patch(b.id, { status: 'cancelled', cancelReason: 'unpaid' });
+      n++;
+    } catch (e) { console.error('[bookings] cancelling unpaid booking failed:', b.id, e.message); }
+  }
+  return n;
 }

@@ -1,7 +1,7 @@
 // Midtrans Snap for the Indonesian bookings: the form opens Midtrans's payment window
 // (QRIS, e-wallets, bank transfer, cards) and the booking only becomes real once
 // Midtrans says the money is in. While someone pays, their slot is held for them
-// (bookingStore: status 'awaiting_payment', holdOnly) so nobody else can take it.
+// (bookingStore: status 'pending', unpaid, holdOnly) so nobody else can take it.
 //
 // Env: MIDTRANS_SERVER_KEY, MIDTRANS_CLIENT_KEY (Midtrans dashboard → Settings → Access
 // Keys) and MIDTRANS_ENV = 'production' | 'sandbox' (default sandbox). The dashboard's
@@ -16,8 +16,8 @@ const API = LIVE ? 'https://api.midtrans.com' : 'https://api.sandbox.midtrans.co
 
 // How long a slot is held while someone pays; Midtrans's own payment window closes a
 // little earlier, so a late payment can never land on a slot that's been freed.
-export const HOLD_MIN = 30;
-const PAY_WINDOW_MIN = 25;
+// (the booking's hour to pay: bookingStore.PAY_WITHIN_MIN)
+const PAY_WINDOW_MIN = 55;
 
 // What each service costs (rupiah) and how long it runs — the only source of the
 // amount charged. Keys match the booking form's packages (the part before ' · ').

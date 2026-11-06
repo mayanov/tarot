@@ -16,8 +16,6 @@ export const READINGS = {
     '5card': { name: '5-Card Deep', value: '20.00' },
     live: { name: 'Live Session', value: '45.00', durationMin: 30 },
 };
-// How long a live session's slot is held while PayPal's window is open
-export const HOLD_MIN = 20;
 const CURRENCY = 'USD';
 
 // PAYPAL_SIMULATE=1 (local development only, never on Vercel): no PayPal at all — the

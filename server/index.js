@@ -499,9 +499,9 @@ app.post('/api/bookings', async (req, res) => {
             // a call / meetup / live session isn't paid yet: it holds its time (pending)
             // and the customer's invite waits until it's marked paid (bookingStore.updatePayment)
             ...(INVITED_SERVICES.has(String(serviceId)) && date && time ? { status: 'pending', inviteOnPay: true } : {}),
-            // a global booking (paid on a PayPal link or as arranged) stays pending until
-            // it's marked paid, then it's confirmed
-            ...(market !== 'ID' ? { status: 'pending', confirmOnPay: true } : {}),
+            // a global booking (paid on a PayPal link or as arranged) stays pending + unpaid
+            // until it's marked paid, then it's confirmed; unpaid after an hour, it's cancelled
+            ...(market !== 'ID' ? { status: 'pending', confirmOnPay: true, holdUntil: bookingStore.payBy() } : {}),
         });
         res.status(201).json(booking);
     } catch (e) {
@@ -524,8 +524,9 @@ app.post('/api/paypal/orders', async (req, res) => {
     const { serviceId, date, time, name, dob, contact, question } = req.body || {};
     const reading = paypal.READINGS[serviceId];
     if (!reading) return res.status(400).json({ error: 'Unknown service' });
+    if (!name || !contact) return res.status(400).json({ error: 'Missing required fields' });
     // a live session is for a time: check it before anything is charged
-    if (reading.durationMin && (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || !/^\d{2}:\d{2}$/.test(String(time)) || !name || !contact)) {
+    if (reading.durationMin && (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || !/^\d{2}:\d{2}$/.test(String(time)))) {
         return res.status(400).json({ error: 'Missing date or time' });
     }
     if (missingEmail(serviceId, contact)) return res.status(400).json({ error: 'EMAIL_REQUIRED' });
@@ -536,23 +537,25 @@ app.post('/api/paypal/orders', async (req, res) => {
         console.error('PayPal order failed:', e.message);
         return res.status(502).json({ error: 'Could not start the payment' });
     }
-    if (reading.durationMin) {
-        // its slot is held while PayPal's window is open, so nobody else takes it meanwhile
+    // the booking is saved now, pending + unpaid, until PayPal says it's paid (a live
+    // session's slot is held meanwhile, so nobody else takes it); unpaid after an hour,
+    // it's cancelled
+    {
         try {
             await bookingStore.createBooking({
                 serviceId,
                 serviceName: reading.name,
-                date,
-                time,
-                durationMin: reading.durationMin,
+                date: reading.durationMin ? date : '',
+                time: reading.durationMin ? time : '',
+                durationMin: reading.durationMin || 0,
                 name: String(name).slice(0, 120),
                 dob: /^\d{4}-\d{2}-\d{2}$/.test(String(dob || '')) ? String(dob) : '',
                 contact: String(contact).slice(0, 160),
                 question: String(question || '').slice(0, 2000),
                 market: 'Global',
-                status: 'awaiting_payment',
+                status: 'pending',
                 holdOnly: true,
-                holdUntil: new Date(Date.now() + paypal.HOLD_MIN * 60_000).toISOString(),
+                holdUntil: bookingStore.payBy(),
                 amountDue: reading.value,
                 paypalOrderId: id,
                 skipCalendar: true,
@@ -605,19 +608,18 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
     if (!reading || !name || !contact || missingEmail(serviceId, contact)) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
-    // a live session: its slot must still be its own, or the payment isn't taken
+    // the pending booking made with the order; a live session's slot must still be its
+    // own, or the payment isn't taken
     let hold = null;
-    if (reading.durationMin) {
-        try {
-            hold = await bookingStore.findByPayPalOrder(orderId);
-            if (hold && !hold.holdOnly) return res.json(hold); // a retried request, already booked
-            if (!hold || hold.serviceId !== serviceId || !(await bookingStore.holdStillFree(hold))) {
-                return res.status(409).json({ error: 'SLOT_TAKEN' });
-            }
-        } catch (e) {
-            console.error('PayPal hold check failed:', orderId, e.message);
-            return res.status(500).json({ error: 'CAPTURE_FAILED' });
+    try {
+        hold = await bookingStore.findByPayPalOrder(orderId);
+        if (hold && !hold.holdOnly) return res.json(hold); // a retried request, already booked
+        if ((reading.durationMin && !hold) || (hold && (hold.serviceId !== serviceId || !(await bookingStore.holdStillFree(hold))))) {
+            return res.status(409).json({ error: 'SLOT_TAKEN' });
         }
+    } catch (e) {
+        console.error('PayPal hold check failed:', orderId, e.message);
+        return res.status(500).json({ error: 'CAPTURE_FAILED' });
     }
     let paid;
     try {
@@ -633,7 +635,7 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
     }
     try {
         if (hold) {
-            // the held slot becomes the booking: confirmed, paid, on the calendar
+            // the pending booking becomes confirmed and paid (a live session goes on the calendar)
             const booking = await bookingStore.confirmPaidHold(hold, {
                 name: String(name).slice(0, 120),
                 dob: /^\d{4}-\d{2}-\d{2}$/.test(String(dob || '')) ? String(dob) : '',
@@ -647,6 +649,7 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
             await emailPaid(booking);
             return res.status(201).json(booking);
         }
+        // (an order made before bookings were saved pending has no hold: it's booked here)
         // a retried request for an order already turned into a booking gets that booking back
         const existing = (await bookingStore.getAllBookings()).find((b) => b.paypalOrderId === orderId);
         if (existing) return res.json(existing);
@@ -687,7 +690,7 @@ async function settleMidtrans(orderId) {
     const booking = await bookingStore.findByMidtransOrder(orderId);
     if (!booking) return { state: 'failed' };
     if (!booking.holdOnly) return { state: booking.status === 'cancelled' ? 'failed' : 'paid', booking };
-    if (booking.status === 'cancelled') return { state: 'failed' };
+    if (booking.status === 'cancelled' && booking.cancelReason !== 'unpaid') return { state: 'failed' };
     const st = await midtrans.getStatus(orderId);
     if (st.state === 'paid') {
         if (st.amount !== booking.amountDue) {
@@ -702,7 +705,7 @@ async function settleMidtrans(orderId) {
         return { state: 'paid', booking: paid };
     }
     if (st.state === 'failed') {
-        await bookingStore.releaseHold(booking);
+        await bookingStore.releaseHold(booking, 'failed');
         return { state: 'failed' };
     }
     return { state: 'pending' };
@@ -736,9 +739,9 @@ app.post('/api/midtrans/checkout', async (req, res) => {
             contact: String(contact).slice(0, 160),
             question: String(question || '').slice(0, 2000),
             market: 'ID',
-            status: 'awaiting_payment',
+            status: 'pending',
             holdOnly: true,
-            holdUntil: new Date(Date.now() + midtrans.HOLD_MIN * 60_000).toISOString(),
+            holdUntil: bookingStore.payBy(),
             amountDue: q.amount,
             midtransOrderId: orderId,
             skipCalendar: true,
@@ -866,8 +869,11 @@ app.get('/api/admin/bookings', verifyToken, async (req, res) => {
             lastReconcileAt = Date.now();
             try { await bookingStore.reconcileWithCalendar(); } catch (e) { console.error('reconcile failed:', e.message); }
         }
-        // holds still waiting on (or never paid through) Midtrans aren't bookings yet
-        res.json((await bookingStore.getAllBookings()).filter((b) => !b.holdOnly));
+        // unpaid an hour after booking: cancelled
+        try { await bookingStore.expireUnpaid(); } catch (e) { console.error('expire unpaid failed:', e.message); }
+        // bookings being paid for show as pending/unpaid, and as cancelled if never paid;
+        // a payment window the customer closed (they usually just try again) is left out
+        res.json((await bookingStore.getAllBookings()).filter((b) => !(b.holdOnly && b.status === 'cancelled' && b.cancelReason !== 'unpaid')));
     } catch (e) {
         console.error('list bookings failed:', e);
         res.status(500).json({ error: 'Failed to load bookings' });

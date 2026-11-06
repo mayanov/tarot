@@ -12,7 +12,7 @@ import { trackEvent, SERVICE_TRACK_NAME } from '../../services/analytics';
 // point that knows the payment went through.
 const READINGS = {
     '3card': { name: '3-Card Spread', value: 12, mark: 'constellation', when: 'within 24 hours' },
-    '5card': { name: '5-Card Deep', value: 20, mark: 'star', when: 'within a few days' },
+    '5card': { name: '5-Card Deep', value: 20, mark: 'star', when: 'within 24 hours' },
     live: { name: 'Live Session', value: 45, mark: 'sparkle', when: '' },
 } as const;
 

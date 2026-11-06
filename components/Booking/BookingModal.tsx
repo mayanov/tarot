@@ -1100,7 +1100,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   <h3 className="letterpress font-serif font-semibold text-ink text-lg mb-1">Pembayaran</h3>
                   <p className="letterpress text-[13px] text-ink/60 leading-relaxed">
                     {payWait
-                      ? <>Menunggu pembayaranmu masuk… Kalau sudah bayar, tunggu sebentar di sini. {scheduled ? 'Jadwalmu kami tahan selama 30 menit.' : ''}</>
+                      ? <>Menunggu pembayaranmu masuk… Kalau sudah bayar, tunggu sebentar di sini. {scheduled ? 'Jadwalmu kami tahan selama 1 jam.' : ''}</>
                       : <>Bayar {totalPrice} lewat QRIS, e-wallet (GoPay, ShopeePay, dll.), atau transfer bank. Booking-mu langsung tercatat begitu pembayaran masuk.</>}
                   </p>
                 </div>
@@ -1198,7 +1198,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {isIndonesian && showPay && <div className="mt-5 text-left">{paymentPanel()}</div>}
 
               <p className="letterpress mt-5 text-[13px] text-ink/60 max-w-sm mx-auto leading-relaxed">
-                {t('Kirim bukti pembayaran via WhatsApp. Tanpa pembayaran, booking otomatis dibatalkan.', 'Without payment, the booking is cancelled automatically.')}
+                {t('Kirim bukti pembayaran via WhatsApp. Tanpa pembayaran, booking otomatis dibatalkan.', 'Without payment within 1 hour, the booking is cancelled automatically.')}
               </p>
 
               {!isIndonesian && service && PAYPAL[service.id] ? (
