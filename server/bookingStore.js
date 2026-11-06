@@ -339,7 +339,14 @@ export async function updatePayment(id, paymentStatus) {
     if (ps === 'paid' && !b.paidAt) b.paidAt = new Date().toISOString();
     writeAll(all);
   }
-  return ps === 'paid' ? sendHeldInvite(b) : b;
+  if (ps !== 'paid') return b;
+  // a global booking waits for its payment (confirmOnPay): paid → confirmed
+  if (b.confirmOnPay && b.status === 'pending' && !b.inviteOnPay) {
+    const fields = { status: 'confirmed', confirmOnPay: false };
+    await patch(b.id, fields);
+    return { ...b, ...fields };
+  }
+  return sendHeldInvite(b);
 }
 
 // A call, meetup or live session booked on the site waits for its payment before the

@@ -1078,8 +1078,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               ) : !isIndonesian && (
                 <p className="letterpress mt-6 text-[13px] text-ink/60 leading-relaxed">
                   {live
-                    ? <>Confirming books your time. I’ll message you on WhatsApp to arrange the payment of {totalPrice}, then send the Google Meet link to your email.</>
-                    : <>Next, you’ll pay {totalPrice} securely on PayPal. Your reading is sent to your email once payment is through.</>}
+                    ? <>This holds your time. I’ll message you on WhatsApp to arrange the payment of {totalPrice}; your booking is confirmed once it’s paid, and the Google Meet link comes to your email.</>
+                    : <>Next, you’ll pay {totalPrice} securely on PayPal. Your booking is confirmed once payment is through, and your reading is sent to your email.</>}
                 </p>
               )}
 
@@ -1091,7 +1091,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               ) : bottomBar(
                 <button onClick={submit} disabled={submitting} className={primaryBtn}>
                   {swatch}
-                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', live ? 'Confirm booking' : 'Confirm & pay')}</span>
+                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{submitting ? t('Menyimpan…', 'Booking…') : t('Konfirmasi', live ? 'Hold my time' : 'Continue to payment')}</span>
                 </button>
               )}
             </div>
@@ -1111,8 +1111,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   : isIndonesian
                   ? <>Terima kasih, {name || 'kamu'}. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk konfirmasi.{invited && <><br />Undangan kalender{service?.id === 'meetup' ? '' : ' & link Google Meet'} dikirim ke {email.trim()} setelah pembayaranmu masuk.</>}</>
                   : live
-                  ? <>Thank you, {name || 'friend'}. Your time is booked. One last step: message me on WhatsApp to pay, and the Google Meet link comes to {email.trim()}.</>
-                  : <>Thank you, {name || 'friend'}. One last step: pay on PayPal, and your reading is on its way to {email.trim()}.</>}
+                  ? <>Thank you, {name || 'friend'}. Your time is held. One last step: message me on WhatsApp to pay. Your booking is confirmed once it’s paid, and the Google Meet link comes to {email.trim()}.</>
+                  : <>Thank you, {name || 'friend'}. One last step: pay on PayPal. Your booking is confirmed once payment comes through, and your reading is sent to {email.trim()}.</>}
               </p>
 
               <div className="mt-5 text-left">

@@ -499,6 +499,9 @@ app.post('/api/bookings', async (req, res) => {
             // a call / meetup / live session isn't paid yet: it holds its time (pending)
             // and the customer's invite waits until it's marked paid (bookingStore.updatePayment)
             ...(INVITED_SERVICES.has(String(serviceId)) && date && time ? { status: 'pending', inviteOnPay: true } : {}),
+            // a global booking (paid on a PayPal link or as arranged) stays pending until
+            // it's marked paid, then it's confirmed
+            ...(market !== 'ID' ? { status: 'pending', confirmOnPay: true } : {}),
         });
         res.status(201).json(booking);
     } catch (e) {
