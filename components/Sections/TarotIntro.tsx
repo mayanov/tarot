@@ -94,13 +94,17 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
     >
       <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen h-[100svh] overflow-hidden'} flex items-center`}>
         {/* sky — night, with dawn and then sunrise painted over it, faded in by scroll */}
-        <WatercolorSky palette={NIGHT} className="absolute inset-0" />
+        {/* (standing still, only the dawn shows: the night under it and the sunrise
+            over it, unseen, aren't painted at all) */}
+        {!reduce && <WatercolorSky palette={NIGHT} className="absolute inset-0" />}
         <div ref={dawnRef} aria-hidden className="absolute inset-0 will-change-[opacity]" style={{ opacity: reduce ? 1 : 0 }}>
           <WatercolorSky palette={PLUM} className="absolute inset-0" />
         </div>
-        <div ref={sunriseRef} aria-hidden className="absolute inset-0 will-change-[opacity]" style={{ opacity: 0 }}>
-          <WatercolorSky palette={SUNRISE} className="absolute inset-0" />
-        </div>
+        {!reduce && (
+          <div ref={sunriseRef} aria-hidden className="absolute inset-0 will-change-[opacity]" style={{ opacity: 0 }}>
+            <WatercolorSky palette={SUNRISE} className="absolute inset-0" />
+          </div>
+        )}
         {/* the sun's glow, rising from below the bottom edge */}
         <div
           ref={sunRef}

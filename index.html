@@ -29,9 +29,8 @@
   <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
 
-  <!-- Preload the loader's moon so it appears without a fetch stall (the sky itself is
-       drawn in code; the sky photo is only used by the footer and loads later) -->
-  <link rel="preload" as="image" href="/moon.jpg" fetchpriority="high" />
+  <!-- the hero's sky, painted ahead of time (the loader waits for it) -->
+  <link rel="preload" as="image" href="/skies/twilight.webp" fetchpriority="high" />
   <!-- the loader's timelapse skies, painted ahead of time (the sunset is the first
        thing seen) -->
   <link rel="preload" as="image" href="/sky-sunset.webp" fetchpriority="high" />
@@ -41,17 +40,18 @@
   <link rel="preload" as="font" type="font/woff2" href="/fonts/switzer-400.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="/fonts/switzer-600.woff2" crossorigin>
 
-  <!-- Font: Alegreya — warm literary serif for headings & quotes (body stays Switzer) -->
+  <!-- Font: Alegreya — warm literary serif for headings & quotes (body stays Switzer);
+       self-hosted (index.css), the upright face preloaded since the hero's title is in it -->
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/alegreya-latin.woff2" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..700&display=swap" rel="stylesheet">
   <!-- the signature under the About quote and the reviewers' names: a script face, subset
        to just the letters they use — add letters here when a reviewer is added -->
-  <link href="https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&text=%20.ABCDEFGHKLMNOPRSTVYacdeghiklmnorstuvyz&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&text=%20.ABCDEFGHKLMNOPRSTVYacdeghiklmnorstuvyz&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <!-- pencil notes in the margin (e.g. "tap a card to draw it"): a pencil handwriting,
        subset to just the letters those notes use (and the interlude's pencilled topics and
        numbers) — add letters here when a note changes -->
-  <link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&text=%20%26CDKNRTabcdefghijklmnoprstuvwxy&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&text=%20%26CDKNRTabcdefghijklmnoprstuvwxy&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 
   <!-- Google sign-in / API scripts are loaded on demand by the admin dashboard
        (services/ga4.ts), not on the public site. -->

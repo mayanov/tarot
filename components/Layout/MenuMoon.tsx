@@ -1,4 +1,5 @@
-import React, { useId } from 'react';
+import React, { useEffect, useId, useState } from 'react';
+import { afterIntro } from '../UI/introGate';
 
 // Tonight's moon, for the menu: a faint photo moon printed into the paper, lit to the
 // real phase. Same terminator as the divider's Phase glyphs (a half disc closed by an
@@ -25,6 +26,10 @@ const MOON_IMG = `${import.meta.env.BASE_URL}moon.jpg`;
 // circle drawn round it — multiplied into the paper so it reads as printed, not pasted
 export const MoonWatermark: React.FC<{ moon: MoonNow; className?: string; style?: React.CSSProperties }> = ({ moon, className = '', style }) => {
   const id = useId().replace(/:/g, '');
+  // the photo is only seen in the menu, which can't open before the intro's over: it's
+  // fetched then, not while the page is loading
+  const [img, setImg] = useState<string>();
+  useEffect(() => { let live = true; afterIntro().then(() => { if (live) setImg(MOON_IMG); }); return () => { live = false; }; }, []);
   const r = 98, c = 100;
   const rx = Math.abs(1 - 2 * moon.p) * r;
   const lit = `M ${c} ${c - r} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${rx} ${r} 0 0 ${moon.p > 0.5 ? 1 : 0} ${c} ${c - r} Z`;
@@ -53,8 +58,8 @@ export const MoonWatermark: React.FC<{ moon: MoonNow; className?: string; style?
         </filter>
       </defs>
       <g filter={`url(#${id}e)`}>
-      <image href={MOON_IMG} x={-4} y={-4} width={208} height={208} clipPath={`url(#${id}d)`} opacity={0.035} />
-      <image href={MOON_IMG} x={-4} y={-4} width={208} height={208} clipPath={`url(#${id}l)`} opacity={0.11} />
+      {img && <image href={img} x={-4} y={-4} width={208} height={208} clipPath={`url(#${id}d)`} opacity={0.035} />}
+      {img && <image href={img} x={-4} y={-4} width={208} height={208} clipPath={`url(#${id}l)`} opacity={0.11} />}
       </g>
       <g filter={`url(#${id}p)`} fill="none" stroke="currentColor" strokeLinecap="round">
         <circle cx={c} cy={c} r={r} strokeOpacity={0.22} strokeWidth={0.6} />

@@ -67,6 +67,7 @@ export type SkyPalette = {
   bloom: string;      // the pale backruns
   glow: [string, string];
   clear?: boolean;    // a clear sky: soft wet-in-wet colour pools, no cloud streaks
+  baked?: string;     // the same painting, done ahead of time (scripts/bake-skies.mjs)
 };
 
 // the shared wash filter: soft body, wandering frilly edge, darker rim where it dried
@@ -104,7 +105,7 @@ const svg = (body: string) =>
 
 // the whole painting in one sheet: graded wash, broad streaks, the glow, thin cloud
 // streaks and backruns, then granulation and the paper's tooth over everything
-const paintSvg = (p: SkyPalette) => svg(`
+export const paintSvg = (p: SkyPalette) => svg(`
   <defs>
     <linearGradient id="base" x1="0" y1="0" x2="0.15" y2="1">
       ${[0, 0.3, 0.55, 0.78, 1].map((o, i) => `<stop offset="${o}" stop-color="${p.base[i]}"/>`).join('')}
@@ -158,8 +159,20 @@ const idle = () => new Promise<void>((r) => {
   const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
   if (ric) ric(() => r(), { timeout: 1500 }); else setTimeout(r, 60);
 });
+// a sky painted ahead of time is just fetched (painted here as before if it can't be)
+const fetched = (url: string) => new Promise<string | null>((resolve) => {
+  const img = new Image();
+  img.onload = () => resolve(url);
+  img.onerror = () => resolve(null);
+  img.src = url;
+});
 const bitmap = (p: SkyPalette, eager = false) => {
   let v = bitmaps.get(p);
+  if (!v && p.baked) {
+    v = fetched(p.baked).then((u) => u ?? (bitmaps.delete(p), bitmap({ ...p, baked: undefined }, eager)));
+    bitmaps.set(p, v);
+    return v;
+  }
   if (!v) {
     const start = eager ? Promise.resolve() : queue.then(afterIntro).then(idle);
     v = start.then(() => new Promise<string>((resolve) => {
@@ -256,6 +269,9 @@ export const TWILIGHT: SkyPalette = {
   bloom: '#e0d6f2',
   glow: ['rgba(214,146,190,0.55)', 'rgba(130,178,212,0.45)'],
   clear: true,
+  // painted ahead of time: it's what the loader waits on, and working it out on a phone
+  // held the loading for a second or more (re-bake after changing it)
+  baked: `${import.meta.env.BASE_URL}skies/twilight.webp`,
 };
 
 // the calm-space band's timelapse runs NIGHT → PLUM → SUNRISE
