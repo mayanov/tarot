@@ -2,7 +2,9 @@ import type Lenis from 'lenis';
 
 let lenis: Lenis | null = null;
 
-// Initialise buttery inertia scrolling once, and keep the rAF loop running.
+// Initialise buttery inertia scrolling once. Its frame loop runs only while it's
+// moving: left running, it had the computer redraw the page 60 times a second while
+// nobody touched it (a scroll, a scrollTo or a resume wakes it again).
 // Not on a phone: there the finger already scrolls natively, and Lenis running beside
 // it only fights it (the page jumping when content above grows or shrinks).
 // (it's loaded only here, so a phone never downloads it at all)
@@ -32,15 +34,34 @@ export function initLenis(): void {
         // arriving while the page is locked (the loader, an open overlay): stay paused
         // until it's unlocked (startLenis)
         if (pageLocks > 0 || document.documentElement.style.overflow === 'hidden') lenis.stop();
-        const raf = (time: number) => {
-            lenis?.raf(time);
-            requestAnimationFrame(raf);
-        };
-        requestAnimationFrame(raf);
+        lenis.on('virtual-scroll', wakeLenis);
+        wakeLenis();
     }).catch(() => { starting = false; });
 }
 
+let rafId = 0;
+let still = 0; // frames in a row with nothing moving
+const tick = (time: number) => {
+    rafId = 0;
+    if (!lenis) return;
+    lenis.raf(time);
+    still = lenis.isScrolling ? 0 : still + 1;
+    if (still < 30) rafId = requestAnimationFrame(tick);
+};
+/** run the frame loop (again); called before anything that sets the scroll moving */
+function wakeLenis() {
+    if (!lenis) return;
+    still = 0;
+    if (rafId) return;
+    // the clock picks up from now, not from when the loop last slept (a long gap
+    // would make the next scroll jump straight to its end)
+    lenis.raf(performance.now());
+    rafId = requestAnimationFrame(tick);
+}
+
 export function destroyLenis() {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
     starting = false;
     generation++;
     lenis?.destroy();
@@ -56,7 +77,7 @@ export const cssScrollTimeline = () => typeof CSS !== 'undefined' && CSS.support
 
 // Pause / resume inertia scrolling — used to fully lock the page behind a modal.
 export function stopLenis() { lenis?.stop(); }
-export function startLenis() { lenis?.start(); }
+export function startLenis() { lenis?.start(); wakeLenis(); }
 
 // Page lock for overlays, counted so two overlays that overlap during a hand-off
 // (the pricelist card reveal and the booking form) don't unlock each other.
@@ -74,7 +95,7 @@ export function unlockPage() {
 
 // Smoothly scroll to an absolute Y (falls back to native if Lenis is absent).
 export function smoothScrollTo(top: number) {
-    if (lenis) lenis.scrollTo(top, { duration: 1.1, force: true }); // force: also while an overlay has Lenis stopped
+    if (lenis) { wakeLenis(); lenis.scrollTo(top, { duration: 1.1, force: true }); } // force: also while an overlay has Lenis stopped
     else window.scrollTo({ top, behavior: 'smooth' });
 }
 
@@ -129,6 +150,7 @@ export function smoothScrollToId(id: string, offset = 80) {
     const el = document.getElementById(id);
     if (!el) return false;
     if (lenis) {
+        wakeLenis();
         lenis.scrollTo(el, { offset: -offset, duration: 1.2, force: true });
     } else {
         const y = el.getBoundingClientRect().top + window.scrollY - offset;

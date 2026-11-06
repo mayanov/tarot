@@ -30,11 +30,16 @@
   <link rel="apple-touch-icon" href="/favicon.png" />
 
   <!-- the hero's sky, painted ahead of time (the loader waits for it) -->
-  <link rel="preload" as="image" href="/skies/twilight.webp" fetchpriority="high" />
+  <!-- (a portrait screen only ever sees the middle square of these wide skies, so it
+       gets just that square: the same pixels, a third of the download) -->
+  <link rel="preload" as="image" href="/skies/twilight.webp" fetchpriority="high" media="(min-aspect-ratio: 1001/1000)" />
+  <link rel="preload" as="image" href="/skies/twilight-sq.webp" fetchpriority="high" media="(max-aspect-ratio: 1/1)" />
   <!-- the loader's timelapse skies, painted ahead of time (the sunset is the first
        thing seen) -->
-  <link rel="preload" as="image" href="/sky-sunset.webp" fetchpriority="high" />
-  <link rel="preload" as="image" href="/sky-dusk.webp" />
+  <link rel="preload" as="image" href="/sky-sunset.webp" fetchpriority="high" media="(min-aspect-ratio: 1001/1000)" />
+  <link rel="preload" as="image" href="/sky-sunset-sq.webp" fetchpriority="high" media="(max-aspect-ratio: 1/1)" />
+  <link rel="preload" as="image" href="/sky-dusk.webp" media="(min-aspect-ratio: 1001/1000)" />
+  <link rel="preload" as="image" href="/sky-dusk-sq.webp" media="(max-aspect-ratio: 1/1)" />
 
   <!-- Font: Switzer (self-hosted woff2 — no third-party stylesheet round-trip) -->
   <link rel="preload" as="font" type="font/woff2" href="/fonts/switzer-400.woff2" crossorigin>
@@ -126,6 +131,7 @@
   <style>
     html.booting { background: #5a4a8a; } html.booting body { background: transparent; }
     html.booting body::before { content: ''; position: fixed; inset: -6%; z-index: -1; background: url(/sky-sunset.webp) center / cover no-repeat; }
+    @media (max-aspect-ratio: 1/1) { html.booting body::before { background-image: url(/sky-sunset-sq.webp); } }
     html.booting body::after { content: ''; position: fixed; inset: 0; z-index: -1; background: radial-gradient(68% 54% at 50% 44%, rgba(9,7,22,0.32) 0%, transparent 74%), linear-gradient(180deg, transparent 0%, transparent 60%, rgba(9,7,22,0.38) 100%) rgba(196,178,236,0.07); }
   </style>
 </head>

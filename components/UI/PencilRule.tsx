@@ -40,7 +40,9 @@ const PencilRule: React.FC<PencilRuleProps> = ({ className = '', vertical = fals
   return (
     <svg aria-hidden className={`block shrink-0 overflow-visible ${size} ${flow} ${className}`}>
       <defs>
-        <filter id={`${id}f`} x="-200%" y="-200%" width="500%" height="500%">
+        {/* the texture is worked out only over the line's own strip (a hair past its
+            ends, a line's height either side), not five times its length */}
+        <filter id={`${id}f`} filterUnits="userSpaceOnUse" {...(vertical ? { x: '-50%', y: '-1%', width: '200%', height: '102%' } : { x: '-1%', y: '-50%', width: '102%', height: '200%' })}>
           <feTurbulence type="fractalNoise" baseFrequency={`${a} ${b}`} numOctaves="2" seed={seed} result="w" />
           <feDisplacementMap in="SourceGraphic" in2="w" scale="3.2" xChannelSelector="R" yChannelSelector="G" result="d" />
           <feTurbulence type="fractalNoise" baseFrequency="0.9 0.6" numOctaves="2" seed={seed + 1} result="g" />

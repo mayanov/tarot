@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import WatercolorSky, { TWILIGHT } from './WatercolorSky';
-import { SUNSET_IMG, DUSK_IMG } from './Loader';
+import WatercolorSky, { TWILIGHT, useTallScreen } from './WatercolorSky';
+import { sunsetImg, duskImg } from './Loader';
 
 // The night sky behind the hero (and the loader, which hands off to it): the
 // watercolour twilight, with no stars painted over it.
 const Background: React.FC = () => {
   const rootRef = useRef<HTMLDivElement>(null);
   // (the page is still loading: index.html sets html.booting until the loader hands over)
+  const tall = useTallScreen();
   const [timelapse] = useState(() => document.documentElement.classList.contains('booting') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   // Freeze the sky's slow drift once it leaves the viewport — it's only visible at
@@ -33,7 +34,7 @@ const Background: React.FC = () => {
           the twilight's painting, so the clouds line up. Shown only while loading. */}
       {timelapse && (['dusk', 'sunset'] as const).map((sky) => (
         <img
-          key={sky} data-sky={sky} src={sky === 'dusk' ? DUSK_IMG : SUNSET_IMG} alt="" draggable={false}
+          key={sky} data-sky={sky} src={sky === 'dusk' ? duskImg(tall) : sunsetImg(tall)} alt="" draggable={false}
           className="absolute -inset-[6%] w-[112%] h-[112%] max-w-none object-cover select-none"
         />
       ))}

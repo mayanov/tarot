@@ -30,6 +30,8 @@ for (const name of SKIES) {
   execFileSync(CHROME, ['--headless=new', '--hide-scrollbars', '--force-device-scale-factor=1.5', '--window-size=1600,640', '--virtual-time-budget=5000', `--screenshot=${png}`, pathToFileURL(html).href], { stdio: 'ignore' });
   const out = `public/skies/${name.toLowerCase()}.webp`;
   execFileSync('python3', ['-c', 'import sys; from PIL import Image; Image.open(sys.argv[1]).convert("RGB").save(sys.argv[2], "WEBP", quality=90, method=6)', png, out]);
+  // …and its middle square, for portrait screens (WatercolorSky's bakedSquare)
+  execFileSync('python3', ['-c', 'import sys; from PIL import Image; im = Image.open(sys.argv[1]).convert("RGB"); w, h = im.size; im.crop(((w - h) // 2, 0, (w - h) // 2 + h, h)).save(sys.argv[2], "WEBP", quality=90, method=6)', png, out.replace('.webp', '-sq.webp')]);
   console.log(out, Math.round(fs.statSync(out).size / 1024) + ' KB');
 }
 fs.rmSync(tmp, { recursive: true, force: true });

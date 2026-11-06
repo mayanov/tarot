@@ -27,8 +27,9 @@ const CardWash: React.FC<{ colors: readonly [string, string, string]; className?
   const [light, mid, deep] = colors;
   return (
     <span aria-hidden className={`pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] ${className}`} style={{ background: `radial-gradient(135% 120% at 15% -15%, ${light} 0%, ${mid} 52%, ${deep} 100%)` }}>
-      {/* drawn in a 100 x 160 box (the card's 5:8), stretched to fit */}
-      <Baked bleed={0}>
+      {/* drawn in a 100 x 160 box (the card's 5:8), stretched to fit; a soft wash, so
+          painted at 1.5× at most (the grain below keeps 2×) */}
+      <Baked bleed={0} sharp={1.5}>
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 160" preserveAspectRatio="none">
         <defs>
           {/* a pool of paint: wandering edge, soft body, a darker rim where it dried */}

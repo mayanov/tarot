@@ -22,7 +22,7 @@ const idle = () => new Promise<void>((r) => {
   if (ric) ric(() => r(), { timeout: 1200 }); else setTimeout(r, 40);
 });
 
-const bake = (svg: SVGSVGElement, w: number, h: number, bleed: number): Promise<string | null> =>
+const bake = (svg: SVGSVGElement, w: number, h: number, bleed: number, sharp: number): Promise<string | null> =>
   trackPaint(queue = queue.then(paintsMayStart).then(idle).then(() => new Promise<string | null>((resolve) => {
     const W = w + bleed * 2, H = h + bleed * 2;
     const clone = svg.cloneNode(true) as SVGSVGElement;
@@ -40,7 +40,7 @@ const bake = (svg: SVGSVGElement, w: number, h: number, bleed: number): Promise<
     const img = new Image();
     img.onload = () => {
       try {
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const dpr = Math.min(window.devicePixelRatio || 1, sharp);
         const c = document.createElement('canvas');
         c.width = Math.round(W * dpr);
         c.height = Math.round(H * dpr);
@@ -53,8 +53,10 @@ const bake = (svg: SVGSVGElement, w: number, h: number, bleed: number): Promise<
   }))) as Promise<string | null>;
 
 /** `blend`: a mix-blend-mode for the picture, for a drawing whose layers blend with
-    what's under it (they're flattened in the picture, then blended as one) */
-const Baked: React.FC<React.PropsWithChildren<{ className?: string; bleed?: number; blend?: React.CSSProperties['mixBlendMode'] }>> = ({ className = '', bleed = 60, blend, children }) => {
+    what's under it (they're flattened in the picture, then blended as one).
+    `sharp`: the most pixels per CSS pixel it's painted at (2: fine grain and paper
+    stay crisp; a soft wash looks the same at 1.5 and takes about half the memory) */
+const Baked: React.FC<React.PropsWithChildren<{ className?: string; bleed?: number; blend?: React.CSSProperties['mixBlendMode']; sharp?: number }>> = ({ className = '', bleed = 60, blend, sharp = 2, children }) => {
   const boxRef = useRef<HTMLSpanElement>(null);
   const [width, setWidth] = useState(0);
   const [src, setSrc] = useState<string | null>(null);
@@ -79,7 +81,7 @@ const Baked: React.FC<React.PropsWithChildren<{ className?: string; bleed?: numb
     if (!el || !svg || !width || failed) return;
     let live = true;
     setTurn(svg.style.transform);
-    bake(svg, width, Math.round(el.getBoundingClientRect().height), bleed).then((url) => {
+    bake(svg, width, Math.round(el.getBoundingClientRect().height), bleed, sharp).then((url) => {
       if (!live) { if (url) URL.revokeObjectURL(url); return; }
       if (!url) { setFailed(true); return; }
       setSrc((old) => { if (old) URL.revokeObjectURL(old); return url; });

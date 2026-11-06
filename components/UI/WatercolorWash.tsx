@@ -74,7 +74,7 @@ const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '', variant
   const id = React.useId().replace(/:/g, '');
   if (variant === 'stroke') {
     return (
-      <Baked className={className} bleed={90}>
+      <Baked className={className} bleed={90} sharp={1.5}>
       <svg aria-hidden style={{ transform: 'rotate(-2.5deg)' }} className="absolute inset-0 h-full w-full overflow-visible">
         <defs>
           {brushFilter(`${id}a`, 5, 70)}
@@ -102,7 +102,7 @@ const WatercolorWash: React.FC<WatercolorWashProps> = ({ className = '', variant
     );
   }
   return (
-    <Baked className={className} bleed={70}>
+    <Baked className={className} bleed={70} sharp={1.5}>
     <svg aria-hidden className="absolute inset-0 h-full w-full overflow-visible">
       <defs>
         {washFilter(`${id}a`, 3, '0.0032 0.0045', 110)}

@@ -68,6 +68,7 @@ export type SkyPalette = {
   glow: [string, string];
   clear?: boolean;    // a clear sky: soft wet-in-wet colour pools, no cloud streaks
   baked?: string;     // the same painting, done ahead of time (scripts/bake-skies.mjs)
+  bakedSquare?: string; // …its middle square, for portrait screens (see tallScreen)
 };
 
 // the shared wash filter: soft body, wandering frilly edge, darker rim where it dried
@@ -154,6 +155,24 @@ export const paintSvg = (p: SkyPalette) => svg(`
 // it's ready a sky shows its flat ground colour, then fades the painting in.
 const SCALE = 1.5;
 const bitmaps = new Map<SkyPalette, Promise<string>>();
+const bakedFetches = new Map<string, Promise<string | null>>();
+
+/** A screen at least as tall as it's wide. A sky covers its box (object-cover, centred),
+    so there only the middle square of a wide painting is ever seen: its own square
+    picture shows exactly the same pixels at a third of the download. */
+export const TALL = '(max-aspect-ratio: 1/1)';
+export const tallScreen = () => typeof window !== 'undefined' && window.matchMedia(TALL).matches;
+/** whether the screen is tall now, following a turn of the phone */
+export const useTallScreen = () => {
+  const [tall, setTall] = useState(tallScreen);
+  useEffect(() => {
+    const mq = window.matchMedia(TALL);
+    const on = () => setTall(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return tall;
+};
 let queue: Promise<unknown> = Promise.resolve();
 const idle = () => new Promise<void>((r) => {
   const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
@@ -166,13 +185,14 @@ const fetched = (url: string) => new Promise<string | null>((resolve) => {
   img.onerror = () => resolve(null);
   img.src = url;
 });
-const bitmap = (p: SkyPalette, eager = false) => {
-  let v = bitmaps.get(p);
-  if (!v && p.baked) {
-    v = fetched(p.baked).then((u) => u ?? (bitmaps.delete(p), bitmap({ ...p, baked: undefined }, eager)));
-    bitmaps.set(p, v);
-    return v;
+const bitmap = (p: SkyPalette, eager = false, tall = tallScreen()): Promise<string> => {
+  const url = tall && p.bakedSquare ? p.bakedSquare : p.baked;
+  if (url) {
+    let f = bakedFetches.get(url);
+    if (!f) { f = fetched(url); bakedFetches.set(url, f); }
+    return f.then((u) => u ?? bitmap({ ...p, baked: undefined, bakedSquare: undefined }, eager));
   }
+  let v = bitmaps.get(p);
   if (!v) {
     const start = eager ? Promise.resolve() : queue.then(paintsMayStart).then(idle);
     v = start.then(() => new Promise<string>((resolve) => {
@@ -200,13 +220,14 @@ export const skyPainted = (p: SkyPalette) => bitmap(p, true);
 
 const WatercolorSky: React.FC<{ palette?: SkyPalette; eager?: boolean; className?: string; style?: React.CSSProperties; skyRef?: React.Ref<HTMLDivElement> }> = ({ palette: p = DUSK, eager = false, className = '', style, skyRef }) => {
   const [src, setSrc] = useState<string>();
+  const tall = useTallScreen();
   const [onScreen, setOnScreen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let live = true;
-    bitmap(p, eager).then((u) => { if (live) setSrc(u); });
+    bitmap(p, eager, tall).then((u) => { if (live) setSrc(u); });
     return () => { live = false; };
-  }, [p, eager]);
+  }, [p, eager, tall]);
   // drift and twinkle only while the sky is on screen
   useEffect(() => {
     const el = boxRef.current;
@@ -272,6 +293,7 @@ export const TWILIGHT: SkyPalette = {
   // painted ahead of time: it's what the loader waits on, and working it out on a phone
   // held the loading for a second or more (re-bake after changing it)
   baked: `${import.meta.env.BASE_URL}skies/twilight.webp`,
+  bakedSquare: `${import.meta.env.BASE_URL}skies/twilight-sq.webp`,
 };
 
 // the calm-space band's timelapse runs NIGHT → PLUM → SUNRISE

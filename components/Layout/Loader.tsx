@@ -3,7 +3,7 @@ import { stopLenis, startLenis, touchScreen } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import { WaningMoon } from '../UI/CelestialMark';
-import { skyPainted, TWILIGHT } from './WatercolorSky';
+import { skyPainted, TWILIGHT, tallScreen } from './WatercolorSky';
 import { paintsSettled, paintProgress, trackPaint } from '../UI/introGate';
 
 interface LoaderProps {
@@ -57,8 +57,9 @@ const DUSK_MS = 2600;
 // ahead of time so they're there from the first frame (index.html preloads them and
 // shows the sunset before the scripts run). They're laid inside the hero's own sky,
 // under its shading (Background), so only the sky itself changes.
-export const SUNSET_IMG = `${import.meta.env.BASE_URL}sky-sunset.webp`;
-export const DUSK_IMG = `${import.meta.env.BASE_URL}sky-dusk.webp`;
+// (a portrait screen gets their middle squares: the same pixels, see tallScreen)
+export const sunsetImg = (tall: boolean) => `${import.meta.env.BASE_URL}sky-sunset${tall ? '-sq' : ''}.webp`;
+export const duskImg = (tall: boolean) => `${import.meta.env.BASE_URL}sky-dusk${tall ? '-sq' : ''}.webp`;
 // the full moon's frame: the crescent's 64-unit box, sized so its lit disc (62.5% of it)
 // is the 18px moon's disc (14/16 of it)
 const MOON_FRAME = 18 * (14 / 16) / 0.625;
@@ -198,7 +199,8 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       e.onload = e.onerror = () => r();
       e.src = src;
     });
-    Promise.all([load(SUNSET_IMG), load(DUSK_IMG), twilight.catch(() => {})]).then(() => { if (!cancelled) setEveningAt(performance.now()); });
+    const tall = tallScreen();
+    Promise.all([load(sunsetImg(tall)), load(duskImg(tall)), twilight.catch(() => {})]).then(() => { if (!cancelled) setEveningAt(performance.now()); });
     // the page itself (scripts, styles, images in the document)
     if (document.readyState === 'complete') safe('page')();
     else window.addEventListener('load', safe('page'), { once: true });
