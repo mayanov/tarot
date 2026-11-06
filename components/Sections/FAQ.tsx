@@ -15,28 +15,27 @@ interface FaqItem {
   cat: string;
 }
 
-// A tarot card sketched in pencil (a double edge, an inner border, a crescent and a
-// star), tilted and faint, lying behind the chosen answer on desktop so the panel has
-// something drawn on the paper rather than a box round it. It comes in with the answer.
-const SketchCard: React.FC = () => (
-  <svg aria-hidden viewBox="0 0 160 250" preserveAspectRatio="xMidYMid meet" className="pointer-events-none absolute -z-10 right-8 -top-12 h-[23rem] overflow-visible text-moon" style={{ transform: 'rotate(7deg)' }}>
+// A frame sketched round the chosen answer (desktop): four pencil strokes, each a
+// little off level and running past the corners, with the top and bottom gone over a
+// second time more lightly, so the answer sits in a drawn box rather than a CSS one.
+const SketchFrame: React.FC = () => (
+  <svg aria-hidden className="pointer-events-none absolute -z-10 inset-0 h-full w-full overflow-visible text-moon">
     <defs>
-      <filter id="faqsketch" x="-10%" y="-10%" width="120%" height="120%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="5" result="w" />
-        <feDisplacementMap in="SourceGraphic" in2="w" scale="2.5" xChannelSelector="R" yChannelSelector="G" result="d" />
-        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="6" result="g" />
+      <filter id="faqpencil" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="3" result="w" />
+        <feDisplacementMap in="SourceGraphic" in2="w" scale="3" xChannelSelector="R" yChannelSelector="G" result="d" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="8" result="g" />
         <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2 1.6" result="ga" />
         <feComposite in="d" in2="ga" operator="in" />
       </filter>
     </defs>
-    <g filter="url(#faqsketch)" fill="none" stroke="currentColor" strokeLinecap="round" opacity="0.5">
-      <rect x="4" y="4" width="152" height="242" rx="10" strokeWidth="1.4" />
-      <rect x="2" y="6" width="154" height="239" rx="11" strokeWidth="0.6" opacity="0.6" />
-      <rect x="14" y="14" width="132" height="222" rx="5" strokeWidth="0.8" />
-      <path d="M92 86 A30 30 0 1 0 92 150 A25 25 0 0 1 92 86 Z" strokeWidth="1.2" />
-      <path d="M104 78 l2 8 l8 2 l-8 2 l-2 8 l-2 -8 l-8 -2 l8 -2 Z" strokeWidth="1" />
-      <path d="M50 200 Q80 192 110 200" strokeWidth="0.8" />
-      <circle cx="80" cy="34" r="2" strokeWidth="0.8" />
+    <g filter="url(#faqpencil)" stroke="currentColor" strokeLinecap="round" fill="none" opacity="0.45">
+      <line x1="-3%" y1="1%" x2="101%" y2="-1%" strokeWidth="1.2" />
+      <line x1="1%" y1="2%" x2="98%" y2="0.5%" strokeWidth="0.6" opacity="0.6" />
+      <line x1="99%" y1="-4%" x2="100.5%" y2="103%" strokeWidth="1.2" />
+      <line x1="102%" y1="99%" x2="-2%" y2="100.5%" strokeWidth="1.2" />
+      <line x1="97%" y1="98%" x2="3%" y2="99.5%" strokeWidth="0.6" opacity="0.6" />
+      <line x1="0.5%" y1="104%" x2="-0.5%" y2="-3%" strokeWidth="1.2" />
     </g>
   </svg>
 );
@@ -250,8 +249,8 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
         <aside aria-live="polite" className="hidden lg:block lg:sticky lg:top-28">
           <div className="mb-6"><PencilRule weight="fine" className="text-ink/30" /></div>
           {current && (
-            <div key={current.question} className="relative isolate px-10 py-10 animate-[faqIn_500ms_cubic-bezier(0.16,1,0.3,1)]">
-              <SketchCard />
+            <div key={current.question} className="relative isolate px-8 py-8 animate-[faqIn_500ms_cubic-bezier(0.16,1,0.3,1)]">
+              <SketchFrame />
               <p className="letterpress font-elegant italic text-sm tabular-nums text-moon">{String(currentNo).padStart(2, '0')}</p>
               <h3 className="letterpress-lg mt-2 font-elegant font-semibold text-ink text-[1.6rem] xl:text-[1.9rem] leading-[1.2] tracking-[-0.015em]">
                 {current.question}
