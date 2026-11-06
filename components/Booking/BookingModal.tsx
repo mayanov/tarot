@@ -16,6 +16,7 @@ import PayPalButtons from './PayPalButtons';
 import { midtransConfig, MidtransConfig, loadSnap, startMidtrans, midtransStatus, releaseMidtrans } from '../../services/midtrans';
 import { trackEvent, trackWhatsApp, trackFormStep, trackPaymentIssue, trackBookedVia, FormStep, SERVICE_TRACK_NAME } from '../../services/analytics';
 import { lockPage, unlockPage } from '../UI/scroll';
+import { COUNTRY_CODES, guessCountry, withCountryCode, splitTypedCode } from './countryCodes';
 
 interface BookingModalProps {
   isIndonesian?: boolean;
@@ -172,6 +173,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  // global form: the WhatsApp number's country, picked first (guessed from the browser)
+  const [waCountry, setWaCountry] = useState(() => guessCountry());
+  // the number as saved and shown: with its country code on the global form ("+44 7700 900123")
+  const waNumber = isIndonesian ? whatsapp.trim() : withCountryCode(waCountry, whatsapp);
   const [email, setEmail] = useState('');
   // what they'd like to ask (optional); can arrive filled in from an example question
   const [question, setQuestion] = useState('');
@@ -354,7 +359,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     durationMin: s.scheduled ? (durationFromText(pkg) ?? durationFromText(s.meta) ?? 30) : 0,
     name: name.trim(),
     dob: dob,
-    contact: [whatsapp.trim() && `WA: ${whatsapp.trim()}`, email.trim() && `Email: ${email.trim()}`].filter(Boolean).join(' · '),
+    contact: [waNumber && `WA: ${waNumber}`, email.trim() && `Email: ${email.trim()}`].filter(Boolean).join(' · '),
     question: question.trim(),
     market: isIndonesian ? 'ID' : 'Global',
   });
@@ -428,7 +433,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
           name: name.trim(), dob,
           contact: bookingInput(service).contact,
           question: question.trim(),
-          phone: whatsapp.trim(), email: email.trim(),
+          phone: waNumber, email: email.trim(),
         });
         const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
         trackEvent('add_payment_info', { item_name: trackName, market: 'ID' }, 'AddPaymentInfo', { content_name: trackName });
@@ -496,9 +501,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
   const stepLabels = [t('Jenis Layanan', 'Service Type'), t('Jadwal', 'Schedule'), t('Detail', 'Details'), t('Konfirmasi', 'Review')];
   const needsPackage = !!service?.packages?.length;
-  // WhatsApp: digits only (with optional +/spaces/hyphens), at least 8 digits.
+  // WhatsApp: digits only (with optional +/spaces/hyphens), at least 8 digits; on the
+  // global form a country picked and at least 6 digits after its code
   const waDigits = whatsapp.replace(/\D/g, '');
-  const whatsappValid = waDigits.length >= 8;
+  const whatsappValid = isIndonesian ? waDigits.length >= 8 : !!waCountry && waDigits.replace(/^0+/, '').length >= 6;
   // Email is optional, but if given it must look like name@domain.tld
   // global readings are delivered by email, so there it's required
   // Calls, live sessions and meetups get a calendar invite, so they need an email
@@ -962,13 +968,42 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     <span className="letterpress block mt-1.5 text-xs text-ink/70">{t('Tanggal lahir tidak valid.', 'That date isn’t valid.')}</span>
                   )}
                 </div>
-                <label className="block">
-                  <span className={label}>WhatsApp</span>
-                  <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value.replace(/[^\d+\s-]/g, ''))} type="tel" inputMode="tel" className={field} placeholder={t('cth. 0812 3456 7890', 'e.g. +62 812 3456 7890')} />
-                  {whatsapp.trim() !== '' && !whatsappValid && (
-                    <span className="letterpress block mt-1.5 text-xs text-ink/70">{t('Masukkan nomor telepon yang valid (min. 8 angka).', 'Enter a valid phone number (at least 8 digits).')}</span>
-                  )}
-                </label>
+                {isIndonesian ? (
+                  <label className="block">
+                    <span className={label}>WhatsApp</span>
+                    <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value.replace(/[^\d+\s-]/g, ''))} type="tel" inputMode="tel" className={field} placeholder="cth. 0812 3456 7890" />
+                    {whatsapp.trim() !== '' && !whatsappValid && (
+                      <span className="letterpress block mt-1.5 text-xs text-ink/70">Masukkan nomor telepon yang valid (min. 8 angka).</span>
+                    )}
+                  </label>
+                ) : (
+                  <div>
+                    <span className={label}>WhatsApp</span>
+                    {/* country code first, then the number without it */}
+                    <div className="grid grid-cols-[5.5rem_1fr] gap-2">
+                      <div className="relative">
+                        <select value={waCountry} onChange={(e) => setWaCountry(e.target.value)} aria-label="Country code" className={`${field} appearance-none pr-6 !text-transparent`}>
+                          <option value="" className="text-ink">Code</option>
+                          {COUNTRY_CODES.map(([iso, n, dial]) => <option key={iso} value={iso} className="text-ink">{n} (+{dial})</option>)}
+                        </select>
+                        {/* the closed picker shows just the code; the list shows the countries */}
+                        <span aria-hidden className={`letterpress pointer-events-none absolute inset-0 px-1 pt-2 pb-2.5 font-elegant text-[17px] ${waCountry ? 'text-ink' : 'text-ink/30'}`}>
+                          {waCountry ? `+${COUNTRY_CODES.find(([c]) => c === waCountry)?.[2]}` : 'Code'}
+                        </span>
+                        <PencilArrow dir="down" className={`pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${waCountry ? 'text-ink' : 'text-ink/35'}`} />
+                      </div>
+                      <input value={whatsapp} onChange={(e) => {
+                        // typed with its code ("+44 7700…"): the picker follows and the box keeps the rest
+                        const v = e.target.value.replace(/[^\d\s+-]/g, '');
+                        const split = splitTypedCode(v, waCountry);
+                        if (split) { setWaCountry(split.iso); setWhatsapp(split.rest); } else setWhatsapp(v.startsWith('+') ? v : v.replace(/\+/g, ''));
+                      }} type="tel" inputMode="tel" aria-label="WhatsApp number" className={field} placeholder="e.g. 7700 900123" />
+                    </div>
+                    {whatsapp.trim() !== '' && !whatsappValid && (
+                      <span className="letterpress block mt-1.5 text-xs text-ink/70">{waCountry ? 'Enter a valid phone number.' : 'Pick your country code first.'}</span>
+                    )}
+                  </div>
+                )}
                 <label className="block">
                   <span className={label}>Email {emailNeeded ? invited && <span className="text-ink/40 font-normal">{t('(untuk undangan kalender)', '(for your calendar invite)')}</span> : <span className="text-ink/40 font-normal">(opsional)</span>}</span>
                   <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" className={field} placeholder={t('nama@email.com', 'you@email.com')} />
@@ -1002,7 +1037,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 {scheduleRows()}
                 {row(t('Nama', 'Name'), name)}
                 {row(t('Tanggal lahir', 'Date of birth'), fmtLongDate(dob, isIndonesian ? 'id' : 'en'))}
-                {row('WhatsApp', whatsapp)}
+                {row('WhatsApp', waNumber)}
                 {email.trim() && row('Email', email)}
                 {question.trim() && row(t('Pertanyaan', 'Question'), question.trim())}
                 {rule}

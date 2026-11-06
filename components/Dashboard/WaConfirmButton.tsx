@@ -14,7 +14,9 @@ export const waNumberOf = (contact?: string) => {
   // "WA: 0812…" from the form, or a bare number on an order typed in by hand
   const raw = (c.match(/WA:\s*([^·]+)/i) || [])[1] || (c.replace(/[^\s:·]+@[^\s·]+/g, '').match(/\+?\d[\d\s-]{7,}/) || [])[0] || '';
   let d = raw.replace(/\D/g, '');
-  if (d.startsWith('0')) d = '62' + d.slice(1);
+  // "+81 90…" (global form: country code first) is kept as it is; a local number is Indonesian
+  if (raw.trim().startsWith('+')) { /* already international */ }
+  else if (d.startsWith('0')) d = '62' + d.slice(1);
   else if (d.startsWith('8')) d = '62' + d;
   return d.length >= 10 && d.length <= 15 ? d : '';
 };

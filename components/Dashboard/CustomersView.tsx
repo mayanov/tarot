@@ -18,7 +18,7 @@ const extractPhone = (contact?: string) => {
 const normPhone = (raw: string) => {
     const d = (raw || '').replace(/\D/g, '');
     if (!d) return '';
-    if (d.startsWith('62')) return d;
+    if (d.startsWith('62') || raw.trim().startsWith('+')) return d; // already international
     if (d.startsWith('0')) return '62' + d.slice(1);
     if (d.startsWith('8') && d.length >= 9 && d.length <= 13) return '62' + d;
     return d;
