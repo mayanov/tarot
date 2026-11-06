@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { stopLenis, startLenis } from '../UI/scroll';
+import { stopLenis, startLenis, touchScreen } from '../UI/scroll';
 import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import { WaningMoon } from '../UI/CelestialMark';
@@ -100,6 +100,11 @@ const DrawnPhase: React.FC<{ p: number; waning?: boolean; size: number; draw: nu
 const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) => {
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches;
+  // a phone is busy starting the page while this plays: anything redrawn by script on
+  // every frame there (the progress, the sky's light) drops frames and lands late, so
+  // the sky jumped instead of fading. There the progress only redraws per whole percent
+  // and the sky's light is changed by the browser itself (CSS transitions).
+  const [touch] = useState(touchScreen);
   const [shown, setShown] = useState(false);      // the drawing has started
   const [pct, setPct] = useState(0);              // progress, 0–100
   const [complete, setComplete] = useState(false);
@@ -213,7 +218,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       // (nobody's watching a hidden tab: go straight to where it's got)
       p += (target - p) * (reduce || document.hidden ? 1 : 0.14);
       if (allDone && timeCap >= 100 && p > 99.4) p = 100;
-      setPct(p);
+      setPct(touch ? Math.floor(p) : p);
       if (p >= 100) { stop(); setComplete(true); return; }
       if (!document.hidden) raf = requestAnimationFrame(tick);
     };
@@ -230,6 +235,17 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
   // ---- the timelapse: from the painted evening into the night, on its own clock ----
   useEffect(() => {
     if (reduce || eveningAt === null) return;
+    if (touch) {
+      // the same light change as below (sunset gone by 60%, dusk from 40% to the end),
+      // run by the browser so a busy phone can't make it jump
+      const fadeOut = (sky: string, from: number, to: number) => document.querySelectorAll<HTMLElement>(`[data-sky="${sky}"]`).forEach((el) => {
+        el.style.transition = `opacity ${Math.round(DUSK_MS * (to - from))}ms cubic-bezier(0.45,0,0.55,1) ${Math.round(DUSK_MS * from)}ms`;
+        el.style.opacity = '0';
+      });
+      const go = requestAnimationFrame(() => { fadeOut('sunset', 0, 0.6); fadeOut('dusk', 0.4, 1); });
+      const t = window.setTimeout(() => setDusk(1), DUSK_MS);
+      return () => { cancelAnimationFrame(go); clearTimeout(t); };
+    }
     let raf = 0;
     const tick = () => {
       // (nobody's watching a hidden tab: straight to the night)
@@ -243,11 +259,12 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     // never hold the hand-off on it
     const cap = window.setTimeout(() => setDusk(1), TASK_TIMEOUT_MS);
     return () => { cancelAnimationFrame(raf); clearTimeout(cap); document.removeEventListener('visibilitychange', skip); };
-  }, [eveningAt, reduce]);
+  }, [eveningAt, reduce, touch]);
   const night = dusk >= 1;
   // the light changing: the sunset gives way to the dusk while the dusk is still coming
   // in, and the dusk to the hero's twilight, overlapping so it never pauses
   useLayoutEffect(() => {
+    if (touch && dusk > 0) return; // (there the browser runs it, above)
     const set = (sky: string, o: number) => document.querySelectorAll<HTMLElement>(`[data-sky="${sky}"]`).forEach((el) => { el.style.opacity = o.toFixed(3); });
     set('sunset', 1 - smooth(0, 0.6, dusk));
     set('dusk', 1 - smooth(0.4, 1, dusk));
@@ -361,7 +378,7 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
       {slots && (
         <div
           className="fixed inset-x-0 text-center text-xs md:text-[13px] uppercase tracking-[0.3em] text-cream/55"
-          style={{ top: slots.title.bottom + 28, opacity: shown ? 1 : 0, transition: 'opacity 900ms ease 200ms', ...fades }}
+          style={{ top: slots.title.bottom + 28, opacity: shown ? 1 : 0, transition: 'opacity 900ms ease 200ms', ...(complete ? { opacity: 0, transition: 'opacity 350ms ease' } : null) }}
         >
           {isIndonesian ? 'Memuat' : 'Loading'} <span className="tabular-nums text-cream/80">{Math.floor(pct)}%</span>
         </div>
