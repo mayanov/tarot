@@ -575,16 +575,28 @@ app.post('/api/paypal/orders/:id/release', async (req, res) => {
     }
 });
 
-// "payment received" email for a paid email reading (3-Card / 5-Card), once per booking
-async function emailPaidReading(booking, amount) {
+// what a booking cost: what was charged (Midtrans / PayPal), else its listed price
+function paidAmount(b) {
+    const currency = mailer.isIndonesian(b) ? 'IDR' : 'USD';
+    if (b.amountDue) return { amount: b.amountDue, currency };
+    if (currency === 'USD') return { amount: paypal.READINGS[b.serviceId]?.value || '', currency };
+    const pkg = String(b.serviceName || '').split(' · ')[1] || '';
+    return { amount: midtrans.quote(b.serviceId, pkg)?.amount || '', currency };
+}
+
+// "payment received" email, once per booking, for any booking paid on the site (PayPal,
+// Midtrans) or marked Paid in the dashboard. Awaited before answering (a serverless
+// function stops once it has answered); a failed email never undoes anything.
+async function emailPaid(booking) {
     try {
-        if (!(await bookingStore.claimOnce(`paidmail_${booking.id}`))) return;
-        if (await mailer.sendPaidReading(booking, amount)) {
+        if (!booking?.id || booking.paidEmailSentAt || !mailer.emailOf(booking.contact)) return;
+        if (!(await bookingStore.claimOnce(`paidmail_${booking.ref || booking.id}`))) return;
+        if (await mailer.sendPaid(booking, paidAmount(booking))) {
             const st = await bookingStore.markPaidEmailSent(booking.id);
             if (st) booking.paidEmailSentAt = st.paidEmailSentAt;
         }
     } catch (e) {
-        console.error('[mail] paid reading email failed:', booking.id, e.message);
+        console.error('[mail] paid email failed:', booking.id, e.message);
     }
 }
 
@@ -637,6 +649,7 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
                 paypalPayer: paid.payerEmail,
                 paidAt: new Date().toISOString(),
             });
+            await emailPaid(booking);
             return res.status(201).json(booking);
         }
         // a retried request for an order already turned into a booking gets that booking back
@@ -662,7 +675,7 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
         // an email reading: tell the customer straight away that it's paid and coming.
         // Sent before answering (a serverless function stops once it has answered), once
         // per booking; a failed email never undoes the booking.
-        await emailPaidReading(booking, reading.value);
+        await emailPaid(booking);
         res.status(201).json(booking);
     } catch (e) {
         // paid but not saved: keep every detail in the log so it can be entered by hand
@@ -691,6 +704,7 @@ async function settleMidtrans(orderId) {
             midtransTransactionId: st.transactionId,
             paidAt: new Date().toISOString(),
         });
+        await emailPaid(paid);
         return { state: 'paid', booking: paid };
     }
     if (st.state === 'failed') {
@@ -941,6 +955,16 @@ app.post('/api/admin/bookings/:id/reschedule', verifyToken, async (req, res) => 
     }
 });
 
+// Marking a booking Paid by hand emails the customer only for a recent booking made on
+// the site (QRIS / transfer / payment link), never for orders entered in the dashboard
+// or old, cancelled or finished ones being tidied up.
+function emailOnMarkPaid(b) {
+    if (b.source === 'manual' || b.holdOnly || ['cancelled', 'done'].includes(b.status)) return false;
+    if (Date.now() - new Date(b.createdAt || 0).getTime() > 30 * 86400000) return false;
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+    return !b.date || b.date >= today;
+}
+
 // Admin: update a booking's payment status (unpaid | paid) — for the Sales report.
 app.post('/api/admin/bookings/:id/payment', verifyToken, async (req, res) => {
     const { paymentStatus } = req.body || {};
@@ -950,6 +974,7 @@ app.post('/api/admin/bookings/:id/payment', verifyToken, async (req, res) => {
     try {
         const updated = await bookingStore.updatePayment(req.params.id, paymentStatus);
         if (!updated) return res.status(404).json({ error: 'Not found' });
+        if (paymentStatus === 'paid' && emailOnMarkPaid(updated)) await emailPaid(updated);
         res.json(updated);
     } catch (e) {
         console.error('update payment failed:', e);
