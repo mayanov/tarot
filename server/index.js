@@ -575,23 +575,15 @@ app.post('/api/paypal/orders/:id/release', async (req, res) => {
     }
 });
 
-// what a booking cost: what was charged (Midtrans / PayPal), else its listed price
-function paidAmount(b) {
-    const currency = mailer.isIndonesian(b) ? 'IDR' : 'USD';
-    if (b.amountDue) return { amount: b.amountDue, currency };
-    if (currency === 'USD') return { amount: paypal.READINGS[b.serviceId]?.value || '', currency };
-    const pkg = String(b.serviceName || '').split(' · ')[1] || '';
-    return { amount: midtrans.quote(b.serviceId, pkg)?.amount || '', currency };
-}
-
-// "payment received" email, once per booking, for any booking paid on the site (PayPal,
-// Midtrans) or marked Paid in the dashboard. Awaited before answering (a serverless
-// function stops once it has answered); a failed email never undoes anything.
+// "payment received" email, once per booking, for a global booking paid with PayPal or
+// marked Paid in the dashboard. Indonesian bookings get none: they're followed up on
+// WhatsApp. Awaited before answering (a serverless function stops once it has
+// answered); a failed email never undoes anything.
 async function emailPaid(booking) {
     try {
-        if (!booking?.id || booking.paidEmailSentAt || !mailer.emailOf(booking.contact)) return;
+        if (!booking?.id || mailer.isIndonesian(booking) || booking.paidEmailSentAt || !mailer.emailOf(booking.contact)) return;
         if (!(await bookingStore.claimOnce(`paidmail_${booking.ref || booking.id}`))) return;
-        if (await mailer.sendPaid(booking, paidAmount(booking))) {
+        if (await mailer.sendPaid(booking, booking.amountDue || paypal.READINGS[booking.serviceId]?.value || '')) {
             const st = await bookingStore.markPaidEmailSent(booking.id);
             if (st) booking.paidEmailSentAt = st.paidEmailSentAt;
         }
@@ -704,7 +696,6 @@ async function settleMidtrans(orderId) {
             midtransTransactionId: st.transactionId,
             paidAt: new Date().toISOString(),
         });
-        await emailPaid(paid);
         return { state: 'paid', booking: paid };
     }
     if (st.state === 'failed') {
@@ -955,8 +946,8 @@ app.post('/api/admin/bookings/:id/reschedule', verifyToken, async (req, res) => 
     }
 });
 
-// Marking a booking Paid by hand emails the customer only for a recent booking made on
-// the site (QRIS / transfer / payment link), never for orders entered in the dashboard
+// Marking a global booking Paid by hand (paid on a payment link) emails the customer, but
+// only for a recent booking made on the site: never for orders entered in the dashboard
 // or old, cancelled or finished ones being tidied up.
 function emailOnMarkPaid(b) {
     if (b.source === 'manual' || b.holdOnly || ['cancelled', 'done'].includes(b.status)) return false;
