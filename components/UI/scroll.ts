@@ -1,35 +1,48 @@
-import Lenis from 'lenis';
+import type Lenis from 'lenis';
 
 let lenis: Lenis | null = null;
 
 // Initialise buttery inertia scrolling once, and keep the rAF loop running.
 // Not on a phone: there the finger already scrolls natively, and Lenis running beside
 // it only fights it (the page jumping when content above grows or shrinks).
-export function initLenis(): Lenis | null {
-    if (lenis) return lenis;
+// (it's loaded only here, so a phone never downloads it at all)
+let starting = false;
+let generation = 0; // (a start that was cancelled before it loaded is dropped)
+export function initLenis(): void {
+    if (lenis || starting) return;
     // Always start a fresh load at the top (don't let the browser restore the
     // previous scroll position on refresh).
     if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
     }
     window.scrollTo(0, 0);
-    if (touchScreen()) return null;
-    lenis = new Lenis({
-        lerp: 0.09,
-        wheelMultiplier: 1,
-        smoothWheel: true,
-        touchMultiplier: 1.6,
-    });
-    lenis.scrollTo(0, { immediate: true });
-    const raf = (time: number) => {
-        lenis?.raf(time);
+    if (touchScreen()) return;
+    starting = true;
+    const mine = ++generation;
+    import('lenis').then(({ default: LenisCtor }) => {
+        if (mine !== generation) return;
+        starting = false;
+        lenis = new LenisCtor({
+            lerp: 0.09,
+            wheelMultiplier: 1,
+            smoothWheel: true,
+            touchMultiplier: 1.6,
+        });
+        lenis.scrollTo(0, { immediate: true });
+        // arriving while the page is locked (the loader, an open overlay): stay paused
+        // until it's unlocked (startLenis)
+        if (pageLocks > 0 || document.documentElement.style.overflow === 'hidden') lenis.stop();
+        const raf = (time: number) => {
+            lenis?.raf(time);
+            requestAnimationFrame(raf);
+        };
         requestAnimationFrame(raf);
-    };
-    requestAnimationFrame(raf);
-    return lenis;
+    }).catch(() => { starting = false; });
 }
 
 export function destroyLenis() {
+    starting = false;
+    generation++;
     lenis?.destroy();
     lenis = null;
 }

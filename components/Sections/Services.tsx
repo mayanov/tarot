@@ -47,7 +47,9 @@ const cq = (px: number) => `${(px / 2.16).toFixed(3)}cqw`;
 // A single tarot card: front = the card face (motif + name + cheapest price), back =
 // the booking options. `big` scales it up for the full-screen "drawn card" reveal.
 // `fill` makes the card take its parent's exact size instead of keeping the 5:8 shape (used on phones).
-const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean; big?: boolean; fill?: boolean; compact?: boolean; onBook?: () => void }> = ({ g, i, flipped, onFlip, isIndonesian, big = false, fill = false, compact = false, onBook }) => {
+// `back`: whether it can turn over. The cards in the fan and beside the open one never
+// do, so their backs (each a whole page of prices and steps) aren't built at all.
+const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => void; isIndonesian: boolean; big?: boolean; fill?: boolean; compact?: boolean; onBook?: () => void; back?: boolean }> = ({ g, i, flipped, onFlip, isIndonesian, big = false, fill = false, compact = false, onBook, back = true }) => {
   // colour theme + numeral come from the group itself (so adding/reordering cards never
   // recolours or renumbers the others); fall back to position
   const k = g.theme ?? i;
@@ -104,7 +106,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
             </div>
 
             {/* ===== BACK — the booking options ===== */}
-            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] bg-paper text-ink" style={paperCut(12 + k * 23)}>
+            {back && <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden rounded-[1.15rem] bg-paper text-ink" style={paperCut(12 + k * 23)}>
                 <CardStock tone="light" />
 
                 <div className={`relative h-full flex flex-col ${tight ? 'p-3' : big ? 'p-5' : 'p-3.5'}`}>
@@ -234,7 +236,7 @@ const TarotCard: React.FC<{ g: any; i: number; flipped: boolean; onFlip: () => v
                         )}
                     </div>
                 </div>
-            </div>
+            </div>}
         </div>
     </div>
   );
@@ -579,7 +581,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                     className="relative"
                                     style={dealt && !settled ? { animation: `dealFlip ${DEAL_FLIP}ms cubic-bezier(0.4,0,0.2,1) ${dealDelay(i) + DEAL_MOVE - 200}ms both` } : undefined}
                                 >
-                                    <TarotCard g={g} i={i} flipped={false} onFlip={() => draw(i)} isIndonesian={isIndonesian} />
+                                    <TarotCard g={g} i={i} flipped={false} onFlip={() => draw(i)} isIndonesian={isIndonesian} back={false} />
                                     {!settled && (
                                         <div
                                             aria-hidden
@@ -657,7 +659,7 @@ const TarotFan: React.FC<{ groups: any[]; isIndonesian: boolean }> = ({ groups, 
                                         }}
                                     >
                                         <span aria-hidden className="pointer-events-none block h-full w-full">
-                                            <TarotCard g={g} i={j} flipped={false} onFlip={() => {}} isIndonesian={isIndonesian} big compact={isMobile} />
+                                            <TarotCard g={g} i={j} flipped={false} onFlip={() => {}} isIndonesian={isIndonesian} big compact={isMobile} back={false} />
                                         </span>
                                     </div>
                                 </div>
