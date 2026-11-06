@@ -120,10 +120,10 @@ const PAYMENT = {
   waNumber: '6287786280310', // business WhatsApp (same as the footer / floating button)
 };
 
-// Indonesian bookings are paid by hand for now: QRIS or bank transfer (PAYMENT), the
-// proof sent on WhatsApp. Midtrans (pay inside the form) is built and kept, switched off:
-// set this to true to bring it back (its keys stay in Vercel).
-const MIDTRANS_ON = false;
+// Indonesian bookings are paid inside the form with Midtrans when its keys are on the
+// server (sandbox on staging); without them, QRIS or bank transfer (PAYMENT) and the
+// proof sent on WhatsApp. Set this to false to go back to paying by hand.
+const MIDTRANS_ON = true;
 
 // Global readings are paid with PayPal's buttons on the review step (services/paypal.ts)
 // when the API has PayPal keys; until then, once booked, on these payment links, which
