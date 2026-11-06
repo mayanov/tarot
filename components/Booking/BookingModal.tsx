@@ -127,15 +127,17 @@ const PAYMENT = {
 // proof sent on WhatsApp. Set this to false to go back to paying by hand.
 const MIDTRANS_ON = true;
 
-// Global readings are paid with PayPal's buttons on the review step (services/paypal.ts)
-// when the API has PayPal keys; until then, once booked, on these payment links, which
-// send the visitor back to /?payment_success=<id> (the thank-you page).
+// Everything global is paid with PayPal: its buttons on the review step (services/paypal.ts)
+// when the API has PayPal keys; until then, once saved as pending, on these payment
+// links, which send the visitor back to /?payment_success=<id> (the thank-you page).
+// A service without a link here (the Live Session, until its $45 link is added) falls
+// back to arranging the payment on WhatsApp.
 const PAYPAL: Record<string, string> = {
   '3card': 'https://www.paypal.com/ncp/payment/DSPX84KBN8GC2',
   '5card': 'https://www.paypal.com/ncp/payment/V6U4QMAU642KA',
+  // live: 'https://www.paypal.com/ncp/payment/…',  ← the Live Session's $45 link
 };
-// what PayPal's buttons can take payment for (server/paypal.js READINGS); the live
-// session has no payment link, so without the keys it's paid as arranged on WhatsApp
+// what PayPal's buttons can take payment for (server/paypal.js READINGS)
 const PAYPAL_IN_FORM = new Set(['3card', '5card', 'live']);
 
 // Each service wears its pricelist card's colour and mark, so the picker ties back to
@@ -1127,7 +1129,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 </div>
               ) : !isIndonesian && (
                 <p className="letterpress mt-6 text-[13px] text-ink/60 leading-relaxed">
-                  {live
+                  {live && service && PAYPAL[service.id]
+                    ? <>Next, you’ll pay {totalPrice} securely on PayPal. Your time is held while you pay, your booking is confirmed once payment is through, and the Google Meet link comes to your email.</>
+                    : live
                     ? <>This holds your time. I’ll message you on WhatsApp to arrange the payment of {totalPrice}; your booking is confirmed once it’s paid, and the Google Meet link comes to your email.</>
                     : <>Next, you’ll pay {totalPrice} securely on PayPal. Your booking is confirmed once payment is through; then reply to my confirmation email with your question, and your reading comes by email.</>}
                 </p>
@@ -1141,7 +1145,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               ) : bottomBar(
                 <button onClick={submit} disabled={submitting} className={primaryBtn}>
                   {swatch}
-                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{submitting ? t('Menyimpan…', live ? 'Booking…' : 'Opening PayPal…') : t('Konfirmasi', live ? 'Hold my time' : `Pay ${totalPrice} with PayPal`)}</span>
+                  <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">{submitting ? t('Menyimpan…', service && PAYPAL[service.id] ? 'Opening PayPal…' : 'Booking…') : t('Konfirmasi', service && PAYPAL[service.id] ? `Pay ${totalPrice} with PayPal` : 'Hold my time')}</span>
                 </button>
               )}
             </div>
