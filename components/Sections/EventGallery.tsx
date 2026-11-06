@@ -22,6 +22,10 @@ const PRINTS = [
   { rot: 4, y: 2, n: 'IV', id: 'kartu terbuka', en: 'cards on the table' },
 ];
 const EASE = 'cubic-bezier(0.16,1,0.3,1)';
+// Everything on the card face is sized in container units (cqw) against a 256px-wide
+// card, as the pricelist cards are, so a card is the same drawing scaled at any width:
+// the photo window keeps one shape and the caption never wraps, phone to desktop.
+const cq = (px: number) => `${(px / 2.56).toFixed(3)}cqw`;
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
 
 
@@ -46,7 +50,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {
     // on the page's own paper — no band — so the prints rest on the same surface
     // as Event & collaboration below
     <div className="relative px-6 md:px-8 pt-6 md:pt-8 pb-6 md:pb-10">
-      <div ref={ref} className="mx-auto w-[88%] max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-0">
+      <div ref={ref} className="mx-auto w-full sm:w-[92%] max-w-[76rem] grid grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-8 gap-y-8 sm:gap-y-12 lg:gap-x-0">
         {photos.map((src, i) => {
           const pr = PRINTS[i % PRINTS.length];
           return (
@@ -56,7 +60,7 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {
               // different heights; the drop-in lands with a small bounce
               // stacking: the middle prints sit on top by default (--z); the hovered print
               // always comes to the front (a class, so it can override the default)
-              className="group/print relative self-start z-[var(--z)] hover:z-30 md:-mx-1"
+              className="group/print relative self-start z-[var(--z)] hover:z-30 lg:-mx-1"
               style={{
                 ['--z' as any]: 10 - Math.abs(i - 1.5) * 2,
                 ['--r' as any]: `${-pr.rot}deg`,
@@ -78,21 +82,23 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {
                 // left after the head and foot); hover cancels the card's tilt (--r) and
                 // brings it a little closer (grows in place, so nothing under it is
                 // uncovered); its edge is hand-cut (paperCut)
-                className="group relative flex aspect-[5/8] w-full flex-col p-1.5 md:p-2.5 rounded-[0.75rem] md:rounded-[1rem] transition-transform duration-500 group-hover/print:[transform:rotate(var(--r))_scale(1.045)]"
+                className="group relative flex aspect-[5/8] w-full flex-col rounded-[1rem] [container-type:inline-size] transition-transform duration-500 group-hover/print:[transform:rotate(var(--r))_scale(1.045)]"
                 style={{ transitionTimingFunction: EASE, ...paperCut(31 + i * 17, 16, 20) }}
               >
                 {/* the card's face, painted in watercolour */}
                 <CardWash colors={DECK_WASH[1]} />
                 {/* inner frame */}
-                <span className="relative flex min-h-0 flex-1 flex-col px-1.5 md:px-2 pt-1 md:pt-1.5 pb-2 md:pb-2.5">
-                <span aria-hidden className="print-ink pointer-events-none absolute inset-0 rounded-[0.55rem] md:rounded-[0.7rem] ring-1 ring-white/[0.16]" />
+                {/* (the card is the size container, so its own padding can't be in cqw: the
+                    frame is inset by a margin instead) */}
+                <span className="relative flex min-h-0 flex-1 flex-col" style={{ margin: cq(10), padding: `${cq(6)} ${cq(8)} ${cq(10)}` }}>
+                <span aria-hidden className="print-ink pointer-events-none absolute inset-0 ring-1 ring-white/[0.16]" style={{ borderRadius: cq(11) }} />
                 {/* head: the card's numeral between two rules */}
-                <span aria-hidden className="print-ink flex items-center justify-center gap-2 pb-1 md:pb-1.5 text-cream/60">
-                  <span className="h-px w-4 md:w-6 bg-gradient-to-r from-transparent to-current opacity-60" />
-                  <span className="font-elegant italic text-[0.7rem] md:text-[0.85rem] leading-none tracking-[0.12em]">{pr.n}</span>
-                  <span className="h-px w-4 md:w-6 bg-gradient-to-l from-transparent to-current opacity-60" />
+                <span aria-hidden className="print-ink flex items-center justify-center text-cream/60" style={{ gap: cq(8), paddingBottom: cq(6) }}>
+                  <span className="h-px bg-gradient-to-r from-transparent to-current opacity-60" style={{ width: cq(24) }} />
+                  <span className="font-elegant italic leading-none tracking-[0.12em]" style={{ fontSize: cq(13.6) }}>{pr.n}</span>
+                  <span className="h-px bg-gradient-to-l from-transparent to-current opacity-60" style={{ width: cq(24) }} />
                 </span>
-                <span className="relative block min-h-0 flex-1 overflow-hidden rounded-[0.3rem] bg-ink/10">
+                <span className="relative block min-h-0 flex-1 overflow-hidden bg-ink/10" style={{ borderRadius: cq(5) }}>
                   <img
                     src={src}
                     alt={isIndonesian ? `Sesi tarot Mayanov di event ${i + 1}` : `Mayanov tarot session at event ${i + 1}`}
@@ -102,13 +108,13 @@ const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {
                     className="absolute inset-0 w-full h-full object-cover [filter:sepia(0.22)_saturate(0.85)_contrast(1.05)] group-hover:[filter:none] transition-[filter] duration-700"
                   />
                   {/* a gentle inner vignette, like a printed photo */}
-                  <span aria-hidden className="print-ink pointer-events-none absolute inset-0 rounded-[0.3rem] shadow-[inset_0_0_40px_rgba(30,18,50,0.25)] ring-1 ring-inset ring-white/10" />
+                  <span aria-hidden className="print-ink pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10" style={{ borderRadius: cq(5), boxShadow: `inset 0 0 ${cq(40)} rgba(30,18,50,0.25)` }} />
                 </span>
                 {/* foot: the title, set like a card name */}
-                <span className="flex items-center justify-center gap-1.5 md:gap-2 pt-2 md:pt-3 text-center">
-                  <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-cream/50" />
-                  <span className="letterpress on-dark font-elegant font-semibold uppercase tracking-[0.18em] md:tracking-[0.24em] text-[0.6rem] md:text-[0.72rem] text-cream/90 pl-[0.2em]">{isIndonesian ? pr.id : pr.en}</span>
-                  <CelestialMark name="sparkle" className="print-ink hidden sm:block w-1.5 md:w-2 text-cream/50" />
+                <span className="flex items-center justify-center text-center" style={{ gap: cq(8), paddingTop: cq(12) }}>
+                  <span className="block shrink-0" style={{ width: cq(8) }}><CelestialMark name="sparkle" className="print-ink block w-full text-cream/50" /></span>
+                  <span className="letterpress on-dark whitespace-nowrap font-elegant font-semibold uppercase tracking-[0.24em] text-cream/90 pl-[0.2em]" style={{ fontSize: cq(11.5) }}>{isIndonesian ? pr.id : pr.en}</span>
+                  <span className="block shrink-0" style={{ width: cq(8) }}><CelestialMark name="sparkle" className="print-ink block w-full text-cream/50" /></span>
                 </span>
                 </span>
                 {/* printed on tarot card stock */}
