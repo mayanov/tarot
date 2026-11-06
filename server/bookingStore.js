@@ -144,7 +144,8 @@ export async function rescheduleBooking(id, { date, time, durationMin }, opts = 
 
   // Availability from our store, minus this booking's current footprint.
   const taken = await dbTakenSlots(date);
-  if (booking.date === date) footprintSlots(booking).forEach((s) => taken.delete(s));
+  // (a cancelled booking holds nothing, so there's nothing of its own to take off)
+  if (booking.date === date && blocksSlot(booking)) footprintSlots(booking).forEach((s) => taken.delete(s));
   if (wanted.some((s) => taken.has(s))) { const e = new Error('SLOT_TAKEN'); e.code = 'SLOT_TAKEN'; throw e; }
 
   const updated = { ...booking, id: newId, date, time, durationMin: dur };

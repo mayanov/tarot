@@ -4,7 +4,7 @@ import PageHeader from './ui/PageHeader';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import Segmented from './ui/Segmented';
-import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, Booking, CalEvent } from '../../services/booking';
+import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
 import { fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
@@ -322,6 +322,54 @@ const urgency = (b: Booking) => {
     return c.kind === 'due' ? c.due : c.kind === 'waiting' ? c.since + 24 * 3_600_000 : Number.MAX_SAFE_INTEGER;
 };
 
+// A cancelled session brought back at another date/time (its own may be booked since):
+// pick a free time, then it's moved there and restored, back on the calendar.
+const RestoreAt: React.FC<{ b: Booking; bookings: Booking[]; onDone: (msg: string) => void }> = ({ b, bookings, onDone }) => {
+    const [date, setDate] = useState(b.date >= toISO(new Date()) ? b.date : toISO(new Date()));
+    const [time, setTime] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [err, setErr] = useState('');
+    const dur = b.durationMin || 30;
+    // times on that day other bookings already hold (with their rest / travel time)
+    const held = useMemo(() => new Set(bookings
+        .filter((x) => x.id !== b.id && x.date === date && x.time && x.status !== 'cancelled')
+        .flatMap((x) => slotNeed(x.serviceId, x.time, x.durationMin || 30))), [bookings, date, b.id]);
+    const free = (t: string) => toMin(t) + dur <= toMin(CLOSING_TIME) && !slotNeed(b.serviceId, t, dur).some((s) => held.has(s));
+    const restore = async () => {
+        if (!date || !time) return;
+        setBusy(true); setErr('');
+        try {
+            const token = localStorage.getItem('authToken') || undefined;
+            const moved = await rescheduleBooking(b.id, date, time, dur, token);
+            const status = b.paymentStatus === 'paid' ? 'confirmed' : 'pending';
+            const res = await fetch(`/api/admin/bookings/${encodeURIComponent(moved.id)}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+                body: JSON.stringify({ status }),
+            });
+            if (res.status === 409) throw new Error('SLOT_TAKEN');
+            if (!res.ok) throw new Error('FAILED');
+            onDone(`Moved to ${fmtDate(date)} · ${time} and restored (${status}).`);
+        } catch (e) {
+            setErr(e instanceof Error && e.message === 'SLOT_TAKEN' ? 'That time was just taken. Pick another.' : 'Could not restore it. Try again.');
+        } finally { setBusy(false); }
+    };
+    return (
+        <div className="space-y-2 pt-1">
+            <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle">Bring it back at another time</div>
+            <div className="grid grid-cols-2 gap-2">
+                <input type="date" value={date} min={toISO(new Date())} onChange={(e) => { setDate(e.target.value); setTime(''); }} className={FLD} aria-label="New date" />
+                <select value={time} onChange={(e) => setTime(e.target.value)} className={FLD} aria-label="New time">
+                    <option value="">Time…</option>
+                    {SLOT_TIMES.map((t) => <option key={t} value={t} disabled={!free(t)}>{t}{free(t) ? '' : ' · booked'}</option>)}
+                </select>
+            </div>
+            {err && <p className="text-xs text-coral">{err}</p>}
+            <Button onClick={restore} disabled={!date || !time || busy}>{busy ? 'Restoring…' : 'Move & restore'}</Button>
+        </div>
+    );
+};
+
 const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
@@ -378,7 +426,7 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
                 body: JSON.stringify({ status }),
             });
             // a cancelled session can't come back onto a time that's been booked since
-            if (res.status === 409) { flash('That time has been booked by someone else since, so it stays cancelled.', 'err'); return; }
+            if (res.status === 409) { flash('That time has been booked since. Pick another time in its details to bring it back.', 'err'); setSelectedId(id); return; }
             if (!res.ok) { flash('Could not change the status.', 'err'); return; }
             setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status, ...(status !== 'cancelled' ? { cancelReason: null } : {}) } : b)));
         } catch { flash('Could not change the status.', 'err'); }
@@ -738,6 +786,10 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
                                     <p className="text-xs text-text-subtle">The calendar invite{b.serviceId === 'meetup' ? '' : ' and Meet link'} go out when you mark it paid.</p>
                                 )}
                                 <WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} />
+                                {b.status === 'cancelled' && timed && (
+                                    <RestoreAt key={b.id} b={b} bookings={bookings}
+                                        onDone={(msg) => { setSelectedId(null); flash(msg, 'ok'); load(); }} />
+                                )}
                             </div>
                         </div>
                     </div>
