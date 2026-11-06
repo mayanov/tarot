@@ -87,7 +87,7 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
       className={`relative text-cream ${reduce ? 'py-24 md:py-32' : ''}`}
       style={{ height: reduce ? undefined : '200vh', background: '#05061a' }}
     >
-      <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen overflow-hidden'} flex items-center`}>
+      <div className={`${reduce ? 'relative' : 'sticky top-0 h-screen h-[100svh] overflow-hidden'} flex items-center`}>
         {/* sky — night, with dawn and then sunrise painted over it, faded in by scroll */}
         <WatercolorSky palette={NIGHT} className="absolute inset-0" />
         <div ref={dawnRef} aria-hidden className="absolute inset-0 will-change-[opacity]" style={{ opacity: reduce ? 1 : 0 }}>
@@ -133,11 +133,13 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           <div
             ref={affirmRef}
             style={hidden}
-            className="mt-10 md:mt-12 inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-3 -rotate-1 font-['Reenie_Beanie',cursive] text-cream/90 text-[1.6rem] md:text-[1.8rem] leading-none [filter:url(#pencil-icon)] will-change-[opacity,transform]"
+            className="mt-10 md:mt-12 mx-auto grid w-fit grid-cols-[auto_auto] justify-items-center gap-x-6 gap-y-3.5 sm:inline-flex sm:flex-wrap sm:justify-center sm:items-center sm:gap-x-4 sm:gap-y-3 -rotate-1 font-['Reenie_Beanie',cursive] text-cream/90 text-[1.4rem] sm:text-[1.6rem] md:text-[1.8rem] leading-none [filter:url(#pencil-icon)] will-change-[opacity,transform]"
           >
             {affirmations.map((w, i) => (
-              <span key={w} className="inline-flex items-center gap-4">
-                {i > 0 && <span aria-hidden className="font-elegant text-[1.05rem] text-cream/45">&middot;</span>}
+              <span key={w} className="inline-flex items-center gap-4 whitespace-nowrap">
+                {/* phones: a 2×2 block with no dots (a wrapped row of dotted words breaks
+                    unevenly there); wider screens: one dotted line */}
+                {i > 0 && <span aria-hidden className="hidden sm:inline font-elegant text-[1.05rem] text-cream/45">&middot;</span>}
                 {w}
               </span>
             ))}
