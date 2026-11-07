@@ -7,7 +7,9 @@ export interface SegOption<T extends string> { id: T; label: React.ReactNode; co
 interface Props<T extends string> {
     value: T;
     options: SegOption<T>[];
-    onChange: (v: T) => void;
+    // (the values come from value and options: a state setter passed straight in here
+    // would otherwise have them read as any text)
+    onChange: (v: NoInfer<T>) => void;
     size?: 'sm' | 'md';
     className?: string;
 }

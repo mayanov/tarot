@@ -264,7 +264,7 @@ const RevenueView: React.FC = () => {
         </div>
     );
 
-    const Seg = <T extends string>(p: { value: T; options: { id: T; label: string }[]; onChange: (v: T) => void }) => <Segmented size="sm" {...p} />;
+    const Seg = <T extends string>(p: { value: T; options: { id: T; label: string }[]; onChange: (v: NoInfer<T>) => void }) => <Segmented size="sm" {...p} />;
 
     const granLabel = gran === 'day' ? 'Daily' : 'Weekly';
 

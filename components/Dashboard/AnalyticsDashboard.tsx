@@ -29,7 +29,8 @@ interface AnalyticsDashboardProps {
 
 // Sidebar nav, grouped by purpose and ordered most-used first (day-to-day
 // operations → money → insights → admin). Data-driven so it stays tidy.
-const NAV_GROUPS: { label: string; items: { id: string; name: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] }[] = [
+type View = 'analytics' | 'users' | 'schedule' | 'orders' | 'sales' | 'revenue' | 'customers' | 'events';
+const NAV_GROUPS: { label: string; items: { id: View; name: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] }[] = [
     { label: 'Operations', items: [
         // the day's work first (who's coming, what to answer), then money, then people
         { id: 'schedule', name: 'Schedule', icon: Calendar },
@@ -212,7 +213,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     // User Management State
     // User Management State
     // View State
-    const [activeView, setActiveView] = useState<'analytics' | 'users' | 'schedule' | 'orders' | 'sales' | 'revenue' | 'customers'>('analytics');
+    const [activeView, setActiveView] = useState<View>('analytics');
     const [sidebarOpen, setSidebarOpen] = useState(false); // mobile drawer
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         try { return (localStorage.getItem('admin_theme') as 'light' | 'dark') || 'light'; } catch { return 'light'; }
