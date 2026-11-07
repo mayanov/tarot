@@ -12,7 +12,7 @@ interface InterludeProps {
 
 // what people actually come with, for the visitor who's just seen the prices and
 // doesn't know what they'd ask; each with the part of life it's about, pencilled
-// beside it (the pencil face is subset in index.html: add letters there if these change)
+// beside it (the pencil face is cut down to the letters it needs: add any new ones in scripts/handwriting-fonts.mjs and run it)
 const QUESTIONS: { topic: [string, string]; q: [string, string] }[] = [
   { topic: ['karier', 'career'], q: ['Apakah aku harus pindah kerja tahun ini?', 'Should I change jobs this year?'] },
   { topic: ['hubungan', 'love'], q: ['Ke mana arah hubunganku sama dia?', 'Where is this relationship going?'] },

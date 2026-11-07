@@ -4,7 +4,7 @@ import React, { useId } from 'react';
 // with a pencil arc round it and a four-point star at the arc's open end. The wash is
 // two overlapping circles roughened by a turbulence filter so the edge bleeds like
 // paint on paper. `onDark` draws it in cream for the sky; otherwise violet wash, ink M.
-// The script face is the site's Mrs Saint Delafield (index.html's subset has the M).
+// The script face is the site's Mrs Saint Delafield (its cut-down face, scripts/handwriting-fonts.mjs, has the M).
 
 const STAR = 'M0,-1 C0.06,-0.3 0.3,-0.06 1,0 C0.3,0.06 0.06,0.3 0,1 C-0.06,0.3 -0.3,0.06 -1,0 C-0.3,-0.06 -0.06,-0.3 0,-1 Z';
 

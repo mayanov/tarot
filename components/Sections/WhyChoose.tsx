@@ -59,7 +59,7 @@ const WhyChoose: React.FC<WhyChooseProps> = ({ isIndonesian = false }) => {
               <FadeIn key={index} delay={Math.min(index, 6) * 80} dir="up">
                 <div className="letterpress-lg group/row text-center">
                   {/* kicker label, pencilled by hand like the card hint above the pricelist
-                      (the pencil face is subset in index.html: add letters there if these change) */}
+                      (the pencil face is cut down to the letters it needs: add any new ones in scripts/handwriting-fonts.mjs and run it) */}
                   <span className="block w-fit mx-auto -rotate-2 font-['Reenie_Beanie',cursive] lowercase text-moon/80 text-[1.45rem] md:text-[1.6rem] leading-none [filter:url(#pencil-icon)] transition-colors duration-500 group-hover/row:text-moon">
                     {reason.label}
                   </span>

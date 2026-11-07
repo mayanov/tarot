@@ -140,7 +140,7 @@ const TarotIntro: React.FC<TarotIntroProps> = ({ isIndonesian = false }) => {
           </p>
 
           {/* the promises, pencilled by hand like the card hint above the pricelist (the
-              pencil face is subset in index.html: add letters there if these change) */}
+              pencil face is cut down to the letters it needs: add any new ones in scripts/handwriting-fonts.mjs and run it) */}
           <div
             ref={affirmRef}
             style={hidden}

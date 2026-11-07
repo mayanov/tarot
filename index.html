@@ -48,15 +48,12 @@
   <!-- Font: Alegreya — warm literary serif for headings & quotes (body stays Switzer);
        self-hosted (index.css), the upright face preloaded since the hero's title is in it -->
   <link rel="preload" as="font" type="font/woff2" href="/fonts/alegreya-latin.woff2" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- the signature under the About quote and the reviewers' names: a script face, subset
-       to just the letters they use — add letters here when a reviewer is added -->
-  <link href="https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&text=%20.ABCDEFGHKLMNOPRSTVYacdeghiklmnorstuvyz&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <!-- pencil notes in the margin (e.g. "tap a card to draw it"): a pencil handwriting,
-       subset to just the letters those notes use (and the interlude's pencilled topics and
-       numbers) — add letters here when a note changes -->
-  <link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&text=%20%26CDKNRTabcdefghijklmnoprstuvwxy&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <!-- the two handwriting faces (the reviewers' signatures; the pencil notes in the
+       margin), served from the site like Alegreya, so a slow phone opens no connection to
+       Google; cut down to just the letters the site writes in them (a few KB each): to
+       add letters, edit scripts/handwriting-fonts.mjs and run it -->
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/mrs-saint-delafield-159228dc.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/reenie-beanie-8aea3201.woff2" crossorigin>
 
   <!-- Google sign-in / API scripts are loaded on demand by the admin dashboard
        (services/ga4.ts), not on the public site. -->

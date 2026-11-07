@@ -168,19 +168,12 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     const safe = (task: string) => () => { if (!cancelled) mark(task); };
     const timers = FIRST.map((task) => window.setTimeout(safe(task), TASK_TIMEOUT_MS));
     // fonts: every face the page uses, not only the ones on screen now (the hero title's
-    // size depends on them, and none should swap in later further down). The two
-    // handwriting faces' stylesheets load without holding up the page, so they're
-    // waited for first.
+    // size depends on them, and none should swap in later further down). All of them,
+    // the two handwriting faces too, are served from the site (index.css).
     const fonts = (document as any).fonts;
-    const sheets = [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][media="print"]')]
-      .map((l) => new Promise<void>((r) => { l.addEventListener('load', () => r(), { once: true }); l.addEventListener('error', () => r(), { once: true }); window.setTimeout(r, 4000); }));
-    Promise.all(sheets)
-      .then(() => {
-        if (!fonts?.load) return;
-        const faces = ['300', '400', '500', '600', '700'].map((w) => `${w} 1em Switzer`)
-          .concat(['400 1em Alegreya', 'italic 400 1em Alegreya', '400 1em "Mrs Saint Delafield"', '400 1em "Reenie Beanie"']);
-        return Promise.all(faces.map((f) => fonts.load(f).catch(() => {})));
-      })
+    const faces = ['300', '400', '500', '600', '700'].map((w) => `${w} 1em Switzer`)
+      .concat(['400 1em Alegreya', 'italic 400 1em Alegreya', '400 1em "Mrs Saint Delafield"', '400 1em "Reenie Beanie"']);
+    Promise.all(fonts?.load ? faces.map((f) => fonts.load(f).catch(() => {})) : [])
       .then(() => fonts?.ready)
       .then(safe('fonts'), safe('fonts'));
     // the paper's grain: every light section under the hero is printed on it
