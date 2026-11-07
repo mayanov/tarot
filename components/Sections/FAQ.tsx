@@ -43,30 +43,85 @@ const SketchFrame: React.FC = () => (
 const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
   const faqsEN: FaqItem[] = [
     {
-      cat: 'Process',
-      question: "How does an email reading work?",
-      answer: "After you purchase a reading via PayPal, I will receive your request. You'll get a confirmation email: reply to it with your question and a little context. I will then meditate on your query, pull the cards, and send you a detailed PDF report including a photo of your spread within 24 hours."
+      cat: 'About Tarot',
+      question: "What is a tarot reading?",
+      answer: "A tarot reading looks at the symbols in the cards drawn for your question to help you see your situation more clearly: the patterns at play, what's influencing it, and the options in front of you.\n\nI use tarot as a tool for reflection and guidance, not to frighten you or to hand down a fixed fate."
     },
     {
-      cat: 'Questions',
+      cat: 'About Tarot',
+      question: "Can tarot predict the future?",
+      answer: "Not as something fixed. A reading shows the energy and direction of things as they stand now: where they're likely heading if nothing changes. Your choices and actions still shape what happens next, and a reading is there to help you make them with clearer eyes."
+    },
+    {
+      cat: 'About Tarot',
+      question: "Do I have to believe in tarot for it to work?",
+      answer: "No. All you need is an open mind. Tarot works best as a way to step back and look at yourself and your situation honestly, whatever you believe about how it works."
+    },
+    {
+      cat: 'About Tarot',
+      question: "Is tarot evil or scary?",
+      answer: "Not at all. My practice is grounded in psychology and self-reflection. I use tarot as a mirror, to help you notice what you already sense and see options you might have missed. It's a tool for clarity and empowerment, not fear."
+    },
+    {
+      cat: 'Readings',
+      question: "Which reading should I choose?",
+      answer: "• 3-Card Spread ($12): a quick, focused check-in on one clear question. You get a photo of your spread and a written reading by email within 24 hours.\n• 5-Card Deep ($20): one question read in depth, with the bigger picture, hidden influences and what's coming next. You get a high-res photo of your cards and an in-depth reading, with priority delivery within 24 hours.\n• Live Session ($45, 30 minutes): we talk it through together on Google Meet, and you can ask as many questions as we can fit in the time.\n\nNot sure? Message me on WhatsApp and I'll help you pick."
+    },
+    {
+      cat: 'Readings',
       question: "What kind of questions can I ask?",
-      answer: "You can ask about relationships, career choices, personal growth, or general guidance. I specialize in strategic advice. However, I do not answer questions related to medical diagnoses, legal outcomes, or lottery numbers."
+      answer: "Tarot is well suited to:\n• Love and relationships\n• Career and work\n• Big decisions and crossroads\n• Personal growth\n• Your emotions and the dynamics of a situation\n\nThe clearer and more specific your question, the clearer the reading. \"What do I need to know about changing jobs this year?\" works better than \"What's my future?\""
+    },
+    {
+      cat: 'Readings',
+      question: "Are there questions you won't read?",
+      answer: "Yes. Out of care and responsibility, I don't read on:\n• Death\n• Pregnancy\n• Medical diagnoses\n• Legal outcomes\n• Gambling or lottery numbers\n• Lost items or pets"
+    },
+    {
+      cat: 'Readings',
+      question: "How many questions does one reading cover?",
+      answer: "The 3-Card Spread and the 5-Card Deep each answer one question (1 qty = 1 question). If you have more than one, simply order one reading per question. In a Live Session you can ask as many questions as we can fit into the 30 minutes."
+    },
+    {
+      cat: 'Process',
+      question: "How does an email reading work?",
+      answer: "1. Tap \"Book a Reading\", leave your name, date of birth, WhatsApp and email, and pay.\n2. You'll get a confirmation email: reply to it with your question and a little context about your situation.\n3. I focus on your question, pull the cards, and send you a photo of your spread with your written reading within 24 hours."
+    },
+    {
+      cat: 'Process',
+      question: "How does a Live Session work?",
+      answer: "1. Tap \"Book a Reading\" and pick a day and time. Times are shown in your own time zone.\n2. Leave your name, date of birth, WhatsApp and email, then pay.\n3. The Google Meet link comes by email. At your time, we meet on the call for 30 minutes.\n\nLive Sessions run Monday to Friday."
     },
     {
       cat: 'Process',
       question: "Do I need to be present for the reading?",
-      answer: "For Email readings (3-Card and 5-Card), you do not need to be present. I connect with your energy remotely. For Live Sessions, we will meet via Google Meet at your scheduled time."
+      answer: "For email readings (3-Card and 5-Card), no: I read for your question remotely, and you simply receive it by email. For a Live Session, yes: we meet on Google Meet at the time you booked."
+    },
+    {
+      cat: 'Process',
+      question: "What do I need to prepare?",
+      answer: "Just your question and a short description of your situation. You don't need to send a photo, and you don't need to know anything about tarot beforehand."
+    },
+    {
+      cat: 'Booking',
+      question: "How do I pay?",
+      answer: "Securely through PayPal, right in the booking form. Prices are in US dollars."
     },
     {
       cat: 'Booking',
       question: "What is your refund policy?",
-      answer: "Since time and energy are expended during the reading process, all sales are final once the reading has been delivered. If you need to cancel a Live Session, please do so at least 24 hours in advance for a reschedule."
+      answer: "Since time and energy go into every reading, all sales are final once the reading has been delivered. If you need to cancel a Live Session, please let me know at least 24 hours in advance and we'll reschedule."
     },
     {
-      cat: 'Tarot',
-      question: "Is Tarot evil or scary?",
-      answer: "Not at all. My practice is grounded in psychology and self-reflection. I use Tarot as a mirror to your subconscious to help you see options you might have missed. It is a tool for empowerment, not fear."
-    }
+      cat: 'Booking',
+      question: "Is my reading confidential?",
+      answer: "Yes, completely. Your story, your questions and your reading are never shared without your permission."
+    },
+    {
+      cat: 'About Tarot',
+      question: "Can tarot replace a doctor, lawyer or therapist?",
+      answer: "No. Tarot is not a substitute for professional legal, financial, medical or psychological advice. If you're facing something in those areas, please reach out to a qualified professional as well."
+    },
   ];
 
   const faqsID: FaqItem[] = [
