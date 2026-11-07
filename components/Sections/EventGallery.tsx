@@ -30,10 +30,10 @@ const cq = (px: number) => `${(px / 2.56).toFixed(3)}cqw`;
 const BOUNCE = 'cubic-bezier(0.34,1.4,0.5,1)';
 
 
-// each photo is counted, so the loader only hands over once they're all in
+// each photo is counted, so the loader only hands over once they're all in (and decoded)
 const trackPhoto = (img: HTMLImageElement | null) => {
-  if (!img || (img.complete && img.naturalWidth)) return;
-  trackPaint(new Promise<void>((r) => { img.addEventListener('load', () => r(), { once: true }); img.addEventListener('error', () => r(), { once: true }); }));
+  if (!img) return;
+  trackPaint(img.decode().catch(() => {})); // fetched and unpacked, so it's ready to show
 };
 
 const EventGallery: React.FC<Props> = ({ photos, isIndonesian }) => {

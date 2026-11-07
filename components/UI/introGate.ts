@@ -31,12 +31,31 @@ const release = () => {
 if (typeof window !== 'undefined') {
   window.addEventListener('mt:loaded', start, { once: true });
   window.addEventListener('mt:unlocked', release, { once: true });
-  window.setTimeout(release, 12000);
+  // (a page without the loader lets go after a while; with it, the loader decides,
+  // however long a slow phone takes)
+  window.setTimeout(() => { if (!started) release(); }, 12000);
 }
 
 /** resolves once the hero's own things are ready: the rest of the page may be finished now */
 export const paintsMayStart = (): Promise<void> =>
   started ? Promise.resolve() : new Promise((r) => { startWaiting.push(r); });
+
+/** when the next heavy paint may run. Behind the loader: straight after the next frame
+    (the loader is waiting for these paints, so they go back to back, leaving the
+    drawing a frame between each; waiting for the browser to be idle there only held
+    them up, the drawing itself keeps it busy). Once the page is in use: when it's idle,
+    so a paint never lands on a scroll. */
+export const nextPaintSlot = (): Promise<void> => new Promise((r) => {
+  if (!done) {
+    let fired = false;
+    const go = () => { if (!fired) { fired = true; setTimeout(r, 0); } };
+    requestAnimationFrame(go);
+    setTimeout(go, 100); // (a hidden tab draws no frames)
+    return;
+  }
+  const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
+  if (ric) ric(() => r(), { timeout: 1200 }); else setTimeout(r, 40);
+});
 
 /** resolves once the intro (loader + hero entrance) is over */
 export const afterIntro = (): Promise<void> =>
@@ -57,8 +76,8 @@ export function trackPaint<T>(p: Promise<T>): Promise<T> {
   return p;
 }
 
-/** how far the rest of the page has got, 0–1 */
-export const paintProgress = () => (total ? (total - pending) / total : 0);
+/** how many of the rest of the page's paints are counted, and how many are done */
+export const paintCounts = () => ({ total, done: total - pending });
 
 /** resolves once every counted paint is done and nothing new has come in for a moment
     (sections register theirs as they mount), or after `maxMs` at the latest */

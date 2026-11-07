@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { paintsMayStart, trackPaint } from '../UI/introGate';
+import { paintsMayStart, trackPaint, nextPaintSlot } from '../UI/introGate';
 
 // A sky painted in watercolour rather than photographed: a graded wash, long
 // wet-in-wet streaks laid across it like cloud (edges bled and dried darker), pale
 // backruns, granulation and the paper's tooth, and a few dots of white gouache.
 //
-// Performance: the painting is built as SVG text and drawn once, at idle time, into a
+// Performance: the painting is built as SVG text and drawn once, behind the loader, into a
 // JPEG bitmap. Everything that moves afterwards (the slow drift,
 // crossfades between skies) is a plain transform/opacity on that one bitmap —
 // compositor-only, and paused while the sky is off screen — so scrolling stays smooth.
@@ -149,8 +149,8 @@ export const paintSvg = (p: SkyPalette) => svg(`
   <rect width="${W}" height="${H}" filter="url(#paper)" opacity="0.42" style="mix-blend-mode:multiply"/>`);
 
 // Each palette is painted once per page load into a plain JPEG bitmap (at 1.5× the
-// sheet), queued for idle time behind the loader once the hero's own things are ready
-// (introGate); the loader waits for them, so the heavy filters never run during a scroll. The hero's sky is `eager`: painted at once, first
+// sheet), queued behind the loader once the hero's own things are ready (introGate); the
+// loader waits for them, so the heavy filters never run during a scroll. The hero's sky is `eager`: painted at once, first
 // thing (the loader waits for it, see skyPainted), while nothing is moving yet. Until
 // it's ready a sky shows its flat ground colour, then fades the painting in.
 const SCALE = 1.5;
@@ -174,10 +174,6 @@ export const useTallScreen = () => {
   return tall;
 };
 let queue: Promise<unknown> = Promise.resolve();
-const idle = () => new Promise<void>((r) => {
-  const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
-  if (ric) ric(() => r(), { timeout: 1500 }); else setTimeout(r, 60);
-});
 // a sky painted ahead of time is just fetched (painted here as before if it can't be)
 const fetched = (url: string) => new Promise<string | null>((resolve) => {
   const img = new Image();
@@ -194,7 +190,7 @@ const bitmap = (p: SkyPalette, eager = false, tall = tallScreen()): Promise<stri
   }
   let v = bitmaps.get(p);
   if (!v) {
-    const start = eager ? Promise.resolve() : queue.then(paintsMayStart).then(idle);
+    const start = eager ? Promise.resolve() : queue.then(paintsMayStart).then(nextPaintSlot);
     v = start.then(() => new Promise<string>((resolve) => {
       const src = paintSvg(p);
       const img = new Image();

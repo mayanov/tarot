@@ -21,11 +21,34 @@ import { RefreshCw } from 'lucide-react';
 import PencilArrow from './components/UI/PencilArrow';
 import { FaWhatsapp } from 'react-icons/fa';
 
-// Lazy Load below-the-fold components
-const Services = React.lazy(() => import('./components/Sections/Services'));
-const Interlude = React.lazy(() => import('./components/Sections/Interlude'));
-const Events = React.lazy(() => import('./components/Sections/Events'));
-const FAQ = React.lazy(() => import('./components/Sections/FAQ'));
+// The sections further down arrive as their own code. They're mounted with an ordinary
+// update once all four are in, not through Suspense: React draws a Suspense boundary's
+// content as a low-priority job it starts over whenever anything else updates, and
+// behind the loader something updates every frame (its drawing), so they could sit
+// unmounted until the loader had finished, their washes and photos still to come.
+type Lower = {
+  Services: typeof import('./components/Sections/Services').default;
+  Interlude: typeof import('./components/Sections/Interlude').default;
+  Events: typeof import('./components/Sections/Events').default;
+  FAQ: typeof import('./components/Sections/FAQ').default;
+};
+let lowerLoad: Promise<Lower> | null = null;
+const loadLower = () => (lowerLoad ??= Promise.all([
+  import('./components/Sections/Services'),
+  import('./components/Sections/Interlude'),
+  import('./components/Sections/Events'),
+  import('./components/Sections/FAQ'),
+]).then(([s, i, e, f]) => ({ Services: s.default, Interlude: i.default, Events: e.default, FAQ: f.default })));
+const useLower = () => {
+  const [lower, setLower] = useState<Lower | null>(null);
+  useEffect(() => {
+    let live = true;
+    const tryLoad = (): void => { loadLower().then((m) => { if (live) setLower(m); }, () => { lowerLoad = null; if (live) window.setTimeout(tryLoad, 2000); }); };
+    tryLoad();
+    return () => { live = false; };
+  }, []);
+  return lower;
+};
 const AnalyticsDashboard = React.lazy(() => import('./components/Dashboard/AnalyticsDashboard'));
 const AdminLogin = React.lazy(() => import('./components/Admin/AdminLogin'));
 const NotFound = React.lazy(() => import('./components/Layout/NotFound'));
@@ -95,6 +118,7 @@ function App() {
   const [isGeoError, setIsGeoError] = useState<boolean>(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isDevOverride, setIsDevOverride] = useState<boolean>(false);
+  const lower = useLower();
 
   // Footer "scroll-reveal": the footer is pinned behind the page; the content gets a
   // bottom margin equal to the footer's height, so scrolling to the end slides the
@@ -470,18 +494,18 @@ function App() {
         <About isIndonesian={isIndonesian} />
         <TarotIntro isIndonesian={isIndonesian} />
 
-        <React.Suspense fallback={<div className="h-96 flex items-center justify-center text-white/20">Loading...</div>}>
-          <Services isIndonesian={isIndonesian} />
+        {!lower ? <div className="h-96" /> : (<>
+          <lower.Services isIndonesian={isIndonesian} />
           {/* Dark cosmic pull-quote as a deliberate break between the pricelist and
               the "why" section — so two white panels never touch, and WhyChoose rises
               over a dark section (its rounded-corner peek reveals sky, not a notch). */}
-          <Interlude isIndonesian={isIndonesian} />
+          <lower.Interlude isIndonesian={isIndonesian} />
           <WhyChoose isIndonesian={isIndonesian} />
-          <Events isIndonesian={isIndonesian} />
+          <lower.Events isIndonesian={isIndonesian} />
           {/* a quiet break between Events and the FAQ — a hairline with moon phases */}
           <MoonPhaseDivider className="pt-6 md:pt-10" />
-          <FAQ isIndonesian={isIndonesian} />
-        </React.Suspense>
+          <lower.FAQ isIndonesian={isIndonesian} />
+        </>)}
       </main>
 
       {/* Night-sky Footer, PINNED behind the page (scroll-reveal): the content above

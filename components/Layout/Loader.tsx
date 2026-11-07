@@ -4,7 +4,7 @@ import { PHASES } from '../UI/MoonPhaseDivider';
 import PencilRule from '../UI/PencilRule';
 import { WaningMoon } from '../UI/CelestialMark';
 import { skyPainted, TWILIGHT, tallScreen } from './WatercolorSky';
-import { paintsSettled, paintProgress, trackPaint } from '../UI/introGate';
+import { paintsSettled, paintCounts, trackPaint } from '../UI/introGate';
 
 interface LoaderProps {
   /** true once the app has resolved (geo check done). */
@@ -39,15 +39,23 @@ export const REVEAL_FLIGHT_MS = CARRY_DELAY_MS + CARRY_MS;
 // it) has finished, so an early scroll can't catch the page mid-animation.
 const SCROLL_UNLOCK_MS = REVEAL_FLIGHT_MS + 1400;
 
-// Loading is REAL: progress comes from the work the page actually waits on.
+// Loading is REAL: progress comes from the work the page actually waits on, counted
+// piece by piece (each of the hero's things, then each wash and photo further down), and
+// the hand-off waits until every piece is done: a slow phone just loads for longer.
 // the hero's own things first; then 'rest': everything further down the page painted
 // and fetched (introGate), so nothing is still appearing once the visitor lands
-const TASKS = ['fonts', 'paper', 'sky', 'app', 'page', 'rest'] as const;
+const TASKS = ['fonts', 'paper', 'sky', 'app', 'page', 'sections', 'rest'] as const;
+// the sections further down whose code arrives separately (App's useLower): only once
+// they're all on the page is the rest of the work known, and counted, in full
+const LAZY_SECTIONS = ['services', 'interlude', 'events', 'faq'];
+const SECTIONS_TIMEOUT_MS = 8000; // (should one be renamed, don't hold the page long)
 const FIRST = TASKS.filter((t) => t !== 'rest');
 const MIN_CLIMB_MS = 1600;    // even on a fast connection the drawing takes this long (no flash)
 const SETTLE_MS = 450;        // the finished drawing (at 100%) holds a beat before the hand-off
-const TASK_TIMEOUT_MS = 6000; // never wait forever on a single task
-const REST_TIMEOUT_MS = 14000; // …nor on the rest of the page (a slow phone takes a few seconds)
+// only so a broken request can't keep the page closed for good: well past anything a
+// slow phone on a slow connection really takes
+const TASK_TIMEOUT_MS = 30000;
+const REST_TIMEOUT_MS = 30000;
 const PAPER_IMG = `${import.meta.env.BASE_URL}paper.webp`;
 // The timelapse: once the skies are in, sunset turns to dusk and dusk to the hero's
 // twilight over this long (the hand-off waits for it, so it's always seen through)
@@ -197,7 +205,19 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     // the page itself (scripts, styles, images in the document)
     if (document.readyState === 'complete') safe('page')();
     else window.addEventListener('load', safe('page'), { once: true });
-    return () => { cancelled = true; timers.forEach(clearTimeout); };
+    // every section on the page, and a frame for each to measure itself and sign up
+    // its washes (Baked, WatercolorSky), so the work below is all counted from the start
+    let mo: MutationObserver | null = null;
+    const sectionsIn = () => {
+      if (!LAZY_SECTIONS.every((id) => document.getElementById(id))) return;
+      mo?.disconnect();
+      requestAnimationFrame(() => requestAnimationFrame(safe('sections')));
+    };
+    mo = new MutationObserver(sectionsIn);
+    mo.observe(document.body, { childList: true, subtree: true });
+    sectionsIn();
+    const sectionsCap = window.setTimeout(safe('sections'), SECTIONS_TIMEOUT_MS);
+    return () => { cancelled = true; timers.forEach(clearTimeout); clearTimeout(sectionsCap); mo?.disconnect(); };
   }, []);
   // the app's own startup (location check) — passed in as `ready`
   useEffect(() => { if (ready) mark('app'); }, [ready]);
@@ -210,29 +230,33 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     if (!firstDone) return;
     let cancelled = false;
     window.dispatchEvent(new CustomEvent('mt:loaded'));
+    // every photo on the page fetched and decoded, so none is unpacked mid-scroll
     for (const img of Array.from(document.images)) {
-      if (!img.getAttribute('src') || (img.complete && img.naturalWidth)) continue;
+      const src = img.getAttribute('src');
+      if (!src || src.startsWith('blob:')) continue;
       img.loading = 'eager';
-      trackPaint(new Promise<void>((r) => { img.addEventListener('load', () => r(), { once: true }); img.addEventListener('error', () => r(), { once: true }); }));
+      trackPaint(img.decode().catch(() => {}));
     }
     paintsSettled(REST_TIMEOUT_MS).then(() => { if (!cancelled) mark('rest'); });
     return () => { cancelled = true; };
   }, [firstDone]);
 
-  const doneCount = TASKS.filter((t) => done[t]).length;
-  const doneRef = useRef(0);
-  doneRef.current = doneCount;
-  const lastDoneAt = useRef(performance.now());
-  useEffect(() => { lastDoneAt.current = performance.now(); }, [doneCount]);
+  const doneRef = useRef<Record<string, boolean>>({});
+  doneRef.current = done;
 
   // ---- progress: eases toward what's actually finished ----
-  // It can't fill faster than MIN_CLIMB_MS, never passes the work that's done (it only
-  // creeps a little into the next step while waiting, so the pencil never looks stuck),
-  // and never completes until everything has finished.
+  // Every piece of work counts the same: the hero's five things, then each wash, sky
+  // and photo further down (introGate counts them; they register as their sections
+  // mount, so the count settles early). It can't fill faster than MIN_CLIMB_MS, never
+  // goes back, never passes the work that's done by more than half a piece (a little
+  // creep, so the pencil never looks stuck on a long one), and only reaches 100% when
+  // everything is.
   useEffect(() => {
     const climb = reduce ? 1 : MIN_CLIMB_MS;
     const t0 = performance.now();
     let p = 0;
+    let pieces = 0;               // pieces finished, to time the creep from the last one
+    let lastPieceAt = t0;
     setShown(true);
     // in step with the screen (rAF), so the pencil moves smoothly; a timer takes over
     // while the tab is hidden, so progress keeps moving in a background tab
@@ -240,14 +264,18 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
     const stop = () => { cancelAnimationFrame(raf); clearInterval(iv); };
     const tick = () => {
       const now = performance.now();
-      // (the rest of the page counts by how much of it is done)
-      const real = (doneRef.current + (doneRef.current < TASKS.length && doneRef.current >= FIRST.length ? paintProgress() * 0.98 : 0)) / TASKS.length;
-      const allDone = real >= 1;
+      const d = doneRef.current;
+      const paints = paintCounts();
+      const finished = FIRST.filter((t) => d[t]).length + paints.done;
+      const all = FIRST.length + Math.max(paints.total, 1);
+      if (finished !== pieces) { pieces = finished; lastPieceAt = now; }
+      const allDone = !!d.rest;
       const timeCap = Math.min(1, (now - t0) / climb) * 100;
-      const creep = allDone ? 0 : 12 * (1 - Math.exp(-(now - lastDoneAt.current) / 1800));
-      const target = Math.min(timeCap, allDone ? 100 : Math.min(99, real * 100 + creep));
-      // (nobody's watching a hidden tab: go straight to where it's got)
-      p += (target - p) * (reduce || document.hidden ? 1 : 0.14);
+      const creep = allDone ? 0 : 0.5 * (1 - Math.exp(-(now - lastPieceAt) / 1500));
+      const target = Math.min(timeCap, allDone ? 100 : Math.min(99, ((finished + creep) / all) * 100));
+      // (nobody's watching a hidden tab: go straight to where it's got; and it never
+      // goes back when more pieces register)
+      p = Math.max(p, p + (target - p) * (reduce || document.hidden ? 1 : 0.14));
       if (allDone && timeCap >= 100 && p > 99.4) p = 100;
       setPct(touch ? Math.floor(p) : p);
       if (p >= 100) { stop(); setComplete(true); return; }
