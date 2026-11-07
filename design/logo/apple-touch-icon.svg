@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#221D3C"/>
+  <defs>
+    <mask id="ears" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+      <rect width="100" height="100" fill="white"/><path d="M20 47 C15 28 31 14 50 13 C69 14 85 28 80 47 C66 41 34 41 20 47 Z" fill="black" stroke="black" stroke-width="3.92"/>
+    </mask>
+  </defs>
+  <!-- the full moon -->
+  <circle cx="49" cy="53" r="44" fill="#F3F1EC"/>
+  <path fill="#6B3FA0" transform="translate(87 14) scale(9)" d="M0,-1 C0.06,-0.3 0.3,-0.06 1,0 C0.3,0.06 0.06,0.3 0,1 C-0.06,0.3 -0.3,0.06 -1,0 C-0.3,-0.06 -0.06,-0.3 0,-1 Z"/>
+  <!-- the shiba reader -->
+  <g transform="translate(4.5 11.5) scale(0.89)">
+    <path d="M20 47 C15 28 31 14 50 13 C69 14 85 28 80 47 C66 41 34 41 20 47 Z" fill="#6B3FA0" opacity="0.38"/>
+    <g fill="none" stroke="#221D3C" stroke-linecap="round" stroke-linejoin="round">
+      <g mask="url(#ears)" stroke-width="3.92">
+        <path d="M25 40 L22.5 9.5 C22.4 8 23.6 7.4 24.7 8.2 L44 24"/>
+        <path d="M75 40 L77.5 9.5 C77.6 8 76.4 7.4 75.3 8.2 L56 24"/>
+      </g>
+      <path d="M21 47 C18 55 17.5 61 19.5 66 L15 70.5 L22.5 72 C29 81 40 87 50 87 C60 87 71 81 77.5 72 L85 70.5 L80.5 66 C82.5 61 82 55 79 47" stroke-width="3.92"/>
+      <path d="M44.5 65.5 C44.5 62.2 55.5 62.2 55.5 65.5 C55.5 69 52.7 71.4 50 71.4 C47.3 71.4 44.5 69 44.5 65.5 Z" fill="#221D3C" stroke="none"/>
+      <path d="M50 71.4 L50 74.6 M50 74.6 C47.4 78 43.6 78 42 75.4 M50 74.6 C52.6 78 56.4 78 58 75.4" stroke-width="3.19"/>
+      <path d="M20 47 C15 28 31 14 50 13 C69 14 85 28 80 47 C66 41 34 41 20 47 Z" stroke-width="3.92"/>
+      <path d="M22 41 C36 35.5 64 35.5 78 41" stroke-width="2.61"/>
+    </g>
+    <rect x="25" y="48.6" width="50.0" height="2.6" fill="#221D3C"/><rect x="28" y="51.0" width="18.0" height="2.45" fill="#221D3C"/><rect x="29.8" y="53.3" width="16.2" height="2.45" fill="#221D3C"/><rect x="31.6" y="55.6" width="13.2" height="2.45" fill="#221D3C"/><rect x="33.4" y="57.9" width="9.6" height="2.45" fill="#221D3C"/><rect x="54" y="51.0" width="18.0" height="2.45" fill="#221D3C"/><rect x="55.8" y="53.3" width="16.2" height="2.45" fill="#221D3C"/><rect x="57.6" y="55.6" width="13.2" height="2.45" fill="#221D3C"/><rect x="59.4" y="57.9" width="9.6" height="2.45" fill="#221D3C"/><rect x="36.2" y="51.6" width="2.3" height="2.3" fill="#F3F1EC"/><rect x="38.5" y="53.9" width="2.3" height="2.3" fill="#F3F1EC"/><rect x="62.2" y="51.6" width="2.3" height="2.3" fill="#F3F1EC"/><rect x="64.5" y="53.9" width="2.3" height="2.3" fill="#F3F1EC"/>
+    <path d="M50 22 C45.5 28 43 32.6 43 36.5 C43 40.4 46.1 43.5 50 43.5 C53.9 43.5 57 40.4 57 36.5 C57 32.6 54.5 28 50 22 Z" fill="#6B3FA0"/>
+    <path d="M51.8 32.2 A4.6 4.6 0 1 0 51.8 40.6 A3.8 3.8 0 0 1 51.8 32.2 Z" fill="#F3F1EC"/>
+  </g>
+</svg>
