@@ -33,9 +33,18 @@ const QUESTIONS: { topic: [string, string]; q: [string, string] }[] = [
 const DRAWN = 240;
 const EDGE = 170;
 const TILE = 1400;
+// Every filter works over three tiles' width (the strokes are wrapped round into the
+// tiles either side), but its noise is made over exactly one tile and repeated
+// (feTile): noise stitched over the whole width repeats every three tiles, not every
+// one, so one tile's right side didn't carry on into the next one's left (a straight
+// break in the wash every 1400px on a wide screen)
+const REGION = `filterUnits='userSpaceOnUse' x='${-TILE}' y='${-DRAWN}' width='${TILE * 3}' height='${DRAWN * 3}'`;
+const noise = (attrs: string, result: string) =>
+  `<feTurbulence type='fractalNoise' ${attrs} stitchTiles='stitch' x='0' y='${-DRAWN}' width='${TILE}' height='${DRAWN * 3}' result='${result}-1'/>` +
+  `<feTile in='${result}-1' result='${result}'/>`;
 const brush = (id: string, s: number, scale: number, streaks: boolean) =>
-  `<filter id='${id}' x='-10%' y='-60%' width='120%' height='220%' color-interpolation-filters='sRGB'>` +
-  `<feTurbulence type='fractalNoise' baseFrequency='0.0025 0.03' numOctaves='3' seed='${s}' stitchTiles='stitch' result='n'/>` +
+  `<filter id='${id}' ${REGION} color-interpolation-filters='sRGB'>` +
+  noise(`baseFrequency='0.0025 0.03' numOctaves='3' seed='${s}'`, 'n') +
   `<feDisplacementMap in='SourceGraphic' in2='n' scale='${scale}' xChannelSelector='R' yChannelSelector='G' result='d'/>` +
   `<feGaussianBlur in='d' stdDeviation='3' result='soft'/>` +
   `<feColorMatrix in='soft' type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 40 0' result='shape'/>` +
@@ -46,11 +55,11 @@ const brush = (id: string, s: number, scale: number, streaks: boolean) =>
   `<feComponentTransfer in='rim' result='rim2'><feFuncA type='linear' slope='0.9'/></feComponentTransfer>` +
   `<feMerge result='m'><feMergeNode in='soft'/><feMergeNode in='rim2'/></feMerge>` +
   (streaks
-    ? `<feTurbulence type='fractalNoise' baseFrequency='0.005 0.09' numOctaves='3' seed='${s + 3}' stitchTiles='stitch' result='st'/>` +
+    ? noise(`baseFrequency='0.005 0.09' numOctaves='3' seed='${s + 3}'`, 'st') +
       `<feColorMatrix in='st' type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.3 1.6' result='sa'/>` +
       `<feComposite in='m' in2='sa' operator='in' result='m2'/>`
     : `<feMerge result='m2'><feMergeNode in='m'/></feMerge>`) +
-  `<feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='${s + 2}' stitchTiles='stitch' result='g'/>` +
+  noise(`baseFrequency='0.55' numOctaves='2' seed='${s + 2}'`, 'g') +
   `<feColorMatrix in='g' type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.2 1.7' result='ga'/>` +
   `<feComposite in='m2' in2='ga' operator='in'/>` +
   `</filter>`;
@@ -73,8 +82,8 @@ const washEdge = (seed: number, flip: boolean) => {
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' width='${TILE}' height='${DRAWN}' viewBox='0 0 ${TILE} ${DRAWN}' preserveAspectRatio='none'>` +
     brush('b1', seed, 90, true) + brush('b2', seed + 20, 80, true) +
-    `<filter id='wb' x='-10%' y='-80%' width='120%' height='260%'>` +
-    `<feTurbulence type='fractalNoise' baseFrequency='0.004 0.02' numOctaves='3' seed='${seed + 7}' stitchTiles='stitch' result='n'/>` +
+    `<filter id='wb' ${REGION}>` +
+    noise(`baseFrequency='0.004 0.02' numOctaves='3' seed='${seed + 7}'`, 'n') +
     `<feDisplacementMap in='SourceGraphic' in2='n' scale='90' xChannelSelector='R' yChannelSelector='G'/>` +
     `<feGaussianBlur stdDeviation='14'/>` +
     `</filter>` +
