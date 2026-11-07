@@ -576,3 +576,38 @@ export async function expireUnpaid() {
   }
   return n;
 }
+
+/** Records that a notice went out for a booking (field → now): reminders, the owner's alerts */
+export const markSent = (id, field) => stamp(id, field);
+
+/** The bookings the timed checks look at (server/notices.js): sessions today or tomorrow
+ *  (Jakarta dates) and orders from the last week. Two small queries, so a check every
+ *  few minutes stays cheap however many bookings pile up over the years. */
+export async function bookingsToWatch(now = Date.now()) {
+  const day = (ms) => new Date(ms + 7 * 3_600_000).toISOString().slice(0, 10); // Jakarta date
+  const days = [day(now), day(now + 86_400_000)];
+  const since = new Date(now - 7 * 86_400_000).toISOString();
+  let rows;
+  if (db) {
+    const [a, b] = await Promise.all([
+      db.collection(COLLECTION).where('date', 'in', days).get(),
+      db.collection(COLLECTION).where('createdAt', '>=', since).get(),
+    ]);
+    rows = [...a.docs, ...b.docs].map((d) => d.data());
+  } else {
+    rows = readAll().filter((b) => days.includes(b.date) || (b.createdAt || '') >= since);
+  }
+  return [...new Map(rows.map((b) => [b.id, b])).values()];
+}
+
+/** Lets go of a claim (claimOnce) whose step didn't happen, so it can be tried again */
+export async function releaseClaim(key) {
+  if (db) { try { await db.collection('once').doc(key).delete(); } catch (e) { console.error('[bookings] release claim failed:', key, e.message); } return; }
+  claimedLocally.delete(key);
+}
+
+/** one booking by id, or null */
+export async function getBooking(id) {
+  if (db) { const snap = await db.collection(COLLECTION).doc(id).get(); return snap.exists ? snap.data() : null; }
+  return readAll().find((b) => b.id === id) || null;
+}

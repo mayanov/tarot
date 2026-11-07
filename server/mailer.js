@@ -59,7 +59,7 @@ export function buildRaw({ to, subject, text, html }) {
   return b64url(mime);
 }
 
-async function send(message) {
+export async function send(message) {
   const c = getClient();
   if (!c) { console.log(`[mail] not set up (no owner sign-in); would have sent "${message.subject}" to ${message.to}`); return false; }
   try {

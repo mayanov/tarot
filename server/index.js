@@ -14,6 +14,7 @@ import * as gcal from './googleCalendar.js';
 import * as paypal from './paypal.js';
 import * as midtrans from './midtrans.js';
 import * as mailer from './mailer.js';
+import * as notices from './notices.js';
 import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
@@ -655,6 +656,7 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
                 paidAt: new Date().toISOString(),
             });
             await emailPaid(booking);
+            await notices.notifyNewBooking(booking, reading.value);
             return res.status(201).json(booking);
         }
         // (an order made before bookings were saved pending has no hold: it's booked here)
@@ -682,6 +684,7 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
         // Sent before answering (a serverless function stops once it has answered), once
         // per booking; a failed email never undoes the booking.
         await emailPaid(booking);
+        await notices.notifyNewBooking(booking, reading.value);
         res.status(201).json(booking);
     } catch (e) {
         // paid but not saved: keep every detail in the log so it can be entered by hand
@@ -710,6 +713,7 @@ async function settleMidtrans(orderId) {
             midtransTransactionId: st.transactionId,
             paidAt: new Date().toISOString(),
         });
+        await notices.notifyNewBooking(paid, st.amount); // (once, whichever check lands first)
         return { state: 'paid', booking: paid };
     }
     if (st.state === 'failed') {
@@ -841,10 +845,28 @@ app.get('/api/cron/reconcile', async (req, res) => {
     }
     try {
         const changed = await bookingStore.reconcileWithCalendar();
-        res.json({ ok: true, changed });
+        // (the timed emails too, as a fallback for the clock that runs /api/cron/tick)
+        const sent = await notices.runChecks().catch((e) => { console.error('checks failed:', e.message); return []; });
+        res.json({ ok: true, changed, sent });
     } catch (e) {
         console.error('cron reconcile failed:', e.message);
         res.status(500).json({ error: 'reconcile failed' });
+    }
+});
+
+// Cron: the timed emails (server/notices.js): a reading due in 5 hours (to Mayanov), a
+// Live Session tomorrow and in an hour (to the customer). Each is sent once, so this is
+// meant to be called every 10 minutes by an outside clock (the Vercel plan only runs its
+// own once a day). Needs CRON_SECRET, sent as "Authorization: Bearer <CRON_SECRET>".
+app.get('/api/cron/tick', async (req, res) => {
+    const secret = process.env.CRON_SECRET;
+    if (!secret || req.headers.authorization !== `Bearer ${secret}`) return res.status(401).json({ error: 'unauthorized' });
+    try {
+        const sent = await notices.runChecks();
+        res.json({ ok: true, sent });
+    } catch (e) {
+        console.error('cron tick failed:', e.message);
+        res.status(500).json({ error: 'checks failed' });
     }
 });
 
@@ -867,6 +889,7 @@ app.get('/api/admin/calendar/events', verifyToken, async (req, res) => {
 // instead of on every dashboard load / tab switch. The daily cron and the manual
 // cron endpoint still run it unconditionally.
 let lastReconcileAt = 0;
+let lastChecksAt = 0;
 const RECONCILE_THROTTLE_MS = 3 * 60 * 1000;
 
 // Admin: list all bookings (JWT-protected, same auth as the dashboard).
@@ -880,6 +903,11 @@ app.get('/api/admin/bookings', verifyToken, async (req, res) => {
         }
         // unpaid an hour after booking: cancelled
         try { await bookingStore.expireUnpaid(); } catch (e) { console.error('expire unpaid failed:', e.message); }
+        // and the timed emails, in case their clock has missed one (throttled like the sync)
+        if (Date.now() - lastChecksAt > RECONCILE_THROTTLE_MS) {
+            lastChecksAt = Date.now();
+            await notices.runChecks().catch((e) => console.error('checks failed:', e.message));
+        }
         // bookings being paid for show as pending/unpaid, and as cancelled if never paid;
         // a payment window the customer closed (they usually just try again) is left out
         res.json((await bookingStore.getAllBookings()).filter((b) => !(b.holdOnly && b.status === 'cancelled' && b.cancelReason !== 'unpaid')));
@@ -951,11 +979,14 @@ app.post('/api/admin/bookings/:id/reschedule', verifyToken, async (req, res) => 
         return res.status(400).json({ error: 'Invalid date or time' });
     }
     try {
+        const before = await bookingStore.getBooking(req.params.id);
         const updated = await bookingStore.rescheduleBooking(req.params.id, {
             date, time,
             durationMin: Number.isFinite(+durationMin) ? Math.max(0, Math.min(600, Math.round(+durationMin))) : undefined,
         });
         if (!updated) return res.status(404).json({ error: 'Not found' });
+        // the customer hears about it (a global session with an email; once it's sent)
+        if (before) await notices.notifyMoved(before, updated);
         res.json(updated);
     } catch (e) {
         if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
@@ -1011,8 +1042,10 @@ app.post('/api/admin/bookings/:id/status', verifyToken, async (req, res) => {
         return res.status(400).json({ error: 'Invalid status' });
     }
     try {
+        const before = status === 'cancelled' ? await bookingStore.getBooking(req.params.id) : null;
         const updated = await bookingStore.updateStatus(req.params.id, status);
         if (!updated) return res.status(404).json({ error: 'Not found' });
+        if (before && before.status !== 'cancelled') await notices.notifyCancelled(before);
         res.json(updated);
     } catch (e) {
         // bringing back a cancelled session whose time someone else has since booked

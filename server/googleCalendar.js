@@ -229,6 +229,12 @@ const restBody = (endDateTime, booking) => {
   };
 };
 
+/** an invite's Google Meet link, or '' */
+export async function meetLink(eventId) {
+  if (!getClient() || !eventId) return '';
+  try { return (await getEvent(eventId))?.hangoutLink || ''; } catch { return ''; }
+}
+
 // Fetch an event (null if it can't be read).
 async function getEvent(eventId) {
   const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}`, { headers: { Authorization: `Bearer ${await accessToken()}` } });
