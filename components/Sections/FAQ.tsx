@@ -110,7 +110,7 @@ const FAQ: React.FC<FAQProps> = ({ isIndonesian = false }) => {
     {
       cat: 'Booking',
       question: "What is your refund policy?",
-      answer: "Since time and energy go into every reading, all sales are final once the reading has been delivered. If you need to cancel a Live Session, please let me know at least 24 hours in advance and we'll reschedule."
+      answer: "All payments are non-refundable, so please make sure before you book.\n\nIf you can't make your Live Session, you can reschedule it: just let me know at least 24 hours in advance and we'll find a new time."
     },
     {
       cat: 'Booking',
