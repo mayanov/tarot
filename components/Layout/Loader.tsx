@@ -432,14 +432,15 @@ const Loader: React.FC<LoaderProps> = ({ ready = false, isIndonesian = false }) 
         </div>
       )}
 
-      {/* how far it's got, under the title where the hero's line will come in; it reads
-          100 only once everything's loaded, and the hand-off waits for that */}
+      {/* a quiet word under the title, where the hero's line will come in. How far it's
+          got is the drawing itself (the rules drawn outward, the moons filled in), no
+          number: it completes only once everything's loaded, and the hand-off waits for that */}
       {slots && (
         <div
           className="fixed inset-x-0 text-center text-xs md:text-[13px] uppercase tracking-[0.3em] text-cream/55"
           style={{ top: slots.title.bottom + 28, opacity: shown ? 1 : 0, transition: 'opacity 900ms ease 200ms', ...(complete ? { opacity: 0, transition: 'opacity 350ms ease' } : null) }}
         >
-          {isIndonesian ? 'Memuat' : 'Loading'} <span className="tabular-nums text-cream/80">{Math.floor(pct)}%</span>
+          {isIndonesian ? 'Memuat' : 'Loading'}
         </div>
       )}
 
