@@ -111,10 +111,12 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
         : 0;
     const [serviceId, setServiceId] = useState<string>(entrySvc || MANUAL_SERVICES[0].id);
     const [detailIdx, setDetailIdx] = useState(entryIdx);
-    const [clientKey, setClientKey] = useState('__new__');
-    const [name, setName] = useState(fromEntry ? nameFromTitle(fromEntry.title) : '');
+    // (a name only from an entry that looks like a session: "Finalize Website" isn't anyone)
+    const [name, setName] = useState(fromEntry && isSessionTitle(fromEntry.title) ? nameFromTitle(fromEntry.title) : '');
     const [contact, setContact] = useState('');
+    const autoContact = useRef(''); // the contact filled in from a known customer
     const [tip, setTip] = useState('');
+    const [showTip, setShowTip] = useState(false);
     const [orderDate, setOrderDate] = useState(fromEntry?.date || today);
     const [status, setStatus] = useState<'confirmed' | 'done' | 'pending'>(fromEntry?.date && fromEntry.date < today ? 'done' : 'confirmed');
     const [payment, setPayment] = useState<'paid' | 'unpaid'>('paid');
@@ -153,11 +155,14 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [serviceId, detailIdx]);
 
-    const pickClient = (v: string) => {
-        setClientKey(v);
-        if (v === '__new__') { setName(''); setContact(''); return; }
-        const c = clients.find((c) => c.key === v);
-        if (c) { setName(c.name); setContact(c.contact); }
+    // One field for the customer: typing suggests the people already in the dashboard;
+    // picking one fills in their WhatsApp (unless one was typed by hand).
+    const typeName = (v: string) => {
+        setName(v);
+        const c = clients.find((c) => c.name.trim().toLowerCase() === v.trim().toLowerCase());
+        if (contact && contact !== autoContact.current) return;
+        autoContact.current = c ? c.contact : '';
+        setContact(c ? c.contact : '');
     };
 
     const submit = async (e: React.FormEvent) => {
@@ -225,40 +230,35 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
                         </div>
                     </div>
 
-                    <div>
-                        <label className={LBL}>Customer</label>
-                        <select value={clientKey} onChange={(e) => pickClient(e.target.value)} className={FLD}>
-                            <option value="__new__">＋ New customer</option>
-                            {clients.map((c) => (
-                                <option key={c.key} value={c.key}>{c.name || '(no name)'}{c.phone ? ` — ${c.phone}` : ''}</option>
-                            ))}
-                        </select>
-                    </div>
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label className={LBL}>Customer name</label>
-                            <input value={name} onChange={(e) => { setName(e.target.value); setClientKey('__new__'); }} placeholder="Nama pelanggan" className={FLD} />
+                            <label className={LBL}>Customer</label>
+                            <input value={name} onChange={(e) => typeName(e.target.value)} list="mt-known-customers" autoComplete="off" placeholder="Name (new or existing)" className={FLD} />
+                            <datalist id="mt-known-customers">
+                                {clients.filter((c) => c.name).map((c) => <option key={c.key} value={c.name}>{c.phone}</option>)}
+                            </datalist>
                         </div>
                         <div>
-                            <label className={LBL}>WhatsApp / contact</label>
-                            <input value={contact} onChange={(e) => { setContact(e.target.value); setClientKey('__new__'); }} placeholder="0812…" className={FLD} />
+                            <label className={LBL}>WhatsApp</label>
+                            <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="0812…" className={FLD} />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className={LBL}>Package price</label>
-                            <div className="rounded-lg border border-adm-line-2 bg-adm-hover px-3 py-2 text-sm text-text-light">{fmtAmt(baseAmount, currency)}</div>
+                    {/* the price is the package's (shown in its menu too); a tip only when there is one */}
+                    <div className="flex items-center justify-between gap-3 rounded-lg bg-lilac/10 border border-lilac/30 px-3 py-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-sm text-text-subtle">Total</span>
+                            {showTip ? (
+                                <span className="flex items-center gap-1.5 text-sm text-text-subtle">
+                                    incl. tip
+                                    <input type="number" min="0" step="any" value={tip} onChange={(e) => setTip(e.target.value)} placeholder="0" autoFocus
+                                        className="w-28 rounded-md border border-adm-line-2 bg-bg-dark px-2 py-1 text-sm text-text-light focus:border-lilac focus:outline-none" aria-label="Tip" />
+                                </span>
+                            ) : (
+                                <button type="button" onClick={() => setShowTip(true)} className="text-xs text-lilac hover:underline">+ tip</button>
+                            )}
                         </div>
-                        <div>
-                            <label className={LBL}>Tip (optional)</label>
-                            <input type="number" min="0" step="any" value={tip} onChange={(e) => setTip(e.target.value)} placeholder="0" className={FLD} />
-                        </div>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg bg-lilac/10 border border-lilac/30 px-3 py-2">
-                        <span className="text-sm text-text-subtle">Total recorded</span>
-                        <span className="text-base font-bold text-text-light">{fmtAmt(total, currency)}</span>
+                        <span className="text-base font-bold text-text-light tabular-nums whitespace-nowrap">{fmtAmt(total, currency)}</span>
                     </div>
 
                     <div>
