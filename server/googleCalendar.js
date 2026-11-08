@@ -419,7 +419,8 @@ function transportBodies(booking) {
 export async function createTransportEvents(booking) {
   const c = getClient();
   if (!c) return [];
-  if (!isMeetup(booking) || !booking.date || !booking.time) return [];
+  // (an entry Mayanov made herself and linked to a booking: her own calendar, her travel)
+  if (!isMeetup(booking) || booking.gcalLinked || !booking.date || !booking.time) return [];
   const ids = [];
   for (const body of transportBodies(booking)) {
     const id = await insertEvent(body);
@@ -536,6 +537,21 @@ export async function updateEvent(eventId, booking) {
   const c = getClient();
   if (!c || !eventId || !booking?.date || !booking?.time) return;
   try {
+    // An entry Mayanov made herself and linked to a booking keeps her title, notes and
+    // guests: only its time moves (exactly the session, no rest tail).
+    if (booking.gcalLinked) {
+      const dur = booking.durationMin > 0 ? booking.durationMin : 60;
+      const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}?sendUpdates=all`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          start: { dateTime: rfc3339(booking.date, booking.time), timeZone: TZ },
+          end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur)), timeZone: TZ },
+        }),
+      });
+      if (!r.ok) console.error('[gcal] linked move failed', r.status, await r.text());
+      return;
+    }
     // Kept as it was made: an invite stays an invite (and the move emails the customer;
     // their guest entry and Meet link stay as they are), an event without guests stays one.
     const cur = await getEvent(eventId);
@@ -572,7 +588,8 @@ export async function eventInfo(eventId) {
       // Invites are exactly the session too.
       const buf = /tatap muka/i.test(ev.summary || '') || ev.extendedProperties?.private?.mtInvite === '1' ? 0 : REST_BUFFER_MIN;
       const durationMin = Math.max(30, durTotal - buf);
-      return s ? { status: 'exists', scheduled: true, date: s.date, time: s.time, durationMin } : { status: 'exists', scheduled: true };
+      // (durTotal: the entry's whole length, for one Mayanov made herself and linked)
+      return s ? { status: 'exists', scheduled: true, date: s.date, time: s.time, durationMin, durTotal } : { status: 'exists', scheduled: true };
     }
     return { status: 'exists', scheduled: false };
   } catch (e) {

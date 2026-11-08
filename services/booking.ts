@@ -49,6 +49,8 @@ export interface Booking extends BookingInput {
   createdAt: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'done';
   gcalEventId?: string;
+  /** the booking's calendar entry is one Mayanov made herself (linked, not created by the site) */
+  gcalLinked?: boolean;
   price?: string; // explicit price token for manual orders (e.g. "Rp 300000", "$20")
   source?: string; // 'manual' for admin-entered orders (e.g. WhatsApp)
   paymentStatus?: 'unpaid' | 'paid'; // reporting: whether the order has been paid
@@ -78,6 +80,8 @@ export interface ManualBookingInput {
   date?: string;
   time?: string;
   durationMin?: number;
+  /** an entry already on her Google Calendar that becomes this booking's entry */
+  linkEventId?: string;
 }
 
 export async function createManualBooking(input: ManualBookingInput, token?: string): Promise<Booking> {
@@ -87,7 +91,10 @@ export async function createManualBooking(input: ManualBookingInput, token?: str
     credentials: 'include',
     body: JSON.stringify(input),
   });
-  if (res.status === 409) throw new Error('SLOT_TAKEN');
+  if (res.status === 409) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error === 'LINKED' ? 'LINKED' : 'SLOT_TAKEN');
+  }
   if (!res.ok) throw new Error(`HTTP_${res.status}`);
   return await res.json();
 }

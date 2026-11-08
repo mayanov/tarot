@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound, Sparkles, MousePointerClick, ArrowDownToLine, HelpCircle, Repeat, Inbox } from 'lucide-react';
+import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound, Sparkles, MousePointerClick, ArrowDownToLine, HelpCircle, Repeat, Inbox, Home } from 'lucide-react';
 import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks, FormFunnels, Journey } from '../../services/mockAnalytics';
 import { FaWhatsapp } from 'react-icons/fa';
 import { initGoogleAPI, loginToGoogle, fetchGA4Data, resetAnalytics, undoAnalyticsReset } from '../../services/ga4';
@@ -29,10 +29,11 @@ interface AnalyticsDashboardProps {
 
 // Sidebar nav, grouped by purpose and ordered most-used first (day-to-day
 // operations → money → insights → admin). Data-driven so it stays tidy.
-type View = 'analytics' | 'users' | 'schedule' | 'orders' | 'sales' | 'revenue' | 'customers' | 'events';
+type View = 'today' | 'analytics' | 'users' | 'schedule' | 'orders' | 'sales' | 'revenue' | 'customers' | 'events';
 const NAV_GROUPS: { label: string; items: { id: View; name: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] }[] = [
     { label: 'Operations', items: [
         // the day's work first (who's coming, what to answer), then money, then people
+        { id: 'today', name: 'Today', icon: Home },
         { id: 'schedule', name: 'Schedule', icon: Calendar },
         { id: 'orders', name: 'Orders', icon: Inbox },
         { id: 'sales', name: 'Sales', icon: Receipt },
@@ -213,7 +214,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     // User Management State
     // User Management State
     // View State
-    const [activeView, setActiveView] = useState<View>('analytics');
+    const [activeView, setActiveView] = useState<View>('today'); // opens on the day's work
     const [sidebarOpen, setSidebarOpen] = useState(false); // mobile drawer
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         try { return (localStorage.getItem('admin_theme') as 'light' | 'dark') || 'light'; } catch { return 'light'; }
@@ -449,8 +450,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
             <main className="flex-1 overflow-y-auto relative bg-bg-deep" data-lenis-prevent>
                 {/* Mobile Header (Hamburger would go here if we were doing mobile fully, keeping simple for now) */}
                 {/* MAIN CONTENT SWITCHER */}
-                {activeView === 'schedule' || activeView === 'orders' ? (
-                    <BookingsView view={activeView === 'orders' ? 'orders' : 'calendar'} />
+                {activeView === 'today' || activeView === 'schedule' || activeView === 'orders' ? (
+                    <BookingsView view={activeView === 'orders' ? 'orders' : activeView === 'today' ? 'today' : 'calendar'}
+                        onOpen={(v) => setActiveView(v === 'orders' ? 'orders' : 'schedule')} />
                 ) : activeView === 'events' ? (
                     <EventsView />
                 ) : activeView === 'sales' ? (

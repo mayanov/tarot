@@ -920,7 +920,10 @@ app.get('/api/admin/bookings', verifyToken, async (req, res) => {
 // Admin: create a booking manually (e.g. orders taken over WhatsApp) so they
 // show up in the schedule, customer list and revenue report.
 app.post('/api/admin/bookings', verifyToken, async (req, res) => {
-    const { serviceId, serviceName, date, time, durationMin, name, contact, question, amount, currency, orderDate, status, paymentStatus } = req.body || {};
+    const { serviceId, serviceName, date, time, durationMin, name, contact, question, amount, currency, orderDate, status, paymentStatus, linkEventId } = req.body || {};
+    if (linkEventId !== undefined && !(typeof linkEventId === 'string' && /^[A-Za-z0-9_-]{1,1024}$/.test(linkEventId) && date && time)) {
+        return res.status(400).json({ error: 'Invalid calendar entry' });
+    }
     if (!serviceId || !name) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -963,10 +966,13 @@ app.post('/api/admin/bookings', verifyToken, async (req, res) => {
             // Only put a manual booking on Google Calendar if it's an actual upcoming
             // session (has date + time); pure report records skip the calendar.
             skipCalendar: !scheduled,
+            // a session she already has on her Google Calendar: that entry becomes the booking's
+            ...(linkEventId ? { linkEventId } : {}),
         });
         res.status(201).json(booking);
     } catch (e) {
         if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
+        if (e.code === 'LINKED') return res.status(409).json({ error: 'LINKED' });
         console.error('manual booking create failed:', e);
         res.status(500).json({ error: 'Failed to create booking' });
     }

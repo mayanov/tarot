@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, ChevronLeft, ChevronRight, X, Plus } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight, X, Plus, ArrowRight } from 'lucide-react';
 import PageHeader from './ui/PageHeader';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -9,6 +9,7 @@ import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
 import { fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
+import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle } from './lib/calendarEntry';
 
 // Services offered — id drives revenue colour/stacking; name is the display label.
 const MANUAL_SERVICES: { id: string; name: string }[] = [
@@ -96,23 +97,32 @@ const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const FLD = "w-full rounded-lg border border-adm-line-2 bg-bg-dark px-3 py-2 text-sm text-text-light focus:border-lilac focus:outline-none";
 const LBL = "block text-xs font-medium text-text-subtle mb-1.5";
 
-// Modal to record a booking taken manually (e.g. over WhatsApp).
-const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCreated: (msg: string) => void }> = ({ bookings, onClose, onCreated }) => {
+// Modal to record a booking taken manually (e.g. over WhatsApp). With `fromEntry`, it turns
+// a session Mayanov put in her Google Calendar herself into a booking: its time comes from
+// the entry, and the entry itself becomes the booking's (nothing new on her calendar).
+export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEvent; onClose: () => void; onCreated: (msg: string) => void }> = ({ bookings, fromEntry, onClose, onCreated }) => {
     const today = toISO(new Date());
-    const [serviceId, setServiceId] = useState(MANUAL_SERVICES[0].id);
-    const [detailIdx, setDetailIdx] = useState(0);
+    const entrySvc = fromEntry ? serviceFromTitle(fromEntry.title) : null;
+    const entryMin = fromEntry ? entryMinutes(fromEntry) : 0;
+    // the package closest to the entry's length (a 60-min call, not a 30-min one)
+    const entryIdx = entrySvc
+        ? Math.max(0, (SERVICE_OPTIONS[entrySvc] || []).reduce((best, o, i, arr) =>
+            Math.abs((o.durationMin || 0) - entryMin) < Math.abs((arr[best].durationMin || 0) - entryMin) ? i : best, 0))
+        : 0;
+    const [serviceId, setServiceId] = useState<string>(entrySvc || MANUAL_SERVICES[0].id);
+    const [detailIdx, setDetailIdx] = useState(entryIdx);
     const [clientKey, setClientKey] = useState('__new__');
-    const [name, setName] = useState('');
+    const [name, setName] = useState(fromEntry ? nameFromTitle(fromEntry.title) : '');
     const [contact, setContact] = useState('');
     const [tip, setTip] = useState('');
-    const [orderDate, setOrderDate] = useState(today);
-    const [status, setStatus] = useState<'confirmed' | 'done' | 'pending'>('confirmed');
+    const [orderDate, setOrderDate] = useState(fromEntry?.date || today);
+    const [status, setStatus] = useState<'confirmed' | 'done' | 'pending'>(fromEntry?.date && fromEntry.date < today ? 'done' : 'confirmed');
     const [payment, setPayment] = useState<'paid' | 'unpaid'>('paid');
     const [question, setQuestion] = useState('');
-    const [schedule, setSchedule] = useState(false);
-    const [date, setDate] = useState(today);
-    const [time, setTime] = useState('11:00');
-    const [durationMin, setDurationMin] = useState('60');
+    const [schedule, setSchedule] = useState(Boolean(fromEntry));
+    const [date, setDate] = useState(fromEntry?.date || today);
+    const [time, setTime] = useState(fromEntry?.time || '11:00');
+    const [durationMin, setDurationMin] = useState(fromEntry ? String(entryMin) : '60');
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState('');
 
@@ -136,9 +146,10 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
     const tipNum = Math.max(0, Number(tip) || 0);
     const total = baseAmount + tipNum;
 
-    // Picking a timed session prefills its duration for calendar scheduling.
+    // Picking a timed session prefills its duration for calendar scheduling (a calendar
+    // entry keeps its own length: that's when the session really is).
     useEffect(() => {
-        if (opt?.durationMin) setDurationMin(String(opt.durationMin));
+        if (!fromEntry && opt?.durationMin) setDurationMin(String(opt.durationMin));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [serviceId, detailIdx]);
 
@@ -168,11 +179,15 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
                 serviceId, serviceName,
                 name: name.trim(), contact: contact.trim(), question: notes,
                 amount: total, currency, orderDate, status, paymentStatus: payment,
-                ...(schedule ? { date, time, durationMin: Number(durationMin) || 60 } : {}),
+                ...(fromEntry
+                    ? { date: fromEntry.date, time: fromEntry.time, durationMin: entryMin, linkEventId: fromEntry.id }
+                    : schedule ? { date, time, durationMin: Number(durationMin) || 60 } : {}),
             }, token);
-            onCreated('Booking added');
+            onCreated(fromEntry ? 'Booking added, linked to your calendar entry' : 'Booking added');
         } catch (e2) {
-            setErr(e2 instanceof Error && e2.message === 'SLOT_TAKEN' ? 'That time slot is already taken.' : 'Failed to add booking.');
+            const m = e2 instanceof Error ? e2.message : '';
+            setErr(m === 'LINKED' ? 'That calendar entry is already a booking.'
+                : m === 'SLOT_TAKEN' ? 'Another booking is already at that time.' : 'Failed to add booking.');
             setBusy(false);
         }
     };
@@ -181,11 +196,19 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
             <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-surface-1 border border-adm-line-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between px-6 py-4 border-b border-adm-line sticky top-0 bg-surface-1">
-                    <h3 className="text-lg font-serif font-bold text-text-light">Add booking</h3>
+                    <h3 className="text-lg font-serif font-bold text-text-light">{fromEntry ? 'Turn into a booking' : 'Add booking'}</h3>
                     <button type="button" onClick={onClose} className="p-1.5 rounded-full text-text-subtle hover:text-text-light hover:bg-white/5"><X size={18} /></button>
                 </div>
                 <form onSubmit={submit} className="px-6 py-5 space-y-4">
-                    <p className="text-xs text-text-subtle leading-relaxed">For orders taken manually (e.g. over WhatsApp) — they'll appear in Orders, Customers and the Revenue report.</p>
+                    {fromEntry ? (
+                        <div className="rounded-lg bg-adm-hover border border-adm-line-2 px-3 py-2.5 text-xs text-text-subtle leading-relaxed">
+                            <div className="text-sm text-text-light font-medium">“{fromEntry.title}”</div>
+                            <div className="mt-0.5">{fmtDate(fromEntry.date)} · {fromEntry.time}–{fromEntry.endTime || toHHMM(toMin(fromEntry.time || '00:00') + entryMin)} ({entryMin} min)</div>
+                            <div className="mt-1.5">Your calendar entry stays as it is; it becomes this booking's entry, so nothing new is added to your calendar. It then counts in Sales, Revenue and Customers.</div>
+                        </div>
+                    ) : (
+                        <p className="text-xs text-text-subtle leading-relaxed">For orders taken manually (e.g. over WhatsApp) — they'll appear in Orders, Customers and the Revenue report.</p>
+                    )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
@@ -266,11 +289,11 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
                         <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={2} placeholder="Pertanyaan / catatan…" className={FLD} />
                     </div>
 
-                    <label className="flex items-center gap-2.5 text-sm text-text-light cursor-pointer select-none">
+                    {!fromEntry && <label className="flex items-center gap-2.5 text-sm text-text-light cursor-pointer select-none">
                         <input type="checkbox" checked={schedule} onChange={(e) => setSchedule(e.target.checked)} className="accent-lilac w-4 h-4" />
                         Also schedule a session on the calendar
-                    </label>
-                    {schedule && (
+                    </label>}
+                    {schedule && !fromEntry && (
                         <div className="grid grid-cols-3 gap-3">
                             <div>
                                 <label className={LBL}>Date</label>
@@ -292,7 +315,7 @@ const AddBookingModal: React.FC<{ bookings: Booking[]; onClose: () => void; onCr
                     <div className="flex justify-end gap-2 pt-1">
                         <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-sm text-text-subtle hover:text-text-light transition-colors">Cancel</button>
                         <button type="submit" disabled={busy} className="px-5 py-2 rounded-full bg-lilac text-white text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors disabled:opacity-60">
-                            {busy ? 'Adding…' : 'Add booking'}
+                            {busy ? 'Adding…' : fromEntry ? 'Turn into booking' : 'Add booking'}
                         </button>
                     </div>
                 </form>
@@ -370,7 +393,95 @@ const RestoreAt: React.FC<{ b: Booking; bookings: Booking[]; onDone: (msg: strin
     );
 };
 
-const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) => {
+// Entries the site puts on her calendar itself around a session (the rest after it, the
+// travel to a meetup): part of a booking, never one of their own.
+const isHelperEntry = (e: CalEvent) => /^\s*(☕|🚗)/u.test(e.title || '');
+// her own timed, busy entries that aren't already a booking's: drawn grey
+const ownEntries = (events: CalEvent[], bookings: Booking[]) => {
+    const linked = new Set(bookings.filter((b) => b.status !== 'cancelled').map((b) => b.gcalEventId).filter(Boolean));
+    return events.filter((e) => !e.allDay && e.busy && e.time && !linked.has(e.id));
+};
+const dayLabel = (iso: string, todayISO: string) => {
+    const d = parseISO(iso);
+    const rel = iso === todayISO ? 'Today' : iso === toISO(addDays(parseISO(todayISO), 1)) ? 'Tomorrow' : '';
+    const date = d.toLocaleDateString('en-GB', { weekday: rel ? 'short' : 'long', day: 'numeric', month: 'short' });
+    return rel ? `${rel} · ${date}` : date;
+};
+const STATUS_DOT: Record<Booking['status'], string> = { pending: 'bg-coral', confirmed: 'bg-sage', done: 'bg-blue', cancelled: 'bg-mauve' };
+
+// Days as a list, one line per session or calendar entry, in time order: the Today screen,
+// and the Schedule on a phone (where seven columns don't fit).
+const Agenda: React.FC<{
+    days: string[]; todayISO: string; bookings: Booking[]; entries: CalEvent[];
+    onBooking: (id: string) => void; onEntry: (e: CalEvent) => void;
+    hideEmptyAfter?: number; // days past this index show only when something's on them
+}> = ({ days, todayISO, bookings, entries, onBooking, onEntry, hideEmptyAfter }) => (
+    <div className="divide-y divide-adm-line">
+        {days.map((iso, i) => {
+            type Row = { t: string; k: 'b'; b: Booking } | { t: string; k: 'e'; e: CalEvent };
+            const rows: Row[] = [
+                ...bookings.filter((b) => b.date === iso && b.time && b.status !== 'cancelled').map((b): Row => ({ t: b.time, k: 'b', b })),
+                ...entries.filter((e) => e.date === iso && !isHelperEntry(e)).map((e): Row => ({ t: e.time!, k: 'e', e })),
+            ].sort((a, b) => a.t.localeCompare(b.t));
+            if (!rows.length && hideEmptyAfter !== undefined && i > hideEmptyAfter) return null;
+            return (
+                <div key={iso} className="px-4 py-3">
+                    <div className={`text-[0.7rem] uppercase tracking-[0.14em] mb-1.5 ${iso === todayISO ? 'text-lilac font-semibold' : 'text-text-subtle'}`}>{dayLabel(iso, todayISO)}</div>
+                    {!rows.length && <div className="text-sm text-text-subtle py-1">Nothing booked.</div>}
+                    <div className="space-y-1">
+                        {rows.map((r) => {
+                            if (r.k === 'b') {
+                                const b = r.b;
+                                const end = b.durationMin ? toHHMM(toMin(b.time) + b.durationMin) : '';
+                                return (
+                                    <button key={b.id} type="button" onClick={() => onBooking(b.id)}
+                                        className="w-full flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 text-left hover:bg-adm-hover transition-colors">
+                                        <span className="w-[5.5rem] shrink-0 text-xs tabular-nums text-text-light">{b.time}{end && `–${end}`}</span>
+                                        <span className={`w-2 h-2 shrink-0 rounded-full ${STATUS_DOT[b.status]}`} title={b.status} />
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block text-sm font-medium text-text-light truncate">{b.name || '—'}</span>
+                                            <span className="block text-xs text-text-subtle truncate">{serviceLabel(b)}</span>
+                                        </span>
+                                        {b.paymentStatus !== 'paid' && <span className="shrink-0 text-[0.7rem] font-semibold text-coral-deep">Unpaid</span>}
+                                    </button>
+                                );
+                            }
+                            const e = r.e;
+                            const session = isSessionTitle(e.title);
+                            return (
+                                <button key={e.id} type="button" onClick={() => onEntry(e)}
+                                    title="From your Google Calendar. Click to turn it into a booking."
+                                    className={`w-full flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 text-left hover:bg-adm-hover transition-colors ${session ? '' : 'opacity-55 hover:opacity-100'}`}>
+                                    <span className="w-[5.5rem] shrink-0 text-xs tabular-nums text-text-subtle">{e.time}{e.endTime && e.endDate === e.date ? `–${e.endTime}` : ''}</span>
+                                    <span className={`w-2 h-2 shrink-0 rounded-full border ${session ? 'border-lilac' : 'border-text-subtle/50'}`} />
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block text-sm text-text-light truncate">{e.title}</span>
+                                        <span className="block text-xs text-text-subtle truncate">{session ? 'On your calendar, not a booking yet' : 'Your calendar'}</span>
+                                    </span>
+                                    {session && <span className="shrink-0 inline-flex items-center gap-1 text-[0.7rem] font-semibold text-lilac">Add <ArrowRight size={12} /></span>}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        })}
+    </div>
+);
+
+// A line on Today's lists: a reading waiting, or something not paid yet.
+const TodayLine: React.FC<{ b: Booking; onOpen: () => void; children?: React.ReactNode; note: React.ReactNode }> = ({ b, onOpen, children, note }) => (
+    <div onClick={onOpen} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors">
+        <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium text-text-light truncate">{b.name || '—'} <span className="font-normal text-text-subtle">· {serviceLabel(b)}</span></div>
+            {note}
+        </div>
+        <div className="shrink-0 text-right text-sm font-semibold text-text-light tabular-nums whitespace-nowrap">{amountLabel(b)}</div>
+        {children && <div className="shrink-0" onClick={(e) => e.stopPropagation()}>{children}</div>}
+    </div>
+);
+
+const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (v: 'calendar' | 'orders') => void }> = ({ view: tab, onOpen }) => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -380,6 +491,10 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
     const [notice, setNotice] = useState<{ text: string; kind: 'ok' | 'err' } | null>(null);
     const [calEvents, setCalEvents] = useState<CalEvent[]>([]);
     const [showAdd, setShowAdd] = useState(false);
+    // a session from her own calendar being turned into a booking
+    const [fromEntry, setFromEntry] = useState<CalEvent | null>(null);
+    // her calendar for Today (today and the six days after it)
+    const [soonEvents, setSoonEvents] = useState<CalEvent[]>([]);
     // Drag-to-reschedule state for the weekly grid.
     const [drag, setDrag] = useState<null | { id: string; originDay: number; originStart: number; dur: number; curDay: number; curStart: number; moved: boolean }>(null);
     const gridRef = useRef<HTMLDivElement | null>(null);
@@ -403,6 +518,7 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
         } finally {
             setLoading(false);
             fetchEvents(weekStart);
+            if (tab === 'today') fetchSoon();
         }
     };
 
@@ -416,6 +532,13 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
         } catch { setCalEvents([]); }
     };
     useEffect(() => { fetchEvents(weekStart); }, [weekStart]);
+    const fetchSoon = async () => {
+        try {
+            const t = new Date();
+            setSoonEvents(await getCalendarEvents(toISO(t), toISO(addDays(t, 6)), localStorage.getItem('authToken') || undefined));
+        } catch { setSoonEvents([]); }
+    };
+    useEffect(() => { if (tab === 'today') fetchSoon(); }, [tab]);
 
     const changeStatus = async (id: string, status: Booking['status']) => {
         try {
@@ -515,7 +638,7 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
     // the clocks on Orders move on by themselves
     const [now, setNow] = useState(() => Date.now());
     useEffect(() => {
-        if (tab !== 'orders') return;
+        if (tab === 'calendar') return;
         setNow(Date.now());
         const iv = window.setInterval(() => setNow(Date.now()), 60_000);
         return () => clearInterval(iv);
@@ -544,14 +667,22 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
 
     // External Google Calendar events (timed, busy) — excluding our own booking events,
     // which are already drawn as session blocks. Grouped by day for the grid.
+    const weekEntries = useMemo(() => ownEntries(calEvents, bookings), [calEvents, bookings]);
     const gcalByDay = useMemo(() => {
-        const bookingEventIds = new Set(bookings.map((b) => b.gcalEventId).filter(Boolean));
         const map: Record<string, CalEvent[]> = {};
-        calEvents
-            .filter((e) => !e.allDay && e.busy && e.time && !bookingEventIds.has(e.id))
-            .forEach((e) => { (map[e.date] ||= []).push(e); });
+        weekEntries.forEach((e) => { (map[e.date] ||= []).push(e); });
         return map;
-    }, [calEvents, bookings]);
+    }, [weekEntries]);
+    const soonEntries = useMemo(() => ownEntries(soonEvents, bookings), [soonEvents, bookings]);
+    // Today's lists: readings waiting (paid, most urgent first), and what's not paid yet
+    // (still to come or still open; the newest first)
+    const readingsDue = useMemo(() => activeOrders.filter((b) => orderClock(b).kind !== 'unpaid'), [activeOrders]);
+    const unpaid = useMemo(() => {
+        const t = toISO(new Date());
+        return bookings
+            .filter((b) => b.paymentStatus !== 'paid' && b.status !== 'cancelled' && !(b.date && b.time && b.date < t && b.status === 'done'))
+            .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    }, [bookings]);
 
     const selectedBooking = useMemo(() => bookings.find((b) => b.id === selectedId) || null, [bookings, selectedId]);
     const todayISO = toISO(new Date());
@@ -570,8 +701,10 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <PageHeader
-                title={tab === 'calendar' ? 'Schedule' : 'Orders'}
-                subtitle={tab === 'calendar' ? 'Sessions with a time. Click one for details, drag it to move it.' : 'Readings and chats with no fixed time. Click a row for details.'}
+                title={tab === 'today' ? 'Today' : tab === 'calendar' ? 'Schedule' : 'Orders'}
+                subtitle={tab === 'today'
+                    ? new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Jakarta' })
+                    : tab === 'calendar' ? 'Sessions with a time. Click one for details, drag it to move it. Grey is your own calendar: click a session there to make it a booking.' : 'Readings and chats with no fixed time. Click a row for details.'}
                 onRefresh={load}
                 refreshing={loading}
             >
@@ -580,11 +713,13 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
                 </Button>
             </PageHeader>
 
-            {showAdd && (
+            {(showAdd || fromEntry) && (
                 <AddBookingModal
+                    key={fromEntry?.id || 'new'}
                     bookings={bookings}
-                    onClose={() => setShowAdd(false)}
-                    onCreated={(msg) => { setShowAdd(false); setNotice({ text: msg, kind: 'ok' }); load(); }}
+                    fromEntry={fromEntry || undefined}
+                    onClose={() => { setShowAdd(false); setFromEntry(null); }}
+                    onCreated={(msg) => { setShowAdd(false); setFromEntry(null); flash(msg, 'ok'); load(); }}
                 />
             )}
 
@@ -612,8 +747,14 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
                             <h2 className="text-text-light font-serif font-semibold text-sm">{weekLabel}</h2>
                         </div>
 
+                        {/* on a phone: the week as a list of days */}
+                        <div className="md:hidden">
+                            <Agenda days={weekDays.map(toISO)} todayISO={todayISO} bookings={calendarSessions} entries={weekEntries}
+                                onBooking={setSelectedId} onEntry={setFromEntry} />
+                        </div>
+
                         {/* grid */}
-                        <div className="overflow-x-auto">
+                        <div className="hidden md:block overflow-x-auto">
                             <div className="min-w-[760px]">
                                 {/* day headers */}
                                 <div className="grid border-b border-adm-line" style={{ gridTemplateColumns: '3.5rem repeat(7, minmax(0,1fr))' }}>
@@ -657,13 +798,28 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
                                                     const bottom = clamp(((en - DAY_START) / 60) * HOUR_H, 0, GRID_H);
                                                     if (bottom <= 0 || top >= GRID_H) return null;
                                                     const height = Math.max(16, bottom - top - 2);
-                                                    return (
-                                                        <div key={e.id} title={`${e.time}${e.endTime ? `–${e.endTime}` : ''} · ${e.title} (Google Calendar — slot filled)`}
-                                                            className="absolute left-1 right-1 rounded-md border border-black/10 px-1.5 py-0.5 overflow-hidden pointer-events-none z-0"
+                                                    const span = `${e.time}${e.endTime ? `–${e.endTime}` : ''} · ${e.title}`;
+                                                    // the site's own rest / travel entries are part of a booking: not clickable
+                                                    if (isHelperEntry(e)) return (
+                                                        <div key={e.id} title={span}
+                                                            className="absolute left-1 right-1 rounded-md border border-black/10 px-1.5 py-0.5 overflow-hidden pointer-events-none z-0 opacity-60"
                                                             style={{ top, height, backgroundColor: '#D7D6DE' }}>
-                                                            <div className="text-[8px] font-bold uppercase tracking-wider leading-none" style={{ color: '#4A4753' }}>Busy</div>
-                                                            {height > 22 && <div className="text-[10px] font-medium truncate leading-tight mt-0.5" style={{ color: '#54515F' }}>{e.title}</div>}
+                                                            {height > 18 && <div className="text-[10px] font-medium truncate leading-tight" style={{ color: '#54515F' }}>{e.title}</div>}
                                                         </div>
+                                                    );
+                                                    // a session she typed in (looks like one): stronger, with a dashed edge;
+                                                    // a personal entry (gym, lunch): faint. Both can be made a booking.
+                                                    const session = isSessionTitle(e.title);
+                                                    return (
+                                                        <button key={e.id} type="button" onClick={() => setFromEntry(e)}
+                                                            title={`${span} (your Google Calendar). Click to turn it into a booking.`}
+                                                            className={`group absolute left-1 right-1 rounded-md px-1.5 py-0.5 overflow-hidden text-left z-0 transition hover:ring-2 hover:ring-lilac/60 ${session ? 'border border-dashed border-lilac/70' : 'border border-black/10 opacity-55 hover:opacity-100'}`}
+                                                            style={{ top, height, backgroundColor: '#D7D6DE' }}>
+                                                            <div className="text-[8px] font-bold uppercase tracking-wider leading-none" style={{ color: session ? '#5B3FA8' : '#4A4753' }}>
+                                                                {session ? <>Not a booking yet<span className="hidden group-hover:inline"> · add</span></> : 'Busy'}
+                                                            </div>
+                                                            {height > 22 && <div className="text-[10px] font-medium truncate leading-tight mt-0.5" style={{ color: '#54515F' }}>{e.title}</div>}
+                                                        </button>
                                                     );
                                                 })}
                                                 {/* session blocks */}
@@ -727,6 +883,56 @@ const BookingsView: React.FC<{ view: 'calendar' | 'orders' }> = ({ view: tab }) 
 
                 </div>
             )}
+
+            {/* ---------------- TODAY — the day's work, on one screen ---------------- */}
+            {!initialLoading && tab === 'today' && (() => {
+                const days = Array.from({ length: 7 }, (_, i) => toISO(addDays(parseISO(todayISO), i)));
+                const head = (title: string, count: number, go?: () => void, goLabel?: string) => (
+                    <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
+                        <h2 className="text-sm font-serif font-semibold text-text-light">{title}{count > 0 && <span className="ml-1.5 text-text-subtle font-sans font-normal">{count}</span>}</h2>
+                        {go && <button type="button" onClick={go} className="inline-flex items-center gap-1 text-xs text-lilac hover:underline">{goLabel} <ArrowRight size={12} /></button>}
+                    </div>
+                );
+                return (
+                    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start">
+                        <Card className="overflow-hidden">
+                            {head('Sessions', 0, onOpen && (() => onOpen('calendar')), 'Schedule')}
+                            {/* today and tomorrow always; the days after only when something's on */}
+                            <Agenda days={days} todayISO={todayISO} bookings={calendarSessions} entries={soonEntries}
+                                onBooking={setSelectedId} onEntry={setFromEntry} hideEmptyAfter={1} />
+                        </Card>
+                        <div className="space-y-5">
+                            <Card className="overflow-hidden">
+                                {head('Readings to send', readingsDue.length, onOpen && (() => onOpen('orders')), 'Orders')}
+                                {readingsDue.length === 0
+                                    ? <p className="px-4 py-5 text-sm text-text-subtle">Nothing waiting. All readings are sent.</p>
+                                    : <div className="divide-y divide-adm-line">
+                                        {readingsDue.map((b) => (
+                                            <TodayLine key={b.id} b={b} onOpen={() => setSelectedId(b.id)} note={<ClockNote b={b} now={now} />}>
+                                                <StatusControl b={b} />
+                                            </TodayLine>
+                                        ))}
+                                    </div>}
+                            </Card>
+                            <Card className="overflow-hidden">
+                                {head('Not paid yet', unpaid.length)}
+                                {unpaid.length === 0
+                                    ? <p className="px-4 py-5 text-sm text-text-subtle">Everything is paid.</p>
+                                    : <div className="divide-y divide-adm-line">
+                                        {unpaid.map((b) => (
+                                            <TodayLine key={b.id} b={b} onOpen={() => setSelectedId(b.id)}
+                                                note={<div className="text-[0.7rem] text-text-subtle tabular-nums mt-0.5">
+                                                    {b.date && b.time ? `Session ${fmtDate(b.date)} · ${b.time}` : `Ordered ${fmtDate(b.createdAt)}`}
+                                                </div>}>
+                                                <PaymentPill paid={false} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
+                                            </TodayLine>
+                                        ))}
+                                    </div>}
+                            </Card>
+                        </div>
+                    </div>
+                );
+            })()}
 
             {/* selected booking (session or order): the details, in one popup */}
             {selectedBooking && (() => {

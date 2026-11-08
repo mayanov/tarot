@@ -210,7 +210,11 @@ export async function createBooking(input) {
   // `skipCalendar` (admin manual records) and any overrides are pulled out;
   // the rest is stored as-is. createdAt/status may be supplied (manual back-dated
   // orders); otherwise they default to now / confirmed.
-  const { skipCalendar = false, ...data } = input;
+  // `linkEventId`: an entry already on Mayanov's Google Calendar (a session she put in
+  // herself) becomes this booking's entry, so nothing new is added to her calendar.
+  const { skipCalendar: skip = false, linkEventId, ...data } = input;
+  const skipCalendar = skip || Boolean(linkEventId);
+  if (linkEventId) { data.gcalEventId = linkEventId; data.gcalLinked = true; }
   // Scheduled services reserve a unique slot; async ones (chat, email, special) don't.
   const hasSlot = Boolean(data.date && data.time);
   const id = hasSlot
@@ -230,8 +234,13 @@ export async function createBooking(input) {
 
   if (db) {
     const ref = db.collection(COLLECTION).doc(id);
+    if (linkEventId) {
+      const dup = await db.collection(COLLECTION).where('gcalEventId', '==', linkEventId).get();
+      if (dup.docs.some((d) => d.data().status !== 'cancelled')) { const err = new Error('LINKED'); err.code = 'LINKED'; throw err; }
+    }
     if (hasSlot) {
-      const taken = new Set(await getTakenSlots(data.date));
+      // (a linked entry is itself busy on her calendar, so only bookings count then)
+      const taken = new Set(linkEventId ? await dbTakenSlots(data.date) : await getTakenSlots(data.date));
       if (wanted.some((s) => taken.has(s))) {
         const err = new Error('SLOT_TAKEN'); err.code = 'SLOT_TAKEN'; throw err;
       }
@@ -248,6 +257,9 @@ export async function createBooking(input) {
   }
 
   const all = readAll();
+  if (linkEventId && all.some((b) => b.gcalEventId === linkEventId && b.status !== 'cancelled')) {
+    const err = new Error('LINKED'); err.code = 'LINKED'; throw err;
+  }
   if (hasSlot) {
     const taken = new Set(
       all.filter((b) => b.date === data.date && blocksSlot(b))
@@ -296,10 +308,11 @@ export async function reconcileWithCalendar() {
       if (b.date && b.time) { await updateStatus(b.id, 'cancelled'); changed++; }
     } else if (info.status === 'exists' && info.scheduled && b.date && b.time) {
       const movedTime = info.date !== b.date || info.time !== b.time;
-      const movedDur = info.durationMin && Math.abs(info.durationMin - (b.durationMin || 0)) >= 5;
+      const dur = b.gcalLinked ? info.durTotal : info.durationMin;
+      const movedDur = dur && Math.abs(dur - (b.durationMin || 0)) >= 5;
       if (movedTime || movedDur) {
         try {
-          await rescheduleBooking(b.id, { date: info.date, time: info.time, durationMin: info.durationMin || b.durationMin }, { skipCalendar: true });
+          await rescheduleBooking(b.id, { date: info.date, time: info.time, durationMin: dur || b.durationMin }, { skipCalendar: true });
           await gcal.alignRest(b.gcalEventId); // an invite's rest follows it
           changed++;
         } catch (e) { console.error('[bookings] reverse reschedule skipped:', e.message); }
@@ -420,11 +433,12 @@ export async function updateStatus(id, status) {
     const prev = snap.data();
     await ref.update({ status });
     // Cancelling frees the slot — remove the Google Calendar event(s) too.
+    // (an entry she made herself and linked stays on her calendar: she removes it if she wants)
     if (status === 'cancelled') {
-      if (prev.gcalEventId) await gcal.deleteEvent(prev.gcalEventId);
+      if (prev.gcalEventId && !prev.gcalLinked) await gcal.deleteEvent(prev.gcalEventId);
       if (prev.gcalTransportIds?.length) await gcal.deleteEvents(prev.gcalTransportIds);
       await gcal.deleteTransportForBooking(id); // catch any not in the stored ids
-      await ref.update({ gcalEventId: null, gcalTransportIds: null });
+      await ref.update({ gcalEventId: prev.gcalLinked ? prev.gcalEventId : null, gcalTransportIds: null });
     }
     if (status !== 'cancelled' && (status === 'done') !== (prev.status === 'done')) await gcal.syncReading(prev.gcalEventId, { ...prev, status });
     return { ...prev, status };
@@ -437,10 +451,10 @@ export async function updateStatus(id, status) {
   // an order's calendar entry: done switches its alert off, un-done puts it back
   if (status !== 'cancelled' && (status === 'done') !== wasDone) await gcal.syncReading(b.gcalEventId, b);
   if (status === 'cancelled') {
-    if (b.gcalEventId) await gcal.deleteEvent(b.gcalEventId);
+    if (b.gcalEventId && !b.gcalLinked) await gcal.deleteEvent(b.gcalEventId);
     if (b.gcalTransportIds?.length) await gcal.deleteEvents(b.gcalTransportIds);
     await gcal.deleteTransportForBooking(b.id); // catch any not in the stored ids
-    b.gcalEventId = null;
+    if (!b.gcalLinked) b.gcalEventId = null;
     b.gcalTransportIds = null;
   }
   writeAll(all);
