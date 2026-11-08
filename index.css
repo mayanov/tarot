@@ -668,3 +668,9 @@ html[data-print='offset'] .letterpress-lg { filter: url(#offset-lg); }
   .print-text,
   .print-body { -webkit-mask-image: none; mask-image: none; }
 }
+
+/* Orders: a reading's countdown once it's close (under 6 h) or late */
+.admin-shell .due-soon { background: rgb(251 191 36 / 0.28); color: #8a5300; }
+.admin-shell .due-late { background: rgb(220 38 38 / 0.14); color: #b42318; }
+.admin-shell[data-theme="dark"] .due-soon { background: rgb(251 191 36 / 0.16); color: #fcd34d; }
+.admin-shell[data-theme="dark"] .due-late { background: rgb(248 113 113 / 0.16); color: #fca5a5; }

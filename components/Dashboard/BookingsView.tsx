@@ -334,10 +334,28 @@ const ClockNote: React.FC<{ b: Booking; now: number }> = ({ b, now }) => {
     const cls = 'text-[0.7rem] leading-tight mt-0.5';
     if (c.kind === 'unpaid') return <div className={`${cls} text-text-subtle`}>Not paid yet</div>;
     if (c.kind === 'waiting') return <div className={`${cls} text-text-subtle`}>Waiting {spanLabel(now - c.since)}</div>;
+    // a countdown to when the reading is promised: hours and minutes, the due time under
+    // it, and in colour as it gets close (under 6 h) or once it's late
     const left = c.due - now;
     const due = new Date(c.due).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
-    if (left < 0) return <div title={`Was due ${due} WIB`} className={`${cls} font-semibold text-coral-deep`}>Overdue {spanLabel(-left)}</div>;
-    return <div title={`Due ${due} WIB`} className={`${cls} ${left < 6 * 3_600_000 ? 'font-semibold text-text-light' : 'text-text-subtle'}`}>{spanLabel(left)} left</div>;
+    const late = left < 0;
+    const soon = !late && left < 6 * 3_600_000;
+    const pill = late ? 'due-late' : soon ? 'due-soon' : 'bg-lilac/10 text-lilac';
+    return (
+        <div className="mt-1">
+            <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums whitespace-nowrap ${pill}`}>
+                {late ? `Overdue ${leftLabel(-left)}` : `${leftLabel(left)} left`}
+            </span>
+            <div className="text-[0.7rem] text-text-subtle tabular-nums mt-0.5 whitespace-nowrap">{late ? 'was due' : 'due'} {due}</div>
+        </div>
+    );
+};
+// '45 min', '5 h 20 min' (under a day, to the minute), then '2 d 3 h'
+const leftLabel = (ms: number) => {
+    const min = Math.max(0, Math.round(ms / 60_000));
+    if (min < 60 || min >= 24 * 60) return spanLabel(ms);
+    const h = Math.floor(min / 60), m = min % 60;
+    return m ? `${h} h ${m} min` : `${h} h`;
 };
 // most urgent first: due soonest, then the longest waiting, then the unpaid (newest first)
 const urgency = (b: Booking) => {
@@ -1005,7 +1023,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
             {/* ---------------- ORDERS (no fixed time) — one aligned list ---------------- */}
             {!initialLoading && tab === 'orders' && (() => {
                 const list = orderView === 'active' ? activeOrders : orderView === 'done' ? doneOrders : cancelledBookings;
-                const COLS = 'md:grid md:grid-cols-[6.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4';
+                const COLS = 'md:grid md:grid-cols-[8.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4';
                 return (
                     <Card className="overflow-hidden">
                         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
