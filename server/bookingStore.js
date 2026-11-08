@@ -20,21 +20,17 @@ const slotId = (date, time) => `${date}_${time}`;
 // so it never leaks schedule info and survives reschedules. e.g. "MYV-3F9A2C7B1D".
 const genRef = () => 'MYV-' + crypto.randomBytes(5).toString('hex').toUpperCase();
 
-// A booking's code, readable for Mayanov but just a code to a customer: MT-6K11-C3 is
-// 2026 (its last digit), K = November (A = Jan … L = Dec), the 11th, a Call, the 3rd
-// booking that day (Jakarta time, all services counted together). The year digit keeps
-// codes from repeating for ten years (the emails' send-once keys use the code).
+// A booking's code: the service's letter and a running number, C-42 is the 42nd booking,
+// a call (M meetup, H chat, S special, T 3-card, F 5-card, L live). Short to say over
+// WhatsApp; numbers never repeat (the emails' send-once keys use the code).
 const SERVICE_LETTER = { call: 'C', meetup: 'M', chat: 'H', special: 'S', '3card': 'T', '5card': 'F', live: 'L' };
-const MONTH_LETTERS = 'ABCDEFGHIJKL';
+const REF_PATTERN = /^[A-Z]-(\d+)$/;
 async function nextRef(data) {
   try {
-    const day = new Date(data.createdAt || Date.now()).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }); // YYYY-MM-DD
-    const [y, m, d] = day.split('-');
-    const prefix = `MT-${y.slice(-1)}${MONTH_LETTERS[Number(m) - 1]}${d}-`;
     let n;
     if (db) {
-      // one counter per day, counted in a transaction so two bookings never share a number
-      const ref = db.collection('counters').doc(`ref_${day}`);
+      // one counter for all bookings, counted in a transaction so no two share a number
+      const ref = db.collection('counters').doc('bookingRef');
       n = await db.runTransaction(async (t) => {
         const snap = await t.get(ref);
         const next = (snap.exists ? snap.data().n || 0 : 0) + 1;
@@ -42,11 +38,11 @@ async function nextRef(data) {
         return next;
       });
     } else {
-      n = readAll().filter((b) => (b.ref || '').startsWith(prefix)).length + 1;
+      n = readAll().reduce((max, b) => Math.max(max, Number((b.ref || '').match(REF_PATTERN)?.[1] || 0)), 0) + 1;
     }
-    return `${prefix}${SERVICE_LETTER[data.serviceId] || 'X'}${n}`;
+    return `${SERVICE_LETTER[data.serviceId] || 'X'}-${n}`;
   } catch (e) {
-    console.error('[bookings] readable code failed, using a random one:', e.message);
+    console.error('[bookings] booking code failed, using a random one:', e.message);
     return genRef();
   }
 }
