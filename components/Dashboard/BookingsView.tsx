@@ -7,7 +7,7 @@ import Segmented from './ui/Segmented';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, updateBookingDetails, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
-import { amountForBooking, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
+import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
 import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle } from './lib/calendarEntry';
 
@@ -1135,7 +1135,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                 <Field label="WhatsApp">{phone || '—'}</Field>
                                 <Field label="Email">{email || '—'}</Field>
                                 {b.dob && <Field label="Born">{fmtDate(b.dob)}</Field>}
-                                {b.ref && <Field label="Ref"><span className="font-mono text-xs">{b.ref}</span></Field>}
+                                {b.ref && <Field label="Booking code"><span className="font-mono text-xs">{b.ref}</span>
+                                    {refInWords(b.ref) && <span className="block text-xs text-text-subtle mt-0.5">{refInWords(b.ref)}</span>}</Field>}
                                 {b.question && <Field label="Question" wide><span className="italic">“{b.question}”</span></Field>}
                             </div>
                             <PrivateNote key={b.id} b={b} onSaved={(u) => { replaceBooking(u); flash('Note saved.', 'ok'); }} />

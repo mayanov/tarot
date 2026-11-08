@@ -55,6 +55,20 @@ export const matchesSearch = (needle: string, ...texts: (string | undefined | nu
     return texts.some((t) => (t || '').replace(/\D/g, '').includes(core));
 };
 
+// A booking code in words, for the dashboard: "MT-6K11-C3" → "Call · 11 Nov 2026 · 3rd
+// booking that day" (server/bookingStore.js nextRef). Older random codes → ''.
+const REF_SERVICE: Record<string, string> = { C: 'Call', M: 'Meetup', H: 'Chat', S: 'Special Edition', T: '3-Card', F: '5-Card', L: 'Live Session' };
+const ordinal = (n: number) => `${n}${[11, 12, 13].includes(n % 100) ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th'}`;
+export const refInWords = (ref?: string) => {
+    const m = (ref || '').match(/^MT-(\d)([A-L])(\d{2})-([A-Z])(\d+)$/);
+    if (!m) return '';
+    const [, y, mon, dd, svc, n] = m;
+    const decade = Math.floor(new Date().getFullYear() / 10) * 10;
+    const year = decade + Number(y) > new Date().getFullYear() ? decade - 10 + Number(y) : decade + Number(y);
+    const month = new Date(2000, 'ABCDEFGHIJKL'.indexOf(mon), 1).toLocaleDateString('en-GB', { month: 'short' });
+    return `${REF_SERVICE[svc] || 'Booking'} · ${Number(dd)} ${month} ${year} · ${ordinal(Number(n))} booking that day`;
+};
+
 // Money formatting. `compact` yields chart-friendly short forms (e.g. "Rp 1.2jt").
 export const fmtIDR = (v: number, compact = false) =>
     compact
