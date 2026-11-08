@@ -17,6 +17,9 @@
 import * as mailer from './mailer.js';
 import * as bookingStore from './bookingStore.js';
 import * as gcal from './googleCalendar.js';
+import { PROMISE, dueOf, ADMIN_URL } from './promise.js';
+
+export { dueOf };
 
 const SITE = 'https://tarotreadingbymayanov.com';
 const OWNER = process.env.OWNER_EMAIL || 'tarotreadingbymayanov@gmail.com';
@@ -45,24 +48,6 @@ const span = (ms) => {
   if (m < 60) return `${m} min`;
   const h = Math.floor(m / 60), r = m % 60;
   return r && h < 10 ? `${h} h ${r} min` : `${h} h`;
-};
-
-// ---- when an order's reading is due, as the site promises it (as the dashboard's
-// lib/format orderClock works it out): 3-Card / 5-Card within 24 hours, Edisi Spesial
-// in 2 working days, from when it's paid ----
-const PROMISE = { '3card': { hours: 24 }, '5card': { hours: 24 }, special: { workDays: 2 } };
-const jktDay = (ms) => new Date(ms + 7 * HOUR).getUTCDay();
-const addWorkDays = (from, n) => {
-  let t = from;
-  while (n > 0) { t += 24 * HOUR; const d = jktDay(t); if (d !== 0 && d !== 6) n--; }
-  return t;
-};
-export const dueOf = (b) => {
-  const p = PROMISE[b.serviceId];
-  if (!p || b.paymentStatus !== 'paid') return NaN;
-  const since = Date.parse(b.paidAt || b.createdAt || '');
-  if (!since) return NaN;
-  return p.workDays ? addWorkDays(since, p.workDays) : since + (p.hours || 24) * HOUR;
 };
 
 const money = (b, amount) => {
@@ -122,7 +107,7 @@ ${rows.map(([k, v]) => `    <tr><td style="padding:2px 18px 2px 0;color:#7a6f70;
   return { to, subject, text, html };
 }
 
-const dashboard = { label: 'Open the dashboard', href: `${SITE}/admin` };
+const dashboard = { label: 'Open the dashboard', href: ADMIN_URL };
 const tag = (b) => (b.ref ? `${b.ref} · ` : '');
 
 // ---- to Mayanov ----

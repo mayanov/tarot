@@ -372,6 +372,8 @@ export async function updatePayment(id, paymentStatus) {
     writeAll(all);
   }
   if (ps !== 'paid') return b;
+  // an order paid by hand: its calendar entry moves to when the reading is due, with its alert
+  if (!b.holdOnly) await gcal.syncReading(b.gcalEventId, b);
   // a booking still in its payment step, marked paid by hand: confirmed like a paid one
   if (b.holdOnly && await holdStillFree(b)) return confirmPaidHold(b, {});
   // a global booking waits for its payment (confirmOnPay): paid → confirmed. A reading
@@ -424,12 +426,16 @@ export async function updateStatus(id, status) {
       await gcal.deleteTransportForBooking(id); // catch any not in the stored ids
       await ref.update({ gcalEventId: null, gcalTransportIds: null });
     }
+    if (status !== 'cancelled' && (status === 'done') !== (prev.status === 'done')) await gcal.syncReading(prev.gcalEventId, { ...prev, status });
     return { ...prev, status };
   }
   const all = readAll();
   const b = all.find((x) => x.id === id);
   if (!b) return null;
+  const wasDone = b.status === 'done';
   b.status = status;
+  // an order's calendar entry: done switches its alert off, un-done puts it back
+  if (status !== 'cancelled' && (status === 'done') !== wasDone) await gcal.syncReading(b.gcalEventId, b);
   if (status === 'cancelled') {
     if (b.gcalEventId) await gcal.deleteEvent(b.gcalEventId);
     if (b.gcalTransportIds?.length) await gcal.deleteEvents(b.gcalTransportIds);

@@ -13,6 +13,7 @@
 // bookings still work — they just don't sync.
 
 import { JWT, OAuth2Client } from 'google-auth-library';
+import { dueOf, ADMIN_URL } from './promise.js';
 
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || '';
 const TZ = process.env.BOOKING_TIMEZONE || 'Asia/Jakarta';
@@ -265,25 +266,76 @@ export async function alignRest(eventId) {
 // - Scheduled bookings (date + time) -> a timed event that blocks the slot.
 // - Async bookings (chat/email/special, no time) -> an all-day reminder "task" on the
 //   day it came in, marked free so it never blocks bookable slots.
+// An order with no fixed time (a reading, a chat). A paid reading with a promised time
+// (server/promise.js) is an entry at the moment it's due, alerting Mayanov's phone 5 hours
+// before; once it's marked done in the dashboard, its alert is switched off and its title
+// ticked (syncReading). Anything else is an all-day note on the day it came in. Either
+// way it's marked free, so it never blocks a time customers can book.
+const READING_ALERT_MIN = 5 * 60;
+export const readingBody = (booking) => {
+  const label = (booking.serviceName || booking.serviceId || '').split(' · ')[0].trim();
+  const due = dueOf(booking);
+  const done = booking.status === 'done';
+  const tick = done ? '✅ ' : '';
+  if (!Number.isFinite(due)) {
+    const day = booking.date || (booking.createdAt || '').slice(0, 10) || todayISO();
+    return {
+      summary: `${tick || '🔔 '}${label} — ${booking.name}`,
+      description: `To fulfill (no fixed time).\n\n${descriptionFor(booking)}`,
+      start: { date: day, dateTime: null },
+      end: { date: nextDay(day), dateTime: null },
+      transparency: 'transparent',
+      // (your calendar's usual alert, as these notes always had; none once it's done)
+      reminders: done ? { useDefault: false, overrides: [] } : { useDefault: true },
+    };
+  }
+  const at = new Date(due).toISOString();
+  const local = toLocal(at);
+  return {
+    summary: `${tick || '🔔 Due: '}${label} — ${booking.name}`,
+    description: [
+      done ? 'Done, marked in the dashboard.' : `Due by ${local.time} WIB on ${local.date}, as promised on the site.`,
+      done ? '' : `Once it's sent, mark it done on the Orders screen (its alert switches off): ${ADMIN_URL}`,
+      '',
+      descriptionFor(booking),
+    ].filter((l, i) => l || i === 2).join('\n'),
+    start: { dateTime: at, timeZone: TZ, date: null },
+    end: { dateTime: new Date(due + 15 * 60000).toISOString(), timeZone: TZ, date: null },
+    transparency: 'transparent',
+    reminders: done ? { useDefault: false, overrides: [] } : { useDefault: false, overrides: [{ method: 'popup', minutes: READING_ALERT_MIN }] },
+  };
+};
+
+/** brings an order's calendar entry up to date: paid (now at its due time, with its
+    alert), marked done (alert off, ticked) or back from done */
+export async function syncReading(eventId, booking) {
+  const c = getClient();
+  if (!c || !eventId || (booking?.date && booking?.time)) return;
+  try {
+    const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(readingBody(booking)),
+    });
+    if (!r.ok) console.error('[gcal] syncReading failed', r.status, await r.text());
+  } catch (e) {
+    console.error('[gcal] syncReading error:', e.message);
+  }
+}
+
 export async function createEvent(booking) {
   const c = getClient();
   if (!c) return null;
 
-  const serviceLabel = (booking.serviceName || booking.serviceId || '').split(' · ')[0].trim();
   const scheduled = Boolean(booking.date && booking.time);
   let body;
   if (scheduled) {
     body = scheduledBody(booking);
   } else {
-    // Reminder task: all-day, on the booking's date if any, else the day it arrived.
-    const day = booking.date || (booking.createdAt || '').slice(0, 10) || todayISO();
-    body = {
-      summary: `🔔 ${serviceLabel} — ${booking.name}`,
-      description: `To fulfill (no fixed time).\n\n${descriptionFor(booking)}`,
-      start: { date: day },
-      end: { date: nextDay(day) },
-      transparency: 'transparent', // shows as Free -> won't block bookable slots
-    };
+    // an order with no fixed time: due-time entry with its alert, or an all-day note
+    // (the nulls are only for switching one into the other later, syncReading)
+    body = readingBody(booking);
+    for (const k of ['start', 'end']) body[k] = Object.fromEntries(Object.entries(body[k]).filter(([, v]) => v !== null));
   }
 
   // An invite: the customer as a guest (Google emails them), a Meet link, and a tag so
