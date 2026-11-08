@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, ChevronLeft, ChevronRight, X, Plus, ArrowRight } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight, X, Plus, ArrowRight, Pencil } from 'lucide-react';
 import PageHeader from './ui/PageHeader';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import Segmented from './ui/Segmented';
-import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
+import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, updateBookingDetails, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
-import { fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
+import { amountForBooking, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
 import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle } from './lib/calendarEntry';
 
@@ -219,13 +219,13 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
                         <div>
                             <label className={LBL}>Service</label>
                             <select value={serviceId} onChange={(e) => { setServiceId(e.target.value); setDetailIdx(0); }} className={FLD}>
-                                {MANUAL_SERVICES.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                {MANUAL_SERVICES.map((s) => <option key={s.id} value={s.id}>{SERVICE_NAME[s.id] || s.name}</option>)}
                             </select>
                         </div>
                         <div>
                             <label className={LBL}>Package / detail</label>
                             <select value={detailIdx} onChange={(e) => setDetailIdx(Number(e.target.value))} className={FLD}>
-                                {opts.map((o, i) => <option key={i} value={i}>{o.label} — {fmtOptPrice(o)}</option>)}
+                                {opts.map((o, i) => <option key={i} value={i}>{packageEn(o.label)} — {fmtOptPrice(o)}</option>)}
                             </select>
                         </div>
                     </div>
@@ -286,7 +286,7 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
 
                     <div>
                         <label className={LBL}>Notes (optional)</label>
-                        <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={2} placeholder="Pertanyaan / catatan…" className={FLD} />
+                        <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={2} placeholder="Their question, or notes…" className={FLD} />
                     </div>
 
                     {!fromEntry && <label className="flex items-center gap-2.5 text-sm text-text-light cursor-pointer select-none">
@@ -545,6 +545,77 @@ const ExtraTime: React.FC<{
     );
 };
 
+// Fix a booking after it's saved: the customer's name, their WhatsApp / email, the price.
+const EditDetails: React.FC<{ b: Booking; onSaved: (b: Booking) => void; onCancel: () => void }> = ({ b, onSaved, onCancel }) => {
+    const [name, setName] = useState(b.name || '');
+    const [contact, setContact] = useState(b.contact || '');
+    const cur = amountForBooking(b);
+    const [amount, setAmount] = useState(cur ? String(cur.amount) : '');
+    const [busy, setBusy] = useState(false);
+    const [err, setErr] = useState('');
+    const save = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!name.trim()) { setErr('The name is needed.'); return; }
+        const fields: { name?: string; contact?: string; amount?: number } = {};
+        if (name.trim() !== (b.name || '')) fields.name = name.trim();
+        if (contact.trim() !== (b.contact || '')) fields.contact = contact.trim();
+        const amt = Number(amount);
+        if (amount !== '' && Number.isFinite(amt) && amt >= 0 && amt !== cur?.amount) fields.amount = amt;
+        if (!Object.keys(fields).length) { onCancel(); return; }
+        setBusy(true); setErr('');
+        try { onSaved(await updateBookingDetails(b.id, fields, localStorage.getItem('authToken') || undefined)); }
+        catch { setErr('Could not save. Try again.'); setBusy(false); }
+    };
+    return (
+        <form onSubmit={save} className="px-5 py-4 space-y-3">
+            <div>
+                <label className={LBL}>Name</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} className={FLD} autoFocus />
+            </div>
+            <div>
+                <label className={LBL}>WhatsApp / email</label>
+                <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="WA: 0812… · Email: …" className={FLD} />
+            </div>
+            <div>
+                <label className={LBL}>Price ({b.market === 'ID' ? 'Rp' : '$'})</label>
+                <input type="number" min="0" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} className={FLD} />
+            </div>
+            {err && <p className="text-xs text-coral">{err}</p>}
+            <div className="flex justify-end gap-2">
+                <button type="button" onClick={onCancel} className="px-4 py-2 rounded-full text-sm text-text-subtle hover:text-text-light transition-colors">Cancel</button>
+                <Button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save'}</Button>
+            </div>
+        </form>
+    );
+};
+
+// A private note on a booking, only shown here ("prefers English", "follow up in March").
+const PrivateNote: React.FC<{ b: Booking; onSaved: (b: Booking) => void }> = ({ b, onSaved }) => {
+    const [note, setNote] = useState(b.adminNote || '');
+    const [busy, setBusy] = useState(false);
+    const [err, setErr] = useState('');
+    const dirty = note.trim() !== (b.adminNote || '');
+    const save = async () => {
+        setBusy(true); setErr('');
+        try { onSaved(await updateBookingDetails(b.id, { adminNote: note.trim() }, localStorage.getItem('authToken') || undefined)); }
+        catch { setErr('Could not save the note.'); }
+        finally { setBusy(false); }
+    };
+    return (
+        <div className="px-5 pb-4">
+            <label className="block text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle mb-1">Private note</label>
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Only you see this" className={FLD} />
+            {(dirty || err) && (
+                <div className="mt-1.5 flex items-center justify-end gap-3">
+                    {err && <span className="text-xs text-coral">{err}</span>}
+                    {dirty && <button type="button" onClick={() => setNote(b.adminNote || '')} className="text-xs text-text-subtle hover:text-text-light">Undo</button>}
+                    {dirty && <Button onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save note'}</Button>}
+                </div>
+            )}
+        </div>
+    );
+};
+
 // A line on Today's lists: a reading waiting, or something not paid yet.
 const TodayLine: React.FC<{ b: Booking; onOpen: () => void; children?: React.ReactNode; note: React.ReactNode }> = ({ b, onOpen, children, note }) => (
     <div onClick={onOpen} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors">
@@ -563,6 +634,10 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
     const [error, setError] = useState('');
     const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
     const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [editing, setEditing] = useState(false);
+    useEffect(() => setEditing(false), [selectedId]);
+    // a booking saved on the server: its new copy replaces the old one here
+    const replaceBooking = (u: Booking) => setBookings((prev) => prev.map((x) => (x.id === u.id ? { ...x, ...u } : x)));
     const [orderView, setOrderView] = useState<'active' | 'done' | 'cancelled'>('active');
     const [notice, setNotice] = useState<{ text: string; kind: 'ok' | 'err' } | null>(null);
     const [calEvents, setCalEvents] = useState<CalEvent[]>([]);
@@ -1027,7 +1102,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                 return (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
-                        <div className="relative w-full max-w-md bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl">
                             <div className="px-5 pt-5 pb-4 border-b border-adm-line">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
@@ -1039,12 +1114,23 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                         <h3 className="mt-1.5 text-xl font-serif font-bold text-text-light leading-snug">{b.name || '—'}</h3>
                                         <div className="text-sm text-text-subtle mt-0.5">{serviceLabel(b)}</div>
                                     </div>
-                                    <button aria-label="Close" onClick={() => setSelectedId(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors">
-                                        <X size={16} />
-                                    </button>
+                                    <div className="shrink-0 flex items-center gap-1">
+                                        {!editing && (
+                                            <button aria-label="Edit" title="Edit name, contact or price" onClick={() => setEditing(true)} className="grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors">
+                                                <Pencil size={15} />
+                                            </button>
+                                        )}
+                                        <button aria-label="Close" onClick={() => setSelectedId(null)} className="grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors">
+                                            <X size={16} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
+                            {editing ? (
+                                <EditDetails key={b.id} b={b} onCancel={() => setEditing(false)}
+                                    onSaved={(u) => { replaceBooking(u); setEditing(false); flash('Saved.', 'ok'); }} />
+                            ) : (<>
                             <div className="px-5 py-4 grid grid-cols-2 gap-x-4 gap-y-4">
                                 <Field label="WhatsApp">{phone || '—'}</Field>
                                 <Field label="Email">{email || '—'}</Field>
@@ -1052,6 +1138,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                 {b.ref && <Field label="Ref"><span className="font-mono text-xs">{b.ref}</span></Field>}
                                 {b.question && <Field label="Question" wide><span className="italic">“{b.question}”</span></Field>}
                             </div>
+                            <PrivateNote key={b.id} b={b} onSaved={(u) => { replaceBooking(u); flash('Note saved.', 'ok'); }} />
+                            </>)}
 
                             <div className="px-5 py-4 border-t border-adm-line bg-adm-hover space-y-3">
                                 <div className="flex items-center justify-between gap-3">

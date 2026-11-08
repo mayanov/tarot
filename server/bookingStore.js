@@ -395,6 +395,14 @@ export async function updatePayment(id, paymentStatus) {
   if (b.confirmOnPay && (b.status === 'pending' || lateReading) && !b.inviteOnPay) {
     const fields = { status: 'confirmed', confirmOnPay: false, cancelReason: null };
     await patch(b.id, fields);
+    // a reading cancelled for not being paid in time lost its calendar entry when it was
+    // cancelled: it gets a new one now, at the moment it's due, with its 5-hour alert
+    if (lateReading && !b.gcalEventId) {
+      try {
+        const eventId = await gcal.createEvent({ ...b, ...fields });
+        if (eventId) { fields.gcalEventId = eventId; await patch(b.id, { gcalEventId: eventId }); }
+      } catch (e) { console.error('[bookings] calendar entry for late-paid reading failed:', b.id, e.message); }
+    }
     return { ...b, ...fields };
   }
   return sendHeldInvite(b);
@@ -499,6 +507,13 @@ async function patch(id, fields) {
   const all = readAll();
   const b = all.find((x) => x.id === id);
   if (b) { Object.assign(b, fields); writeAll(all); }
+}
+
+/** Admin edits: a booking's name, contact, price or private note (fields already checked) */
+export async function updateDetails(id, fields) {
+  if (!(await getBooking(id))) return null;
+  await patch(id, fields);
+  return getBooking(id);
 }
 
 /** the booking a Midtrans payment belongs to (its hold), or null */

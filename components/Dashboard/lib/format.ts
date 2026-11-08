@@ -42,6 +42,19 @@ export const amountForBooking = (b: Booking): { amount: number; currency: Cur } 
     return parseAmount(priceToken(b.price) || priceToken(b.serviceName) || SERVICE_PRICE_FALLBACK[b.serviceId] || null);
 };
 
+// Search: the words anywhere in the texts (any case), and a phone number however it's
+// written: "0812 3456", "+62 812-3456" and "8123456" all find the same person.
+export const matchesSearch = (needle: string, ...texts: (string | undefined | null)[]) => {
+    const n = needle.trim().toLowerCase();
+    if (!n) return true;
+    if (texts.some((t) => (t || '').toLowerCase().includes(n))) return true;
+    if (/[a-z@]/i.test(n)) return false; // (words, not a number)
+    const digits = n.replace(/\D/g, '');
+    if (digits.length < 4) return false;
+    const core = digits.replace(/^(62|0)/, '');
+    return texts.some((t) => (t || '').replace(/\D/g, '').includes(core));
+};
+
 // Money formatting. `compact` yields chart-friendly short forms (e.g. "Rp 1.2jt").
 export const fmtIDR = (v: number, compact = false) =>
     compact
@@ -64,7 +77,7 @@ export const fmtDate = (iso?: string): string => {
 
 // Short admin names per service (the same ones the Revenue charts use).
 export const SERVICE_NAME: Record<string, string> = {
-    chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'Edisi Spesial',
+    chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'Special Edition',
     '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
 };
 
@@ -74,10 +87,21 @@ const nameParts = (b: Booking) => (b.serviceName || '').split(/\s+[·—]\s+/).m
 /** the service on its own: "Chat", "Call / Video", "3-Card Spread" */
 export const serviceTitle = (b: Booking) => SERVICE_NAME[b.serviceId] || nameParts(b)[0] || b.serviceId || '—';
 
-/** what was picked within it, without the price: "3 Pertanyaan", "30 Menit", or '' */
-export const packageOf = (b: Booking) => nameParts(b).slice(1).filter((p) => !isPricePart(p)).join(' · ');
+/** a package's name in English for the dashboard (bookings keep the name they were made
+    with, which for Indonesia is Indonesian): "3 Pertanyaan" → "3 questions" */
+export const packageEn = (p: string) => p
+    .replace(/Beli 3 Dapat 5 Pertanyaan/i, 'Buy 3, get 5 questions')
+    .replace(/Tambahan\s+(\d+)\s*Menit/i, 'Extra $1 min')
+    .replace(/Jam Berikutnya(\s*\(per jam\))?/i, 'Each extra hour')
+    .replace(/Jam Pertama/i, 'First hour')
+    .replace(/(\d+)\s*Pertanyaan/i, (_m, n: string) => `${n} question${n === '1' ? '' : 's'}`)
+    .replace(/(\d+)\s*Menit/i, '$1 min')
+    .replace(/(\d+)\s*Jam\b/i, '$1 h');
 
-/** "Chat · 3 Pertanyaan", "Meetup · 2 Jam", "Live Session" (the price lives in its own column) */
+/** what was picked within it, without the price: "3 questions", "30 min", or '' */
+export const packageOf = (b: Booking) => nameParts(b).slice(1).filter((p) => !isPricePart(p)).map(packageEn).join(' · ');
+
+/** "Chat · 3 questions", "Meetup · 2 h", "Live Session" (the price lives in its own column) */
 export const serviceLabel = (b: Booking) => [serviceTitle(b), packageOf(b)].filter(Boolean).join(' · ');
 
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;

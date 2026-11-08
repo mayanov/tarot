@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Search, Phone, Mail, X, Repeat } from 'lucide-react';
 import { getAllBookings, Booking } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking, fmtMoney, fmtDate, serviceLabel, sessionWhen } from './lib/format';
+import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen } from './lib/format';
 import { StatusPill, PaymentPill } from './lib/status';
 
 // ---- contact parsing ----
@@ -126,13 +126,23 @@ const CustomersView: React.FC = () => {
         const needle = q.trim().toLowerCase();
         let list = customers;
         if (needle) list = list.filter((c) =>
-            c.name.toLowerCase().includes(needle) || c.phone.replace(/\s/g, '').includes(needle.replace(/\s/g, '')) || c.email.toLowerCase().includes(needle));
+            matchesSearch(needle, c.name, c.phone, c.email, ...c.bookings.map((b) => b.contact), ...c.bookings.map((b) => b.adminNote)));
         return [...list].sort((a, b) =>
             sort === 'recent' ? b.lastSeen.localeCompare(a.lastSeen)
                 : sort === 'bookings' ? liveCount(b) - liveCount(a)
                     : (b.paid - a.paid) || (b.owed - a.owed));
     }, [customers, q, sort]);
 
+    // the same search among the other market's customers (it only looks in the tab that's open)
+    const otherMarket = market === 'ID' ? 'Global' : 'ID';
+    const otherMatches = useMemo(() => {
+        if (!q.trim()) return 0;
+        const people = new Set(bookings
+            .filter((b) => b.status !== 'cancelled' && (b.market === 'ID' ? 'ID' : 'Global') === otherMarket
+                && matchesSearch(q, b.name, b.contact, b.adminNote))
+            .map((b) => normPhone(extractPhone(b.contact)) || extractEmail(b.contact).toLowerCase() || b.id));
+        return people.size;
+    }, [bookings, q, otherMarket]);
     const repeatCount = useMemo(() => customers.filter((c) => liveCount(c) > 1).length, [customers]);
 
     const spentLabel = (c: Customer) => (c.paid ? fmtMoney(c.paid, cur) : '—');
@@ -141,7 +151,7 @@ const CustomersView: React.FC = () => {
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <PageHeader
                 title="Customers"
-                subtitle={`${customers.length} ${market === 'ID' ? 'Indonesia' : 'Global'} clients · ${repeatCount} returning · grouped by phone number (email if none)`}
+                subtitle={`${customers.length} ${customers.length === 1 ? 'client' : 'clients'} ${market === 'ID' ? 'in Indonesia' : 'abroad'} · ${repeatCount} returning · grouped by phone number (email if none)`}
                 onRefresh={load}
                 refreshing={loading}
             >
@@ -155,12 +165,18 @@ const CustomersView: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
                 <div className="relative flex-1 max-w-sm">
                     <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-subtle" />
-                    <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, or email"
+                    <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, email or note"
                         className="w-full rounded-lg border border-adm-line-2 bg-surface-1 pl-9 pr-4 py-2 text-sm text-text-light placeholder-text-subtle focus:border-lilac focus:outline-none" />
                 </div>
                 <Segmented size="sm" value={sort} onChange={setSort}
                     options={[{ id: 'spent', label: 'Top spenders' }, { id: 'bookings', label: 'Most bookings' }, { id: 'recent', label: 'Recent' }]} />
             </div>
+
+            {otherMatches > 0 && (
+                <button type="button" onClick={() => setMarket(otherMarket)} className="text-sm text-lilac hover:underline">
+                    {otherMatches} {otherMatches === 1 ? 'customer' : 'customers'} matching “{q.trim()}” in {otherMarket === 'ID' ? 'Indonesia' : 'Global'} →
+                </button>
+            )}
 
             {/* list */}
             <div className="rounded-2xl bg-surface-1 border border-adm-line overflow-hidden">
@@ -174,7 +190,7 @@ const CustomersView: React.FC = () => {
                     <div className="col-span-1 text-right">Last</div>
                 </div>
                 {filtered.length === 0 ? (
-                    loading ? <InlineLoader /> : <p className="text-sm text-text-subtle py-12 text-center">No customers found.</p>
+                    loading ? <InlineLoader /> : <p className="text-sm text-text-subtle py-12 text-center">No customers found{q.trim() ? ` for “${q.trim()}”` : ''}.</p>
                 ) : filtered.map((c) => {
                     const count = liveCount(c);
                     return (

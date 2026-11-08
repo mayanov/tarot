@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking as amountOf, fmtMoney, fmtDate, serviceLabel, serviceTitle, sessionWhen, paymentMethodOf, phoneOf, emailOf } from './lib/format';
+import { amountForBooking as amountOf, matchesSearch, fmtMoney, fmtDate, serviceLabel, serviceTitle, sessionWhen, paymentMethodOf, phoneOf, emailOf } from './lib/format';
 import WaConfirmButton from './WaConfirmButton';
 import { StatusPill, PaymentPill } from './lib/status';
 import Card from './ui/Card';
@@ -121,13 +121,15 @@ const SalesView: React.FC = () => {
                 if (fromTs && ts < fromTs) return false;
                 if (toTs && ts > toTs) return false;
             }
-            if (!needle) return true;
-            return (b.name || '').toLowerCase().includes(needle)
-                || (b.serviceName || '').toLowerCase().includes(needle)
-                || (b.contact || '').toLowerCase().includes(needle)
-                || (b.ref || '').toLowerCase().includes(needle);
+            return !needle || matchesSearch(needle, b.name, b.serviceName, serviceLabel(b), b.contact, b.ref, b.adminNote);
         });
     }, [orders, q, payFilter, serviceFilter, sourceFilter, customerFilter, dateFrom, dateTo]);
+    // the same search in the other market's orders (it only looks in the tab that's open)
+    const otherMarket: Market = market === 'ID' ? 'Global' : 'ID';
+    const otherMatches = useMemo(() => (q.trim()
+        ? live.filter((b) => (b.market === 'ID' ? 'ID' : 'Global') === otherMarket
+            && matchesSearch(q, b.name, b.serviceName, serviceLabel(b), b.contact, b.ref, b.adminNote)).length
+        : 0), [live, q, otherMarket]);
 
     const activeFilters = (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0)
         + (sourceFilter !== 'all' ? 1 : 0) + (customerFilter !== 'all' ? 1 : 0)
@@ -189,9 +191,15 @@ const SalesView: React.FC = () => {
                 </Card>
             </div>
 
+            {otherMatches > 0 && (
+                <button type="button" onClick={() => { setMarket(otherMarket); setServiceFilter('all'); setCustomerFilter('all'); }}
+                    className="text-sm text-lilac hover:underline">
+                    {otherMatches} {otherMatches === 1 ? 'order' : 'orders'} for “{q.trim()}” in {otherMarket === 'ID' ? 'Indonesia' : 'Global'} →
+                </button>
+            )}
             {/* toolbar */}
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-                <SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, service, contact, or ref" />
+                <SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, service, ref or note" />
                 <div className="flex flex-wrap items-center gap-2">
                     <Select value={payFilter} active={payFilter !== 'all'} onChange={(e) => setPayFilter(e.target.value as 'all' | 'paid' | 'unpaid')}>
                         <option value="all">All payments</option>
@@ -296,7 +304,7 @@ const SalesView: React.FC = () => {
                                 <tr><td colSpan={7}><InlineLoader /></td></tr>
                             )}
                             {!loading && filtered.length === 0 && (
-                                <tr><td colSpan={7} className="text-center text-text-subtle py-16">No orders found.</td></tr>
+                                <tr><td colSpan={7} className="text-center text-text-subtle py-16">No orders found{q.trim() ? ` for “${q.trim()}”` : ''}.</td></tr>
                             )}
                             {filtered.map((b) => {
                                 const a = amountOf(b);

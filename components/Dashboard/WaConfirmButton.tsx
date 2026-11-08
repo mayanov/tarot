@@ -67,7 +67,7 @@ export const confirmationText = (b: Booking) => {
 };
 
 const sentLabel = (iso: string) =>
-  new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
+  new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 
 /** `compact`: a small pill for table rows (the Sales table) */
 const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; compact?: boolean }> = ({ b, onSent, compact }) => {
@@ -96,11 +96,11 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; comp
         type="button"
         onClick={(e) => { e.stopPropagation(); send(); }}
         disabled={busy}
-        title={b.waConfirmSentAt ? `Konfirmasi dikirim ${sentLabel(b.waConfirmSentAt)} · klik untuk kirim lagi` : 'Kirim konfirmasi WhatsApp'}
+        title={b.waConfirmSentAt ? `Confirmation sent ${sentLabel(b.waConfirmSentAt)} · click to send again` : 'Send the WhatsApp confirmation'}
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-colors disabled:opacity-50 ${b.waConfirmSentAt ? 'text-text-subtle hover:text-text-light hover:bg-adm-hover-2' : 'border border-adm-line-2 text-text-light font-medium hover:bg-adm-hover-2'}`}
       >
         <span className={b.waConfirmSentAt ? '' : 'text-[#1fae55]'}><FaWhatsapp size={13} /></span>
-        {b.waConfirmSentAt ? `Dikirim ${sentLabel(b.waConfirmSentAt).split(',')[0]}` : 'Konfirmasi'}
+        {b.waConfirmSentAt ? `Sent ${sentLabel(b.waConfirmSentAt).split(',')[0]}` : 'Confirm'}
       </button>
     );
   }
@@ -113,9 +113,9 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; comp
         className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors disabled:opacity-50 ${b.waConfirmSentAt ? 'bg-adm-hover-2 text-text-light hover:bg-adm-hover-3' : 'bg-[#25D366] text-[#0b2e17] hover:bg-[#1fbe5b]'}`}
       >
         <FaWhatsapp size={15} />
-        {b.waConfirmSentAt ? 'Kirim lagi' : 'Kirim konfirmasi WhatsApp'}
+        {b.waConfirmSentAt ? 'Send again' : 'Send WhatsApp confirmation'}
       </button>
-      {b.waConfirmSentAt && <span className="text-xs text-text-subtle">✓ Konfirmasi dikirim {sentLabel(b.waConfirmSentAt)}</span>}
+      {b.waConfirmSentAt && <span className="text-xs text-text-subtle">✓ Confirmation sent {sentLabel(b.waConfirmSentAt)}</span>}
     </div>
   );
 };

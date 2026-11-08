@@ -1093,6 +1093,36 @@ app.post('/api/admin/bookings/:id/wa-confirmed', verifyToken, async (req, res) =
     }
 });
 
+// Admin: fix a booking's details after it's saved: the customer's name and contact, the
+// price, and a private note only the dashboard shows (adminNote). Only the fields sent change.
+app.post('/api/admin/bookings/:id/details', verifyToken, async (req, res) => {
+    const { name, contact, amount, adminNote } = req.body || {};
+    const fields = {};
+    if (name !== undefined) {
+        if (typeof name !== 'string' || !name.trim()) return res.status(400).json({ error: 'Name is required' });
+        fields.name = name.trim().slice(0, 120);
+    }
+    if (contact !== undefined) fields.contact = String(contact).trim().slice(0, 160);
+    if (adminNote !== undefined) fields.adminNote = String(adminNote).trim().slice(0, 2000);
+    try {
+        if (amount !== undefined) {
+            const amt = Number(amount);
+            if (!Number.isFinite(amt) || amt < 0) return res.status(400).json({ error: 'Invalid amount' });
+            const b = await bookingStore.getBooking(req.params.id);
+            if (!b) return res.status(404).json({ error: 'Not found' });
+            // in the booking's own currency; the edited price replaces what was charged online
+            fields.price = b.market === 'ID' ? 'Rp ' + Math.round(amt) : '$' + amt;
+            fields.amountDue = null;
+        }
+        const updated = await bookingStore.updateDetails(req.params.id, fields);
+        if (!updated) return res.status(404).json({ error: 'Not found' });
+        res.json(updated);
+    } catch (e) {
+        console.error('edit booking failed:', e);
+        res.status(500).json({ error: 'Failed to save' });
+    }
+});
+
 // Admin: update a booking's status (pending | confirmed | cancelled | done).
 app.post('/api/admin/bookings/:id/status', verifyToken, async (req, res) => {
     const { status } = req.body || {};

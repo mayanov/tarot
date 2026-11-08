@@ -63,6 +63,21 @@ export interface Booking extends BookingInput {
   cancelReason?: 'unpaid' | 'closed' | 'failed' | null; // 'unpaid': not paid within the hour
   extraFor?: string; // extra time on a session (its ref): a record of its own, with its own price
   extraMinutes?: number;
+  adminNote?: string; // a private note only the dashboard shows
+}
+
+// Admin — fix a booking's details after it's saved (only the fields given change).
+export async function updateBookingDetails(
+  id: string, fields: { name?: string; contact?: string; amount?: number; adminNote?: string }, token?: string,
+): Promise<Booking> {
+  const res = await fetch(`${API_BASE}/api/admin/bookings/${encodeURIComponent(id)}/details`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    credentials: 'include',
+    body: JSON.stringify(fields),
+  });
+  if (!res.ok) throw new Error(`HTTP_${res.status}`);
+  return await res.json();
 }
 
 // Admin — manually record an order (e.g. taken over WhatsApp) so it appears in
