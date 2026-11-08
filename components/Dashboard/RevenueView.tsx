@@ -1,9 +1,9 @@
 import PageHeader from './ui/PageHeader';
 import Segmented from './ui/Segmented';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TrendingUp, Wallet, ShoppingBag, Award, Users, Repeat, UserPlus } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { getAllBookings, Booking } from '../../services/booking';
+import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import { Cur as Currency, amountForBooking, fmtIDR, fmtUSD, fmtMoney } from './lib/format';
 
@@ -80,6 +80,15 @@ const RevenueView: React.FC = () => {
         } finally { setLoading(false); }
     };
     useEffect(() => { load(); }, []);
+    // the background sync changed something (a move in Google Calendar, an unpaid booking
+    // cancelled): load again, quietly
+    const loadRef = useRef(load);
+    loadRef.current = load;
+    useEffect(() => {
+        const again = () => { loadRef.current(); };
+        window.addEventListener(BOOKINGS_CHANGED, again);
+        return () => window.removeEventListener(BOOKINGS_CHANGED, again);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // All confirmed/done bookings with a parseable amount in the selected currency (full history).
     const allRows = useMemo<Row[]>(() => bookings

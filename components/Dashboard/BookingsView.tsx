@@ -4,7 +4,7 @@ import PageHeader from './ui/PageHeader';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import Segmented from './ui/Segmented';
-import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, updateBookingDetails, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
+import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, updateBookingDetails, BOOKINGS_CHANGED, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
 import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
@@ -653,6 +653,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
 
     const flash = (text: string, kind: 'ok' | 'err') => { setNotice({ text, kind }); setTimeout(() => setNotice(null), 3000); };
 
+    const loadedOnce = useRef(false);
     const load = async () => {
         setLoading(true);
         setError('');
@@ -668,12 +669,25 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
             setError('Could not load bookings. Make sure you are logged in and the server is reachable.');
         } finally {
             setLoading(false);
-            fetchEvents(weekStart);
-            if (tab === 'today') fetchSoon();
+            // (on opening, the effects below already ask for the calendar: only a reload asks again)
+            if (loadedOnce.current) {
+                fetchEvents(weekStart);
+                if (tab === 'today') fetchSoon();
+            }
+            loadedOnce.current = true;
         }
     };
 
     useEffect(() => { load(); }, []);
+    // the background sync changed something (a move in Google Calendar, an unpaid booking
+    // cancelled): load again, quietly
+    const loadRef = useRef(load);
+    loadRef.current = load;
+    useEffect(() => {
+        const again = () => { loadRef.current(); };
+        window.addEventListener(BOOKINGS_CHANGED, again);
+        return () => window.removeEventListener(BOOKINGS_CHANGED, again);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Pull the owner's Google Calendar events for the visible week (context around bookings).
     const fetchEvents = async (ws: Date) => {

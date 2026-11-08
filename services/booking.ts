@@ -227,7 +227,28 @@ export async function getAllBookings(token?: string): Promise<Booking[]> {
     credentials: 'include',
   });
   if (!res.ok) throw new Error(`HTTP_${res.status}`);
-  return await res.json();
+  const list = await res.json();
+  syncInBackground(token);
+  return list;
+}
+
+/** fired on window when the background sync changed bookings: the open screen loads them again */
+export const BOOKINGS_CHANGED = 'mt:bookings-changed';
+// The server's housekeeping (Google Calendar changes read back, unpaid bookings past their
+// hour cancelled, missed emails sent) runs after the list has loaded rather than before it,
+// at most once a minute from this tab.
+let lastSync = 0;
+function syncInBackground(token?: string) {
+  if (Date.now() - lastSync < 60_000) return;
+  lastSync = Date.now();
+  fetch(`${API_BASE}/api/admin/sync`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: 'include',
+  })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => { if (d?.changed > 0) window.dispatchEvent(new Event(BOOKINGS_CHANGED)); })
+    .catch(() => { /* the next load tries again */ });
 }
 
 // Admin — move a booking to a new date/time (drag-and-drop reschedule).

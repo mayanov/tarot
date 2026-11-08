@@ -1,8 +1,8 @@
 import PageHeader from './ui/PageHeader';
 import Segmented from './ui/Segmented';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Phone, Mail, X, Repeat } from 'lucide-react';
-import { getAllBookings, Booking } from '../../services/booking';
+import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen } from './lib/format';
 import { StatusPill, PaymentPill } from './lib/status';
@@ -79,6 +79,15 @@ const CustomersView: React.FC = () => {
         } finally { setLoading(false); }
     };
     useEffect(() => { load(); }, []);
+    // the background sync changed something (a move in Google Calendar, an unpaid booking
+    // cancelled): load again, quietly
+    const loadRef = useRef(load);
+    loadRef.current = load;
+    useEffect(() => {
+        const again = () => { loadRef.current(); };
+        window.addEventListener(BOOKINGS_CHANGED, again);
+        return () => window.removeEventListener(BOOKINGS_CHANGED, again);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // a client's bookings that weren't cancelled
     const liveCount = (c: Customer) => c.bookings.filter((b) => b.status !== 'cancelled').length;

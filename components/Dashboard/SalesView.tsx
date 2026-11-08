@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } from 'lucide-react';
-import { getAllBookings, updatePaymentStatus, Booking } from '../../services/booking';
+import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking as amountOf, matchesSearch, fmtMoney, fmtDate, serviceLabel, serviceTitle, sessionWhen, paymentMethodOf, phoneOf, emailOf } from './lib/format';
 import WaConfirmButton from './WaConfirmButton';
@@ -66,6 +66,15 @@ const SalesView: React.FC = () => {
         }
     };
     useEffect(() => { load(); }, []);
+    // the background sync changed something (a move in Google Calendar, an unpaid booking
+    // cancelled): load again, quietly
+    const loadRef = useRef(load);
+    loadRef.current = load;
+    useEffect(() => {
+        const again = () => { loadRef.current(); };
+        window.addEventListener(BOOKINGS_CHANGED, again);
+        return () => window.removeEventListener(BOOKINGS_CHANGED, again);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // This market's orders except cancelled — newest booking date first (API already sorts desc).
     const live = useMemo(() => bookings.filter((b) => b.status !== 'cancelled'), [bookings]);

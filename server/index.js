@@ -893,21 +893,27 @@ let lastChecksAt = 0;
 const RECONCILE_THROTTLE_MS = 3 * 60 * 1000;
 
 // Admin: list all bookings (JWT-protected, same auth as the dashboard).
+// Admin: the housekeeping that used to hold up the bookings list (it took ~5 s): read back
+// changes made in Google Calendar, cancel bookings left unpaid past their hour, and send
+// any timed email whose clock was missed. The dashboard calls it in the background right
+// after the list has loaded, and loads the list again if anything changed.
+app.post('/api/admin/sync', verifyToken, async (req, res) => {
+    let changed = 0;
+    if (Date.now() - lastReconcileAt > RECONCILE_THROTTLE_MS) {
+        lastReconcileAt = Date.now();
+        try { changed += (await bookingStore.reconcileWithCalendar()) || 0; } catch (e) { console.error('reconcile failed:', e.message); }
+    }
+    try { changed += (await bookingStore.expireUnpaid()) || 0; } catch (e) { console.error('expire unpaid failed:', e.message); }
+    if (Date.now() - lastChecksAt > RECONCILE_THROTTLE_MS) {
+        lastChecksAt = Date.now();
+        await notices.runChecks().catch((e) => console.error('checks failed:', e.message));
+    }
+    res.json({ changed });
+});
+
 app.get('/api/admin/bookings', verifyToken, async (req, res) => {
     try {
-        // Reverse-sync Google Calendar changes — but only if we haven't recently, so
-        // navigating between admin tabs stays fast.
-        if (Date.now() - lastReconcileAt > RECONCILE_THROTTLE_MS) {
-            lastReconcileAt = Date.now();
-            try { await bookingStore.reconcileWithCalendar(); } catch (e) { console.error('reconcile failed:', e.message); }
-        }
-        // unpaid an hour after booking: cancelled
-        try { await bookingStore.expireUnpaid(); } catch (e) { console.error('expire unpaid failed:', e.message); }
-        // and the timed emails, in case their clock has missed one (throttled like the sync)
-        if (Date.now() - lastChecksAt > RECONCILE_THROTTLE_MS) {
-            lastChecksAt = Date.now();
-            await notices.runChecks().catch((e) => console.error('checks failed:', e.message));
-        }
+        // (Google Calendar changes, unpaid bookings and missed emails: POST /api/admin/sync)
         // bookings being paid for show as pending/unpaid, and as cancelled if never paid;
         // a payment window the customer closed (they usually just try again) is left out
         res.json((await bookingStore.getAllBookings()).filter((b) => !(b.holdOnly && b.status === 'cancelled' && b.cancelReason !== 'unpaid')));

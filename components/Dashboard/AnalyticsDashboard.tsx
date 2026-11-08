@@ -109,17 +109,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     const [clientId, setClientId] = useState('1053786819507-t7aalq26e9djq7lkf3q6jge02jf36qdr.apps.googleusercontent.com');
     const [propertyId, setPropertyId] = useState('386315459');
 
-    // Init Logic
-    // Init Logic
+    // View State (up here: the Analytics data waits for its screen to be opened)
+    const [activeView, setActiveView] = useState<View>('today'); // opens on the day's work
+
+    // Init: the date range and real data. Nothing is fetched yet: the dashboard opens on
+    // Today, and Analytics' numbers (and Google's script, only needed to connect by hand)
+    // took ~5 s on every open; they load when Analytics is first opened.
     useEffect(() => {
         applyPreset('7D');
-        // Initialize Google API scripts but DO NOT auto-login/popup
-        if (clientId) {
-            initGoogleAPI(clientId).catch(console.error);
-        }
-        // Attempt to load data using default mode (Real if possible via backend)
         setUseRealData(true);
-        setTimeout(() => loadData(true), 100);
     }, []);
 
     // Handle Connection
@@ -189,8 +187,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     };
 
     useEffect(() => {
+        if (activeView !== 'analytics') return;
         loadData();
-    }, [startDate, endDate, useRealData, isConnected, site]);
+    }, [startDate, endDate, useRealData, isConnected, site, activeView === 'analytics']); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Analytics reset: from now on the dashboard counts only from today. The data in
     // Google Analytics isn't deleted, so "Undo reset" brings the history back.
@@ -214,7 +213,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     // User Management State
     // User Management State
     // View State
-    const [activeView, setActiveView] = useState<View>('today'); // opens on the day's work
     const [sidebarOpen, setSidebarOpen] = useState(false); // mobile drawer
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         try { return (localStorage.getItem('admin_theme') as 'light' | 'dark') || 'light'; } catch { return 'light'; }
