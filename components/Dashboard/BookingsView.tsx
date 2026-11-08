@@ -1045,7 +1045,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                     </div>
                 );
                 return (
-                    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start">
+                    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start">
                         <Card className="overflow-hidden">
                             {head('Sessions', 0, onOpen && (() => onOpen('calendar')), 'Schedule')}
                             {/* today and tomorrow always; the days after only when something's on */}
