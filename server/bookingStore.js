@@ -165,7 +165,7 @@ export async function rescheduleBooking(id, { date, time, durationMin }, opts = 
   }
 
   if (!opts.skipCalendar && updated.gcalEventId) {
-    try { await gcal.updateEvent(updated.gcalEventId, updated); } catch (e) { console.error('[bookings] calendar update failed:', e.message); }
+    try { await gcal.updateEvent(updated.gcalEventId, updated, { notify: !opts.quiet }); } catch (e) { console.error('[bookings] calendar update failed:', e.message); }
     // Meetup travel blocks move with the session: drop the old ones, recreate at the new time.
     try {
       if (booking.gcalTransportIds?.length) await gcal.deleteEvents(booking.gcalTransportIds);

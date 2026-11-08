@@ -978,6 +978,58 @@ app.post('/api/admin/bookings', verifyToken, async (req, res) => {
     }
 });
 
+// Admin: a call or meetup that ran longer than booked. The extra time is its own small
+// record (extraFor: the session's ref), with its own price and Paid switch, so Sales,
+// Revenue and Customers count it like any order; the session itself gets longer, here and
+// on the calendar (without Google emailing the guest), unless `keepTime` (the time after it
+// is booked: only the money is recorded).
+const EXTRA_TIME = {
+    call: { minutes: 15, amount: 110000, label: 'Tambahan 15 Menit' },
+    meetup: { minutes: 60, amount: 360000, label: 'Jam Berikutnya (per jam)' },
+};
+app.post('/api/admin/bookings/:id/extra', verifyToken, async (req, res) => {
+    const { units: rawUnits, paid, keepTime } = req.body || {};
+    const units = Math.round(Number(rawUnits) || 1);
+    if (units < 1 || units > 8) return res.status(400).json({ error: 'Invalid amount of time' });
+    try {
+        const b = await bookingStore.getBooking(req.params.id);
+        if (!b) return res.status(404).json({ error: 'Not found' });
+        const x = EXTRA_TIME[b.serviceId];
+        if (!x || !b.date || !b.time || b.status === 'cancelled') return res.status(400).json({ error: 'Not a session that can run longer' });
+        const minutes = x.minutes * units;
+        let session = b;
+        if (!keepTime) {
+            session = await bookingStore.rescheduleBooking(b.id, {
+                date: b.date, time: b.time, durationMin: (b.durationMin || 30) + minutes,
+            }, { quiet: true });
+        }
+        const svc = String(b.serviceName || '').split(' · ')[0].trim() || b.serviceId;
+        const extra = await bookingStore.createBooking({
+            serviceId: b.serviceId,
+            serviceName: `${svc} · ${x.label}${units > 1 ? ` ×${units}` : ''}`,
+            name: b.name || '',
+            dob: '',
+            contact: b.contact || '',
+            question: `Extra time for the session on ${b.date} ${b.time}`,
+            market: 'ID',
+            price: `Rp ${x.amount * units}`,
+            source: 'manual',
+            status: 'done',
+            paymentStatus: paid ? 'paid' : 'unpaid',
+            // revenue lands on the session's day
+            createdAt: `${b.date}T12:00:00.000Z`,
+            extraFor: b.ref || b.id,
+            extraMinutes: minutes,
+            skipCalendar: true,
+        });
+        res.status(201).json({ session, extra });
+    } catch (e) {
+        if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
+        console.error('extra time failed:', e);
+        res.status(500).json({ error: 'Failed to add extra time' });
+    }
+});
+
 // Admin: move a booking to a new date/time (drag-and-drop reschedule).
 app.post('/api/admin/bookings/:id/reschedule', verifyToken, async (req, res) => {
     const { date, time, durationMin } = req.body || {};

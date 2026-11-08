@@ -533,7 +533,10 @@ export async function eventStatus(eventId) {
 }
 
 // Push a booking's new time to its existing calendar event (used on admin reschedule).
-export async function updateEvent(eventId, booking) {
+// `notify: false` changes it without Google emailing the guests (extra time added to a
+// session that's happening anyway).
+export async function updateEvent(eventId, booking, { notify = true } = {}) {
+  const sendUpdates = notify ? 'all' : 'none';
   const c = getClient();
   if (!c || !eventId || !booking?.date || !booking?.time) return;
   try {
@@ -541,7 +544,7 @@ export async function updateEvent(eventId, booking) {
     // guests: only its time moves (exactly the session, no rest tail).
     if (booking.gcalLinked) {
       const dur = booking.durationMin > 0 ? booking.durationMin : 60;
-      const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}?sendUpdates=all`, {
+      const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}?sendUpdates=${sendUpdates}`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -556,7 +559,7 @@ export async function updateEvent(eventId, booking) {
     // their guest entry and Meet link stay as they are), an event without guests stays one.
     const cur = await getEvent(eventId);
     const invite = cur ? cur.extendedProperties?.private?.mtInvite === '1' : invites(booking);
-    const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}?sendUpdates=all`, {
+    const r = await fetch(`${eventsUrl()}/${encodeURIComponent(eventId)}?sendUpdates=${sendUpdates}`, {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(scheduledBody(booking, invite)),

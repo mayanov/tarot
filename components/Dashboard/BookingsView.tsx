@@ -4,7 +4,7 @@ import PageHeader from './ui/PageHeader';
 import Button from './ui/Button';
 import Card from './ui/Card';
 import Segmented from './ui/Segmented';
-import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
+import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
 import { fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
@@ -487,6 +487,64 @@ const Agenda: React.FC<{
     </div>
 );
 
+// A call or meetup that ran longer: add its add-on (call +15 min, meetup +1 hour). Each is
+// a small record of its own with its own Paid switch (so it counts in Sales and Revenue),
+// and the session gets longer here and on the calendar. If the time after it is booked,
+// only the money can be recorded.
+const EXTRA: Record<string, { label: string; amount: number }> = {
+    call: { label: '+15 min', amount: 110000 },
+    meetup: { label: '+1 hour', amount: 360000 },
+};
+const ExtraTime: React.FC<{
+    b: Booking; extras: Booking[]; onDone: (msg: string) => void;
+    onToggle: (x: Booking) => void; payBusy: string | null;
+}> = ({ b, extras, onDone, onToggle, payBusy }) => {
+    const x = EXTRA[b.serviceId];
+    const [paid, setPaid] = useState(true);
+    const [busy, setBusy] = useState(false);
+    const [clash, setClash] = useState(false);
+    const [err, setErr] = useState('');
+    if (!x) return null;
+    const add = async (keepTime: boolean) => {
+        setBusy(true); setErr('');
+        try {
+            const { session } = await addExtraTime(b.id, 1, paid, keepTime, localStorage.getItem('authToken') || undefined);
+            const end = session.durationMin ? toHHMM(toMin(session.time) + session.durationMin) : '';
+            onDone(keepTime ? `${x.label} recorded (the time stays as it was).` : `${x.label} added. The session now ends at ${end}.`);
+            setClash(false);
+        } catch (e) {
+            if (e instanceof Error && e.message === 'SLOT_TAKEN') setClash(true);
+            else setErr('Could not add it. Try again.');
+        } finally { setBusy(false); }
+    };
+    return (
+        <div className="space-y-2 pt-1">
+            <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle">Ran longer?</div>
+            {extras.map((e) => (
+                <div key={e.id} className="flex items-center justify-between gap-2 text-sm">
+                    <span className="text-text-light">{e.extraMinutes ? (e.extraMinutes >= 60 ? `+${e.extraMinutes / 60} hour${e.extraMinutes > 60 ? 's' : ''}` : `+${e.extraMinutes} min`) : 'Extra time'}
+                        <span className="ml-2 text-text-subtle tabular-nums">{amountLabel(e)}</span></span>
+                    <PaymentPill paid={e.paymentStatus === 'paid'} onToggle={() => onToggle(e)} busy={payBusy === e.id} />
+                </div>
+            ))}
+            <div className="flex flex-wrap items-center gap-3">
+                <Button onClick={() => add(false)} disabled={busy}>{busy ? 'Adding…' : `${x.label} · ${fmtAmt(x.amount, 'IDR')}`}</Button>
+                <label className="flex items-center gap-2 text-sm text-text-light cursor-pointer select-none">
+                    <input type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)} className="accent-lilac w-4 h-4" />
+                    Paid already
+                </label>
+            </div>
+            {clash && (
+                <div className="text-xs text-text-subtle space-y-1.5">
+                    <p>Another booking starts right after this session, so it can't get longer on the calendar.</p>
+                    <button type="button" onClick={() => add(true)} disabled={busy} className="text-lilac font-semibold hover:underline">Record the price only</button>
+                </div>
+            )}
+            {err && <p className="text-xs text-coral">{err}</p>}
+        </div>
+    );
+};
+
 // A line on Today's lists: a reading waiting, or something not paid yet.
 const TodayLine: React.FC<{ b: Booking; onOpen: () => void; children?: React.ReactNode; note: React.ReactNode }> = ({ b, onOpen, children, note }) => (
     <div onClick={onOpen} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors">
@@ -646,7 +704,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
     // Cancelled sessions are dropped from the calendar entirely.
     const calendarSessions = useMemo(() => scheduled.filter((b) => b.status !== 'cancelled'), [scheduled]);
     const orders = useMemo(
-        () => bookings.filter((b) => !(b.date && b.time)).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')),
+        () => bookings.filter((b) => !(b.date && b.time) && !b.extraFor).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')),
         [bookings],
     );
     const activeOrders = useMemo(
@@ -940,7 +998,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                         {unpaid.map((b) => (
                                             <TodayLine key={b.id} b={b} onOpen={() => setSelectedId(b.id)}
                                                 note={<div className="text-[0.7rem] text-text-subtle tabular-nums mt-0.5">
-                                                    {b.date && b.time ? `Session ${fmtDate(b.date)} · ${b.time}` : `Ordered ${fmtDate(b.createdAt)}`}
+                                                    {b.date && b.time ? `Session ${fmtDate(b.date)} · ${b.time}` : b.extraFor ? `Extra time · session ${fmtDate(b.createdAt)}` : `Ordered ${fmtDate(b.createdAt)}`}
                                                 </div>}>
                                                 <PaymentPill paid={false} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
                                             </TodayLine>
@@ -1010,6 +1068,10 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                     <p className="text-xs text-text-subtle">The calendar invite{b.serviceId === 'meetup' ? '' : ' and Meet link'} go out when you mark it paid.</p>
                                 )}
                                 <WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} />
+                                {timed && b.status !== 'cancelled' && EXTRA[b.serviceId] && (
+                                    <ExtraTime key={b.id} b={b} extras={bookings.filter((x) => x.extraFor && x.extraFor === (b.ref || b.id))}
+                                        onDone={(msg) => { flash(msg, 'ok'); load(); }} onToggle={togglePaid} payBusy={payBusy} />
+                                )}
                                 {b.status === 'cancelled' && timed && (
                                     <RestoreAt key={b.id} b={b} bookings={bookings}
                                         onDone={(msg) => { setSelectedId(null); flash(msg, 'ok'); load(); }} />

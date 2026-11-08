@@ -61,6 +61,8 @@ export interface Booking extends BookingInput {
   inviteOnPay?: boolean; // its calendar invite goes out once it's marked paid
   paidAt?: string; // when it was first marked paid (an order's delivery clock starts there)
   cancelReason?: 'unpaid' | 'closed' | 'failed' | null; // 'unpaid': not paid within the hour
+  extraFor?: string; // extra time on a session (its ref): a record of its own, with its own price
+  extraMinutes?: number;
 }
 
 // Admin — manually record an order (e.g. taken over WhatsApp) so it appears in
@@ -95,6 +97,20 @@ export async function createManualBooking(input: ManualBookingInput, token?: str
     const body = await res.json().catch(() => ({}));
     throw new Error(body?.error === 'LINKED' ? 'LINKED' : 'SLOT_TAKEN');
   }
+  if (!res.ok) throw new Error(`HTTP_${res.status}`);
+  return await res.json();
+}
+
+// Admin — a call or meetup ran longer: `units` of its add-on (call 15 min, meetup 1 h).
+// `keepTime`: only the money is recorded (the time after it is booked).
+export async function addExtraTime(id: string, units: number, paid: boolean, keepTime: boolean, token?: string): Promise<{ session: Booking; extra: Booking }> {
+  const res = await fetch(`${API_BASE}/api/admin/bookings/${encodeURIComponent(id)}/extra`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    credentials: 'include',
+    body: JSON.stringify({ units, paid, keepTime }),
+  });
+  if (res.status === 409) throw new Error('SLOT_TAKEN');
   if (!res.ok) throw new Error(`HTTP_${res.status}`);
   return await res.json();
 }
