@@ -4,6 +4,7 @@ import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, sessionWhen, paymentMethodOf, phoneOf, emailOf, fmtPhone } from './lib/format';
 import WaConfirmButton from './WaConfirmButton';
+import EmailConfirmButton from './EmailConfirmButton';
 import { StatusPill, PaymentPill } from './lib/status';
 import Card from './ui/Card';
 import PageHeader from './ui/PageHeader';
@@ -312,7 +313,7 @@ const SalesView: React.FC = () => {
                                 <th className="font-semibold px-4 py-3 text-right">Amount</th>
                                 <th className="font-semibold px-4 py-3">Status</th>
                                 <th className="font-semibold px-4 py-3">Payment</th>
-                                <th className="font-semibold px-4 py-3 text-right">WhatsApp</th>
+                                <th className="font-semibold px-4 py-3 text-right">{market === 'ID' ? 'WhatsApp' : 'Email'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -354,7 +355,10 @@ const SalesView: React.FC = () => {
                                         <td className="px-4 py-3"><StatusPill status={b.status} /></td>
                                         <td className="px-4 py-3"><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={savingId === b.id} /></td>
                                         <td className="px-4 py-2.5 text-right whitespace-nowrap">
-                                            <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
+                                            {/* Indonesia is confirmed on WhatsApp, Global by email */}
+                                            {market === 'ID'
+                                                ? <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
+                                                : <EmailConfirmButton b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
                                         </td>
                                     </tr>
                                     </React.Fragment>

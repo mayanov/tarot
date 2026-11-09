@@ -1102,6 +1102,27 @@ app.post('/api/admin/bookings/:id/wa-confirmed', verifyToken, async (req, res) =
     }
 });
 
+// Admin: send a global booking's confirmation email ("your … is booked", the one a PayPal
+// payment sends by itself) from the Sales screen, for one that never got it: paid by hand,
+// or entered in the dashboard. Once per booking: one already emailed is left as it is.
+app.post('/api/admin/bookings/:id/email-confirm', verifyToken, async (req, res) => {
+    try {
+        const b = await bookingStore.getBooking(req.params.id);
+        if (!b) return res.status(404).json({ error: 'Not found' });
+        if (b.paidEmailSentAt) return res.json(b);
+        if (mailer.isIndonesian(b)) return res.status(400).json({ error: 'INDONESIA' });
+        if (b.paymentStatus !== 'paid') return res.status(409).json({ error: 'NOT_PAID' });
+        if (!mailer.emailOf(b.contact)) return res.status(400).json({ error: 'NO_EMAIL' });
+        await bookingStore.claimOnce(`paidmail_${b.ref || b.id}`).catch(() => false); // (so the automatic one never follows)
+        if (!(await mailer.sendPaid(b, b.amountDue || paypal.READINGS[b.serviceId]?.value || ''))) return res.status(502).json({ error: 'NOT_SENT' });
+        const st = await bookingStore.markPaidEmailSent(b.id);
+        res.json({ ...b, paidEmailSentAt: st?.paidEmailSentAt || new Date().toISOString() });
+    } catch (e) {
+        console.error('confirmation email failed:', e);
+        res.status(500).json({ error: 'Failed to send' });
+    }
+});
+
 // Admin: fix a booking's details after it's saved: the customer's name and contact, the
 // price, and a private note only the dashboard shows (adminNote). Only the fields sent change.
 app.post('/api/admin/bookings/:id/details', verifyToken, async (req, res) => {
