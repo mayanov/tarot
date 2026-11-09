@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } from 'lucide-react';
+import { Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays, SlidersHorizontal } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, sessionWhen, paymentMethodOf, phoneOf, emailOf, fmtPhone } from './lib/format';
+import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle } from './lib/format';
+import BookingsView from './BookingsView';
 import WaConfirmButton from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
 import { StatusPill, PaymentPill } from './lib/status';
@@ -22,14 +23,14 @@ const SalesView: React.FC = () => {
     const [payFilter, setPayFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
     const [serviceFilter, setServiceFilter] = useState<string>('all');
     const [sourceFilter, setSourceFilter] = useState<'all' | 'manual' | 'booking'>('all');
-    const [customerFilter, setCustomerFilter] = useState<string>('all');
     const [dateFrom, setDateFrom] = useState<string>('');
     const [dateTo, setDateTo] = useState<string>('');
     const [dateOpen, setDateOpen] = useState(false);
     const dateRef = useRef<HTMLDivElement>(null);
-    const [custOpen, setCustOpen] = useState(false);
-    const [custQuery, setCustQuery] = useState('');
-    const custRef = useRef<HTMLDivElement>(null);
+    const [moreOpen, setMoreOpen] = useState(false);
+    const moreRef = useRef<HTMLDivElement>(null);
+    // the booking whose details are open (the same popup as Orders and Schedule)
+    const [openId, setOpenId] = useState<string | null>(null);
     const [savingId, setSavingId] = useState<string | null>(null);
     // one market at a time, so rupiah and dollars never share a list or a total
     const [market, setMarket] = useState<Market>('ID');
@@ -44,15 +45,15 @@ const SalesView: React.FC = () => {
         return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
     }, [dateOpen]);
 
-    // close the customer popover on outside click / Escape
+    // close the More filters popover on outside click / Escape
     useEffect(() => {
-        if (!custOpen) return;
-        const onDown = (e: MouseEvent) => { if (custRef.current && !custRef.current.contains(e.target as Node)) setCustOpen(false); };
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setCustOpen(false); };
+        if (!moreOpen) return;
+        const onDown = (e: MouseEvent) => { if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false); };
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMoreOpen(false); };
         document.addEventListener('mousedown', onDown);
         document.addEventListener('keydown', onKey);
         return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-    }, [custOpen]);
+    }, [moreOpen]);
 
     const load = async () => {
         setLoading(true);
@@ -103,19 +104,6 @@ const SalesView: React.FC = () => {
         return Array.from(set).sort((a, b) => a.localeCompare(b));
     }, [orders]);
 
-    // Distinct customers present in the data, for the Customer dropdown.
-    const customerOptions = useMemo(() => {
-        const set = new Set<string>();
-        orders.forEach((b) => { const n = (b.name || '').trim(); if (n) set.add(n); });
-        return Array.from(set).sort((a, b) => a.localeCompare(b));
-    }, [orders]);
-
-    // Customer options narrowed by the dropdown's own search box.
-    const custMatches = useMemo(() => {
-        const n = custQuery.trim().toLowerCase();
-        return n ? customerOptions.filter((c) => c.toLowerCase().includes(n)) : customerOptions;
-    }, [customerOptions, custQuery]);
-
     const filtered = useMemo(() => {
         const needle = q.trim().toLowerCase();
         const fromTs = dateFrom ? new Date(dateFrom + 'T00:00:00').getTime() : null;
@@ -124,7 +112,6 @@ const SalesView: React.FC = () => {
             if (payFilter !== 'all' && (b.paymentStatus || 'unpaid') !== payFilter) return false;
             if (serviceFilter !== 'all' && serviceTitle(b) !== serviceFilter) return false;
             if (sourceFilter !== 'all' && (b.source === 'manual' ? 'manual' : 'booking') !== sourceFilter) return false;
-            if (customerFilter !== 'all' && (b.name || '').trim() !== customerFilter) return false;
             if (fromTs || toTs) {
                 const ts = b.createdAt ? new Date(b.createdAt).getTime() : NaN;
                 if (!Number.isFinite(ts)) return false;
@@ -133,7 +120,7 @@ const SalesView: React.FC = () => {
             }
             return !needle || matchesSearch(needle, b.name, b.serviceName, serviceLabel(b), b.contact, b.ref, b.adminNote);
         }).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-    }, [orders, q, payFilter, serviceFilter, sourceFilter, customerFilter, dateFrom, dateTo]);
+    }, [orders, q, payFilter, serviceFilter, sourceFilter, dateFrom, dateTo]);
     // the same search in the other market's orders (it only looks in the tab that's open)
     const otherMarket: Market = market === 'ID' ? 'Global' : 'ID';
     const otherMatches = useMemo(() => (q.trim()
@@ -142,7 +129,7 @@ const SalesView: React.FC = () => {
         : 0), [live, q, otherMarket]);
 
     const activeFilters = (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0)
-        + (sourceFilter !== 'all' ? 1 : 0) + (customerFilter !== 'all' ? 1 : 0)
+        + (sourceFilter !== 'all' ? 1 : 0)
         + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
 
     // Short label for the collapsed booking-date button.
@@ -183,7 +170,7 @@ const SalesView: React.FC = () => {
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <PageHeader title="Sales" subtitle={`${orders.length} ${market === 'ID' ? 'Indonesia' : 'Global'} orders · mark payments as they come in`} onRefresh={load} refreshing={loading}>
                 {/* market: rupiah and dollars are kept apart */}
-                <Segmented value={market} onChange={(m) => { setMarket(m); setServiceFilter('all'); setCustomerFilter('all'); }}
+                <Segmented value={market} onChange={(m) => { setMarket(m); setServiceFilter('all'); }}
                     options={[{ id: 'ID', label: 'Indonesia · IDR', count: countBy.ID }, { id: 'Global', label: 'Global · USD', count: countBy.Global }]} />
             </PageHeader>
 
@@ -209,7 +196,7 @@ const SalesView: React.FC = () => {
             </div>
 
             {otherMatches > 0 && (
-                <button type="button" onClick={() => { setMarket(otherMarket); setServiceFilter('all'); setCustomerFilter('all'); }}
+                <button type="button" onClick={() => { setMarket(otherMarket); setServiceFilter('all'); }}
                     className="text-sm text-lilac hover:underline">
                     {otherMatches} {otherMatches === 1 ? 'order' : 'orders'} for “{q.trim()}” in {otherMarket === 'ID' ? 'Indonesia' : 'Global'} →
                 </button>
@@ -227,43 +214,6 @@ const SalesView: React.FC = () => {
                         <option value="all">All services</option>
                         {serviceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
                     </Select>
-                    <Select value={sourceFilter} active={sourceFilter !== 'all'} onChange={(e) => setSourceFilter(e.target.value as 'all' | 'manual' | 'booking')}>
-                        <option value="all">All sources</option>
-                        <option value="booking">From booking</option>
-                        <option value="manual">Manual</option>
-                    </Select>
-                    {/* customer searchable dropdown */}
-                    <div className="relative" ref={custRef}>
-                        <button type="button" onClick={() => { setCustOpen((o) => !o); setCustQuery(''); }}
-                            className={`inline-flex items-center gap-2 pl-3 pr-8 py-2 rounded-lg border bg-bg-dark text-sm focus:border-lilac focus:outline-none cursor-pointer relative max-w-[14rem] ${customerFilter !== 'all' ? 'border-lilac text-text-light' : 'border-adm-line-2 text-text-subtle hover:text-text-light'}`}>
-                            <span className="truncate">{customerFilter === 'all' ? 'All customers' : customerFilter}</span>
-                            <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
-                        </button>
-                        {custOpen && (
-                            <div className="absolute z-20 mt-2 right-0 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg overflow-hidden">
-                                <div className="relative p-2 border-b border-adm-line">
-                                    <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-subtle" />
-                                    <input autoFocus value={custQuery} onChange={(e) => setCustQuery(e.target.value)} placeholder="Search customer…"
-                                        className="w-full pl-8 pr-2 py-1.5 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none" />
-                                </div>
-                                <div className="max-h-56 overflow-y-auto py-1">
-                                    <button onClick={() => { setCustomerFilter('all'); setCustOpen(false); }}
-                                        className={`w-full text-left px-3 py-1.5 text-sm transition-colors hover:bg-adm-hover ${customerFilter === 'all' ? 'text-lilac font-semibold' : 'text-text-subtle'}`}>
-                                        All customers
-                                    </button>
-                                    {custMatches.map((c) => (
-                                        <button key={c} onClick={() => { setCustomerFilter(c); setCustOpen(false); }}
-                                            className={`w-full text-left px-3 py-1.5 text-sm truncate transition-colors hover:bg-adm-hover ${customerFilter === c ? 'text-lilac font-semibold' : 'text-text-light'}`}>
-                                            {c}
-                                        </button>
-                                    ))}
-                                    {custMatches.length === 0 && (
-                                        <p className="px-3 py-3 text-sm text-text-subtle text-center">No match</p>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
                     {/* booking-date range — collapsed to a single button, opens a range panel */}
                     <div className="relative" ref={dateRef}>
                         <button type="button" onClick={() => setDateOpen((o) => !o)}
@@ -293,8 +243,25 @@ const SalesView: React.FC = () => {
                             </div>
                         )}
                     </div>
+                    {/* rarely needed: where the order came from */}
+                    <div className="relative" ref={moreRef}>
+                        <button type="button" onClick={() => setMoreOpen((o) => !o)} title="More filters"
+                            className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border bg-bg-dark text-sm focus:border-lilac focus:outline-none ${sourceFilter !== 'all' ? 'border-lilac text-text-light' : 'border-adm-line-2 text-text-subtle hover:text-text-light'}`}>
+                            <SlidersHorizontal size={15} />
+                            <span className="hidden sm:inline">{sourceFilter === 'all' ? 'More' : sourceFilter === 'manual' ? 'Added by hand' : 'From the site'}</span>
+                        </button>
+                        {moreOpen && (
+                            <div className="absolute z-20 mt-2 right-0 w-56 max-w-[calc(100vw-2rem)] rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-3">
+                                <div className="text-xs text-text-subtle mb-1.5">Where the order came from</div>
+                                {([['all', 'Anywhere'], ['booking', 'Booked on the site'], ['manual', 'Added by hand']] as const).map(([id, label]) => (
+                                    <button key={id} type="button" onClick={() => { setSourceFilter(id); setMoreOpen(false); }}
+                                        className={`w-full text-left px-2 py-1.5 rounded-md text-sm hover:bg-adm-hover ${sourceFilter === id ? 'text-lilac font-semibold' : 'text-text-light'}`}>{label}</button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     {activeFilters > 0 && (
-                        <Button variant="ghost" onClick={() => { setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setCustomerFilter('all'); setDateFrom(''); setDateTo(''); }}>
+                        <Button variant="ghost" onClick={() => { setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }}>
                             Clear
                         </Button>
                     )}
@@ -325,10 +292,6 @@ const SalesView: React.FC = () => {
                             )}
                             {filtered.map((b, i) => {
                                 const a = amountOf(b);
-                                const phone = phoneOf(b.contact);
-                                const email = emailOf(b.contact);
-                                const when = sessionWhen(b);
-                                const method = paymentMethodOf(b);
                                 const newMonth = i === 0 || monthOf(filtered[i - 1]) !== monthOf(b);
                                 return (
                                     <React.Fragment key={b.id}>
@@ -337,28 +300,19 @@ const SalesView: React.FC = () => {
                                             <td colSpan={7} className="px-4 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-subtle">{monthName(monthOf(b))}</td>
                                         </tr>
                                     )}
-                                    <tr className="border-b border-adm-line last:border-0 hover:bg-adm-hover/50 align-top">
+                                    <tr onClick={() => setOpenId(b.id)} className="border-b border-adm-line last:border-0 hover:bg-adm-hover/50 cursor-pointer">
                                         <td className="px-4 py-3 whitespace-nowrap text-text-subtle tabular-nums">{dayOf(b.createdAt)}</td>
-                                        {/* one contact line: the WhatsApp number, or the email when there's no number */}
-                                        <td className="px-4 py-3 min-w-[12rem]" title={phone && email ? email : undefined}>
-                                            <div className="font-semibold text-text-light">{b.name || '—'}</div>
-                                            {(phone || email) && <div className="text-xs text-text-subtle tabular-nums mt-0.5 truncate max-w-[16rem]">{phone ? fmtPhone(phone) : email}</div>}
-                                        </td>
-                                        <td className="px-4 py-3 min-w-[12rem]">
-                                            <div className="text-text-light">{serviceLabel(b)}</div>
-                                            {when && <div className="text-xs text-text-subtle tabular-nums mt-0.5">Session {when}</div>}
-                                        </td>
-                                        <td className="px-4 py-3 text-right whitespace-nowrap">
-                                            <div className="tabular-nums text-text-light font-medium">{a ? fmtMoney(a.amount, a.currency) : '—'}</div>
-                                            {method && <div className="text-xs text-text-subtle mt-0.5">{method}</div>}
-                                        </td>
+                                        {/* one line per sale: contact, session time and payment method are in its details */}
+                                        <td className="px-4 py-3 min-w-[10rem] font-semibold text-text-light">{b.name || '—'}</td>
+                                        <td className="px-4 py-3 min-w-[12rem] text-text-light">{serviceLabel(b)}</td>
+                                        <td className="px-4 py-3 text-right whitespace-nowrap tabular-nums text-text-light font-medium">{a ? fmtMoney(a.amount, a.currency) : '—'}</td>
                                         <td className="px-4 py-3"><StatusPill status={b.status} /></td>
                                         <td className="px-4 py-3"><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={savingId === b.id} /></td>
-                                        <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                                        <td className="px-4 py-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                             {/* Indonesia is confirmed on WhatsApp, Global by email */}
                                             {market === 'ID'
                                                 ? <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
-                                                : <EmailConfirmButton b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
+                                                : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
                                         </td>
                                     </tr>
                                     </React.Fragment>
@@ -368,6 +322,8 @@ const SalesView: React.FC = () => {
                     </table>
                 </div>
             </Card>
+
+            {openId && <BookingsView view="detail" openId={openId} onClosed={() => { setOpenId(null); load(); }} />}
         </div>
     );
 };

@@ -151,7 +151,6 @@ const CustomersView: React.FC = () => {
         return out;
     }, [bookings]);
     const inMarket = useMemo(() => (market === 'all' ? customers : customers.filter((c) => c.markets.includes(market))), [customers, market]);
-    const bothCount = useMemo(() => customers.filter((c) => c.markets.length > 1).length, [customers]);
     const countIn = (m: Market) => customers.filter((c) => c.markets.includes(m)).length;
     // what Top spenders orders by: the tab's own currency, or both (roughly) under All
     const rank = (m: Money) => (market === 'ID' ? m.IDR : market === 'Global' ? m.USD : m.IDR + m.USD * ORDER_RATE);
@@ -181,7 +180,7 @@ const CustomersView: React.FC = () => {
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <PageHeader
                 title="Customers"
-                subtitle={`${inMarket.length} ${inMarket.length === 1 ? 'client' : 'clients'}${market === 'ID' ? ' in Indonesia' : market === 'Global' ? ' abroad' : ''} · ${repeatCount} returning${bothCount ? ` · ${bothCount} booked in both` : ''} · one person per phone number or email`}
+                subtitle={`${inMarket.length} ${inMarket.length === 1 ? 'client' : 'clients'}${market === 'ID' ? ' in Indonesia' : market === 'Global' ? ' abroad' : ''} · ${repeatCount} came back${inMarket.length ? ` (${Math.round((repeatCount / inMarket.length) * 100)}%)` : ''}`}
                 onRefresh={load}
                 refreshing={loading}
             >
@@ -204,14 +203,13 @@ const CustomersView: React.FC = () => {
 
             {/* list */}
             <div className="rounded-2xl bg-surface-1 border border-adm-line overflow-hidden">
+                {/* one line per person: email, first booking and their history are in their details */}
                 <div className="hidden md:grid grid-cols-12 gap-3 px-5 py-3 text-[0.7rem] uppercase tracking-wider text-text-subtle border-b border-adm-line">
-                    <div className="col-span-3">Customer</div>
-                    <div className="col-span-2">WhatsApp</div>
+                    <div className="col-span-4">Customer</div>
+                    <div className="col-span-3">Contact</div>
                     <div className="col-span-1 text-center">Bookings</div>
                     <div className="col-span-2 text-right">Paid</div>
-                    <div className="col-span-2 text-right">Unpaid</div>
-                    <div className="col-span-1 text-right">First</div>
-                    <div className="col-span-1 text-right">Last</div>
+                    <div className="col-span-2 text-right">Last booking</div>
                 </div>
                 {filtered.length === 0 ? (
                     loading ? <InlineLoader /> : <p className="text-sm text-text-subtle py-12 text-center">No customers found{q.trim() ? ` for “${q.trim()}”` : ''}.</p>
@@ -220,20 +218,22 @@ const CustomersView: React.FC = () => {
                     return (
                         <button key={c.key} onClick={() => setSelected(c)}
                             className="w-full grid grid-cols-2 md:grid-cols-12 gap-2 md:gap-3 px-5 py-3.5 text-left border-b border-adm-line last:border-0 hover:bg-adm-hover transition-colors items-center">
-                            <div className="col-span-2 md:col-span-3 min-w-0">
+                            <div className="col-span-2 md:col-span-4 min-w-0">
                                 <div className="font-medium text-text-light truncate">{c.name}<MarketTag c={c} /></div>
-                                {c.email && <div className="text-xs text-text-subtle truncate">{c.email}</div>}
                             </div>
-                            <div className="col-span-1 md:col-span-2 text-sm text-text-subtle tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : '—'}</div>
+                            {/* their WhatsApp; for someone with only an email (abroad), the email */}
+                            <div className="col-span-1 md:col-span-3 text-sm text-text-subtle tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : c.email || '—'}</div>
                             <div className="col-span-1 md:col-span-1 md:text-center text-sm tabular-nums">
                                 <span className={`inline-flex items-center gap-1 ${count > 1 ? 'text-lilac font-semibold' : 'text-text-light'}`} title={count > 1 ? 'Returning client' : undefined}>
                                     {count > 1 && <Repeat size={11} />}{count}
                                 </span>
                             </div>
-                            <div className="col-span-1 md:col-span-2 md:text-right text-sm text-text-light tabular-nums">{spentLabel(c)}</div>
-                            <div className={`col-span-1 md:col-span-2 md:text-right text-sm tabular-nums ${owedLabel(c) ? 'text-coral-deep' : 'text-text-subtle'}`}>{owedLabel(c) || '—'}</div>
-                            <div className="col-span-1 md:col-span-1 md:text-right text-xs text-text-subtle">{fmtDate(c.firstSeen)}</div>
-                            <div className="col-span-1 md:col-span-1 md:text-right text-xs text-text-subtle">{fmtDate(c.lastSeen)}</div>
+                            <div className="col-span-1 md:col-span-2 md:text-right text-sm text-text-light tabular-nums">
+                                {spentLabel(c)}
+                                {/* what they still owe, only when they do */}
+                                {owedLabel(c) && <div className="text-xs text-coral-deep">{owedLabel(c)} unpaid</div>}
+                            </div>
+                            <div className="col-span-1 md:col-span-2 md:text-right text-xs text-text-subtle">{fmtDate(c.lastSeen)}</div>
                         </button>
                     );
                 })}

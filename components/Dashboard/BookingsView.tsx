@@ -957,12 +957,16 @@ const TodayLine: React.FC<{ b: Booking; onOpen: () => void; children?: React.Rea
     </div>
 );
 
-const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (v: 'calendar' | 'orders') => void }> = ({ view: tab, onOpen }) => {
+// view 'detail': only one booking's details popup (openId), for another screen (Sales) to
+// open the same details as Orders and Schedule; onClosed when it's closed.
+const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail'; onOpen?: (v: 'calendar' | 'orders') => void; openId?: string; onClosed?: () => void }> = ({ view: tab, onOpen, openId, onClosed }) => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
-    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [selectedId, setSelectedId] = useState<string | null>(openId || null);
+    const detailOnly = tab === 'detail';
+    useEffect(() => { if (detailOnly && !selectedId) onClosed?.(); }, [selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
     const [editing, setEditing] = useState(false);
     useEffect(() => setEditing(false), [selectedId]);
     // a booking saved on the server: its new copy replaces the old one here
@@ -999,7 +1003,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
         } finally {
             setLoading(false);
             // (on opening, the effects below already ask for the calendar: only a reload asks again)
-            if (loadedOnce.current) {
+            if (loadedOnce.current && !detailOnly) {
                 fetchEvents(weekStart);
                 if (tab === 'today') fetchSoon();
             }
@@ -1025,7 +1029,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
             setCalEvents(await getCalendarEvents(toISO(ws), toISO(addDays(ws, 6)), token));
         } catch { setCalEvents([]); }
     };
-    useEffect(() => { fetchEvents(weekStart); }, [weekStart]);
+    useEffect(() => { if (!detailOnly) fetchEvents(weekStart); }, [weekStart]); // eslint-disable-line react-hooks/exhaustive-deps
     const fetchSoon = async () => {
         try {
             const t = new Date();
@@ -1196,8 +1200,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
     const initialLoading = loading && bookings.length === 0;
 
     return (
-        <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
-            <PageHeader
+        <div className={detailOnly ? '' : 'space-y-5 pt-20 md:pt-8 p-4 md:px-8'}>
+            {!detailOnly && <PageHeader
                 title={tab === 'today' ? 'Today' : tab === 'calendar' ? 'Schedule' : 'Orders'}
                 subtitle={tab === 'today'
                     ? new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Jakarta' })
@@ -1208,7 +1212,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                 <Button onClick={() => setShowAdd(true)} title="Add booking">
                     <Plus size={16} /> <span className="hidden sm:inline">Add booking</span>
                 </Button>
-            </PageHeader>
+            </PageHeader>}
 
             {(showAdd || fromEntry) && (
                 <AddBookingModal
@@ -1220,7 +1224,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                 />
             )}
 
-            {error && <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
+            {error && !detailOnly && <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
 
             {notice && (
                 <div className={`fixed bottom-6 right-6 z-[60] px-3 py-2.5 rounded-xl shadow-lg text-sm border ${notice.kind === 'ok' ? 'bg-sage/15 border-sage/40 text-sage' : 'bg-coral/15 border-coral/40 text-coral-deep'}`}>
@@ -1228,7 +1232,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                 </div>
             )}
 
-            {initialLoading && <LoaderCard />}
+            {initialLoading && !detailOnly && <LoaderCard />}
 
             {/* ---------------- CALENDAR — weekly time grid ---------------- */}
             {!initialLoading && tab === 'calendar' && (
@@ -1477,8 +1481,9 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                     onSaved={(u) => { replaceBooking(u); setEditing(false); flash('Saved.', 'ok'); }} />
                             ) : (<>
                             <div className="px-5 py-4 grid grid-cols-2 gap-x-4 gap-y-4">
-                                <Field label="WhatsApp">{phone || '—'}</Field>
+                                <Field label="WhatsApp">{phone ? fmtPhone(phone) : '—'}</Field>
                                 <Field label="Email">{email || '—'}</Field>
+                                {timed && <Field label="Ordered">{fmtDate(b.createdAt)}</Field>}
                                 {b.dob && <Field label="Born">{fmtDate(b.dob)}</Field>}
                                 {b.ref && <Field label="Booking code"><span className="font-mono text-xs">{b.ref}</span>
                                     {refInWords(b.ref) && <span className="block text-xs text-text-subtle mt-0.5">{refInWords(b.ref)}</span>}</Field>}
@@ -1522,11 +1527,11 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
             {/* ---------------- ORDERS (no fixed time) — one aligned list ---------------- */}
             {!initialLoading && tab === 'orders' && (() => {
                 const list = orderView === 'active' ? activeOrders : orderView === 'done' ? doneOrders : cancelledBookings;
-                // To do has a Due column of its own (the countdown); Done and Cancelled don't need it
+                // To do leads with when it's due (the order date is in the details); Done and
+                // Cancelled with the order date. One line per order: contact, payment method and
+                // the question are in the details a click away.
                 const showDue = orderView === 'active';
-                const COLS = showDue
-                    ? 'md:grid md:grid-cols-[6.5rem_9.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4'
-                    : 'md:grid md:grid-cols-[8.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4';
+                const COLS = 'md:grid md:grid-cols-[9.5rem_minmax(0,1.1fr)_minmax(0,1.4fr)_7rem_6rem_7.5rem_7.5rem] md:items-center md:gap-4';
                 return (
                     <Card className="overflow-hidden">
                         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
@@ -1537,7 +1542,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
 
                         {list.length > 0 && (
                             <div className={`hidden ${COLS} px-4 py-2 text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle border-b border-adm-line`}>
-                                <div>Ordered</div>{showDue && <div>Due</div>}<div>Customer</div><div>Service</div><div className="text-right">Amount</div><div>Payment</div><div>Status</div><div>Confirmation</div>
+                                <div>{showDue ? 'Due' : 'Ordered'}</div><div>Customer</div><div>Service</div><div className="text-right">Amount</div><div>Payment</div><div>Status</div><div>Confirmation</div>
                             </div>
                         )}
 
@@ -1550,40 +1555,32 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
 
                         <div className="divide-y divide-adm-line">
                             {list.map((b) => {
-                                const contact = phoneOf(b.contact) || emailOf(b.contact) || b.contact;
-                                const method = paymentMethodOf(b);
                                 return (
                                     <div key={b.id} onClick={() => setSelectedId(b.id)}
                                         className={`${COLS} px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5`}>
-                                        <div className="tabular-nums col-span-2 md:col-span-1">
+                                        {showDue ? <div className="col-span-2 md:col-span-1 md:[&>*]:mt-0"><ClockNote b={b} now={now} /></div> : <div className="tabular-nums col-span-2 md:col-span-1">
                                             <div className="text-xs text-text-subtle">{fmtDate(b.createdAt)}</div>
                                             {orderView === 'cancelled' && b.date && b.time && <div className="text-xs text-text-light">Session {fmtDate(b.date)} · {b.time}</div>}
                                             {orderView === 'cancelled' && b.cancelReason === 'unpaid' && <div className="text-[0.7rem] text-mauve">Not paid within 1 hour</div>}
-                                        </div>
-                                        {showDue && <div className="col-span-2 md:col-span-1 md:[&>*]:mt-0"><ClockNote b={b} now={now} /></div>}
+                                        </div>}
                                         <div className="min-w-0">
                                             <div className="text-sm font-medium text-text-light truncate">
                                                 {b.name || '—'}
                                                 <span className="ml-1.5 text-[0.65rem] font-normal text-text-subtle">{b.market === 'ID' ? 'ID' : 'Global'}</span>
                                             </div>
-                                            <div className="text-xs text-text-subtle truncate tabular-nums">{contact}</div>
                                         </div>
                                         <div className="min-w-0 col-span-2 md:col-span-1 order-1 md:order-none">
                                             <div className="text-sm text-text-light truncate">{serviceLabel(b)}</div>
-                                            {b.question
-                                                ? <div className="text-xs text-text-subtle italic truncate">“{b.question}”</div>
-                                                : b.source === 'manual' && <div className="text-xs text-text-subtle">Added by hand</div>}
                                         </div>
                                         <div className="text-right">
                                             <div className="text-sm font-semibold text-text-light tabular-nums whitespace-nowrap">{amountLabel(b)}</div>
-                                            {method && <div className="text-[0.7rem] text-text-subtle truncate">{method}</div>}
                                         </div>
                                         <div className="flex flex-wrap items-center gap-1 col-span-2 order-2 md:order-none md:contents">
                                             <div><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} /></div>
                                             <div><StatusControl b={b} /></div>
                                             <div>{b.market === 'ID'
                                                 ? <WaConfirmButton compact b={b} onSent={(at) => markWaSent(b.id, at)} />
-                                                : <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} />}</div>
+                                                : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />}</div>
                                         </div>
                                     </div>
                                 );

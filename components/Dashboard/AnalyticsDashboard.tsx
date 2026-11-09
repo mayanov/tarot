@@ -16,6 +16,7 @@ import RevenueView from './RevenueView';
 import CustomersView from './CustomersView';
 import SalesView from './SalesView';
 import { LoaderCard } from './ui/InlineLoader';
+import Segmented from './ui/Segmented';
 
 // Same base as services/booking.ts — empty in prod (relative /api) so calls hit the
 // deployed serverless API instead of a hardcoded localhost that only works in dev.
@@ -58,6 +59,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     const [activePreset, setActivePreset] = useState<DateRangePreset>('7D');
     const [showCustomPicker, setShowCustomPicker] = useState(false);
     const [serviceTab, setServiceTab] = useState<'ID' | 'Global'>('ID');
+    // Analytics in three parts instead of one long page: visits, the booking path, the site itself
+    const [aTab, setATab] = useState<'overview' | 'bookings' | 'website'>('overview');
 
     // Real Data State
     const [useRealData, setUseRealData] = useState(false);
@@ -819,8 +822,18 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                             </div>
                         ) : (
                             <>
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <Segmented value={aTab} onChange={setATab}
+                                        options={[{ id: 'overview', label: 'Overview' }, { id: 'bookings', label: 'Bookings' }, { id: 'website', label: 'Website' }]} />
+                                    {/* the booking and website numbers are per market */}
+                                    {aTab !== 'overview' && (
+                                        <Segmented size="sm" value={serviceTab} onChange={setServiceTab}
+                                            options={[{ id: 'ID', label: 'Indonesia (IDR)' }, { id: 'Global', label: 'Global (USD)' }]} />
+                                    )}
+                                </div>
+
                                 {/* Summary Cards */}
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                                {aTab === 'overview' && <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                                     <SummaryCard
                                         icon={<Users className="text-lilac" />}
                                         label="Total Visits"
@@ -848,12 +861,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         value={data?.devices[0]?.device || 'N/A'}
                                         loading={isLoading}
                                     />
-                                </div>
+                                </div>}
 
-                                {/* Main Charts Area */}
                                 {/* Main Charts Area */}
                                 <div className="flex flex-col gap-6">
 
+                                    {aTab === 'overview' && (<>
                                     {/* 1. Visual Traffic Trend */}
                                     <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl relative min-h-[400px]">
                                         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -935,6 +948,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         )}
                                     </div>
 
+                                    </>)}
+
+                                    {aTab === 'bookings' && (<>
                                     {/* 2. Service Engagement Section */}
                                     <div className="bg-surface-1 rounded-2xl border border-adm-line shadow-xl overflow-hidden relative min-h-[300px]">
                                         <div className="p-5 border-b border-adm-line flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -942,26 +958,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                 <BarChart2 size={20} className="text-gold-accent" />
                                                 Booking Funnel
                                             </h3>
-                                            <div className="flex bg-bg-dark rounded-lg p-1 border border-adm-line-2">
-                                                <button
-                                                    onClick={() => setServiceTab('ID')}
-                                                    className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${serviceTab === 'ID'
-                                                        ? 'bg-lilac text-white shadow'
-                                                        : 'text-text-subtle hover:text-text-light'
-                                                        }`}
-                                                >
-                                                    Indonesia (IDR)
-                                                </button>
-                                                <button
-                                                    onClick={() => setServiceTab('Global')}
-                                                    className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${serviceTab === 'Global'
-                                                        ? 'bg-lilac text-white shadow'
-                                                        : 'text-text-subtle hover:text-text-light'
-                                                        }`}
-                                                >
-                                                    Global (USD)
-                                                </button>
-                                            </div>
                                         </div>
 
                                         {isLoading ? (
@@ -1086,6 +1082,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         )}
                                     </div>
 
+                                    </>)}
+
                                     {/* The visit beyond the form, for the market chosen above: which "Book"
                                         buttons get pressed (and bookings by where the visitor first pressed
                                         one), how far down the page people get, the FAQ questions opened, and
@@ -1121,7 +1119,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         const switches = j?.switches || [];
                                         return (
                                             <>
-                                                <Card icon={<MousePointerClick size={20} className="text-gold-accent" />} title="Where bookings start" sub={market}>
+                                                {aTab === 'bookings' && <Card icon={<MousePointerClick size={20} className="text-gold-accent" />} title="Where bookings start" sub={market}>
                                                     {!books.length ? (
                                                         <p className="text-sm text-text-subtle">No “Book” buttons pressed in this period.</p>
                                                     ) : (
@@ -1142,8 +1140,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                             </p>
                                                         </>
                                                     )}
-                                                </Card>
+                                                </Card>}
 
+                                                {aTab === 'website' && (<>
                                                 <Card icon={<ArrowDownToLine size={20} className="text-gold-accent" />} title="How far people scroll" sub={market}>
                                                     {!top ? (
                                                         <p className="text-sm text-text-subtle">No visits recorded in this period.</p>
@@ -1203,11 +1202,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                         </>
                                                     )}
                                                 </Card>
+                                                </>)}
                                             </>
                                         );
                                     })()}
 
-                                    {/* 3. Geography Breakdown (Moved Bottom) */}
+                                    {/* 3. Geography Breakdown: with the visits, on Overview */}
+                                    {aTab === 'overview' && (
                                     <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative min-h-[400px]">
                                         <h3 className="text-xl font-serif mb-6 flex items-center gap-2">
                                             <Globe size={20} className="text-teal-accent" />
@@ -1237,6 +1238,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             </div>
                                         )}
                                     </div>
+                                    )}
                                 </div>
                             </>
                         )}

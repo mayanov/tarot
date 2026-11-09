@@ -18,7 +18,8 @@ const ERRORS: Record<string, string> = {
   NOT_SENT: 'The email could not be sent. Try again later.',
 };
 
-const EmailConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void }> = ({ b, onSent }) => {
+// `hideIdle`: in a table, show nothing when there's nothing to do yet (no email, not paid)
+const EmailConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; hideIdle?: boolean }> = ({ b, onSent, hideIdle }) => {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const quiet = 'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs text-text-subtle whitespace-nowrap';
@@ -26,8 +27,8 @@ const EmailConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void }>
     return <span className={quiet} title={`Confirmation emailed ${fullLabel(b.paidEmailSentAt)}`}><Mail size={13} />Emailed {dayLabel(b.paidEmailSentAt)}</span>;
   }
   const email = emailOf(b.contact);
-  if (!email) return <span className={quiet} title="No email address on this booking">No email</span>;
-  if (b.paymentStatus !== 'paid') return <span className={quiet} title="The confirmation email goes out once it's paid">After payment</span>;
+  if (!email) return hideIdle ? null : <span className={quiet} title="No email address on this booking">No email</span>;
+  if (b.paymentStatus !== 'paid') return hideIdle ? null : <span className={quiet} title="The confirmation email goes out once it's paid">After payment</span>;
   const send = async () => {
     if (!window.confirm(`Email the booking confirmation to ${email}?`)) return;
     setBusy(true);
