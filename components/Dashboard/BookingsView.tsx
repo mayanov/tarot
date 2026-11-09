@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, ChevronLeft, ChevronRight, X, Plus, ArrowRight, Pencil, Check } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight, X, Plus, ArrowRight, Pencil, Check, CalendarDays, MapPin, Clock, Mail, Cake, StickyNote } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import PageHeader from './ui/PageHeader';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -871,7 +872,7 @@ const PrivateNote: React.FC<{ b: Booking; onSaved: (b: Booking) => void }> = ({ 
     const [open, setOpen] = useState(!!b.adminNote);
     if (!open) return (
         <div className="px-5 pb-4">
-            <button type="button" onClick={() => setOpen(true)} className="text-xs text-text-subtle hover:text-lilac transition-colors">+ Add a private note</button>
+            <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-1.5 text-xs text-text-subtle hover:text-lilac transition-colors"><StickyNote size={13} />Add a private note</button>
         </div>
     );
     const save = async () => {
@@ -882,7 +883,7 @@ const PrivateNote: React.FC<{ b: Booking; onSaved: (b: Booking) => void }> = ({ 
     };
     return (
         <div className="px-5 pb-4">
-            <label className="block text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle mb-1">Private note</label>
+            <label className="flex items-center gap-1.5 text-xs text-text-subtle mb-1.5"><StickyNote size={13} />Private note <span className="opacity-70">· only you see this</span></label>
             <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Only you see this" className={FLD} autoFocus={!b.adminNote} />
             {(dirty || err) && (
                 <div className="mt-1.5 flex items-center justify-end gap-3">
@@ -1459,35 +1460,37 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 mine.forEach((x) => { const a = amountForBooking(x); if (a && x.paymentStatus === 'paid') paidSum[a.currency] += a.amount; });
                 const toCustomer = () => { if (onCustomer) onCustomer(); else { openCustomerOf(b.id); setSelectedId(null); } };
                 const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-                    <div className="flex items-center justify-between gap-3 min-h-[2rem]">
-                        <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle shrink-0">{label}</div>
+                    <div className="flex items-center justify-between gap-3 min-h-[2.5rem] py-1">
+                        <div className="text-xs text-text-subtle shrink-0">{label}</div>
                         <div className="flex items-center justify-end gap-2 min-w-0">{children}</div>
                     </div>
                 );
-                const Field: React.FC<{ label: string; children: React.ReactNode; wide?: boolean }> = ({ label, children, wide }) => (
-                    <div className={wide ? 'col-span-2' : ''}>
-                        <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle mb-1">{label}</div>
-                        <div className="text-sm text-text-light break-words">{children}</div>
+                // one line of the details: a small icon, the value, and what it is on the right
+                const Line: React.FC<{ icon: React.ReactNode; label: string; children: React.ReactNode }> = ({ icon, label, children }) => (
+                    <div className="flex items-center gap-3 text-sm min-w-0">
+                        <span className="grid place-items-center w-8 h-8 shrink-0 rounded-lg bg-adm-hover text-text-subtle">{icon}</span>
+                        <span className="min-w-0 flex-1 text-text-light break-words">{children}</span>
+                        <span className="shrink-0 text-xs text-text-subtle">{label}</span>
                     </div>
                 );
+                const Chip: React.FC<{ icon?: React.ReactNode; children: React.ReactNode; mono?: boolean; title?: string }> = ({ icon, children, mono, title }) => (
+                    <span title={title} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-adm-hover border border-adm-line text-xs text-text-light whitespace-nowrap tabular-nums ${mono ? 'font-mono' : ''}`}>
+                        {icon && <span className="text-text-subtle">{icon}</span>}{children}
+                    </span>
+                );
+                const initial = (b.name || '?').trim().charAt(0).toUpperCase();
                 return (
                     <div className={`fixed inset-0 ${detailOnly ? 'z-[90]' : 'z-50'} flex items-center justify-center p-4`}>
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
-                        <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl">
-                            <div className="px-5 pt-5 pb-4 border-b border-adm-line">
+                        <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl" data-lenis-prevent>
+                            {/* who and what, with when and where as chips */}
+                            <div className="px-5 pt-5 pb-5 border-b border-adm-line bg-gradient-to-b from-lilac/[0.08] to-transparent">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
-                                        <div className="text-xs text-text-subtle tabular-nums">
-                                            <span className="whitespace-nowrap">{timed ? `${fmtDate(b.date)} · ${b.time}${endStr ? `–${endStr}` : ''}` : `Ordered ${fmtDate(b.createdAt)}`}</span>
-                                            <span className="mx-1.5">·</span>{b.market === 'ID' ? 'Indonesia' : 'Global'}
-                                            {b.source === 'manual' && <><span className="mx-1.5">·</span>added by hand</>}
-                                            {b.ref && <><span className="mx-1.5">·</span><span className="font-mono whitespace-nowrap" title={refInWords(b.ref) || 'Booking code'}>{b.ref}</span></>}
-                                        </div>
-                                        <h3 className="mt-1.5 text-xl font-serif font-bold text-text-light leading-snug">{b.name || '—'}</h3>
-                                        <div className="text-sm text-text-subtle mt-0.5">{serviceLabel(b)}</div>
-                                        {due && <div className={`text-sm tabular-nums mt-1.5 ${due.cls}`}>{due.text}</div>}
+                                        <h3 className="text-2xl font-serif font-bold text-text-light leading-tight">{b.name || '—'}</h3>
+                                        <div className="text-sm text-text-subtle mt-1">{serviceLabel(b)}</div>
                                     </div>
-                                    <div className="shrink-0 flex items-center gap-1">
+                                    <div className="shrink-0 flex items-center gap-1 -mr-1.5 -mt-1">
                                         {!editing && (
                                             <button aria-label="Edit" title="Edit name, contact or price" onClick={() => setEditing(true)} className="grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors">
                                                 <Pencil size={15} />
@@ -1498,38 +1501,66 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                         </button>
                                     </div>
                                 </div>
+                                <div className="mt-3 flex flex-wrap gap-1.5">
+                                    <Chip icon={<CalendarDays size={12} />}>{timed ? `${fmtDate(b.date)} · ${b.time}${endStr ? `–${endStr}` : ''}` : `Ordered ${fmtDate(b.createdAt)}`}</Chip>
+                                    <Chip icon={<MapPin size={12} />}>{b.market === 'ID' ? 'Indonesia' : 'Global'}</Chip>
+                                    {b.ref && <Chip mono title={refInWords(b.ref) || 'Booking code'}>{b.ref}</Chip>}
+                                    {b.source === 'manual' && <Chip>Added by hand</Chip>}
+                                </div>
+                                {due && (
+                                    <div className="mt-3 flex items-center gap-2 rounded-xl bg-surface-1 border border-adm-line px-3 py-2">
+                                        <Clock size={15} className={`shrink-0 ${due.cls}`} />
+                                        <span className={`text-sm tabular-nums ${due.cls}`}>{due.text}</span>
+                                    </div>
+                                )}
                             </div>
 
                             {editing ? (
                                 <EditDetails key={b.id} b={b} onCancel={() => setEditing(false)}
                                     onSaved={(u) => { replaceBooking(u); setEditing(false); flash('Saved.', 'ok'); }} />
                             ) : (<>
-                            <div className="px-5 py-4 grid grid-cols-2 gap-x-4 gap-y-4">
-                                {phone && <Field label="WhatsApp"><a href={`https://wa.me/${waNumber(phone)}`} target="_blank" rel="noopener noreferrer" className="text-lilac hover:underline">{fmtPhone(phone)}</a></Field>}
-                                {email && <Field label="Email"><a href={`mailto:${email}`} className="text-lilac hover:underline">{email}</a></Field>}
-                                {timed && <Field label="Ordered">{fmtDate(b.createdAt)}</Field>}
-                                {b.dob && <Field label="Born">{fmtDate(b.dob)}</Field>}
+                            <div className="px-5 py-4 space-y-4">
+                                {/* their profile on Customers, with what they've booked and paid */}
                                 {real && (
-                                    <div className="col-span-2">
-                                        <button type="button" onClick={toCustomer} className="group inline-flex items-center flex-wrap text-sm text-text-subtle hover:text-lilac transition-colors text-left">
-                                            <span className="font-medium text-text-light group-hover:text-lilac">{b.name || 'Customer'}</span>
-                                            <span>&nbsp;· {live} booking{live === 1 ? '' : 's'}{moneyLabel(paidSum) ? ` · ${moneyLabel(paidSum)} paid` : ''}</span>
-                                            <ArrowRight size={14} className="ml-1.5" />
-                                        </button>
+                                    <button type="button" onClick={toCustomer}
+                                        className="group w-full flex items-center gap-3 rounded-xl border border-adm-line px-3 py-2.5 text-left hover:bg-adm-hover hover:border-adm-line-2 transition-colors">
+                                        <span className="grid place-items-center w-9 h-9 shrink-0 rounded-full bg-lilac/15 text-lilac font-serif font-bold">{initial}</span>
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block text-sm font-medium text-text-light truncate">{b.name || 'Customer'}</span>
+                                            <span className="block text-xs text-text-subtle tabular-nums">{live} booking{live === 1 ? '' : 's'}{moneyLabel(paidSum) ? ` · ${moneyLabel(paidSum)} paid` : ''}</span>
+                                        </span>
+                                        <ChevronRight size={16} className="shrink-0 text-text-subtle group-hover:text-lilac transition-colors" />
+                                    </button>
+                                )}
+                                {(phone || email || timed || b.dob) && (
+                                    <div className="space-y-2">
+                                        {phone && <Line icon={<FaWhatsapp size={14} />} label="WhatsApp"><a href={`https://wa.me/${waNumber(phone)}`} target="_blank" rel="noopener noreferrer" className="text-lilac hover:underline tabular-nums">{fmtPhone(phone)}</a></Line>}
+                                        {email && <Line icon={<Mail size={14} />} label="Email"><a href={`mailto:${email}`} className="text-lilac hover:underline break-all">{email}</a></Line>}
+                                        {timed && <Line icon={<ShoppingBag size={14} />} label="Ordered">{fmtDate(b.createdAt)}</Line>}
+                                        {b.dob && <Line icon={<Cake size={14} />} label="Born">{fmtDate(b.dob)}</Line>}
                                     </div>
                                 )}
-                                {b.question && <Field label="Question" wide><span className="italic">“{b.question}”</span></Field>}
+                                {b.question && (
+                                    <figure className="rounded-xl bg-adm-hover border-l-2 border-lilac/60 px-4 py-3">
+                                        <figcaption className="text-xs text-text-subtle mb-1">Their question</figcaption>
+                                        <blockquote className="font-serif italic text-[0.95rem] leading-relaxed text-text-light">“{b.question}”</blockquote>
+                                    </figure>
+                                )}
                             </div>
                             <PrivateNote key={b.id} b={b} onSaved={(u) => { replaceBooking(u); flash('Note saved.', 'ok'); }} />
                             </>)}
 
                             <div className="px-5 py-4 border-t border-adm-line bg-adm-hover space-y-3">
-                                <div className="space-y-1">
-                                    <Row label="Payment">
-                                        <span className="text-sm font-semibold text-text-light tabular-nums whitespace-nowrap">{amountLabel(b)}</span>
-                                        {method && <span className="text-xs text-text-subtle truncate">{method}</span>}
-                                        <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
-                                    </Row>
+                                {/* the money first, big; then what's left to do with it */}
+                                <div className="flex items-end justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <div className="text-xs text-text-subtle">Total</div>
+                                        <div className="text-xl font-serif font-bold text-text-light tabular-nums leading-tight">{amountLabel(b)}</div>
+                                        {method && <div className="text-xs text-text-subtle truncate mt-0.5">{method}</div>}
+                                    </div>
+                                    <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
+                                </div>
+                                <div className="border-t border-adm-line divide-y divide-adm-line">
                                     <Row label="Status"><StatusControl b={b} /></Row>
                                     {/* Indonesia is confirmed on WhatsApp, Global by email */}
                                     {b.status !== 'cancelled' && (b.market === 'ID' ? !!waNumberOf(b.contact) : !!email) && (

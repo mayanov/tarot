@@ -1,7 +1,7 @@
 import PageHeader from './ui/PageHeader';
 import Segmented from './ui/Segmented';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Search, Phone, Mail, X, Repeat } from 'lucide-react';
+import { Search, Phone, Mail, X, Repeat, CalendarDays, ChevronRight } from 'lucide-react';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen, fmtPhone } from './lib/format';
@@ -253,80 +253,112 @@ const CustomersView: React.FC = () => {
             </div>
 
             {/* detail modal */}
-            {selected && (
-                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60" onClick={() => setSelected(null)}>
-                    <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()} data-lenis-prevent>
-                        <div className="sticky top-0 bg-surface-1 border-b border-adm-line px-6 py-4 flex items-start justify-between gap-4">
-                            <div>
-                                <h3 className="text-xl font-serif font-bold text-text-light">{selected.name}<MarketTag c={selected} /></h3>
-                                <div className="mt-1 flex flex-col gap-0.5 text-sm text-text-subtle">
-                                    {selected.phone && <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-lilac tabular-nums"><Phone size={13} />{fmtPhone(selected.phone)}</a>}
-                                    {selected.email && <a href={`mailto:${selected.email}`} className="inline-flex items-center gap-1.5 hover:text-lilac break-all"><Mail size={13} className="shrink-0" />{selected.email}</a>}
-                                </div>
-                                {selected.phone && (
-                                    <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer"
-                                        className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#25D366] text-[#0b2e17] hover:bg-[#1fbe5b] transition-colors">
-                                        <FaWhatsapp size={13} />Message on WhatsApp
-                                    </a>
-                                )}
-                                {/* different names on the same number or email: kept apart, shown here */}
-                                {sharing(selected).length > 0 && (
-                                    <div className="mt-2 text-xs text-text-subtle">
-                                        Same {sharing(selected).some((o) => o.contacts.some((t) => t.startsWith('p:') && selected.contacts.includes(t))) ? 'number' : 'email'} as{' '}
-                                        {sharing(selected).map((o, i) => (
-                                            <React.Fragment key={o.key}>{i > 0 && ', '}
-                                                <button type="button" onClick={() => setSelected(o)} className="text-lilac hover:underline">{o.name}</button>
-                                            </React.Fragment>
-                                        ))}
+            {selected && (() => {
+                const next = nextOf(selected);
+                const shared = sharing(selected);
+                const initials = selected.name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?';
+                const Stat: React.FC<{ label: string; children: React.ReactNode; sub?: React.ReactNode }> = ({ label, children, sub }) => (
+                    <div className="rounded-xl bg-adm-hover px-3 py-2.5 min-w-0">
+                        <div className="text-xs text-text-subtle">{label}</div>
+                        <div className="text-base sm:text-lg font-serif font-bold text-text-light tabular-nums leading-snug truncate">{children}</div>
+                        {sub && <div className="text-[0.7rem] leading-snug tabular-nums mt-0.5">{sub}</div>}
+                    </div>
+                );
+                // a dot on the history line, coloured by how the booking stands
+                const dot = (s: Booking['status']) => (s === 'done' ? 'bg-blue' : s === 'confirmed' ? 'bg-sage' : s === 'cancelled' ? 'bg-mauve' : 'bg-coral');
+                return (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelected(null)}>
+                    <div className="relative w-full max-w-lg max-h-[88vh] overflow-y-auto bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()} data-lenis-prevent>
+                        {/* who they are and how to reach them */}
+                        <div className="px-5 sm:px-6 pt-5 pb-5 border-b border-adm-line bg-gradient-to-b from-lilac/[0.08] to-transparent">
+                            <div className="flex items-start gap-3.5">
+                                <span className="grid place-items-center w-12 h-12 shrink-0 rounded-full bg-lilac/15 text-lilac font-serif font-bold text-lg">{initials}</span>
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="text-2xl font-serif font-bold text-text-light leading-tight">{selected.name}<MarketTag c={selected} /></h3>
+                                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-sm text-text-subtle">
+                                        {selected.phone && <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-lilac tabular-nums"><Phone size={13} />{fmtPhone(selected.phone)}</a>}
+                                        {selected.email && <a href={`mailto:${selected.email}`} className="inline-flex items-center gap-1.5 hover:text-lilac break-all"><Mail size={13} className="shrink-0" />{selected.email}</a>}
                                     </div>
-                                )}
+                                </div>
+                                <button onClick={() => setSelected(null)} aria-label="Close" className="shrink-0 grid place-items-center w-8 h-8 -mr-1.5 -mt-1 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors"><X size={16} /></button>
                             </div>
-                            <button onClick={() => setSelected(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light"><X size={16} /></button>
+                            {selected.phone && (
+                                <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer"
+                                    className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium bg-[#25D366] text-[#0b2e17] hover:bg-[#1fbe5b] transition-colors">
+                                    <FaWhatsapp size={14} />Message on WhatsApp
+                                </a>
+                            )}
+                            {/* different names on the same number or email: kept apart, shown here */}
+                            {shared.length > 0 && (
+                                <div className="mt-3 text-xs text-text-subtle">
+                                    Same {shared.some((o) => o.contacts.some((t) => t.startsWith('p:') && selected.contacts.includes(t))) ? 'number' : 'email'} as{' '}
+                                    {shared.map((o, i) => (
+                                        <React.Fragment key={o.key}>{i > 0 && ', '}
+                                            <button type="button" onClick={() => setSelected(o)} className="text-lilac hover:underline">{o.name}</button>
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        {nextOf(selected) && (() => {
-                            const n = nextOf(selected)!;
-                            return (
-                                <button type="button" onClick={() => setOpenBooking(n.id)}
-                                    className="w-full px-6 py-3 border-b border-adm-line text-left text-sm hover:bg-adm-hover transition-colors">
-                                    <span className="text-[0.7rem] uppercase tracking-wider text-lilac mr-2">Next</span>
-                                    <span className="text-text-light tabular-nums">{sessionWhen(n)}</span>
-                                    <span className="text-text-subtle"> · {serviceLabel(n)}</span>
+
+                        <div className="px-5 sm:px-6 py-5 space-y-5">
+                            {/* their next session, the thing to know first */}
+                            {next && (
+                                <button type="button" onClick={() => setOpenBooking(next.id)}
+                                    className="group w-full flex items-center gap-3 rounded-xl border border-lilac/30 bg-lilac/[0.06] px-3.5 py-3 text-left hover:bg-lilac/10 transition-colors">
+                                    <span className="grid place-items-center w-9 h-9 shrink-0 rounded-lg bg-lilac/15 text-lilac"><CalendarDays size={16} /></span>
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block text-xs text-lilac font-medium">Next session</span>
+                                        <span className="block text-sm text-text-light tabular-nums">{sessionWhen(next)}</span>
+                                        <span className="block text-xs text-text-subtle truncate">{serviceLabel(next)}</span>
+                                    </span>
+                                    <ChevronRight size={16} className="shrink-0 text-text-subtle group-hover:text-lilac transition-colors" />
                                 </button>
-                            );
-                        })()}
-                        <div className="px-6 py-4 grid grid-cols-3 gap-3 border-b border-adm-line">
-                            <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Bookings</div><div className="text-lg font-bold text-text-light tabular-nums">{liveCount(selected)}</div>{selected.bookings.length > liveCount(selected) && <div className="text-xs text-text-subtle tabular-nums">+{selected.bookings.length - liveCount(selected)} cancelled</div>}</div>
-                            <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Paid</div><div className="text-lg font-bold text-text-light tabular-nums">{spentLabel(selected)}</div>{owedLabel(selected) && <div className="text-xs text-coral-deep tabular-nums">{owedLabel(selected)} unpaid</div>}</div>
-                            <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Client since</div><div className="text-lg font-bold text-text-light">{fmtDate(selected.firstSeen)}</div></div>
-                        </div>
-                        <div className="px-6 py-4 space-y-2">
-                            <div className="text-[0.7rem] uppercase tracking-wider text-text-subtle mb-1">Booking history</div>
-                            {[...selected.bookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).map((b) => {
-                                const amt = amountForBooking(b);
-                                const note = b.question || b.adminNote;
-                                return (
-                                    <button type="button" key={b.id} onClick={() => setOpenBooking(b.id)}
-                                        className="w-full text-left rounded-xl border border-adm-line px-4 py-2.5 hover:bg-adm-hover hover:border-adm-line-2 transition-colors">
-                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-3">
-                                            <div className="min-w-0">
-                                                <div className="text-sm font-medium text-text-light truncate">{serviceLabel(b)}</div>
-                                                <div className="text-xs text-text-subtle tabular-nums">{sessionWhen(b) ? `Session ${sessionWhen(b)}` : `Ordered ${fmtDate(b.createdAt)}`}</div>
-                                            </div>
-                                            <div className="flex items-center gap-3 sm:shrink-0">
-                                                <span className="text-sm text-text-light tabular-nums mr-auto sm:mr-0">{amt ? fmtMoney(amt.amount, amt.currency) : '—'}</span>
-                                                <PaymentPill paid={b.paymentStatus === 'paid'} />
-                                                <StatusPill status={b.status} />
-                                            </div>
-                                        </div>
-                                        {note && <div className="mt-1 text-xs text-text-subtle truncate">{b.question ? `“${b.question}”` : b.adminNote}</div>}
-                                    </button>
-                                );
-                            })}
-                            <div className="pt-2 font-mono text-[0.65rem] text-text-subtle" title="Client id">{selected.clientId}</div>
+                            )}
+
+                            <div className="grid grid-cols-3 gap-2">
+                                <Stat label="Bookings" sub={selected.bookings.length > liveCount(selected) ? <span className="text-text-subtle">+{selected.bookings.length - liveCount(selected)} cancelled</span> : undefined}>{liveCount(selected)}</Stat>
+                                <Stat label="Paid" sub={owedLabel(selected) ? <span className="text-coral-deep">{owedLabel(selected)} unpaid</span> : undefined}>{spentLabel(selected)}</Stat>
+                                <Stat label="Client since">{fmtDate(selected.firstSeen)}</Stat>
+                            </div>
+
+                            {/* everything they've booked, newest first, on one line down the side */}
+                            <div>
+                                <div className="text-xs text-text-subtle mb-2">Booking history</div>
+                                <ol className="relative">
+                                    {[...selected.bookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).map((b, i, arr) => {
+                                        const amt = amountForBooking(b);
+                                        const note = b.question || b.adminNote;
+                                        return (
+                                            <li key={b.id} className="relative pl-6">
+                                                {i < arr.length - 1 && <span className="absolute left-[5px] top-5 bottom-0 w-px bg-adm-line-2" aria-hidden />}
+                                                <span className={`absolute left-0 top-[1.15rem] w-[11px] h-[11px] rounded-full ring-[3px] ring-surface-1 ${dot(b.status)}`} aria-hidden />
+                                                <button type="button" onClick={() => setOpenBooking(b.id)}
+                                                    className={`w-full text-left rounded-xl px-3 py-2.5 -mx-1 hover:bg-adm-hover transition-colors ${b.status === 'cancelled' ? 'opacity-60' : ''}`}>
+                                                    <div className="flex items-baseline justify-between gap-3">
+                                                        <span className="text-sm font-medium text-text-light truncate">{serviceLabel(b)}</span>
+                                                        <span className="text-sm font-semibold text-text-light tabular-nums whitespace-nowrap">{amt ? fmtMoney(amt.amount, amt.currency) : '—'}</span>
+                                                    </div>
+                                                    <div className="mt-0.5 flex items-center justify-between gap-3">
+                                                        <span className="text-xs text-text-subtle tabular-nums truncate">{sessionWhen(b) ? sessionWhen(b) : `Ordered ${fmtDate(b.createdAt)}`}</span>
+                                                        <span className="flex items-center gap-2 shrink-0">
+                                                            <PaymentPill paid={b.paymentStatus === 'paid'} />
+                                                            <StatusPill status={b.status} />
+                                                        </span>
+                                                    </div>
+                                                    {note && <div className={`mt-1.5 text-xs text-text-subtle line-clamp-2 ${b.question ? 'font-serif italic' : ''}`}>{b.question ? `“${b.question}”` : b.adminNote}</div>}
+                                                </button>
+                                            </li>
+                                        );
+                                    })}
+                                </ol>
+                            </div>
+                            <div className="font-mono text-[0.65rem] text-text-subtle" title="Client id">{selected.clientId}</div>
                         </div>
                     </div>
                 </div>
-            )}
+                );
+            })()}
             {openBooking && (
                 <BookingsView view="detail" openId={openBooking}
                     onClosed={() => { setOpenBooking(null); load(); }}
