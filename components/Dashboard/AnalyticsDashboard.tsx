@@ -14,6 +14,7 @@ import EventsView from './EventsView';
 import ServiceFunnel from './ServiceFunnel';
 import RevenueView from './RevenueView';
 import CustomersView from './CustomersView';
+import { OPEN_CUSTOMER } from './lib/nav';
 import SalesView from './SalesView';
 import { LoaderCard } from './ui/InlineLoader';
 import Segmented from './ui/Segmented';
@@ -114,6 +115,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
     // View State (up here: the Analytics data waits for its screen to be opened)
     const [activeView, setActiveView] = useState<View>('today'); // opens on the day's work
+    // a booking's details link to its customer: go to Customers (it opens them)
+    useEffect(() => {
+        const go = () => setActiveView('customers');
+        window.addEventListener(OPEN_CUSTOMER, go);
+        return () => window.removeEventListener(OPEN_CUSTOMER, go);
+    }, []);
 
     // Init: the date range and real data. Nothing is fetched yet: the dashboard opens on
     // Today, and Analytics' numbers (and Google's script, only needed to connect by hand)

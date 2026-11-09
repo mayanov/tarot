@@ -6,25 +6,11 @@ import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/bookin
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen, fmtPhone } from './lib/format';
 import { StatusPill, PaymentPill } from './lib/status';
+import { extractPhone, normPhone, extractEmail, contactTokens, groupBookings, moneyLabel, type Money } from './lib/customers';
 import { firstNameKey } from './lib/calendarEntry';
-
-// ---- contact parsing ----
-const extractPhone = (contact?: string) => {
-    if (!contact) return '';
-    const m = contact.match(/WA:\s*([+\d][\d\s-]*)/i);
-    const raw = m ? m[1] : (contact.match(/[+]?\d[\d\s-]{6,}/)?.[0] || '');
-    return raw.trim();
-};
-// Canonical phone key so 0812…, +62 812…, 62812… all collapse to one client.
-const normPhone = (raw: string) => {
-    const d = (raw || '').replace(/\D/g, '');
-    if (!d) return '';
-    if (d.startsWith('62') || raw.trim().startsWith('+')) return d; // already international
-    if (d.startsWith('0')) return '62' + d.slice(1);
-    if (d.startsWith('8') && d.length >= 9 && d.length <= 13) return '62' + d;
-    return d;
-};
-const extractEmail = (contact?: string) => contact?.match(/[\w.+-]+@[\w-]+\.[\w.-]+/)?.[0] || '';
+import { OPEN_CUSTOMER, takePendingCustomer } from './lib/nav';
+import BookingsView from './BookingsView';
+import { FaWhatsapp } from 'react-icons/fa';
 
 // Stable, opaque client id derived from the identity key (phone/email) — same client
 // always gets the same id, and it never exposes the raw phone number.
@@ -42,7 +28,6 @@ const clientIdFor = (key: string) => {
 };
 
 type Market = 'ID' | 'Global';
-type Money = { IDR: number; USD: number };
 interface Customer {
     key: string;
     clientId: string;
@@ -59,38 +44,9 @@ interface Customer {
     contacts: string[]; // their phone/email tokens, to find others with the same ones
 }
 const marketOf = (b: Booking): Market => (b.market === 'ID' ? 'ID' : 'Global');
-// "Rp 500.000 + $20", "$20", or '' when nothing
-const moneyLabel = (m: Money) => [m.IDR ? fmtMoney(m.IDR, 'IDR') : '', m.USD ? fmtMoney(m.USD, 'USD') : ''].filter(Boolean).join(' + ');
 // only to put customers in order (Top spenders) when rupiah and dollars are both in play:
 // a rough rate, never shown or used for any total
 const ORDER_RATE = 16_000;
-
-// One person, however they booked: bookings that share a phone number or an email AND the
-// first name are the same customer, so a WhatsApp booking in Indonesia and a Global one paid
-// with the same email (or number) come together. Different names on one number (a family's
-// phone, someone booking for a friend, test bookings) stay apart; each one's details say who
-// shares it. (Union-find over "p:<phone>|<first name>" / "e:<email>|<first name>".)
-// the booking's phone and email, written one way ("p:62812…", "e:dewi@example.com")
-const contactTokens = (b: Booking) => {
-    const t: string[] = [];
-    const p = normPhone(extractPhone(b.contact)); if (p) t.push(`p:${p}`);
-    const e = extractEmail(b.contact).toLowerCase(); if (e) t.push(`e:${e}`);
-    return t;
-};
-const groupBookings = (list: Booking[]): Booking[][] => {
-    const parent = new Map<string, string>();
-    const find = (x: string): string => { let r = x; while (parent.get(r) !== r) r = parent.get(r)!; parent.set(x, r); return r; };
-    const add = (x: string) => { if (!parent.has(x)) parent.set(x, x); };
-    const tokensOf = (b: Booking) => {
-        const t = contactTokens(b).map((x) => `${x}|${firstNameKey(b.name)}`);
-        return t.length ? t : [`id:${b.id}`];
-    };
-    const toks = list.map(tokensOf);
-    for (const t of toks) { t.forEach(add); for (let i = 1; i < t.length; i++) { const a = find(t[0]), b = find(t[i]); if (a !== b) parent.set(a, b); } }
-    const groups = new Map<string, Booking[]>();
-    list.forEach((b, i) => { const r = find(toks[i][0]); (groups.get(r) || groups.set(r, []).get(r)!).push(b); });
-    return [...groups.values()];
-};
 
 const CustomersView: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -98,7 +54,19 @@ const CustomersView: React.FC = () => {
     const [error, setError] = useState('');
     const [q, setQ] = useState('');
     const [sort, setSort] = useState<'spent' | 'recent' | 'bookings'>('spent');
-    const [selected, setSelected] = useState<Customer | null>(null);
+    // the open customer, by key so it stays open when the bookings load again
+    const [selectedKey, setSelectedKey] = useState<string | null>(null);
+    const setSelected = (c: Customer | null) => setSelectedKey(c ? c.key : null);
+    // a booking opened from their history, in the same details as Orders and Schedule
+    const [openBooking, setOpenBooking] = useState<string | null>(null);
+    // a booking's details asked for its customer ("Rina · 2 bookings →"): the booking id
+    const pendingRef = useRef<string | null>(takePendingCustomer());
+    useEffect(() => {
+        const on = () => { pendingRef.current = takePendingCustomer(); setTick((t) => t + 1); };
+        window.addEventListener(OPEN_CUSTOMER, on);
+        return () => window.removeEventListener(OPEN_CUSTOMER, on);
+    }, []);
+    const [tick, setTick] = useState(0);
     // everyone, or those who've booked in one market (a customer of both is in both)
     const [market, setMarket] = useState<'all' | Market>('all');
 
@@ -168,6 +136,20 @@ const CustomersView: React.FC = () => {
         });
         return out;
     }, [bookings]);
+    const selected = useMemo(() => customers.find((c) => c.key === selectedKey) || null, [customers, selectedKey]);
+    useEffect(() => {
+        const id = pendingRef.current;
+        if (!id || !customers.length) return;
+        const c = customers.find((x) => x.bookings.some((b) => b.id === id));
+        if (c) { pendingRef.current = null; setSelectedKey(c.key); }
+    }, [customers, tick]);
+    // their nearest session still to come (a call, meetup or live)
+    const nextOf = (c: Customer) => {
+        const now = Date.now();
+        return c.bookings
+            .filter((b) => b.date && b.time && b.status !== 'cancelled' && b.status !== 'done' && Date.parse(`${b.date}T${b.time}:00+07:00`) > now)
+            .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))[0];
+    };
     // the other people who share a phone number or email with this one
     const sharing = (c: Customer) => customers.filter((o) => o !== c && o.contacts.some((t) => c.contacts.includes(t)));
     const inMarket = useMemo(() => (market === 'all' ? customers : customers.filter((c) => c.markets.includes(market))), [customers, market]);
@@ -277,11 +259,16 @@ const CustomersView: React.FC = () => {
                         <div className="sticky top-0 bg-surface-1 border-b border-adm-line px-6 py-4 flex items-start justify-between gap-4">
                             <div>
                                 <h3 className="text-xl font-serif font-bold text-text-light">{selected.name}<MarketTag c={selected} /></h3>
-                                <div className="font-mono text-xs text-text-subtle mt-0.5">{selected.clientId}</div>
                                 <div className="mt-1 flex flex-col gap-0.5 text-sm text-text-subtle">
-                                    {selected.phone && <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-lilac"><Phone size={13} />{fmtPhone(selected.phone)}</a>}
-                                    {selected.email && <span className="inline-flex items-center gap-1.5"><Mail size={13} />{selected.email}</span>}
+                                    {selected.phone && <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-lilac tabular-nums"><Phone size={13} />{fmtPhone(selected.phone)}</a>}
+                                    {selected.email && <a href={`mailto:${selected.email}`} className="inline-flex items-center gap-1.5 hover:text-lilac break-all"><Mail size={13} className="shrink-0" />{selected.email}</a>}
                                 </div>
+                                {selected.phone && (
+                                    <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer"
+                                        className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#25D366] text-[#0b2e17] hover:bg-[#1fbe5b] transition-colors">
+                                        <FaWhatsapp size={13} />Message on WhatsApp
+                                    </a>
+                                )}
                                 {/* different names on the same number or email: kept apart, shown here */}
                                 {sharing(selected).length > 0 && (
                                     <div className="mt-2 text-xs text-text-subtle">
@@ -296,6 +283,17 @@ const CustomersView: React.FC = () => {
                             </div>
                             <button onClick={() => setSelected(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light"><X size={16} /></button>
                         </div>
+                        {nextOf(selected) && (() => {
+                            const n = nextOf(selected)!;
+                            return (
+                                <button type="button" onClick={() => setOpenBooking(n.id)}
+                                    className="w-full px-6 py-3 border-b border-adm-line text-left text-sm hover:bg-adm-hover transition-colors">
+                                    <span className="text-[0.7rem] uppercase tracking-wider text-lilac mr-2">Next</span>
+                                    <span className="text-text-light tabular-nums">{sessionWhen(n)}</span>
+                                    <span className="text-text-subtle"> · {serviceLabel(n)}</span>
+                                </button>
+                            );
+                        })()}
                         <div className="px-6 py-4 grid grid-cols-3 gap-3 border-b border-adm-line">
                             <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Bookings</div><div className="text-lg font-bold text-text-light tabular-nums">{liveCount(selected)}</div>{selected.bookings.length > liveCount(selected) && <div className="text-xs text-text-subtle tabular-nums">+{selected.bookings.length - liveCount(selected)} cancelled</div>}</div>
                             <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Paid</div><div className="text-lg font-bold text-text-light tabular-nums">{spentLabel(selected)}</div>{owedLabel(selected) && <div className="text-xs text-coral-deep tabular-nums">{owedLabel(selected)} unpaid</div>}</div>
@@ -305,23 +303,34 @@ const CustomersView: React.FC = () => {
                             <div className="text-[0.7rem] uppercase tracking-wider text-text-subtle mb-1">Booking history</div>
                             {[...selected.bookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).map((b) => {
                                 const amt = amountForBooking(b);
+                                const note = b.question || b.adminNote;
                                 return (
-                                    <div key={b.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-3 rounded-xl border border-adm-line px-4 py-2.5">
-                                        <div className="min-w-0">
-                                            <div className="text-sm font-medium text-text-light truncate">{serviceLabel(b)}</div>
-                                            <div className="text-xs text-text-subtle tabular-nums">{sessionWhen(b) ? `Session ${sessionWhen(b)}` : `Ordered ${fmtDate(b.createdAt)}`}</div>
+                                    <button type="button" key={b.id} onClick={() => setOpenBooking(b.id)}
+                                        className="w-full text-left rounded-xl border border-adm-line px-4 py-2.5 hover:bg-adm-hover hover:border-adm-line-2 transition-colors">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-3">
+                                            <div className="min-w-0">
+                                                <div className="text-sm font-medium text-text-light truncate">{serviceLabel(b)}</div>
+                                                <div className="text-xs text-text-subtle tabular-nums">{sessionWhen(b) ? `Session ${sessionWhen(b)}` : `Ordered ${fmtDate(b.createdAt)}`}</div>
+                                            </div>
+                                            <div className="flex items-center gap-3 sm:shrink-0">
+                                                <span className="text-sm text-text-light tabular-nums mr-auto sm:mr-0">{amt ? fmtMoney(amt.amount, amt.currency) : '—'}</span>
+                                                <PaymentPill paid={b.paymentStatus === 'paid'} />
+                                                <StatusPill status={b.status} />
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-3 sm:shrink-0">
-                                            <span className="text-sm text-text-light tabular-nums mr-auto sm:mr-0">{amt ? fmtMoney(amt.amount, amt.currency) : '—'}</span>
-                                            <PaymentPill paid={b.paymentStatus === 'paid'} />
-                                            <StatusPill status={b.status} />
-                                        </div>
-                                    </div>
+                                        {note && <div className="mt-1 text-xs text-text-subtle truncate">{b.question ? `“${b.question}”` : b.adminNote}</div>}
+                                    </button>
                                 );
                             })}
+                            <div className="pt-2 font-mono text-[0.65rem] text-text-subtle" title="Client id">{selected.clientId}</div>
                         </div>
                     </div>
                 </div>
+            )}
+            {openBooking && (
+                <BookingsView view="detail" openId={openBooking}
+                    onClosed={() => { setOpenBooking(null); load(); }}
+                    onCustomer={() => setOpenBooking(null)} />
             )}
         </div>
     );

@@ -6,10 +6,12 @@ import Card from './ui/Card';
 import Segmented from './ui/Segmented';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, updateBookingDetails, BOOKINGS_CHANGED, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
-import WaConfirmButton from './WaConfirmButton';
+import WaConfirmButton, { waNumberOf } from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
 import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
+import { sameCustomer, normPhone as waNumber, moneyLabel, type Money } from './lib/customers';
+import { openCustomerOf } from './lib/nav';
 import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle, matchCustomers } from './lib/calendarEntry';
 
 // Services offered — id drives revenue colour/stacking; name is the display label.
@@ -866,6 +868,12 @@ const PrivateNote: React.FC<{ b: Booking; onSaved: (b: Booking) => void }> = ({ 
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState('');
     const dirty = note.trim() !== (b.adminNote || '');
+    const [open, setOpen] = useState(!!b.adminNote);
+    if (!open) return (
+        <div className="px-5 pb-4">
+            <button type="button" onClick={() => setOpen(true)} className="text-xs text-text-subtle hover:text-lilac transition-colors">+ Add a private note</button>
+        </div>
+    );
     const save = async () => {
         setBusy(true); setErr('');
         try { onSaved(await updateBookingDetails(b.id, { adminNote: note.trim() }, localStorage.getItem('authToken') || undefined)); }
@@ -875,11 +883,11 @@ const PrivateNote: React.FC<{ b: Booking; onSaved: (b: Booking) => void }> = ({ 
     return (
         <div className="px-5 pb-4">
             <label className="block text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle mb-1">Private note</label>
-            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Only you see this" className={FLD} />
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Only you see this" className={FLD} autoFocus={!b.adminNote} />
             {(dirty || err) && (
                 <div className="mt-1.5 flex items-center justify-end gap-3">
                     {err && <span className="text-xs text-coral">{err}</span>}
-                    {dirty && <button type="button" onClick={() => setNote(b.adminNote || '')} className="text-xs text-text-subtle hover:text-text-light">Undo</button>}
+                    {dirty && <button type="button" onClick={() => { setNote(b.adminNote || ''); if (!b.adminNote) setOpen(false); }} className="text-xs text-text-subtle hover:text-text-light">Undo</button>}
                     {dirty && <Button onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save note'}</Button>}
                 </div>
             )}
@@ -902,6 +910,21 @@ const dueText = (b: Booking, now: number): { text: string; cls: string } => {
     const when = sameDay(at, new Date(now)) ? `today ${time}` : `${at.toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'Asia/Jakarta' })} ${time}`;
     if (left < 0) return { text: `Overdue ${leftLabel(-left)}`, cls: 'due-late-text font-semibold' };
     return { text: `${leftLabel(left)} left · ${when}`, cls: left < 6 * 3_600_000 ? 'due-soon-text font-semibold' : 'text-text-subtle' };
+};
+// The details' top line for a reading or chat still to send: the exact time it's due and
+// how long is left ("Due Tue 10 Nov, 14:41 · 21 h left"), or how long a chat has waited.
+const detailDue = (b: Booking, now: number): { text: string; cls: string } | null => {
+    if ((b.date && b.time) || b.extraFor || b.status === 'done' || b.status === 'cancelled') return null;
+    const c = orderClock(b);
+    if (c.kind === 'unpaid') return null;
+    const fmt = (t: number) => new Date(t).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }).replace(/,(?= \d{2}:)/, ',');
+    if (c.kind === 'waiting') {
+        const late = now - c.since > 24 * 3_600_000;
+        return { text: `Waiting ${leftLabel(now - c.since)} · paid ${fmt(c.since)}`, cls: late ? 'due-soon-text' : 'text-text-subtle' };
+    }
+    const left = c.due - now;
+    if (left < 0) return { text: `Overdue ${leftLabel(-left)} · was due ${fmt(c.due)}`, cls: 'due-late-text font-semibold' };
+    return { text: `Due ${fmt(c.due)} · ${leftLabel(left)} left`, cls: left < 6 * 3_600_000 ? 'due-soon-text font-semibold' : 'text-text-subtle' };
 };
 // "Chat · 1 question" for "sasa chat" is just "1 question": the name already says it
 const serviceAfterName = (b: Booking) => {
@@ -943,7 +966,7 @@ const TodayLine: React.FC<{ b: Booking; onOpen: () => void; children?: React.Rea
 
 // view 'detail': only one booking's details popup (openId), for another screen (Sales) to
 // open the same details as Orders and Schedule; onClosed when it's closed.
-const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail'; onOpen?: (v: 'calendar' | 'orders') => void; openId?: string; onClosed?: () => void }> = ({ view: tab, onOpen, openId, onClosed }) => {
+const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail'; onOpen?: (v: 'calendar' | 'orders') => void; openId?: string; onClosed?: () => void; onCustomer?: () => void }> = ({ view: tab, onOpen, openId, onClosed, onCustomer }) => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -1426,6 +1449,21 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 const method = paymentMethodOf(b);
                 const timed = !!(b.date && b.time);
                 const endStr = timed && b.durationMin ? toHHMM(toMin(b.time) + b.durationMin) : '';
+                const due = detailDue(b, now);
+                // the same person's bookings: a line that opens them on Customers (only when
+                // Customers lists them: something paid, confirmed or done)
+                const mine = sameCustomer(b, bookings.filter((x) => !x.extraFor));
+                const real = mine.some((x) => x.status !== 'cancelled' && (x.paymentStatus === 'paid' || x.status === 'confirmed' || x.status === 'done'));
+                const live = mine.filter((x) => x.status !== 'cancelled').length;
+                const paidSum: Money = { IDR: 0, USD: 0 };
+                mine.forEach((x) => { const a = amountForBooking(x); if (a && x.paymentStatus === 'paid') paidSum[a.currency] += a.amount; });
+                const toCustomer = () => { if (onCustomer) onCustomer(); else { openCustomerOf(b.id); setSelectedId(null); } };
+                const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+                    <div className="flex items-center justify-between gap-3 min-h-[2rem]">
+                        <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle shrink-0">{label}</div>
+                        <div className="flex items-center justify-end gap-2 min-w-0">{children}</div>
+                    </div>
+                );
                 const Field: React.FC<{ label: string; children: React.ReactNode; wide?: boolean }> = ({ label, children, wide }) => (
                     <div className={wide ? 'col-span-2' : ''}>
                         <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle mb-1">{label}</div>
@@ -1433,19 +1471,21 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                     </div>
                 );
                 return (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className={`fixed inset-0 ${detailOnly ? 'z-[90]' : 'z-50'} flex items-center justify-center p-4`}>
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
                         <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl">
                             <div className="px-5 pt-5 pb-4 border-b border-adm-line">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
                                         <div className="text-xs text-text-subtle tabular-nums">
-                                            {timed ? `${fmtDate(b.date)} · ${b.time}${endStr ? `–${endStr}` : ''}` : `Ordered ${fmtDate(b.createdAt)}`}
+                                            <span className="whitespace-nowrap">{timed ? `${fmtDate(b.date)} · ${b.time}${endStr ? `–${endStr}` : ''}` : `Ordered ${fmtDate(b.createdAt)}`}</span>
                                             <span className="mx-1.5">·</span>{b.market === 'ID' ? 'Indonesia' : 'Global'}
                                             {b.source === 'manual' && <><span className="mx-1.5">·</span>added by hand</>}
+                                            {b.ref && <><span className="mx-1.5">·</span><span className="font-mono whitespace-nowrap" title={refInWords(b.ref) || 'Booking code'}>{b.ref}</span></>}
                                         </div>
                                         <h3 className="mt-1.5 text-xl font-serif font-bold text-text-light leading-snug">{b.name || '—'}</h3>
                                         <div className="text-sm text-text-subtle mt-0.5">{serviceLabel(b)}</div>
+                                        {due && <div className={`text-sm tabular-nums mt-1.5 ${due.cls}`}>{due.text}</div>}
                                     </div>
                                     <div className="shrink-0 flex items-center gap-1">
                                         {!editing && (
@@ -1465,35 +1505,44 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                     onSaved={(u) => { replaceBooking(u); setEditing(false); flash('Saved.', 'ok'); }} />
                             ) : (<>
                             <div className="px-5 py-4 grid grid-cols-2 gap-x-4 gap-y-4">
-                                <Field label="WhatsApp">{phone ? fmtPhone(phone) : '—'}</Field>
-                                <Field label="Email">{email || '—'}</Field>
+                                {phone && <Field label="WhatsApp"><a href={`https://wa.me/${waNumber(phone)}`} target="_blank" rel="noopener noreferrer" className="text-lilac hover:underline">{fmtPhone(phone)}</a></Field>}
+                                {email && <Field label="Email"><a href={`mailto:${email}`} className="text-lilac hover:underline">{email}</a></Field>}
                                 {timed && <Field label="Ordered">{fmtDate(b.createdAt)}</Field>}
                                 {b.dob && <Field label="Born">{fmtDate(b.dob)}</Field>}
-                                {b.ref && <Field label="Booking code"><span className="font-mono text-xs">{b.ref}</span>
-                                    {refInWords(b.ref) && <span className="block text-xs text-text-subtle mt-0.5">{refInWords(b.ref)}</span>}</Field>}
+                                {real && (
+                                    <div className="col-span-2">
+                                        <button type="button" onClick={toCustomer} className="group inline-flex items-center flex-wrap text-sm text-text-subtle hover:text-lilac transition-colors text-left">
+                                            <span className="font-medium text-text-light group-hover:text-lilac">{b.name || 'Customer'}</span>
+                                            <span>&nbsp;· {live} booking{live === 1 ? '' : 's'}{moneyLabel(paidSum) ? ` · ${moneyLabel(paidSum)} paid` : ''}</span>
+                                            <ArrowRight size={14} className="ml-1.5" />
+                                        </button>
+                                    </div>
+                                )}
                                 {b.question && <Field label="Question" wide><span className="italic">“{b.question}”</span></Field>}
                             </div>
                             <PrivateNote key={b.id} b={b} onSaved={(u) => { replaceBooking(u); flash('Note saved.', 'ok'); }} />
                             </>)}
 
                             <div className="px-5 py-4 border-t border-adm-line bg-adm-hover space-y-3">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                        <div className="text-base font-serif font-bold text-text-light tabular-nums">{amountLabel(b)}</div>
-                                        {method && <div className="text-xs text-text-subtle">{method}</div>}
-                                    </div>
-                                    <div className="flex items-center gap-1">
+                                <div className="space-y-1">
+                                    <Row label="Payment">
+                                        <span className="text-sm font-semibold text-text-light tabular-nums whitespace-nowrap">{amountLabel(b)}</span>
+                                        {method && <span className="text-xs text-text-subtle truncate">{method}</span>}
                                         <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
-                                        <StatusControl b={b} />
-                                    </div>
+                                    </Row>
+                                    <Row label="Status"><StatusControl b={b} /></Row>
+                                    {/* Indonesia is confirmed on WhatsApp, Global by email */}
+                                    {b.status !== 'cancelled' && (b.market === 'ID' ? !!waNumberOf(b.contact) : !!email) && (
+                                        <Row label="Confirmation">
+                                            {b.market === 'ID'
+                                                ? <WaConfirmButton b={b} compact onSent={(at) => markWaSent(b.id, at)} />
+                                                : <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} />}
+                                        </Row>
+                                    )}
                                 </div>
                                 {b.inviteOnPay && b.status !== 'cancelled' && (
                                     <p className="text-xs text-text-subtle">The calendar invite{b.serviceId === 'meetup' ? '' : ' and Meet link'} go out when you mark it paid.</p>
                                 )}
-                                {/* Indonesia is confirmed on WhatsApp, Global by email */}
-                                {b.market === 'ID'
-                                    ? <WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} />
-                                    : <div className="flex items-center gap-2 text-xs text-text-subtle">Confirmation email <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} /></div>}
                                 {timed && b.status !== 'cancelled' && EXTRA[b.serviceId] && (
                                     <ExtraTime key={b.id} b={b} extras={bookings.filter((x) => x.extraFor && x.extraFor === (b.ref || b.id))}
                                         onDone={(msg) => { flash(msg, 'ok'); load(); }} onToggle={togglePaid} payBusy={payBusy} />
