@@ -6,6 +6,7 @@ import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/bookin
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen, fmtPhone } from './lib/format';
 import { StatusPill, PaymentPill } from './lib/status';
+import { firstNameKey } from './lib/calendarEntry';
 
 // ---- contact parsing ----
 const extractPhone = (contact?: string) => {
@@ -55,6 +56,7 @@ interface Customer {
     lastSeen: string;
     firstSeen: string;
     services: string[];
+    contacts: string[]; // their phone/email tokens, to find others with the same ones
 }
 const marketOf = (b: Booking): Market => (b.market === 'ID' ? 'ID' : 'Global');
 // "Rp 500.000 + $20", "$20", or '' when nothing
@@ -63,17 +65,24 @@ const moneyLabel = (m: Money) => [m.IDR ? fmtMoney(m.IDR, 'IDR') : '', m.USD ? f
 // a rough rate, never shown or used for any total
 const ORDER_RATE = 16_000;
 
-// One person, however they booked: bookings that share a phone number or an email are the
-// same customer, so a WhatsApp booking in Indonesia and a Global one paid with the same
-// email (or number) come together. (Union-find over "p:<phone>" / "e:<email>".)
+// One person, however they booked: bookings that share a phone number or an email AND the
+// first name are the same customer, so a WhatsApp booking in Indonesia and a Global one paid
+// with the same email (or number) come together. Different names on one number (a family's
+// phone, someone booking for a friend, test bookings) stay apart; each one's details say who
+// shares it. (Union-find over "p:<phone>|<first name>" / "e:<email>|<first name>".)
+// the booking's phone and email, written one way ("p:62812…", "e:dewi@example.com")
+const contactTokens = (b: Booking) => {
+    const t: string[] = [];
+    const p = normPhone(extractPhone(b.contact)); if (p) t.push(`p:${p}`);
+    const e = extractEmail(b.contact).toLowerCase(); if (e) t.push(`e:${e}`);
+    return t;
+};
 const groupBookings = (list: Booking[]): Booking[][] => {
     const parent = new Map<string, string>();
     const find = (x: string): string => { let r = x; while (parent.get(r) !== r) r = parent.get(r)!; parent.set(x, r); return r; };
     const add = (x: string) => { if (!parent.has(x)) parent.set(x, x); };
     const tokensOf = (b: Booking) => {
-        const t: string[] = [];
-        const p = normPhone(extractPhone(b.contact)); if (p) t.push(`p:${p}`);
-        const e = extractEmail(b.contact).toLowerCase(); if (e) t.push(`e:${e}`);
+        const t = contactTokens(b).map((x) => `${x}|${firstNameKey(b.name)}`);
         return t.length ? t : [`id:${b.id}`];
     };
     const toks = list.map(tokensOf);
@@ -132,8 +141,9 @@ const CustomersView: React.FC = () => {
             const phone = list.map((b) => extractPhone(b.contact)).find(Boolean) || '';
             const email = list.map((b) => extractEmail(b.contact)).find(Boolean) || '';
             const key = normPhone(phone) || email.toLowerCase() || `id:${list[0].id}`;
-            const c: Customer = { key, clientId: clientIdFor(key), name: list.find((b) => b.name)?.name || '—', phone, email, bookings: list,
-                paid: { IDR: 0, USD: 0 }, owed: { IDR: 0, USD: 0 }, markets: [], lastSeen: '', firstSeen: '', services: [] };
+            const contacts = [...new Set(list.flatMap(contactTokens))];
+            const c: Customer = { key, clientId: '', name: list.find((b) => b.name)?.name || '—', phone, email, bookings: list,
+                paid: { IDR: 0, USD: 0 }, owed: { IDR: 0, USD: 0 }, markets: [], lastSeen: '', firstSeen: '', services: [], contacts };
             for (const b of list) {
                 if (b.status === 'cancelled') continue; // in their history, not in the money or services
                 if (!c.markets.includes(marketOf(b))) c.markets.push(marketOf(b));
@@ -148,8 +158,18 @@ const CustomersView: React.FC = () => {
             c.lastSeen = dates[dates.length - 1] || '';
             out.push(c);
         }
+        // two people on one number get keys of their own (with the first name); someone alone
+        // on theirs keeps the same client id as before
+        const perKey = new Map<string, number>();
+        out.forEach((c) => perKey.set(c.key, (perKey.get(c.key) || 0) + 1));
+        out.forEach((c) => {
+            if ((perKey.get(c.key) || 0) > 1) c.key = `${c.key}|${firstNameKey(c.name) || c.bookings[0].id}`;
+            c.clientId = clientIdFor(c.key);
+        });
         return out;
     }, [bookings]);
+    // the other people who share a phone number or email with this one
+    const sharing = (c: Customer) => customers.filter((o) => o !== c && o.contacts.some((t) => c.contacts.includes(t)));
     const inMarket = useMemo(() => (market === 'all' ? customers : customers.filter((c) => c.markets.includes(market))), [customers, market]);
     const countIn = (m: Market) => customers.filter((c) => c.markets.includes(m)).length;
     // what Top spenders orders by: the tab's own currency, or both (roughly) under All
@@ -262,6 +282,17 @@ const CustomersView: React.FC = () => {
                                     {selected.phone && <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-lilac"><Phone size={13} />{fmtPhone(selected.phone)}</a>}
                                     {selected.email && <span className="inline-flex items-center gap-1.5"><Mail size={13} />{selected.email}</span>}
                                 </div>
+                                {/* different names on the same number or email: kept apart, shown here */}
+                                {sharing(selected).length > 0 && (
+                                    <div className="mt-2 text-xs text-text-subtle">
+                                        Same {sharing(selected).some((o) => o.contacts.some((t) => t.startsWith('p:') && selected.contacts.includes(t))) ? 'number' : 'email'} as{' '}
+                                        {sharing(selected).map((o, i) => (
+                                            <React.Fragment key={o.key}>{i > 0 && ', '}
+                                                <button type="button" onClick={() => setSelected(o)} className="text-lilac hover:underline">{o.name}</button>
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <button onClick={() => setSelected(null)} className="shrink-0 grid place-items-center w-8 h-8 rounded-full border border-adm-line-2 text-text-subtle hover:text-text-light"><X size={16} /></button>
                         </div>

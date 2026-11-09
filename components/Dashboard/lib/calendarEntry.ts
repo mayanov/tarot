@@ -34,6 +34,8 @@ export const nameFromTitle = (title: string) => {
 
 /** a name made comparable: lower case, no form of address, single spaces */
 const normName = (s: string) => (s || '').toLowerCase().replace(ADDRESS, ' ').replace(/[^\p{L}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+/** a name's first word, the way people are told apart: "Kak Dewi L." → "dewi" */
+export const firstNameKey = (s?: string) => normName(s || '').split(' ')[0] || '';
 
 /** the people already in the dashboard this name may be, best first: the same name,
     then the same first name ("Ika" → "Ika Putri"), then a name with that word in it */
