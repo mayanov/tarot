@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking as amountOf, matchesSearch, fmtMoney, fmtDate, serviceLabel, serviceTitle, sessionWhen, paymentMethodOf, phoneOf, emailOf } from './lib/format';
+import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, sessionWhen, paymentMethodOf, phoneOf, emailOf, fmtPhone } from './lib/format';
 import WaConfirmButton from './WaConfirmButton';
-import { StatusPill, PaymentPill } from './lib/status';
+import { SaleStatus } from './lib/status';
 import Card from './ui/Card';
 import PageHeader from './ui/PageHeader';
 import Segmented from './ui/Segmented';
@@ -131,7 +131,7 @@ const SalesView: React.FC = () => {
                 if (toTs && ts > toTs) return false;
             }
             return !needle || matchesSearch(needle, b.name, b.serviceName, serviceLabel(b), b.contact, b.ref, b.adminNote);
-        });
+        }).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
     }, [orders, q, payFilter, serviceFilter, sourceFilter, customerFilter, dateFrom, dateTo]);
     // the same search in the other market's orders (it only looks in the tab that's open)
     const otherMarket: Market = market === 'ID' ? 'Global' : 'ID';
@@ -169,7 +169,14 @@ const SalesView: React.FC = () => {
         }
     };
 
-    const outstanding = totals.unpaidCount > 0;
+    // newest first, under a heading per month; the day alone in the row ("6 Nov")
+    const monthOf = (b: Booking) => (b.createdAt || '').slice(0, 7);
+    const monthName = (ym: string) => (ym ? new Date(`${ym}-15T12:00:00`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : 'No date');
+    const dayOf = (iso?: string) => {
+        if (!iso) return '—';
+        const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    };
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
@@ -296,7 +303,7 @@ const SalesView: React.FC = () => {
             {/* table */}
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[940px]">
+                    <table className="w-full text-sm min-w-[820px]">
                         <thead>
                             <tr className="text-left text-text-subtle text-xs uppercase tracking-wider border-b border-adm-line">
                                 <th className="font-semibold px-4 py-3">Booked</th>
@@ -304,34 +311,36 @@ const SalesView: React.FC = () => {
                                 <th className="font-semibold px-4 py-3">Service</th>
                                 <th className="font-semibold px-4 py-3 text-right">Amount</th>
                                 <th className="font-semibold px-4 py-3">Status</th>
-                                <th className="font-semibold px-4 py-3">Payment</th>
-                                <th className="font-semibold px-4 py-3 text-right">WhatsApp</th>
+                                <th className="px-4 py-3 w-12"><span className="sr-only">WhatsApp</span></th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading && filtered.length === 0 && (
-                                <tr><td colSpan={7}><InlineLoader /></td></tr>
+                                <tr><td colSpan={6}><InlineLoader /></td></tr>
                             )}
                             {!loading && filtered.length === 0 && (
-                                <tr><td colSpan={7} className="text-center text-text-subtle py-16">No orders found{q.trim() ? ` for “${q.trim()}”` : ''}.</td></tr>
+                                <tr><td colSpan={6} className="text-center text-text-subtle py-16">No orders found{q.trim() ? ` for “${q.trim()}”` : ''}.</td></tr>
                             )}
-                            {filtered.map((b) => {
+                            {filtered.map((b, i) => {
                                 const a = amountOf(b);
-                                const paid = b.paymentStatus === 'paid';
                                 const phone = phoneOf(b.contact);
                                 const email = emailOf(b.contact);
                                 const when = sessionWhen(b);
                                 const method = paymentMethodOf(b);
+                                const newMonth = i === 0 || monthOf(filtered[i - 1]) !== monthOf(b);
                                 return (
-                                    <tr key={b.id} className="border-b border-adm-line last:border-0 hover:bg-adm-hover/50 align-top">
-                                        <td className="px-4 py-3 whitespace-nowrap text-text-subtle tabular-nums">{fmtDate(b.createdAt)}</td>
-                                        <td className="px-4 py-3 min-w-[12rem]">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-semibold text-text-light">{b.name || '—'}</span>
-                                                {b.source === 'manual' && <span className="text-[0.6rem] uppercase tracking-wider px-1.5 py-0.5 rounded bg-adm-hover text-text-subtle">Manual</span>}
-                                            </div>
-                                            {phone && <div className="text-xs text-text-subtle tabular-nums mt-0.5">{phone}</div>}
-                                            {email && <div className="text-xs text-text-subtle truncate max-w-[16rem]">{email}</div>}
+                                    <React.Fragment key={b.id}>
+                                    {newMonth && (
+                                        <tr className="border-b border-adm-line">
+                                            <td colSpan={6} className="px-4 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-subtle">{monthName(monthOf(b))}</td>
+                                        </tr>
+                                    )}
+                                    <tr className="border-b border-adm-line last:border-0 hover:bg-adm-hover/50 align-top">
+                                        <td className="px-4 py-3 whitespace-nowrap text-text-subtle tabular-nums">{dayOf(b.createdAt)}</td>
+                                        {/* one contact line: the WhatsApp number, or the email when there's no number */}
+                                        <td className="px-4 py-3 min-w-[12rem]" title={phone && email ? email : undefined}>
+                                            <div className="font-semibold text-text-light">{b.name || '—'}</div>
+                                            {(phone || email) && <div className="text-xs text-text-subtle tabular-nums mt-0.5 truncate max-w-[16rem]">{phone ? fmtPhone(phone) : email}</div>}
                                         </td>
                                         <td className="px-4 py-3 min-w-[12rem]">
                                             <div className="text-text-light">{serviceLabel(b)}</div>
@@ -341,22 +350,18 @@ const SalesView: React.FC = () => {
                                             <div className="tabular-nums text-text-light font-medium">{a ? fmtMoney(a.amount, a.currency) : '—'}</div>
                                             {method && <div className="text-xs text-text-subtle mt-0.5">{method}</div>}
                                         </td>
-                                        <td className="px-4 py-3"><StatusPill status={b.status} /></td>
-                                        <td className="px-4 py-3"><PaymentPill paid={paid} onToggle={() => togglePaid(b)} busy={savingId === b.id} /></td>
-                                        <td className="px-4 py-3 text-right whitespace-nowrap">
-                                            <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
+                                        <td className="px-4 py-3"><SaleStatus b={b} onToggle={() => togglePaid(b)} busy={savingId === b.id} /></td>
+                                        <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                                            <WaConfirmButton icon b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
                                         </td>
                                     </tr>
+                                    </React.Fragment>
                                 );
                             })}
                         </tbody>
                     </table>
                 </div>
             </Card>
-
-            {outstanding && (
-                <p className="text-xs text-text-subtle">Tip: click a Payment pill to mark an order paid — Revenue counts only paid orders.</p>
-            )}
         </div>
     );
 };

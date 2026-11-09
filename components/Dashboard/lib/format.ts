@@ -140,6 +140,19 @@ export const amountLabel = (b: Booking) => {
 
 // The form's contact line is "WA: 0812… · Email: a@b.co"; a manual order may be a bare number.
 export const emailOf = (contact?: string) => ((contact || '').match(/[^\s:·<>]+@[^\s·<>]+\.[a-z]{2,}/i) || [])[0] || '';
+/** a phone number written one way: "6281294058561" and "081294058561" both → "0812 9405 8561";
+    a number with another country code ("+81 90…") is left as it was typed */
+export const fmtPhone = (raw: string) => {
+    const t = (raw || '').trim();
+    let d = t.replace(/\D/g, '');
+    if (!d) return t;
+    if (t.startsWith('+') && !d.startsWith('62')) return t;
+    if (d.startsWith('62')) d = '0' + d.slice(2);
+    else if (d.startsWith('8')) d = '0' + d;
+    if (!d.startsWith('0') || d.length < 9) return t;
+    return [d.slice(0, 4), d.slice(4, 8), d.slice(8)].filter(Boolean).join(' ');
+};
+
 export const phoneOf = (contact?: string) => {
     const c = contact || '';
     const wa = (c.match(/WA:\s*([^·]+)/i) || [])[1];
