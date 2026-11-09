@@ -38,7 +38,9 @@ app.use(cors({
         'https://www.tarotreadingbymayanov.com',
         'https://mayanov-tarot.onrender.com',
         'https://mayanov-tarot.vercel.app',
-        /\.vercel\.app$/,
+        // this project's own preview addresses only (mayanov-tarot-abc123-cptxs-projects),
+        // not every site on vercel.app
+        /^https:\/\/mayanov-tarot-[a-z0-9]+-cptxs-projects\.vercel\.app$/,
     ],
     methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
     allowedHeaders: ['Content-Type', 'x-api-key', 'Authorization', 'Authorization-Token']
@@ -67,7 +69,12 @@ try {
     console.error('[Server] Failed to initialize Analytics Client:', error);
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_jwt_key_mayanov_2026';
+// The secret admin passes are signed with. On a hosted server it must be set (JWT_SECRET):
+// a default written in this (public) code would let anyone make themselves a pass, so
+// without it nobody can sign in. Only a local dev server gets a throwaway one.
+const HOSTED = Boolean(process.env.VERCEL || process.env.RENDER || process.env.NODE_ENV === 'production');
+const JWT_SECRET = process.env.JWT_SECRET || (HOSTED ? '' : `dev-only-${crypto.randomBytes(16).toString('hex')}`);
+if (!JWT_SECRET) console.error('[Server] JWT_SECRET is not set: admin sign-in is switched off');
 
 // Security Middleware: Verify Token
 const verifyToken = (req, res, next) => {
@@ -77,6 +84,7 @@ const verifyToken = (req, res, next) => {
     if (!token) {
         return res.status(401).json({ error: 'Access denied: No token provided' });
     }
+    if (!JWT_SECRET) return res.status(503).json({ error: 'Admin sign-in is not set up on this server' });
 
     try {
         const verified = jwt.verify(token, JWT_SECRET);
@@ -90,14 +98,23 @@ const verifyToken = (req, res, next) => {
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
         return res.status(400).json({ error: 'Email and password are required' });
     }
+    if (!JWT_SECRET) return res.status(503).json({ error: 'Admin sign-in is not set up on this server' });
 
     try {
+        // 5 wrong passwords in a row lock the email for 15 minutes
+        const wait = await userStore.lockedFor(email);
+        if (wait > 0) {
+            const min = Math.ceil(wait / 60_000);
+            return res.status(429).json({ error: `Too many wrong passwords. Try again in ${min} minute${min === 1 ? '' : 's'}.` });
+        }
+
         const isValid = await userStore.verifyLogin(email, password);
 
         if (isValid) {
+            await userStore.clearFailures(email);
             // Generate JWT
             const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '24h' });
 
@@ -111,6 +128,7 @@ app.post('/api/login', async (req, res) => {
 
             return res.json({ success: true, token });
         } else {
+            await userStore.recordFailure(email);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 

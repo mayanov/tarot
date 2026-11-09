@@ -7,6 +7,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'node:crypto';
 import { hashPassword, verifyPassword } from './auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -102,6 +103,44 @@ export async function deleteUser(email) {
   if (!(await getUser(email))) { const err = new Error('User not found'); err.code = 'NOT_FOUND'; throw err; }
   if (db) { await db.collection(COLLECTION).doc(email).delete(); return; }
   writeCsv(readCsv().filter((u) => u.email !== email));
+}
+
+// ---- Wrong passwords: 5 in a row lock that email for 15 minutes ----
+// Kept in Firestore (login_attempts, doc id = a hash of the email) so every server
+// instance sees the same count; in memory when running locally. Counts both real and
+// unknown emails, so a lock says nothing about which emails are admins.
+export const MAX_FAILS = 5;
+export const LOCK_MS = 15 * 60_000;
+const ATTEMPTS = 'login_attempts';
+const memAttempts = new Map();
+const attemptKey = (email) => crypto.createHash('sha256').update(String(email || '').trim().toLowerCase()).digest('hex');
+
+async function readAttempts(email) {
+  const k = attemptKey(email);
+  if (db) { const d = await db.collection(ATTEMPTS).doc(k).get(); return d.exists ? d.data() : null; }
+  return memAttempts.get(k) || null;
+}
+async function writeAttempts(email, data) {
+  const k = attemptKey(email);
+  if (db) { if (data) await db.collection(ATTEMPTS).doc(k).set(data); else await db.collection(ATTEMPTS).doc(k).delete(); return; }
+  if (data) memAttempts.set(k, data); else memAttempts.delete(k);
+}
+
+/** ms until this email may try again (0 = it may) */
+export async function lockedFor(email, now = Date.now()) {
+  const a = await readAttempts(email).catch(() => null);
+  return a?.lockedUntil && a.lockedUntil > now ? a.lockedUntil - now : 0;
+}
+/** a wrong password: counts it, and locks the email at the 5th */
+export async function recordFailure(email, now = Date.now()) {
+  const a = (await readAttempts(email).catch(() => null)) || {};
+  // a lock that has run out starts the count again
+  const fails = (a.lockedUntil && a.lockedUntil <= now ? 0 : a.fails || 0) + 1;
+  await writeAttempts(email, fails >= MAX_FAILS ? { fails: 0, lockedUntil: now + LOCK_MS } : { fails, lockedUntil: 0 }).catch(() => {});
+}
+/** a right password: the count starts again */
+export async function clearFailures(email) {
+  await writeAttempts(email, null).catch(() => {});
 }
 
 // Verify a login attempt against the stored hash.
