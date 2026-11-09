@@ -311,7 +311,7 @@ const SalesView: React.FC = () => {
                                 <th className="font-semibold px-4 py-3">Service</th>
                                 <th className="font-semibold px-4 py-3 text-right">Amount</th>
                                 <th className="font-semibold px-4 py-3">Status</th>
-                                <th className="px-4 py-3 w-12"><span className="sr-only">WhatsApp</span></th>
+                                <th className="font-semibold px-4 py-3 text-right">WhatsApp</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -352,7 +352,7 @@ const SalesView: React.FC = () => {
                                         </td>
                                         <td className="px-4 py-3"><SaleStatus b={b} onToggle={() => togglePaid(b)} busy={savingId === b.id} /></td>
                                         <td className="px-4 py-2.5 text-right whitespace-nowrap">
-                                            <WaConfirmButton icon b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
+                                            <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
                                         </td>
                                     </tr>
                                     </React.Fragment>

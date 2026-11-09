@@ -69,9 +69,8 @@ export const confirmationText = (b: Booking) => {
 const sentLabel = (iso: string) =>
   new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 
-/** `compact`: a small pill for table rows (Orders); `icon`: just the icon (Sales):
-    green while it still needs sending, grey with a ✓ once sent */
-const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; compact?: boolean; icon?: boolean }> = ({ b, onSent, compact, icon }) => {
+/** `compact`: a small pill for table rows (Orders, Sales) */
+const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; compact?: boolean }> = ({ b, onSent, compact }) => {
   const [busy, setBusy] = useState(false);
   const number = waNumberOf(b.contact);
   if (!number) return null;
@@ -91,22 +90,6 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; comp
       if (r.ok && data.waConfirmSentAt) onSent(data.waConfirmSentAt);
     } catch { /* WhatsApp still opened; only the note is missing */ } finally { setBusy(false); }
   };
-  if (icon) {
-    const sent = Boolean(b.waConfirmSentAt);
-    return (
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); send(); }}
-        disabled={busy}
-        title={sent ? `Confirmation sent ${sentLabel(b.waConfirmSentAt!)} · click to send again` : 'Send the WhatsApp confirmation'}
-        aria-label={sent ? 'WhatsApp confirmation sent' : 'Send WhatsApp confirmation'}
-        className={`relative inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors disabled:opacity-50 ${sent ? 'text-text-subtle hover:text-text-light hover:bg-adm-hover-2' : 'text-[#1fae55] border border-[#1fae55]/50 hover:bg-[#1fae55]/10'}`}
-      >
-        <FaWhatsapp size={15} />
-        {sent && <span className="absolute -bottom-0.5 -right-0.5 text-[9px] leading-none font-bold text-text-subtle">✓</span>}
-      </button>
-    );
-  }
   if (compact) {
     return (
       <button
