@@ -674,3 +674,25 @@ html[data-print='offset'] .letterpress-lg { filter: url(#offset-lg); }
 .admin-shell .due-late { background: rgb(220 38 38 / 0.14); color: #b42318; }
 .admin-shell[data-theme="dark"] .due-soon { background: rgb(251 191 36 / 0.16); color: #fcd34d; }
 .admin-shell[data-theme="dark"] .due-late { background: rgb(248 113 113 / 0.16); color: #fca5a5; }
+
+/* Schedule: the colour is the service, the style is the status (BookingsView) */
+.admin-shell .svc-call { --svc: 37 99 235; }
+.admin-shell .svc-meetup { --svc: 217 119 6; }
+.admin-shell .svc-live { --svc: 22 163 74; }
+.admin-shell .svc-other { --svc: 219 39 119; }
+.admin-shell[data-theme="dark"] .svc-call { --svc: 96 165 250; }
+.admin-shell[data-theme="dark"] .svc-meetup { --svc: 251 191 36; }
+.admin-shell[data-theme="dark"] .svc-live { --svc: 74 222 128; }
+.admin-shell[data-theme="dark"] .svc-other { --svc: 244 114 182; }
+.admin-shell .svc-dot { background: rgb(var(--svc)); }
+.admin-shell .blk { border: 1px solid rgb(var(--svc) / 0.45); border-left: 3px solid rgb(var(--svc)); }
+.admin-shell .blk-confirmed { background: rgb(var(--svc) / 0.2); }
+.admin-shell .blk-pending { background: repeating-linear-gradient(135deg, rgb(var(--svc) / 0.24) 0 5px, rgb(var(--svc) / 0.06) 5px 10px); }
+.admin-shell .blk-done { background: rgb(var(--svc) / 0.1); opacity: 0.6; }
+.admin-shell .blk-done:hover, .admin-shell .blk-pending:hover, .admin-shell .blk-confirmed:hover { filter: brightness(0.96); }
+.admin-shell .blk-entry { background: rgb(var(--svc) / 0.05); border: 1.5px dashed rgb(var(--svc) / 0.85); }
+.admin-shell .dot-entry { border: 1.5px dashed rgb(var(--svc)); }
+.admin-shell .blk-personal { background: #D7D6DE; }
+.admin-shell .blk-personal, .admin-shell .personal-text { color: #4A4753; }
+.admin-shell[data-theme="dark"] .blk-personal { background: #3A3843; border-color: rgb(255 255 255 / 0.08); }
+.admin-shell[data-theme="dark"] .blk-personal, .admin-shell[data-theme="dark"] .personal-text { color: #B9B6C4; }

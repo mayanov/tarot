@@ -60,13 +60,6 @@ const fmtOptPrice = (o: SvcOpt) => fmtAmt(o.amount, o.currency);
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const toHHMM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
-// Calendar block colours per status.
-const BLOCK_STYLE: Record<Booking['status'], string> = {
-    pending: 'bg-coral/20 border-coral/45 text-coral-deep hover:bg-coral/30',
-    confirmed: 'bg-sage/20 border-sage/45 text-sage hover:bg-sage/30',
-    done: 'bg-blue/20 border-blue/45 text-blue hover:bg-blue/30',
-    cancelled: 'bg-mauve/15 border-mauve/40 text-mauve line-through opacity-70 hover:opacity-90',
-};
 
 const toISO = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -425,7 +418,28 @@ const dayLabel = (iso: string, todayISO: string) => {
     const date = d.toLocaleDateString('en-GB', { weekday: rel ? 'short' : 'long', day: 'numeric', month: 'short' });
     return rel ? `${rel} · ${date}` : date;
 };
-const STATUS_DOT: Record<Booking['status'], string> = { pending: 'bg-coral', confirmed: 'bg-sage', done: 'bg-blue', cancelled: 'bg-mauve' };
+// The Schedule's colours (index.css): the colour is the service, the style is the status
+// (solid confirmed, striped pending, faded done, dashed: on her calendar, not booked yet).
+type SvcKey = 'call' | 'meetup' | 'live' | 'other';
+const svcKey = (serviceId?: string): SvcKey => (serviceId === 'call' || serviceId === 'meetup' || serviceId === 'live' ? serviceId : 'other');
+const blockClass = (b: Booking) => `svc-${svcKey(b.serviceId)} blk blk-${b.status === 'pending' ? 'pending' : b.status === 'done' ? 'done' : 'confirmed'}`;
+const STATUS_WORD: Partial<Record<Booking['status'], string>> = { pending: 'Pending', done: 'Done ✓' };
+
+// What the colours and styles mean, under the grid.
+const ScheduleKey: React.FC = () => (
+    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[0.7rem] text-text-subtle">
+        {([['call', 'Call'], ['meetup', 'Meetup'], ['live', 'Live'], ['other', 'Readings & other']] as const).map(([k, label]) => (
+            <span key={k} className={`svc-${k} inline-flex items-center gap-1.5`}><span className="svc-dot w-2.5 h-2.5 rounded-sm" />{label}</span>
+        ))}
+        <span className="text-text-subtle/40">|</span>
+        <span className="svc-call inline-flex items-center gap-1.5"><span className="blk blk-confirmed w-4 h-3 rounded-sm" />Confirmed</span>
+        <span className="svc-call inline-flex items-center gap-1.5"><span className="blk blk-pending w-4 h-3 rounded-sm" />Pending</span>
+        <span className="svc-call inline-flex items-center gap-1.5"><span className="blk blk-done w-4 h-3 rounded-sm" />Done</span>
+        <span className="svc-call inline-flex items-center gap-1.5"><span className="blk-entry w-4 h-3 rounded-sm" />Not booked yet</span>
+        <span className="inline-flex items-center gap-1.5"><span className="w-4 h-3 rounded-sm blk-personal" />Personal</span>
+        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-coral-deep" />Unpaid</span>
+    </div>
+);
 
 // Days as a list, one line per session or calendar entry, in time order: the Today screen,
 // and the Schedule on a phone (where seven columns don't fit).
@@ -455,10 +469,10 @@ const Agenda: React.FC<{
                                     <button key={b.id} type="button" onClick={() => onBooking(b.id)}
                                         className="w-full flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 text-left hover:bg-adm-hover transition-colors">
                                         <span className="w-[5.5rem] shrink-0 text-xs tabular-nums text-text-light">{b.time}{end && `–${end}`}</span>
-                                        <span className={`w-2 h-2 shrink-0 rounded-full ${STATUS_DOT[b.status]}`} title={b.status} />
+                                        <span className={`svc-${svcKey(b.serviceId)} svc-dot w-2.5 h-2.5 shrink-0 rounded-full ${b.status === 'done' ? 'opacity-50' : ''}`} />
                                         <span className="min-w-0 flex-1">
                                             <span className="block text-sm font-medium text-text-light truncate">{b.name || '—'}</span>
-                                            <span className="block text-xs text-text-subtle truncate">{serviceLabel(b)}</span>
+                                            <span className="block text-xs text-text-subtle truncate">{serviceLabel(b)}{STATUS_WORD[b.status] && <> · <span className="font-medium">{STATUS_WORD[b.status]}</span></>}</span>
                                         </span>
                                         {b.paymentStatus !== 'paid' && <span className="shrink-0 text-[0.7rem] font-semibold text-coral-deep">Unpaid</span>}
                                     </button>
@@ -471,7 +485,7 @@ const Agenda: React.FC<{
                                     title="From your Google Calendar. Click to turn it into a booking."
                                     className={`w-full flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 text-left hover:bg-adm-hover transition-colors ${session ? '' : 'opacity-55 hover:opacity-100'}`}>
                                     <span className="w-[5.5rem] shrink-0 text-xs tabular-nums text-text-subtle">{e.time}{e.endTime && e.endDate === e.date ? `–${e.endTime}` : ''}</span>
-                                    <span className={`w-2 h-2 shrink-0 rounded-full border ${session ? 'border-lilac' : 'border-text-subtle/50'}`} />
+                                    <span className={`w-2.5 h-2.5 shrink-0 rounded-full ${session ? `svc-${serviceFromTitle(e.title)} dot-entry` : 'border border-text-subtle/50'}`} />
                                     <span className="min-w-0 flex-1">
                                         <span className="block text-sm text-text-light truncate">{e.title}</span>
                                         <span className="block text-xs text-text-subtle truncate">{session ? 'On your calendar, not a booking yet' : 'Your calendar'}</span>
@@ -967,9 +981,9 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                                     // the site's own rest / travel entries are part of a booking: not clickable
                                                     if (isHelperEntry(e)) return (
                                                         <div key={e.id} title={span}
-                                                            className="absolute left-1 right-1 rounded-md border border-black/10 px-1.5 py-0.5 overflow-hidden pointer-events-none z-0 opacity-60"
-                                                            style={{ top, height, backgroundColor: '#D7D6DE' }}>
-                                                            {height > 18 && <div className="text-[10px] font-medium truncate leading-tight" style={{ color: '#54515F' }}>{e.title}</div>}
+                                                            className="absolute left-1 right-1 rounded-md border border-black/10 px-1.5 py-0.5 overflow-hidden pointer-events-none z-0 opacity-60 blk-personal"
+                                                            style={{ top, height }}>
+                                                            {height > 18 && <div className="text-[10px] font-medium truncate leading-tight personal-text">{e.title}</div>}
                                                         </div>
                                                     );
                                                     // a session she typed in (looks like one): stronger, with a dashed edge;
@@ -978,12 +992,12 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                                     return (
                                                         <button key={e.id} type="button" onClick={() => setFromEntry(e)}
                                                             title={`${span} (your Google Calendar). Click to turn it into a booking.`}
-                                                            className={`group absolute left-1 right-1 rounded-md px-1.5 py-0.5 overflow-hidden text-left z-0 transition hover:ring-2 hover:ring-lilac/60 ${session ? 'border border-dashed border-lilac/70' : 'border border-black/10 opacity-55 hover:opacity-100'}`}
-                                                            style={{ top, height, backgroundColor: '#D7D6DE' }}>
-                                                            <div className="text-[8px] font-bold uppercase tracking-wider leading-none" style={{ color: session ? '#5B3FA8' : '#4A4753' }}>
-                                                                {session ? <>Not a booking yet<span className="hidden group-hover:inline"> · add</span></> : 'Busy'}
+                                                            className={`group absolute left-1 right-1 rounded-md px-1.5 py-0.5 overflow-hidden text-left z-0 transition hover:ring-2 hover:ring-lilac/60 ${session ? `svc-${serviceFromTitle(e.title)} blk-entry bg-surface-1` : 'blk-personal border border-black/10 opacity-55 hover:opacity-100'}`}
+                                                            style={{ top, height }}>
+                                                            <div className="text-[8px] font-bold uppercase tracking-wider leading-none" style={session ? { color: 'rgb(var(--svc))' } : undefined}>
+                                                                {session ? <>Not booked yet<span className="hidden group-hover:inline"> · add</span></> : 'Busy'}
                                                             </div>
-                                                            {height > 22 && <div className="text-[10px] font-medium truncate leading-tight mt-0.5" style={{ color: '#54515F' }}>{e.title}</div>}
+                                                            {height > 22 && <div className={`text-[10px] font-medium truncate leading-tight mt-0.5 ${session ? 'text-text-light' : 'personal-text'}`}>{e.title}</div>}
                                                         </button>
                                                     );
                                                 })}
@@ -1000,16 +1014,16 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                                             key={b.id}
                                                             onPointerDown={(e) => beginDrag(e, b, di)}
                                                             title={`${b.time}–${endStr} · ${serviceLabel(b)} · ${b.name}${b.paymentStatus === 'paid' ? '' : ' · unpaid'} — click for details, drag to reschedule`}
-                                                            className={`absolute left-1 right-1 rounded-md border px-1.5 py-1 text-left overflow-hidden transition-shadow cursor-grab active:cursor-grabbing touch-none ${BLOCK_STYLE[b.status]} ${selectedId === b.id ? 'ring-2 ring-black/60' : ''} ${drag?.id === b.id ? 'opacity-30' : ''}`}
+                                                            className={`absolute left-1 right-1 rounded-md border px-1.5 py-1 text-left overflow-hidden transition-shadow cursor-grab active:cursor-grabbing touch-none ${blockClass(b)} text-text-light ${selectedId === b.id ? 'ring-2 ring-black/60' : ''} ${drag?.id === b.id ? 'opacity-30' : ''}`}
                                                             style={{ top, height }}
                                                         >
                                                             {b.paymentStatus !== 'paid' && <span title="Unpaid" className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-coral-deep" />}
                                                             {height < 34 ? (
                                                                 // a 30-minute session: one line, the time and who
-                                                                <div className="text-[10px] font-semibold leading-tight truncate pr-2"><span className="tabular-nums opacity-80">{b.time}</span> {b.name}</div>
+                                                                <div className="text-[10px] font-semibold leading-tight truncate pr-2">{b.status === 'done' && '✓ '}<span className="tabular-nums opacity-80">{b.time}</span> {b.name}</div>
                                                             ) : (
                                                                 <>
-                                                                    <div className="text-[9px] font-semibold leading-none tabular-nums opacity-90 pr-2">{b.time}–{endStr}</div>
+                                                                    <div className="text-[9px] font-semibold leading-none tabular-nums opacity-90 pr-2">{b.status === 'done' && '✓ '}{b.time}–{endStr}{b.status === 'pending' && ' · pending'}</div>
                                                                     <div className="text-[11px] font-semibold leading-tight truncate mt-0.5">{b.name}</div>
                                                                     {height > 44 && <div className="text-[10px] leading-tight truncate opacity-90">{serviceLabel(b)}</div>}
                                                                 </>
@@ -1036,6 +1050,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                         </div>
                     </div>
 
+                    <ScheduleKey />
                     {drag && (
                         <p className="text-center text-lilac text-xs">Drop to move to {WEEKDAYS[drag.curDay]} {toHHMM(drag.curStart)}</p>
                     )}
