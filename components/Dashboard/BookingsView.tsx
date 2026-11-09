@@ -571,6 +571,109 @@ const Agenda: React.FC<{
     </div>
 );
 
+// Today's sessions as one day of the calendar: hours down the side, each session a block
+// as tall as it lasts (the Schedule's colours: colour = service, style = status), her own
+// calendar entries next to them, and a line at the time it is now.
+const DAY_HOUR_H = 64; // px per hour
+const DayTimeline: React.FC<{
+    iso: string; bookings: Booking[]; entries: CalEvent[]; now: number;
+    onBooking: (id: string) => void; onEntry: (e: CalEvent) => void;
+}> = ({ iso, bookings, entries, now, onBooking, onEntry }) => {
+    type Item = { id: string; start: number; end: number; k: 'b'; b: Booking } | { id: string; start: number; end: number; k: 'e'; e: CalEvent };
+    const items: Item[] = [
+        ...bookings.filter((b) => b.date === iso && b.time && b.status !== 'cancelled')
+            .map((b): Item => ({ id: b.id, start: toMin(b.time), end: toMin(b.time) + (b.durationMin > 0 ? b.durationMin : 60), k: 'b', b })),
+        ...entries.filter((e) => e.date === iso && e.time)
+            .map((e): Item => ({ id: e.id, start: toMin(e.time!), end: e.endTime && (!e.endDate || e.endDate === e.date) ? Math.max(toMin(e.endTime), toMin(e.time!) + 15) : toMin(e.time!) + 60, k: 'e', e })),
+    ].sort((a, b) => a.start - b.start || b.end - a.end);
+    // side by side where they overlap: each item a lane, each group of overlapping items
+    // shares the width
+    const lane = new Map<string, number>(), lanesOf = new Map<string, number>();
+    let group: Item[] = [], groupEnd = -1, ends: number[] = [];
+    const close = () => { const n = Math.max(1, ends.length); group.forEach((it) => lanesOf.set(it.id, n)); group = []; ends = []; };
+    for (const it of items) {
+        if (it.start >= groupEnd) { close(); groupEnd = -1; }
+        let l = ends.findIndex((e) => e <= it.start);
+        if (l < 0) { l = ends.length; ends.push(it.end); } else ends[l] = it.end;
+        lane.set(it.id, l); group.push(it); groupEnd = Math.max(groupEnd, it.end);
+    }
+    close();
+    // the hours shown: 10:00–20:00, wider when something's earlier or later
+    const from = Math.min(10 * 60, ...items.map((i) => Math.floor(i.start / 60) * 60));
+    const to = Math.max(20 * 60, ...items.map((i) => Math.ceil(i.end / 60) * 60));
+    const y = (min: number) => ((min - from) / 60) * DAY_HOUR_H;
+    const hours = Array.from({ length: (to - from) / 60 + 1 }, (_, i) => from + i * 60);
+    // now, in Jakarta
+    const jkt = new Date(now + 7 * 3_600_000);
+    const nowMin = jkt.getUTCHours() * 60 + jkt.getUTCMinutes();
+    const showNow = jkt.toISOString().slice(0, 10) === iso && nowMin >= from && nowMin <= to;
+    const sessions = items.filter((i) => i.k === 'b').length;
+    return (
+        <div className="px-3 pt-3 pb-4">
+            {!sessions && <p className="px-1 pb-2 text-sm text-text-subtle">No sessions today.</p>}
+            <div className="relative" style={{ height: y(to) + 8 }}>
+                {hours.map((h) => (
+                    <div key={h} className="absolute left-0 right-0 flex items-start" style={{ top: y(h) }}>
+                        <span className="w-11 shrink-0 -mt-[7px] pr-2 text-right text-[0.65rem] tabular-nums text-text-subtle">{toHHMM(h)}</span>
+                        <span className="flex-1 border-t border-adm-line" />
+                    </div>
+                ))}
+                <div className="absolute top-0 bottom-0 left-12 right-1">
+                    {items.map((it) => {
+                        const top = y(it.start), height = Math.max(26, y(it.end) - y(it.start) - 2);
+                        const n = lanesOf.get(it.id) || 1, l = lane.get(it.id) || 0;
+                        const pos = { top: top + 1, height, left: `calc(${(l / n) * 100}% + 2px)`, width: `calc(${100 / n}% - 4px)` };
+                        const span = `${toHHMM(it.start)}–${toHHMM(it.end)}`;
+                        const roomy = height >= 44, tight = height < 40;
+                        if (it.k === 'b') {
+                            const b = it.b;
+                            return (
+                                <button key={it.id} type="button" onClick={() => onBooking(b.id)} style={pos}
+                                    className={`absolute rounded-md px-2 py-1 text-left overflow-hidden hover:ring-2 hover:ring-lilac/50 transition ${blockClass(b)} text-text-light`}>
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className="text-xs font-semibold truncate">{b.status === 'done' ? '✓ ' : ''}{b.name || '—'}</span>
+                                        {/* a short session: everything on one line */}
+                                        {tight && <span className="text-[0.7rem] text-text-subtle truncate tabular-nums">{span} · {serviceTitle(b)}</span>}
+                                        {b.paymentStatus !== 'paid' && <span className="shrink-0 ml-auto text-[0.65rem] font-semibold text-coral-deep">Unpaid</span>}
+                                    </div>
+                                    {!tight && <div className="text-[0.7rem] text-text-subtle truncate tabular-nums">{span}{roomy ? '' : ` · ${serviceTitle(b)}`}</div>}
+                                    {roomy && <div className="text-[0.7rem] text-text-subtle truncate">{serviceLabel(b)}{STATUS_WORD[b.status] ? ` · ${STATUS_WORD[b.status]}` : ''}</div>}
+                                </button>
+                            );
+                        }
+                        const e = it.e;
+                        // the site's own rest / travel around a session: shown, faint, not clickable
+                        if (isHelperEntry(e)) return (
+                            <div key={it.id} style={pos} title={`${span} · ${e.title}`}
+                                className="absolute rounded-md px-2 py-0.5 overflow-hidden pointer-events-none opacity-50 blk-personal">
+                                <div className="text-[0.65rem] truncate personal-text">{e.title}</div>
+                            </div>
+                        );
+                        const session = isSessionTitle(e.title);
+                        return (
+                            <button key={it.id} type="button" onClick={() => onEntry(e)} style={pos}
+                                title={`${span} · ${e.title} (your Google Calendar). Click to turn it into a booking.`}
+                                className={`absolute rounded-md px-2 py-1 text-left overflow-hidden transition ${session ? `svc-${serviceFromTitle(e.title)} blk-entry bg-surface-1 hover:ring-2 hover:ring-lilac/50` : 'blk-personal border border-black/10 opacity-60 hover:opacity-100'}`}>
+                                <div className="text-xs font-medium truncate text-text-light">{e.title}</div>
+                                <div className="text-[0.7rem] truncate tabular-nums" style={session ? { color: 'rgb(var(--svc))' } : undefined}>
+                                    {span}{session ? ' · not booked yet' : ''}
+                                </div>
+                            </button>
+                        );
+                    })}
+                    {showNow && (
+                        <div className="absolute left-0 right-0 z-10 pointer-events-none" style={{ top: y(nowMin) }}>
+                            <div className="relative border-t-2" style={{ borderColor: '#e5484d' }}>
+                                <span className="absolute -left-1 -top-[5px] w-2 h-2 rounded-full" style={{ background: '#e5484d' }} />
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // A call or meetup that ran longer: add its add-on (call +15 min, meetup +1 hour). Each is
 // a small record of its own with its own Paid switch (so it counts in Sales and Revenue),
 // and the session gets longer here and on the calendar. If the time after it is booked,
@@ -1181,7 +1284,6 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
 
             {/* ---------------- TODAY — the day's work, on one screen ---------------- */}
             {!initialLoading && tab === 'today' && (() => {
-                const days = Array.from({ length: 7 }, (_, i) => toISO(addDays(parseISO(todayISO), i)));
                 const head = (title: string, count: number, go?: () => void, goLabel?: string) => (
                     <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
                         <h2 className="text-sm font-serif font-semibold text-text-light">{title}{count > 0 && <span className="ml-1.5 text-text-subtle font-sans font-normal">{count}</span>}</h2>
@@ -1191,10 +1293,10 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                 return (
                     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start">
                         <Card className="overflow-hidden">
-                            {head('Sessions', 0, onOpen && (() => onOpen('calendar')), 'Schedule')}
-                            {/* today and tomorrow always; the days after only when something's on */}
-                            <Agenda days={days} todayISO={todayISO} bookings={calendarSessions} entries={soonEntries}
-                                onBooking={setSelectedId} onEntry={setFromEntry} hideEmptyAfter={1} />
+                            {head("Today's schedule", 0, onOpen && (() => onOpen('calendar')), 'Week')}
+                            {/* only today, drawn as a day of the calendar */}
+                            <DayTimeline iso={todayISO} bookings={calendarSessions} entries={soonEntries} now={now}
+                                onBooking={setSelectedId} onEntry={setFromEntry} />
                         </Card>
                         <div className="space-y-5">
                             <Card className="overflow-hidden">
