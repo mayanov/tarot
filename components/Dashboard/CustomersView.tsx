@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Phone, Mail, X, Repeat } from 'lucide-react';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen } from './lib/format';
+import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen, fmtPhone } from './lib/format';
 import { StatusPill, PaymentPill } from './lib/status';
 
 // ---- contact parsing ----
@@ -40,6 +40,8 @@ const clientIdFor = (key: string) => {
     return 'CL-' + n.toString(36).toUpperCase().padStart(9, '0').slice(0, 9);
 };
 
+type Market = 'ID' | 'Global';
+type Money = { IDR: number; USD: number };
 interface Customer {
     key: string;
     clientId: string;
@@ -47,12 +49,39 @@ interface Customer {
     phone: string;
     email: string;
     bookings: Booking[];
-    paid: number;   // what they've actually paid, in their market's currency
-    owed: number;   // booked but not paid yet
+    paid: Money;    // what they've actually paid, per currency (never converted)
+    owed: Money;    // booked but not paid yet
+    markets: Market[]; // where they've booked: Indonesia, Global or both
     lastSeen: string;
     firstSeen: string;
     services: string[];
 }
+const marketOf = (b: Booking): Market => (b.market === 'ID' ? 'ID' : 'Global');
+// "Rp 500.000 + $20", "$20", or '' when nothing
+const moneyLabel = (m: Money) => [m.IDR ? fmtMoney(m.IDR, 'IDR') : '', m.USD ? fmtMoney(m.USD, 'USD') : ''].filter(Boolean).join(' + ');
+// only to put customers in order (Top spenders) when rupiah and dollars are both in play:
+// a rough rate, never shown or used for any total
+const ORDER_RATE = 16_000;
+
+// One person, however they booked: bookings that share a phone number or an email are the
+// same customer, so a WhatsApp booking in Indonesia and a Global one paid with the same
+// email (or number) come together. (Union-find over "p:<phone>" / "e:<email>".)
+const groupBookings = (list: Booking[]): Booking[][] => {
+    const parent = new Map<string, string>();
+    const find = (x: string): string => { let r = x; while (parent.get(r) !== r) r = parent.get(r)!; parent.set(x, r); return r; };
+    const add = (x: string) => { if (!parent.has(x)) parent.set(x, x); };
+    const tokensOf = (b: Booking) => {
+        const t: string[] = [];
+        const p = normPhone(extractPhone(b.contact)); if (p) t.push(`p:${p}`);
+        const e = extractEmail(b.contact).toLowerCase(); if (e) t.push(`e:${e}`);
+        return t.length ? t : [`id:${b.id}`];
+    };
+    const toks = list.map(tokensOf);
+    for (const t of toks) { t.forEach(add); for (let i = 1; i < t.length; i++) { const a = find(t[0]), b = find(t[i]); if (a !== b) parent.set(a, b); } }
+    const groups = new Map<string, Booking[]>();
+    list.forEach((b, i) => { const r = find(toks[i][0]); (groups.get(r) || groups.set(r, []).get(r)!).push(b); });
+    return [...groups.values()];
+};
 
 const CustomersView: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -61,9 +90,8 @@ const CustomersView: React.FC = () => {
     const [q, setQ] = useState('');
     const [sort, setSort] = useState<'spent' | 'recent' | 'bookings'>('spent');
     const [selected, setSelected] = useState<Customer | null>(null);
-    // one market at a time, so rupiah and dollar customers aren't ranked together
-    const [market, setMarket] = useState<'ID' | 'Global'>('ID');
-    const cur = market === 'ID' ? 'IDR' : 'USD';
+    // everyone, or those who've booked in one market (a customer of both is in both)
+    const [market, setMarket] = useState<'all' | Market>('all');
 
     const load = async () => {
         setLoading(true); setError('');
@@ -93,79 +121,72 @@ const CustomersView: React.FC = () => {
     const liveCount = (c: Customer) => c.bookings.filter((b) => b.status !== 'cancelled').length;
 
     const customers = useMemo<Customer[]>(() => {
-        const map = new Map<string, Customer>();
-        // Every booking of the market, cancelled ones too, so a client's history is whole;
-        // only people with a real booking (paid, or confirmed/done) are listed below.
-        const realBookings = bookings.filter((b) => (b.market === 'ID' ? 'ID' : 'Global') === market);
-        // Newest first so "name/phone" reflects the latest booking.
-        const sorted = [...realBookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-        for (const b of sorted) {
-            const phone = extractPhone(b.contact);
-            const email = extractEmail(b.contact);
-            const key = normPhone(phone) || email.toLowerCase() || `id:${b.id}`;
-            let c = map.get(key);
-            if (!c) {
-                c = { key, clientId: clientIdFor(key), name: b.name || '—', phone, email, bookings: [], paid: 0, owed: 0, lastSeen: '', firstSeen: '', services: [] };
-                map.set(key, c);
+        const out: Customer[] = [];
+        // Every booking, cancelled ones too, so a client's history is whole; only people
+        // with a real booking (paid, or confirmed/done) are listed.
+        for (const group of groupBookings(bookings)) {
+            // newest first, so the name and number are the latest ones
+            const list = [...group].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+            const real = list.some((b) => b.status !== 'cancelled' && (b.paymentStatus === 'paid' || b.status === 'confirmed' || b.status === 'done'));
+            if (!real) continue;
+            const phone = list.map((b) => extractPhone(b.contact)).find(Boolean) || '';
+            const email = list.map((b) => extractEmail(b.contact)).find(Boolean) || '';
+            const key = normPhone(phone) || email.toLowerCase() || `id:${list[0].id}`;
+            const c: Customer = { key, clientId: clientIdFor(key), name: list.find((b) => b.name)?.name || '—', phone, email, bookings: list,
+                paid: { IDR: 0, USD: 0 }, owed: { IDR: 0, USD: 0 }, markets: [], lastSeen: '', firstSeen: '', services: [] };
+            for (const b of list) {
+                if (b.status === 'cancelled') continue; // in their history, not in the money or services
+                if (!c.markets.includes(marketOf(b))) c.markets.push(marketOf(b));
+                // "paid" is money that came in; an unpaid booking only counts as owed
+                const amt = amountForBooking(b);
+                if (amt) (b.paymentStatus === 'paid' ? c.paid : c.owed)[amt.currency] += amt.amount;
+                if (!c.services.includes(b.serviceId)) c.services.push(b.serviceId);
             }
-            c.bookings.push(b);
-            if (!c.phone && phone) c.phone = phone;
-            if (!c.email && email) c.email = email;
-            // "spent" is money that came in; an unpaid booking only counts as owed
-            if (b.status === 'cancelled') continue; // in their history, not in the money or services
-            const amt = amountForBooking(b);
-            if (amt) { if (b.paymentStatus === 'paid') c.paid += amt.amount; else c.owed += amt.amount; }
-            if (!c.services.includes(b.serviceId)) c.services.push(b.serviceId);
-        }
-        // someone who only ever cancelled (or never got past pending, unpaid) isn't a client
-        for (const [key, c] of map) {
-            const real = c.bookings.some((b) => b.status !== 'cancelled' && (b.paymentStatus === 'paid' || b.status === 'confirmed' || b.status === 'done'));
-            if (!real) map.delete(key);
-        }
-        // derive first/last seen
-        for (const c of map.values()) {
-            const dates = c.bookings.map((b) => (b.createdAt || '').slice(0, 10)).filter(Boolean).sort();
+            c.markets.sort(); // 'Global' before 'ID' alphabetically; shown as ID first below
+            const dates = list.map((b) => (b.createdAt || '').slice(0, 10)).filter(Boolean).sort();
             c.firstSeen = dates[0] || '';
             c.lastSeen = dates[dates.length - 1] || '';
+            out.push(c);
         }
-        return [...map.values()];
-    }, [bookings, market]);
+        return out;
+    }, [bookings]);
+    const inMarket = useMemo(() => (market === 'all' ? customers : customers.filter((c) => c.markets.includes(market))), [customers, market]);
+    const bothCount = useMemo(() => customers.filter((c) => c.markets.length > 1).length, [customers]);
+    const countIn = (m: Market) => customers.filter((c) => c.markets.includes(m)).length;
+    // what Top spenders orders by: the tab's own currency, or both (roughly) under All
+    const rank = (m: Money) => (market === 'ID' ? m.IDR : market === 'Global' ? m.USD : m.IDR + m.USD * ORDER_RATE);
 
     const filtered = useMemo(() => {
         const needle = q.trim().toLowerCase();
-        let list = customers;
+        let list = inMarket;
         if (needle) list = list.filter((c) =>
             matchesSearch(needle, c.name, c.phone, c.email, ...c.bookings.map((b) => b.contact), ...c.bookings.map((b) => b.adminNote)));
         return [...list].sort((a, b) =>
             sort === 'recent' ? b.lastSeen.localeCompare(a.lastSeen)
                 : sort === 'bookings' ? liveCount(b) - liveCount(a)
-                    : (b.paid - a.paid) || (b.owed - a.owed));
-    }, [customers, q, sort]);
+                    : (rank(b.paid) - rank(a.paid)) || (rank(b.owed) - rank(a.owed)));
+    }, [inMarket, q, sort, market]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // the same search among the other market's customers (it only looks in the tab that's open)
-    const otherMarket = market === 'ID' ? 'Global' : 'ID';
-    const otherMatches = useMemo(() => {
-        if (!q.trim()) return 0;
-        const people = new Set(bookings
-            .filter((b) => b.status !== 'cancelled' && (b.market === 'ID' ? 'ID' : 'Global') === otherMarket
-                && matchesSearch(q, b.name, b.contact, b.adminNote))
-            .map((b) => normPhone(extractPhone(b.contact)) || extractEmail(b.contact).toLowerCase() || b.id));
-        return people.size;
-    }, [bookings, q, otherMarket]);
-    const repeatCount = useMemo(() => customers.filter((c) => liveCount(c) > 1).length, [customers]);
+    const repeatCount = useMemo(() => inMarket.filter((c) => liveCount(c) > 1).length, [inMarket]);
 
-    const spentLabel = (c: Customer) => (c.paid ? fmtMoney(c.paid, cur) : '—');
+    const spentLabel = (c: Customer) => moneyLabel(c.paid) || '—';
+    const owedLabel = (c: Customer) => moneyLabel(c.owed);
+    const MarketTag: React.FC<{ c: Customer }> = ({ c }) => (
+        <span className={`ml-1.5 text-[0.65rem] font-normal ${c.markets.length > 1 ? 'text-lilac' : 'text-text-subtle'}`}>
+            {[...c.markets].sort((a) => (a === 'ID' ? -1 : 1)).map((m) => (m === 'ID' ? 'ID' : 'Global')).join(' · ')}
+        </span>
+    );
 
     return (
         <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
             <PageHeader
                 title="Customers"
-                subtitle={`${customers.length} ${customers.length === 1 ? 'client' : 'clients'} ${market === 'ID' ? 'in Indonesia' : 'abroad'} · ${repeatCount} returning · grouped by phone number (email if none)`}
+                subtitle={`${inMarket.length} ${inMarket.length === 1 ? 'client' : 'clients'}${market === 'ID' ? ' in Indonesia' : market === 'Global' ? ' abroad' : ''} · ${repeatCount} returning${bothCount ? ` · ${bothCount} booked in both` : ''} · one person per phone number or email`}
                 onRefresh={load}
                 refreshing={loading}
             >
                 <Segmented value={market} onChange={setMarket}
-                    options={[{ id: 'ID', label: 'Indonesia · IDR' }, { id: 'Global', label: 'Global · USD' }]} />
+                    options={[{ id: 'all', label: 'All', count: customers.length }, { id: 'ID', label: 'Indonesia', count: countIn('ID') }, { id: 'Global', label: 'Global', count: countIn('Global') }]} />
             </PageHeader>
 
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
@@ -180,12 +201,6 @@ const CustomersView: React.FC = () => {
                 <Segmented size="sm" value={sort} onChange={setSort}
                     options={[{ id: 'spent', label: 'Top spenders' }, { id: 'bookings', label: 'Most bookings' }, { id: 'recent', label: 'Recent' }]} />
             </div>
-
-            {otherMatches > 0 && (
-                <button type="button" onClick={() => setMarket(otherMarket)} className="text-sm text-lilac hover:underline">
-                    {otherMatches} {otherMatches === 1 ? 'customer' : 'customers'} matching “{q.trim()}” in {otherMarket === 'ID' ? 'Indonesia' : 'Global'} →
-                </button>
-            )}
 
             {/* list */}
             <div className="rounded-2xl bg-surface-1 border border-adm-line overflow-hidden">
@@ -206,17 +221,17 @@ const CustomersView: React.FC = () => {
                         <button key={c.key} onClick={() => setSelected(c)}
                             className="w-full grid grid-cols-2 md:grid-cols-12 gap-2 md:gap-3 px-5 py-3.5 text-left border-b border-adm-line last:border-0 hover:bg-adm-hover transition-colors items-center">
                             <div className="col-span-2 md:col-span-3 min-w-0">
-                                <div className="font-medium text-text-light truncate">{c.name}</div>
+                                <div className="font-medium text-text-light truncate">{c.name}<MarketTag c={c} /></div>
                                 {c.email && <div className="text-xs text-text-subtle truncate">{c.email}</div>}
                             </div>
-                            <div className="col-span-1 md:col-span-2 text-sm text-text-subtle tabular-nums truncate">{c.phone || '—'}</div>
+                            <div className="col-span-1 md:col-span-2 text-sm text-text-subtle tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : '—'}</div>
                             <div className="col-span-1 md:col-span-1 md:text-center text-sm tabular-nums">
                                 <span className={`inline-flex items-center gap-1 ${count > 1 ? 'text-lilac font-semibold' : 'text-text-light'}`} title={count > 1 ? 'Returning client' : undefined}>
                                     {count > 1 && <Repeat size={11} />}{count}
                                 </span>
                             </div>
                             <div className="col-span-1 md:col-span-2 md:text-right text-sm text-text-light tabular-nums">{spentLabel(c)}</div>
-                            <div className={`col-span-1 md:col-span-2 md:text-right text-sm tabular-nums ${c.owed ? 'text-coral-deep' : 'text-text-subtle'}`}>{c.owed ? fmtMoney(c.owed, cur) : '—'}</div>
+                            <div className={`col-span-1 md:col-span-2 md:text-right text-sm tabular-nums ${owedLabel(c) ? 'text-coral-deep' : 'text-text-subtle'}`}>{owedLabel(c) || '—'}</div>
                             <div className="col-span-1 md:col-span-1 md:text-right text-xs text-text-subtle">{fmtDate(c.firstSeen)}</div>
                             <div className="col-span-1 md:col-span-1 md:text-right text-xs text-text-subtle">{fmtDate(c.lastSeen)}</div>
                         </button>
@@ -230,10 +245,10 @@ const CustomersView: React.FC = () => {
                     <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()} data-lenis-prevent>
                         <div className="sticky top-0 bg-surface-1 border-b border-adm-line px-6 py-4 flex items-start justify-between gap-4">
                             <div>
-                                <h3 className="text-xl font-serif font-bold text-text-light">{selected.name}</h3>
+                                <h3 className="text-xl font-serif font-bold text-text-light">{selected.name}<MarketTag c={selected} /></h3>
                                 <div className="font-mono text-xs text-text-subtle mt-0.5">{selected.clientId}</div>
                                 <div className="mt-1 flex flex-col gap-0.5 text-sm text-text-subtle">
-                                    {selected.phone && <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-lilac"><Phone size={13} />{selected.phone}</a>}
+                                    {selected.phone && <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-lilac"><Phone size={13} />{fmtPhone(selected.phone)}</a>}
                                     {selected.email && <span className="inline-flex items-center gap-1.5"><Mail size={13} />{selected.email}</span>}
                                 </div>
                             </div>
@@ -241,7 +256,7 @@ const CustomersView: React.FC = () => {
                         </div>
                         <div className="px-6 py-4 grid grid-cols-3 gap-3 border-b border-adm-line">
                             <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Bookings</div><div className="text-lg font-bold text-text-light tabular-nums">{liveCount(selected)}</div>{selected.bookings.length > liveCount(selected) && <div className="text-xs text-text-subtle tabular-nums">+{selected.bookings.length - liveCount(selected)} cancelled</div>}</div>
-                            <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Paid</div><div className="text-lg font-bold text-text-light tabular-nums">{spentLabel(selected)}</div>{selected.owed > 0 && <div className="text-xs text-coral-deep tabular-nums">{fmtMoney(selected.owed, cur)} unpaid</div>}</div>
+                            <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Paid</div><div className="text-lg font-bold text-text-light tabular-nums">{spentLabel(selected)}</div>{owedLabel(selected) && <div className="text-xs text-coral-deep tabular-nums">{owedLabel(selected)} unpaid</div>}</div>
                             <div><div className="text-[0.7rem] uppercase tracking-wider text-text-subtle">Client since</div><div className="text-lg font-bold text-text-light">{fmtDate(selected.firstSeen)}</div></div>
                         </div>
                         <div className="px-6 py-4 space-y-2">
