@@ -57,6 +57,11 @@ const extractPhone = (contact?: string) => {
 const normPhone = (p: string) => p.replace(/\D/g, '');
 const fmtAmt = (n: number, c: 'IDR' | 'USD') => c === 'USD' ? `$${n}` : `Rp ${n.toLocaleString('id-ID')}`;
 const fmtOptPrice = (o: SvcOpt) => fmtAmt(o.amount, o.currency);
+// "Pay as you like": any service, at an amount typed in by hand (the package menu's last
+// choice). Saved as "<service> · Pay as you like" with that amount, so Sales, Revenue and
+// Customers count it like any other booking.
+const PAY_AS_YOU_LIKE = -1;
+const PAY_AS_YOU_LIKE_LABEL = 'Pay as you like';
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const toHHMM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
@@ -139,9 +144,16 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
         return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
     }, [bookings]);
 
-    // Price/currency come straight from the chosen package (not editable).
+    // Price/currency come straight from the chosen package, or, for Pay as you like,
+    // from what's typed in (in the service's own currency unless switched).
     const opts = SERVICE_OPTIONS[serviceId] || [];
-    const opt = opts[detailIdx] || opts[0];
+    const custom = detailIdx === PAY_AS_YOU_LIKE;
+    const [customAmount, setCustomAmount] = useState('');
+    const [customCur, setCustomCur] = useState<'IDR' | 'USD' | null>(null);
+    const svcCur: 'IDR' | 'USD' = opts[0]?.currency || 'IDR';
+    const opt: SvcOpt | undefined = custom
+        ? { label: PAY_AS_YOU_LIKE_LABEL, amount: Math.max(0, Number(customAmount) || 0), currency: customCur || svcCur }
+        : opts[detailIdx] || opts[0];
     const baseAmount = opt?.amount || 0;
     const currency: 'IDR' | 'USD' = opt?.currency || 'IDR';
     const tipNum = Math.max(0, Number(tip) || 0);
@@ -186,6 +198,7 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
         e.preventDefault();
         setErr('');
         if (!name.trim()) { setErr('Customer name is required.'); return; }
+        if (custom && baseAmount <= 0) { setErr('Type in the amount they pay.'); return; }
         if (!opt || baseAmount <= 0) { setErr('Pick a package.'); return; }
         setBusy(true);
         try {
@@ -235,7 +248,7 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label className={LBL}>Service</label>
-                            <select value={serviceId} onChange={(e) => { setServiceId(e.target.value); setDetailIdx(0); }} className={FLD}>
+                            <select value={serviceId} onChange={(e) => { setServiceId(e.target.value); setDetailIdx(custom ? PAY_AS_YOU_LIKE : 0); setCustomCur(null); }} className={FLD}>
                                 {MANUAL_SERVICES.map((s) => <option key={s.id} value={s.id}>{SERVICE_NAME[s.id] || s.name}</option>)}
                             </select>
                         </div>
@@ -243,9 +256,24 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
                             <label className={LBL}>Package / detail</label>
                             <select value={detailIdx} onChange={(e) => setDetailIdx(Number(e.target.value))} className={FLD}>
                                 {opts.map((o, i) => <option key={i} value={i}>{packageEn(o.label)} — {fmtOptPrice(o)}</option>)}
+                                <option value={PAY_AS_YOU_LIKE}>{PAY_AS_YOU_LIKE_LABEL}</option>
                             </select>
                         </div>
                     </div>
+                    {custom && (
+                        <div>
+                            <label className={LBL}>Amount they pay</label>
+                            <div className="flex gap-2">
+                                <select value={currency} onChange={(e) => setCustomCur(e.target.value as 'IDR' | 'USD')} aria-label="Currency"
+                                    className="rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-2 text-sm text-text-light focus:border-lilac focus:outline-none">
+                                    <option value="IDR">Rp</option>
+                                    <option value="USD">$</option>
+                                </select>
+                                <input type="number" min="0" step={currency === 'USD' ? '0.01' : '1000'} inputMode="decimal" value={customAmount} autoFocus
+                                    onChange={(e) => setCustomAmount(e.target.value)} placeholder={currency === 'USD' ? 'e.g. 30' : 'e.g. 200000'} className={FLD} />
+                            </div>
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
