@@ -1244,7 +1244,11 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
             {/* ---------------- ORDERS (no fixed time) — one aligned list ---------------- */}
             {!initialLoading && tab === 'orders' && (() => {
                 const list = orderView === 'active' ? activeOrders : orderView === 'done' ? doneOrders : cancelledBookings;
-                const COLS = 'md:grid md:grid-cols-[8.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4';
+                // To do has a Due column of its own (the countdown); Done and Cancelled don't need it
+                const showDue = orderView === 'active';
+                const COLS = showDue
+                    ? 'md:grid md:grid-cols-[6.5rem_9.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4'
+                    : 'md:grid md:grid-cols-[8.5rem_minmax(0,1.2fr)_minmax(0,1.5fr)_7.5rem_6rem_7.5rem_8.5rem] md:items-center md:gap-4';
                 return (
                     <Card className="overflow-hidden">
                         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
@@ -1255,7 +1259,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
 
                         {list.length > 0 && (
                             <div className={`hidden ${COLS} px-4 py-2 text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle border-b border-adm-line`}>
-                                <div>Ordered</div><div>Customer</div><div>Service</div><div className="text-right">Amount</div><div>Payment</div><div>Status</div><div>WhatsApp</div>
+                                <div>Ordered</div>{showDue && <div>Due</div>}<div>Customer</div><div>Service</div><div className="text-right">Amount</div><div>Payment</div><div>Status</div><div>WhatsApp</div>
                             </div>
                         )}
 
@@ -1275,10 +1279,10 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                         className={`${COLS} px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5`}>
                                         <div className="tabular-nums col-span-2 md:col-span-1">
                                             <div className="text-xs text-text-subtle">{fmtDate(b.createdAt)}</div>
-                                            {orderView === 'active' && <ClockNote b={b} now={now} />}
                                             {orderView === 'cancelled' && b.date && b.time && <div className="text-xs text-text-light">Session {fmtDate(b.date)} · {b.time}</div>}
                                             {orderView === 'cancelled' && b.cancelReason === 'unpaid' && <div className="text-[0.7rem] text-mauve">Not paid within 1 hour</div>}
                                         </div>
+                                        {showDue && <div className="col-span-2 md:col-span-1 md:[&>*]:mt-0"><ClockNote b={b} now={now} /></div>}
                                         <div className="min-w-0">
                                             <div className="text-sm font-medium text-text-light truncate">
                                                 {b.name || '—'}
