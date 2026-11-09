@@ -1200,7 +1200,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
     const initialLoading = loading && bookings.length === 0;
 
     return (
-        <div className={detailOnly ? '' : 'space-y-5 pt-20 md:pt-8 p-4 md:px-8'}>
+        <div className={detailOnly ? '' : 'space-y-5 pt-20 lg:pt-8 p-4 md:px-8'}>
             {!detailOnly && <PageHeader
                 title={tab === 'today' ? 'Today' : tab === 'calendar' ? 'Schedule' : 'Orders'}
                 subtitle={tab === 'today'
@@ -1249,13 +1249,13 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                         </div>
 
                         {/* on a phone: the week as a list of days */}
-                        <div className="md:hidden">
+                        <div className="xl:hidden">
                             <Agenda days={weekDays.map(toISO)} todayISO={todayISO} bookings={calendarSessions} entries={weekEntries}
                                 onBooking={setSelectedId} onEntry={setFromEntry} />
                         </div>
 
                         {/* grid */}
-                        <div className="hidden md:block overflow-x-auto">
+                        <div className="hidden xl:block overflow-x-auto">
                             <div className="min-w-[760px]">
                                 {/* day headers */}
                                 <div className="grid border-b border-adm-line" style={{ gridTemplateColumns: '3.5rem repeat(7, minmax(0,1fr))' }}>
@@ -1531,7 +1531,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 // Cancelled with the order date. One line per order: contact, payment method and
                 // the question are in the details a click away.
                 const showDue = orderView === 'active';
-                const COLS = 'md:grid md:grid-cols-[9.5rem_minmax(0,1.1fr)_minmax(0,1.4fr)_7rem_6rem_7.5rem_7.5rem] md:items-center md:gap-4';
+                const COLS = 'xl:grid xl:grid-cols-[9.5rem_minmax(0,1.1fr)_minmax(0,1.4fr)_7rem_6rem_7.5rem_7.5rem] xl:items-center xl:gap-4';
                 return (
                     <Card className="overflow-hidden">
                         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
@@ -1558,7 +1558,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                 return (
                                     <div key={b.id} onClick={() => setSelectedId(b.id)}
                                         className={`${COLS} px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5`}>
-                                        {showDue ? <div className="col-span-2 md:col-span-1 md:[&>*]:mt-0"><ClockNote b={b} now={now} /></div> : <div className="tabular-nums col-span-2 md:col-span-1">
+                                        {showDue ? <div className="col-span-2 xl:col-span-1 xl:[&>*]:mt-0"><ClockNote b={b} now={now} /></div> : <div className="tabular-nums col-span-2 xl:col-span-1">
                                             <div className="text-xs text-text-subtle">{fmtDate(b.createdAt)}</div>
                                             {orderView === 'cancelled' && b.date && b.time && <div className="text-xs text-text-light">Session {fmtDate(b.date)} · {b.time}</div>}
                                             {orderView === 'cancelled' && b.cancelReason === 'unpaid' && <div className="text-[0.7rem] text-mauve">Not paid within 1 hour</div>}
@@ -1569,13 +1569,13 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                                 <span className="ml-1.5 text-[0.65rem] font-normal text-text-subtle">{b.market === 'ID' ? 'ID' : 'Global'}</span>
                                             </div>
                                         </div>
-                                        <div className="min-w-0 col-span-2 md:col-span-1 order-1 md:order-none">
+                                        <div className="min-w-0 col-span-2 xl:col-span-1 order-1 xl:order-none">
                                             <div className="text-sm text-text-light truncate">{serviceLabel(b)}</div>
                                         </div>
                                         <div className="text-right">
                                             <div className="text-sm font-semibold text-text-light tabular-nums whitespace-nowrap">{amountLabel(b)}</div>
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-1 col-span-2 order-2 md:order-none md:contents">
+                                        <div className="flex flex-wrap items-center gap-1 col-span-2 order-2 xl:order-none xl:contents">
                                             <div><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} /></div>
                                             <div><StatusControl b={b} /></div>
                                             <div>{b.market === 'ID'

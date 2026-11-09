@@ -123,7 +123,7 @@ const EventsView: React.FC = () => {
     }, [events]);
 
     return (
-        <div className="space-y-6 pt-20 md:pt-8 p-4 md:px-8 pb-16">
+        <div className="space-y-6 pt-20 lg:pt-8 p-4 md:px-8 pb-16">
             <PageHeader
                 title="Events & Collaborations"
                 subtitle={<>The list shown on the website’s Events section. Changes go live right away · {events.length} events</>}

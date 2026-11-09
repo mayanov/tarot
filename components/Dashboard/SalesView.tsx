@@ -167,7 +167,7 @@ const SalesView: React.FC = () => {
     };
 
     return (
-        <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
+        <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
             <PageHeader title="Sales" subtitle={`${orders.length} ${market === 'ID' ? 'Indonesia' : 'Global'} orders · mark payments as they come in`} onRefresh={load} refreshing={loading}>
                 {/* market: rupiah and dollars are kept apart */}
                 <Segmented value={market} onChange={(m) => { setMarket(m); setServiceFilter('all'); }}
@@ -177,21 +177,21 @@ const SalesView: React.FC = () => {
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
 
             {/* summary cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Card className="p-4">
-                    <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><CheckCircle2 size={14} className="text-sage" /> Collected</div>
-                    <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.paid, cur)}</div>
-                    <div className="text-xs text-text-subtle mt-0.5">{totals.paidCount} paid {totals.paidCount === 1 ? 'order' : 'orders'}</div>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <Card className="p-3 sm:p-4 min-w-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-text-subtle text-[10px] sm:text-xs uppercase tracking-wider mb-1.5 sm:mb-2 truncate"><CheckCircle2 size={14} className="text-sage" /> Collected</div>
+                    <div className="text-sm sm:text-xl font-bold text-text-light tabular-nums truncate">{fmtMoney(totals.paid, cur)}</div>
+                    <div className="text-[11px] sm:text-xs text-text-subtle mt-0.5 truncate">{totals.paidCount} paid {totals.paidCount === 1 ? 'order' : 'orders'}</div>
                 </Card>
-                <Card className="p-4">
-                    <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><AlertCircle size={14} className="text-coral-deep" /> Outstanding</div>
-                    <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.unpaid, cur)}</div>
-                    <div className="text-xs text-text-subtle mt-0.5">{totals.unpaidCount} unpaid {totals.unpaidCount === 1 ? 'order' : 'orders'}</div>
+                <Card className="p-3 sm:p-4 min-w-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-text-subtle text-[10px] sm:text-xs uppercase tracking-wider mb-1.5 sm:mb-2 truncate"><AlertCircle size={14} className="text-coral-deep" /> Outstanding</div>
+                    <div className="text-sm sm:text-xl font-bold text-text-light tabular-nums truncate">{fmtMoney(totals.unpaid, cur)}</div>
+                    <div className="text-[11px] sm:text-xs text-text-subtle mt-0.5 truncate">{totals.unpaidCount} unpaid {totals.unpaidCount === 1 ? 'order' : 'orders'}</div>
                 </Card>
-                <Card className="p-4">
-                    <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider mb-2"><Wallet size={14} className="text-blue" /> Total booked</div>
-                    <div className="text-xl font-bold text-text-light tabular-nums">{fmtMoney(totals.paid + totals.unpaid, cur)}</div>
-                    <div className="text-xs text-text-subtle mt-0.5">{orders.length} {orders.length === 1 ? 'order' : 'orders'}, cancelled left out</div>
+                <Card className="p-3 sm:p-4 min-w-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-text-subtle text-[10px] sm:text-xs uppercase tracking-wider mb-1.5 sm:mb-2 truncate"><Wallet size={14} className="text-blue" /> Total booked</div>
+                    <div className="text-sm sm:text-xl font-bold text-text-light tabular-nums truncate">{fmtMoney(totals.paid + totals.unpaid, cur)}</div>
+                    <div className="text-[11px] sm:text-xs text-text-subtle mt-0.5 truncate">{orders.length} {orders.length === 1 ? 'order' : 'orders'}, cancelled left out</div>
                 </Card>
             </div>
 
@@ -268,8 +268,39 @@ const SalesView: React.FC = () => {
                 </div>
             </div>
 
-            {/* table */}
-            <Card className="overflow-hidden">
+            {/* phones, tablets and small laptops: one card per sale, tap for the details */}
+            <Card className="overflow-hidden xl:hidden">
+                {loading && filtered.length === 0 && <InlineLoader />}
+                {!loading && filtered.length === 0 && <p className="text-center text-sm text-text-subtle py-12">No orders found{q.trim() ? ` for “${q.trim()}”` : ''}.</p>}
+                {filtered.map((b, i) => {
+                    const a = amountOf(b);
+                    const newMonth = i === 0 || monthOf(filtered[i - 1]) !== monthOf(b);
+                    return (
+                        <React.Fragment key={b.id}>
+                            {newMonth && <div className="px-4 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-subtle border-b border-adm-line">{monthName(monthOf(b))}</div>}
+                            <div onClick={() => setOpenId(b.id)} className="px-4 py-3 border-b border-adm-line last:border-0 hover:bg-adm-hover/50 cursor-pointer">
+                                <div className="flex items-baseline justify-between gap-3">
+                                    <span className="font-semibold text-text-light truncate">{b.name || '—'}</span>
+                                    <span className="tabular-nums text-text-light font-medium whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</span>
+                                </div>
+                                <div className="text-xs text-text-subtle mt-0.5 truncate">{serviceLabel(b)} · {dayOf(b.createdAt)}</div>
+                                <div className="mt-2 flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                    <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={savingId === b.id} />
+                                    <StatusPill status={b.status} />
+                                    <span className="ml-auto">
+                                        {market === 'ID'
+                                            ? <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
+                                            : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
+                                    </span>
+                                </div>
+                            </div>
+                        </React.Fragment>
+                    );
+                })}
+            </Card>
+
+            {/* wide screens: the table */}
+            <Card className="overflow-hidden hidden xl:block">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm min-w-[900px]">
                         <thead>

@@ -373,7 +373,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     return (
         <div className="admin-shell flex h-screen bg-bg-deep text-text-light font-sans overflow-hidden" data-theme={theme}>
             {/* MOBILE TOP BAR — hamburger to open the drawer */}
-            <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center gap-3 px-4 bg-surface-1 border-b border-adm-line">
+            <div className="lg:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center gap-3 px-4 bg-surface-1 border-b border-adm-line">
                 <button onClick={() => setSidebarOpen(true)} aria-label="Open menu" className="p-2 -ml-2 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors">
                     <Menu size={22} />
                 </button>
@@ -384,16 +384,16 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
             {/* MOBILE DRAWER BACKDROP */}
             {sidebarOpen && (
-                <div className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} aria-hidden />
+                <div className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} aria-hidden />
             )}
 
             {/* SIDEBAR — static on desktop, slide-in drawer on mobile */}
-            <aside className={`fixed md:static inset-y-0 left-0 z-50 w-72 max-w-[82vw] bg-surface-1 border-r border-adm-line flex flex-col transition-transform duration-300 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+            <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-60 shrink-0 max-w-[82vw] bg-surface-1 border-r border-adm-line flex flex-col transition-transform duration-300 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
                 <div className="p-5 border-b border-adm-line flex items-center justify-between">
                     <h2 className="text-xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
                         Mayanov Admin
                     </h2>
-                    <button onClick={() => setSidebarOpen(false)} aria-label="Close menu" className="md:hidden p-1.5 -mr-1.5 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors">
+                    <button onClick={() => setSidebarOpen(false)} aria-label="Close menu" className="lg:hidden p-1.5 -mr-1.5 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors">
                         <X size={20} />
                     </button>
                 </div>
@@ -464,7 +464,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     <CustomersView />
                 ) : activeView === 'users' ? (
                     /* USER MANAGEMENT VIEW (Full Page) */
-                    <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
+                    <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
                         <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
                                 <h1 className="text-2xl font-serif font-bold text-text-light mb-2">User Management</h1>
@@ -647,12 +647,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         )}
                     </div>
                 ) : isLoading ? (
-                    <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
+                    <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
                         <LoaderCard />
                     </div>
                 ) : (
                     /* ANALYTICS VIEW (Default) */
-                    <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
+                    <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
                         {/* Configuration Panel (Only show if error or explicit disconnected state) */}
                         {(!isConnected && !isAuthorizing && apiError) && (
                             <div className="bg-surface-1 border border-lilac/30 p-4 rounded-xl mb-6 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
@@ -705,7 +705,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                             </div>
 
                             {/* Enhanced Controls Toolbar */}
-                            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-end gap-3 bg-surface-1 p-1.5 rounded-xl border border-adm-line-2 shadow-lg">
+                            <div className="w-full xl:w-auto flex flex-wrap items-center xl:justify-end gap-2 sm:gap-3 bg-surface-1 p-1.5 rounded-xl border border-adm-line-2 shadow-lg">
                                 {/* Quick Filters */}
                                 <div className="flex bg-bg-dark/50 rounded-lg p-1">
                                     {(['7D', '30D', 'THIS_MONTH'] as DateRangePreset[]).map((preset) => (
@@ -740,7 +740,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                                     {/* Popover Date Inputs */}
                                     {showCustomPicker && (
-                                        <div className="absolute top-full right-0 mt-3 p-3 bg-surface-1 border border-adm-line-2 rounded-xl shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200 min-w-max date-picker-popup">
+                                        <div className="absolute top-full left-0 sm:left-auto sm:right-0 mt-3 p-3 bg-surface-1 border border-adm-line-2 rounded-xl shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200 min-w-max date-picker-popup">
                                             <div className="rdp-custom-wrapper">
                                                 <DayPicker
                                                     mode="range"
@@ -804,7 +804,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                 </button>
                                 <button
                                     onClick={() => loadData()}
-                                    className="p-2 bg-lilac/10 text-lilac hover:bg-lilac hover:text-white rounded-lg transition-colors flex items-center justify-center"
+                                    className="ml-auto xl:ml-0 p-2 bg-lilac/10 text-lilac hover:bg-lilac hover:text-white rounded-lg transition-colors flex items-center justify-center"
                                     title="Refresh Data"
                                 >
                                     <RefreshCcw size={16} className={`${isLoading ? 'animate-spin' : ''}`} />

@@ -226,7 +226,7 @@ const RevenueView: React.FC = () => {
     const initialLoading = loading && bookings.length === 0;
 
     return (
-        <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
+        <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
             <PageHeader
                 title="Revenue"
                 subtitle="Money that came in: bookings marked paid (cancelled left out), by order date. Who your customers are is under Customers."

@@ -177,7 +177,7 @@ const CustomersView: React.FC = () => {
     );
 
     return (
-        <div className="space-y-5 pt-20 md:pt-8 p-4 md:px-8">
+        <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
             <PageHeader
                 title="Customers"
                 subtitle={`${inMarket.length} ${inMarket.length === 1 ? 'client' : 'clients'}${market === 'ID' ? ' in Indonesia' : market === 'Global' ? ' abroad' : ''} · ${repeatCount} came back${inMarket.length ? ` (${Math.round((repeatCount / inMarket.length) * 100)}%)` : ''}`}
@@ -204,7 +204,7 @@ const CustomersView: React.FC = () => {
             {/* list */}
             <div className="rounded-2xl bg-surface-1 border border-adm-line overflow-hidden">
                 {/* one line per person: email, first booking and their history are in their details */}
-                <div className="hidden md:grid grid-cols-12 gap-3 px-5 py-3 text-[0.7rem] uppercase tracking-wider text-text-subtle border-b border-adm-line">
+                <div className="hidden lg:grid grid-cols-12 gap-3 px-5 py-3 text-[0.7rem] uppercase tracking-wider text-text-subtle border-b border-adm-line">
                     <div className="col-span-4">Customer</div>
                     <div className="col-span-3">Contact</div>
                     <div className="col-span-1 text-center">Bookings</div>
@@ -217,23 +217,34 @@ const CustomersView: React.FC = () => {
                     const count = liveCount(c);
                     return (
                         <button key={c.key} onClick={() => setSelected(c)}
-                            className="w-full grid grid-cols-2 md:grid-cols-12 gap-2 md:gap-3 px-5 py-3.5 text-left border-b border-adm-line last:border-0 hover:bg-adm-hover transition-colors items-center">
-                            <div className="col-span-2 md:col-span-4 min-w-0">
+                            className="w-full block lg:grid lg:grid-cols-12 lg:gap-3 px-4 lg:px-5 py-3 lg:py-3.5 text-left border-b border-adm-line last:border-0 hover:bg-adm-hover transition-colors items-center">
+                            {/* narrow screens: name and what they paid, then one grey line with the rest */}
+                            <div className="lg:hidden">
+                                <div className="flex items-baseline justify-between gap-3">
+                                    <span className="font-medium text-text-light truncate">{c.name}<MarketTag c={c} /></span>
+                                    <span className="text-sm text-text-light tabular-nums whitespace-nowrap">{spentLabel(c)}</span>
+                                </div>
+                                <div className="mt-0.5 flex items-baseline justify-between gap-3 text-xs text-text-subtle">
+                                    <span className="truncate tabular-nums">{[c.phone ? fmtPhone(c.phone) : c.email, `${count} booking${count === 1 ? '' : 's'}`, `last ${fmtDate(c.lastSeen)}`].filter(Boolean).join(' · ')}</span>
+                                    {owedLabel(c) && <span className="text-coral-deep whitespace-nowrap">{owedLabel(c)} unpaid</span>}
+                                </div>
+                            </div>
+                            <div className="hidden lg:block lg:col-span-4 min-w-0">
                                 <div className="font-medium text-text-light truncate">{c.name}<MarketTag c={c} /></div>
                             </div>
                             {/* their WhatsApp; for someone with only an email (abroad), the email */}
-                            <div className="col-span-1 md:col-span-3 text-sm text-text-subtle tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : c.email || '—'}</div>
-                            <div className="col-span-1 md:col-span-1 md:text-center text-sm tabular-nums">
+                            <div className="hidden lg:block lg:col-span-3 text-sm text-text-subtle tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : c.email || '—'}</div>
+                            <div className="hidden lg:block lg:col-span-1 lg:text-center text-sm tabular-nums">
                                 <span className={`inline-flex items-center gap-1 ${count > 1 ? 'text-lilac font-semibold' : 'text-text-light'}`} title={count > 1 ? 'Returning client' : undefined}>
                                     {count > 1 && <Repeat size={11} />}{count}
                                 </span>
                             </div>
-                            <div className="col-span-1 md:col-span-2 md:text-right text-sm text-text-light tabular-nums">
+                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-sm text-text-light tabular-nums">
                                 {spentLabel(c)}
                                 {/* what they still owe, only when they do */}
                                 {owedLabel(c) && <div className="text-xs text-coral-deep">{owedLabel(c)} unpaid</div>}
                             </div>
-                            <div className="col-span-1 md:col-span-2 md:text-right text-xs text-text-subtle">{fmtDate(c.lastSeen)}</div>
+                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-xs text-text-subtle">{fmtDate(c.lastSeen)}</div>
                         </button>
                     );
                 })}
@@ -264,13 +275,13 @@ const CustomersView: React.FC = () => {
                             {[...selected.bookings].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).map((b) => {
                                 const amt = amountForBooking(b);
                                 return (
-                                    <div key={b.id} className="flex items-center justify-between gap-3 rounded-xl border border-adm-line px-4 py-2.5">
+                                    <div key={b.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-3 rounded-xl border border-adm-line px-4 py-2.5">
                                         <div className="min-w-0">
                                             <div className="text-sm font-medium text-text-light truncate">{serviceLabel(b)}</div>
                                             <div className="text-xs text-text-subtle tabular-nums">{sessionWhen(b) ? `Session ${sessionWhen(b)}` : `Ordered ${fmtDate(b.createdAt)}`}</div>
                                         </div>
-                                        <div className="flex items-center gap-3 shrink-0">
-                                            <span className="text-sm text-text-light tabular-nums">{amt ? fmtMoney(amt.amount, amt.currency) : '—'}</span>
+                                        <div className="flex items-center gap-3 sm:shrink-0">
+                                            <span className="text-sm text-text-light tabular-nums mr-auto sm:mr-0">{amt ? fmtMoney(amt.amount, amt.currency) : '—'}</span>
                                             <PaymentPill paid={b.paymentStatus === 'paid'} />
                                             <StatusPill status={b.status} />
                                         </div>

@@ -19,7 +19,7 @@ const PageHeader: React.FC<Props> = ({ title, subtitle, onRefresh, refreshing, c
             {subtitle && <p className="text-text-subtle text-sm">{subtitle}</p>}
         </div>
         {(children || onRefresh) && (
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 whitespace-nowrap">
                 {children}
                 {onRefresh && (
                     <IconButton onClick={onRefresh} title="Refresh" aria-label="Refresh">

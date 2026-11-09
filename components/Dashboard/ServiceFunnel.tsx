@@ -164,22 +164,23 @@ const ServiceFunnel: React.FC<Props> = ({ services }) => {
 
             {/* TABLE — exact numbers per service + where each loses the most */}
             <div className="overflow-x-auto -mx-5 px-5">
-                <table className="w-full min-w-[36rem] text-sm">
+                {/* on a phone: the counts only (the two rates come back on a wider screen) */}
+                <table className="w-full sm:min-w-[36rem] text-sm">
                     <thead>
                         <tr className="text-left text-[11px] uppercase tracking-wider text-text-subtle border-b border-adm-line">
                             <th className="py-2.5 font-semibold">Service</th>
                             <th className="py-2.5 font-semibold text-right">Opened</th>
-                            <th className="py-2.5 font-semibold text-right">Clicked Pesan</th>
+                            <th className="py-2.5 pl-2 font-semibold text-right">Clicked<span className="hidden sm:inline"> Pesan</span></th>
                             <th className="py-2.5 font-semibold text-right">Booked</th>
-                            <th className="py-2.5 font-semibold text-right" title="Booked ÷ Opened a card">Opened → Booked</th>
-                            <th className="py-2.5 font-semibold text-right">Biggest drop</th>
+                            <th className="hidden sm:table-cell py-2.5 font-semibold text-right" title="Booked ÷ Opened a card">Opened → Booked</th>
+                            <th className="hidden sm:table-cell py-2.5 font-semibold text-right">Biggest drop</th>
                         </tr>
                     </thead>
                     <tbody>
                         {services.map((s) => {
                             const bd = biggestDrop(s);
                             const cell = (n: number) => (
-                                <td className={`py-3 text-right tabular-nums ${n ? 'text-text-light font-medium' : 'text-text-subtle'}`}>{n}</td>
+                                <td className={`py-3 pl-2 text-right tabular-nums ${n ? 'text-text-light font-medium' : 'text-text-subtle'}`}>{n}</td>
                             );
                             return (
                                 <tr
@@ -191,8 +192,8 @@ const ServiceFunnel: React.FC<Props> = ({ services }) => {
                                     {cell(s.views)}
                                     {cell(s.clicks)}
                                     {cell(s.bookings)}
-                                    <td className="py-3 text-right tabular-nums text-text-light">{fmtPct(pct(s.bookings, s.views))}</td>
-                                    <td className="py-3 text-right text-xs text-text-subtle">
+                                    <td className="hidden sm:table-cell py-3 text-right tabular-nums text-text-light">{fmtPct(pct(s.bookings, s.views))}</td>
+                                    <td className="hidden sm:table-cell py-3 text-right text-xs text-text-subtle">
                                         {bd ? <><span className="text-text-light font-medium tabular-nums">−{bd.p}%</span> {bd.at}</> : '—'}
                                     </td>
                                 </tr>
