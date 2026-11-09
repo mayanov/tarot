@@ -7,6 +7,7 @@ import Segmented from './ui/Segmented';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, updateBookingDetails, BOOKINGS_CHANGED, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
+import EmailConfirmButton from './EmailConfirmButton';
 import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
 import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle, matchCustomers } from './lib/calendarEntry';
@@ -795,6 +796,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
     // the confirmation went out from Mayanov's WhatsApp: show it on the booking
     const markWaSent = (id: string, at: string) =>
         setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, waConfirmSentAt: at } : x)));
+    const markEmailSent = (id: string, at: string) =>
+        setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, paidEmailSentAt: at } : x)));
 
     // ---- drag-to-reschedule (weekly grid) ----
     const beginDrag = (e: React.PointerEvent, b: Booking, di: number) => {
@@ -1226,7 +1229,10 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                 {b.inviteOnPay && b.status !== 'cancelled' && (
                                     <p className="text-xs text-text-subtle">The calendar invite{b.serviceId === 'meetup' ? '' : ' and Meet link'} go out when you mark it paid.</p>
                                 )}
-                                <WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} />
+                                {/* Indonesia is confirmed on WhatsApp, Global by email */}
+                                {b.market === 'ID'
+                                    ? <WaConfirmButton b={b} onSent={(at) => markWaSent(b.id, at)} />
+                                    : <div className="flex items-center gap-2 text-xs text-text-subtle">Confirmation email <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} /></div>}
                                 {timed && b.status !== 'cancelled' && EXTRA[b.serviceId] && (
                                     <ExtraTime key={b.id} b={b} extras={bookings.filter((x) => x.extraFor && x.extraFor === (b.ref || b.id))}
                                         onDone={(msg) => { flash(msg, 'ok'); load(); }} onToggle={togglePaid} payBusy={payBusy} />
@@ -1259,7 +1265,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
 
                         {list.length > 0 && (
                             <div className={`hidden ${COLS} px-4 py-2 text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle border-b border-adm-line`}>
-                                <div>Ordered</div>{showDue && <div>Due</div>}<div>Customer</div><div>Service</div><div className="text-right">Amount</div><div>Payment</div><div>Status</div><div>WhatsApp</div>
+                                <div>Ordered</div>{showDue && <div>Due</div>}<div>Customer</div><div>Service</div><div className="text-right">Amount</div><div>Payment</div><div>Status</div><div>Confirmation</div>
                             </div>
                         )}
 
@@ -1303,7 +1309,9 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                         <div className="flex flex-wrap items-center gap-1 col-span-2 order-2 md:order-none md:contents">
                                             <div><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} /></div>
                                             <div><StatusControl b={b} /></div>
-                                            <div><WaConfirmButton compact b={b} onSent={(at) => markWaSent(b.id, at)} /></div>
+                                            <div>{b.market === 'ID'
+                                                ? <WaConfirmButton compact b={b} onSent={(at) => markWaSent(b.id, at)} />
+                                                : <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} />}</div>
                                         </div>
                                     </div>
                                 );
