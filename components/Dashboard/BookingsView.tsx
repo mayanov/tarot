@@ -420,15 +420,16 @@ const dayLabel = (iso: string, todayISO: string) => {
 };
 // The Schedule's colours (index.css): the colour is the service, the style is the status
 // (solid confirmed, striped pending, faded done, dashed: on her calendar, not booked yet).
-type SvcKey = 'call' | 'meetup' | 'live' | 'other';
-const svcKey = (serviceId?: string): SvcKey => (serviceId === 'call' || serviceId === 'meetup' || serviceId === 'live' ? serviceId : 'other');
+// a Live Session is a call too, so it shares the call's colour
+type SvcKey = 'call' | 'meetup' | 'other';
+const svcKey = (serviceId?: string): SvcKey => (serviceId === 'call' || serviceId === 'live' ? 'call' : serviceId === 'meetup' ? 'meetup' : 'other');
 const blockClass = (b: Booking) => `svc-${svcKey(b.serviceId)} blk blk-${b.status === 'pending' ? 'pending' : b.status === 'done' ? 'done' : 'confirmed'}`;
 const STATUS_WORD: Partial<Record<Booking['status'], string>> = { pending: 'Pending', done: 'Done ✓' };
 
 // What the colours and styles mean, under the grid.
 const ScheduleKey: React.FC = () => (
     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[0.7rem] text-text-subtle">
-        {([['call', 'Call'], ['meetup', 'Meetup'], ['live', 'Live'], ['other', 'Readings & other']] as const).map(([k, label]) => (
+        {([['call', 'Call & Live'], ['meetup', 'Meetup'], ['other', 'Readings & other']] as const).map(([k, label]) => (
             <span key={k} className={`svc-${k} inline-flex items-center gap-1.5`}><span className="svc-dot w-2.5 h-2.5 rounded-sm" />{label}</span>
         ))}
         <span className="text-text-subtle/40">|</span>
