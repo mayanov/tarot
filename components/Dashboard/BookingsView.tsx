@@ -489,35 +489,19 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
 // One view behind two menu items: Schedule (sessions with a time, on the week grid)
 // and Orders (readings and chats with no fixed time). Kept as one component so the
 // bookings load once and switching between the two is instant.
-// Under an order's date: how long it has waited for its reading, against what the site
-// promises (lib/format orderClock). Overdue is the one in colour.
+// The Due column: one short line, the same as Today's "Readings to send" (dueText):
+// "21 h left · Tue 14:41", "Waiting 3 d", grey until it matters (amber under 6 h or a chat
+// waiting over a day, red once late). The exact date is in the details.
 const ClockNote: React.FC<{ b: Booking; now: number }> = ({ b, now }) => {
-    const c = orderClock(b);
-    const cls = 'text-[0.7rem] leading-tight mt-0.5';
-    if (c.kind === 'unpaid') return <div className={`${cls} text-text-subtle`}>Not paid yet</div>;
-    if (c.kind === 'waiting') return <div className={`${cls} text-text-subtle`}>Waiting {spanLabel(now - c.since)}</div>;
-    // a countdown to when the reading is promised: hours and minutes, the due time under
-    // it, and in colour as it gets close (under 6 h) or once it's late
-    const left = c.due - now;
-    const due = new Date(c.due).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
-    const late = left < 0;
-    const soon = !late && left < 6 * 3_600_000;
-    const pill = late ? 'due-late' : soon ? 'due-soon' : 'bg-lilac/10 text-lilac';
-    return (
-        <div className="mt-1">
-            <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums whitespace-nowrap ${pill}`}>
-                {late ? `Overdue ${leftLabel(-left)}` : `${leftLabel(left)} left`}
-            </span>
-            <div className="text-[0.7rem] text-text-subtle tabular-nums mt-0.5 whitespace-nowrap">{late ? 'was due' : 'due'} {due}</div>
-        </div>
-    );
+    const d = dueText(b, now);
+    return <div className={`text-sm tabular-nums whitespace-nowrap ${d.cls}`}>{d.text}</div>;
 };
-// '45 min', '5 h 20 min' (under a day, to the minute), then '2 d 3 h'
+// rounded, the way you'd say it: '45 min', '21 h' (under two days), then '3 d'
 const leftLabel = (ms: number) => {
     const min = Math.max(0, Math.round(ms / 60_000));
-    if (min < 60 || min >= 24 * 60) return spanLabel(ms);
-    const h = Math.floor(min / 60), m = min % 60;
-    return m ? `${h} h ${m} min` : `${h} h`;
+    if (min < 60) return `${min} min`;
+    const h = Math.round(min / 60);
+    return h < 48 ? `${h} h` : `${Math.round(h / 24)} d`;
 };
 // most urgent first: due soonest, then the longest waiting, then the unpaid (newest first)
 const urgency = (b: Booking) => {
@@ -910,7 +894,7 @@ const dueText = (b: Booking, now: number): { text: string; cls: string } => {
     const c = orderClock(b);
     if (c.kind === 'unpaid') return { text: 'Not paid yet', cls: 'text-text-subtle' };
     // a chat has no promised time: it turns amber after a day, since nothing else warns
-    if (c.kind === 'waiting') return { text: `Waiting ${spanLabel(now - c.since)}`, cls: now - c.since > 24 * 3_600_000 ? 'due-soon-text' : 'text-text-subtle' };
+    if (c.kind === 'waiting') return { text: `Waiting ${leftLabel(now - c.since)}`, cls: now - c.since > 24 * 3_600_000 ? 'due-soon-text' : 'text-text-subtle' };
     const left = c.due - now;
     const at = new Date(c.due);
     const sameDay = (x: Date, y: Date) => x.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) === y.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
