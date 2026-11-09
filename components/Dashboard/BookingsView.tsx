@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, ChevronLeft, ChevronRight, X, Plus, ArrowRight, Pencil } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight, X, Plus, ArrowRight, Pencil, Check } from 'lucide-react';
 import PageHeader from './ui/PageHeader';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -672,7 +672,49 @@ const PrivateNote: React.FC<{ b: Booking; onSaved: (b: Booking) => void }> = ({ 
     );
 };
 
-// A line on Today's lists: a reading waiting, or something not paid yet.
+// A reading waiting on Today: who and what on the left (the price small under it), when
+// it's due on the right in one line, coloured only when it's close or late, and a Done
+// button (everything here is confirmed already, so a status menu would only repeat it).
+const dueText = (b: Booking, now: number): { text: string; cls: string } => {
+    const c = orderClock(b);
+    if (c.kind === 'unpaid') return { text: 'Not paid yet', cls: 'text-text-subtle' };
+    // a chat has no promised time: it turns amber after a day, since nothing else warns
+    if (c.kind === 'waiting') return { text: `Waiting ${spanLabel(now - c.since)}`, cls: now - c.since > 24 * 3_600_000 ? 'due-soon-text' : 'text-text-subtle' };
+    const left = c.due - now;
+    const at = new Date(c.due);
+    const sameDay = (x: Date, y: Date) => x.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) === y.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+    const time = at.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
+    const when = sameDay(at, new Date(now)) ? `today ${time}` : `${at.toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'Asia/Jakarta' })} ${time}`;
+    if (left < 0) return { text: `Overdue ${leftLabel(-left)}`, cls: 'due-late-text font-semibold' };
+    return { text: `${leftLabel(left)} left · ${when}`, cls: left < 6 * 3_600_000 ? 'due-soon-text font-semibold' : 'text-text-subtle' };
+};
+// "Chat · 1 question" for "sasa chat" is just "1 question": the name already says it
+const serviceAfterName = (b: Booking) => {
+    const title = serviceTitle(b), pkg = packageOf(b);
+    return (b.name || '').toLowerCase().includes(title.toLowerCase().split(/[\s/-]/)[0]) && pkg ? pkg : serviceLabel(b);
+};
+const ReadingLine: React.FC<{ b: Booking; now: number; onOpen: () => void; onDone: () => void }> = ({ b, now, onOpen, onDone }) => {
+    const d = dueText(b, now);
+    return (
+        <div onClick={onOpen} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors">
+            <div className="min-w-0 flex-1">
+                <div className="text-sm truncate"><span className="font-medium text-text-light">{b.name || '—'}</span> <span className="text-text-subtle">· {serviceAfterName(b)}</span></div>
+                <div className="text-[0.7rem] text-text-subtle tabular-nums mt-0.5">
+                    {amountLabel(b)}
+                    {/* on a phone the time sits here, under the name */}
+                    <span className={`sm:hidden ${d.cls}`}> · {d.text}</span>
+                </div>
+            </div>
+            <div className={`hidden sm:block shrink-0 text-xs tabular-nums whitespace-nowrap ${d.cls}`}>{d.text}</div>
+            <button type="button" onClick={(e) => { e.stopPropagation(); onDone(); }} title="Mark this reading done (sent)"
+                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 transition-colors">
+                <Check size={13} className="text-sage" />Done
+            </button>
+        </div>
+    );
+};
+
+// A line on Today's lists: something not paid yet.
 const TodayLine: React.FC<{ b: Booking; onOpen: () => void; children?: React.ReactNode; note: React.ReactNode }> = ({ b, onOpen, children, note }) => (
     <div onClick={onOpen} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors">
         <div className="min-w-0 flex-1">
@@ -761,7 +803,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
     };
     useEffect(() => { if (tab === 'today') fetchSoon(); }, [tab]);
 
-    const changeStatus = async (id: string, status: Booking['status']) => {
+    const changeStatus = async (id: string, status: Booking['status']): Promise<boolean> => {
         try {
             const token = localStorage.getItem('authToken');
             const res = await fetch(`/api/admin/bookings/${id}/status`, {
@@ -770,10 +812,11 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                 body: JSON.stringify({ status }),
             });
             // a cancelled session can't come back onto a time that's been booked since
-            if (res.status === 409) { flash('That time has been booked since. Pick another time in its details to bring it back.', 'err'); setSelectedId(id); return; }
-            if (!res.ok) { flash('Could not change the status.', 'err'); return; }
+            if (res.status === 409) { flash('That time has been booked since. Pick another time in its details to bring it back.', 'err'); setSelectedId(id); return false; }
+            if (!res.ok) { flash('Could not change the status.', 'err'); return false; }
             setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status, ...(status !== 'cancelled' ? { cancelReason: null } : {}) } : b)));
-        } catch { flash('Could not change the status.', 'err'); }
+            return true;
+        } catch { flash('Could not change the status.', 'err'); return false; }
     };
 
     // mark a booking paid / unpaid (the same switch as on Sales)
@@ -1132,9 +1175,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders'; onOpen?: (
                                     ? <p className="px-4 py-5 text-sm text-text-subtle">Nothing waiting. All readings are sent.</p>
                                     : <div className="divide-y divide-adm-line">
                                         {readingsDue.map((b) => (
-                                            <TodayLine key={b.id} b={b} onOpen={() => setSelectedId(b.id)} note={<ClockNote b={b} now={now} />}>
-                                                <StatusControl b={b} />
-                                            </TodayLine>
+                                            <ReadingLine key={b.id} b={b} now={now} onOpen={() => setSelectedId(b.id)}
+                                                onDone={async () => { if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Reading'} marked done. It's under Orders → Done.`, 'ok'); }} />
                                         ))}
                                     </div>}
                             </Card>

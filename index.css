@@ -694,3 +694,7 @@ html[data-print='offset'] .letterpress-lg { filter: url(#offset-lg); }
 .admin-shell .blk-personal, .admin-shell .personal-text { color: #4A4753; }
 .admin-shell[data-theme="dark"] .blk-personal { background: #3A3843; border-color: rgb(255 255 255 / 0.08); }
 .admin-shell[data-theme="dark"] .blk-personal, .admin-shell[data-theme="dark"] .personal-text { color: #B9B6C4; }
+.admin-shell .due-soon-text { color: #a16207; }
+.admin-shell .due-late-text { color: #b42318; }
+.admin-shell[data-theme="dark"] .due-soon-text { color: #fcd34d; }
+.admin-shell[data-theme="dark"] .due-late-text { color: #fca5a5; }
