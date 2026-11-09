@@ -844,7 +844,7 @@ app.get('/api/cron/reconcile', async (req, res) => {
         return res.status(401).json({ error: 'unauthorized' });
     }
     try {
-        const changed = await bookingStore.reconcileWithCalendar();
+        const changed = (await bookingStore.reconcileWithCalendar()) + ((await bookingStore.completePastSessions().catch(() => 0)) || 0);
         // (the timed emails too, as a fallback for the clock that runs /api/cron/tick)
         const sent = await notices.runChecks().catch((e) => { console.error('checks failed:', e.message); return []; });
         res.json({ ok: true, changed, sent });
@@ -863,7 +863,8 @@ app.get('/api/cron/tick', async (req, res) => {
     if (!secret || req.headers.authorization !== `Bearer ${secret}`) return res.status(401).json({ error: 'unauthorized' });
     try {
         const sent = await notices.runChecks();
-        res.json({ ok: true, sent });
+        const done = await bookingStore.completePastSessions().catch((e) => { console.error('marking sessions done failed:', e.message); return 0; });
+        res.json({ ok: true, sent, done });
     } catch (e) {
         console.error('cron tick failed:', e.message);
         res.status(500).json({ error: 'checks failed' });
@@ -894,7 +895,8 @@ const RECONCILE_THROTTLE_MS = 3 * 60 * 1000;
 
 // Admin: list all bookings (JWT-protected, same auth as the dashboard).
 // Admin: the housekeeping that used to hold up the bookings list (it took ~5 s): read back
-// changes made in Google Calendar, cancel bookings left unpaid past their hour, and send
+// changes made in Google Calendar, cancel bookings left unpaid past their hour, mark
+// sessions that are over as done, and send
 // any timed email whose clock was missed. The dashboard calls it in the background right
 // after the list has loaded, and loads the list again if anything changed.
 app.post('/api/admin/sync', verifyToken, async (req, res) => {
@@ -904,6 +906,7 @@ app.post('/api/admin/sync', verifyToken, async (req, res) => {
         try { changed += (await bookingStore.reconcileWithCalendar()) || 0; } catch (e) { console.error('reconcile failed:', e.message); }
     }
     try { changed += (await bookingStore.expireUnpaid()) || 0; } catch (e) { console.error('expire unpaid failed:', e.message); }
+    try { changed += (await bookingStore.completePastSessions()) || 0; } catch (e) { console.error('marking sessions done failed:', e.message); }
     if (Date.now() - lastChecksAt > RECONCILE_THROTTLE_MS) {
         lastChecksAt = Date.now();
         await notices.runChecks().catch((e) => console.error('checks failed:', e.message));

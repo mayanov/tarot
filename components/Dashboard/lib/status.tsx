@@ -46,22 +46,6 @@ export const StatusSelect: React.FC<{ status: Booking['status']; onChange: (s: B
     </span>
 );
 
-/** A sale's state, for the Sales table: the booking's status (Confirmed, Pending, Done)
-    and under it the payment (Unpaid in colour: it needs her). Click the payment to flip it. */
-export const SaleStatus: React.FC<{ b: Booking; onToggle: () => void; busy?: boolean }> = ({ b, onToggle, busy }) => {
-    const paid = b.paymentStatus === 'paid';
-    return (
-        <div className="flex flex-col items-start gap-0.5">
-            <span className="inline-flex items-center gap-1.5 text-xs text-text-light whitespace-nowrap"><Dot cls={STATUS_DOT[b.status]} />{NAME[b.status]}</span>
-            <button type="button" onClick={(e) => { e.stopPropagation(); onToggle(); }} disabled={busy}
-                title={paid ? 'Paid · click to mark unpaid' : 'Click to mark paid'}
-                className={`pl-3 pr-1.5 rounded text-[11px] whitespace-nowrap transition-colors hover:bg-adm-hover-2 disabled:opacity-50 ${paid ? 'text-text-subtle' : 'text-coral-deep font-semibold'}`}>
-                {paid ? 'Paid' : 'Unpaid'}
-            </button>
-        </div>
-    );
-};
-
 /** Paid / Unpaid; a button that flips it when `onToggle` is given. Unpaid is the one in colour. */
 export const PaymentPill: React.FC<{ paid: boolean; onToggle?: () => void; busy?: boolean }> = ({ paid, onToggle, busy }) => {
     const cls = `inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs whitespace-nowrap transition-colors disabled:opacity-50 ${paid ? 'text-text-subtle' : 'text-coral-deep font-semibold'}`;

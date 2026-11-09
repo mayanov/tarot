@@ -4,7 +4,7 @@ import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, sessionWhen, paymentMethodOf, phoneOf, emailOf, fmtPhone } from './lib/format';
 import WaConfirmButton from './WaConfirmButton';
-import { SaleStatus } from './lib/status';
+import { StatusPill, PaymentPill } from './lib/status';
 import Card from './ui/Card';
 import PageHeader from './ui/PageHeader';
 import Segmented from './ui/Segmented';
@@ -303,7 +303,7 @@ const SalesView: React.FC = () => {
             {/* table */}
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[820px]">
+                    <table className="w-full text-sm min-w-[900px]">
                         <thead>
                             <tr className="text-left text-text-subtle text-xs uppercase tracking-wider border-b border-adm-line">
                                 <th className="font-semibold px-4 py-3">Booked</th>
@@ -311,15 +311,16 @@ const SalesView: React.FC = () => {
                                 <th className="font-semibold px-4 py-3">Service</th>
                                 <th className="font-semibold px-4 py-3 text-right">Amount</th>
                                 <th className="font-semibold px-4 py-3">Status</th>
+                                <th className="font-semibold px-4 py-3">Payment</th>
                                 <th className="font-semibold px-4 py-3 text-right">WhatsApp</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading && filtered.length === 0 && (
-                                <tr><td colSpan={6}><InlineLoader /></td></tr>
+                                <tr><td colSpan={7}><InlineLoader /></td></tr>
                             )}
                             {!loading && filtered.length === 0 && (
-                                <tr><td colSpan={6} className="text-center text-text-subtle py-16">No orders found{q.trim() ? ` for “${q.trim()}”` : ''}.</td></tr>
+                                <tr><td colSpan={7} className="text-center text-text-subtle py-16">No orders found{q.trim() ? ` for “${q.trim()}”` : ''}.</td></tr>
                             )}
                             {filtered.map((b, i) => {
                                 const a = amountOf(b);
@@ -332,7 +333,7 @@ const SalesView: React.FC = () => {
                                     <React.Fragment key={b.id}>
                                     {newMonth && (
                                         <tr className="border-b border-adm-line">
-                                            <td colSpan={6} className="px-4 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-subtle">{monthName(monthOf(b))}</td>
+                                            <td colSpan={7} className="px-4 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-subtle">{monthName(monthOf(b))}</td>
                                         </tr>
                                     )}
                                     <tr className="border-b border-adm-line last:border-0 hover:bg-adm-hover/50 align-top">
@@ -350,7 +351,8 @@ const SalesView: React.FC = () => {
                                             <div className="tabular-nums text-text-light font-medium">{a ? fmtMoney(a.amount, a.currency) : '—'}</div>
                                             {method && <div className="text-xs text-text-subtle mt-0.5">{method}</div>}
                                         </td>
-                                        <td className="px-4 py-3"><SaleStatus b={b} onToggle={() => togglePaid(b)} busy={savingId === b.id} /></td>
+                                        <td className="px-4 py-3"><StatusPill status={b.status} /></td>
+                                        <td className="px-4 py-3"><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={savingId === b.id} /></td>
                                         <td className="px-4 py-2.5 text-right whitespace-nowrap">
                                             <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
                                         </td>

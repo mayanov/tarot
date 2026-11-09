@@ -639,6 +639,33 @@ export async function expireUnpaid() {
   return n;
 }
 
+// A session (call, meetup, live) that has ended becomes Done by itself, so Orders, Sales
+// and the calendar's colours don't wait for her to tick it. Only confirmed ones: a pending
+// session (not paid, not settled) is left for her to decide. Half an hour after its end,
+// in case it ran over (extra time she adds moves the end anyway).
+const SESSION_SERVICES = new Set(['call', 'meetup', 'live']);
+const DONE_AFTER_END_MS = 30 * 60_000;
+/** the Jakarta time a session ends, in ms (NaN without a date and time) */
+export const sessionEndOf = (b) => {
+  if (!b?.date || !b?.time) return NaN;
+  return Date.parse(`${b.date}T${b.time}:00+07:00`) + (b.durationMin > 0 ? b.durationMin : 60) * 60_000;
+};
+export const sessionOver = (b, now = Date.now()) => b?.status === 'confirmed' && SESSION_SERVICES.has(b.serviceId)
+  && !b.holdOnly && !b.extraFor && sessionEndOf(b) + DONE_AFTER_END_MS <= now;
+
+/** marks every confirmed session that is over as done; returns how many */
+export async function completePastSessions(now = Date.now()) {
+  const rows = db
+    ? (await db.collection(COLLECTION).where('status', '==', 'confirmed').get()).docs.map((d) => d.data())
+    : readAll();
+  let n = 0;
+  for (const b of rows.filter((x) => sessionOver(x, now))) {
+    // (patch, not updateStatus: nothing to change in the calendar, and no email goes out)
+    try { await patch(b.id, { status: 'done', autoDoneAt: new Date(now).toISOString() }); n++; } catch (e) { console.error('[bookings] marking session done failed:', b.id, e.message); }
+  }
+  return n;
+}
+
 /** Records that a notice went out for a booking (field → now): reminders, the owner's alerts */
 export const markSent = (id, field) => stamp(id, field);
 
