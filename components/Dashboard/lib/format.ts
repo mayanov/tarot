@@ -57,7 +57,7 @@ export const matchesSearch = (needle: string, ...texts: (string | undefined | nu
 
 // A booking code in words, for the dashboard: "C-42" → "Call · booking no. 42"
 // (server/bookingStore.js nextRef). Older random codes → ''.
-const REF_SERVICE: Record<string, string> = { C: 'Call', M: 'Meetup', H: 'Chat', S: 'Special Edition', T: '3-Card', F: '5-Card', L: 'Live Session' };
+const REF_SERVICE: Record<string, string> = { C: 'Call', M: 'Meetup', H: 'Chat', S: 'Special Edition', T: '3-Card', F: '5-Card', L: 'Live Session', P: 'Pay as you like' };
 export const refInWords = (ref?: string) => {
     const m = (ref || '').match(/^([A-Z])-(\d+)$/);
     return m ? `${REF_SERVICE[m[1]] || 'Booking'} · booking no. ${m[2]}` : '';
@@ -87,6 +87,7 @@ export const fmtDate = (iso?: string): string => {
 export const SERVICE_NAME: Record<string, string> = {
     chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'Special Edition',
     '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
+    payl: 'Pay as you like',
 };
 
 const isPricePart = (s: string) => /^(Rp|\$)\s?[\d.,]/i.test(s.trim());

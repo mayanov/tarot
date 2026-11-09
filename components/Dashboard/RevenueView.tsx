@@ -13,10 +13,11 @@ type Preset = '7d' | '30d' | '90d' | 'thisMonth' | 'year' | 'all' | 'custom';
 const SERVICE_LABEL: Record<string, string> = {
     chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'New Year Reading (PDF)',
     '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
+    payl: 'Pay as you like',
 };
 const SERVICE_COLOR: Record<string, string> = {
     chat: '#6B3FA0', call: '#3D4A94', meetup: '#2EA866', special: '#A98BDB',
-    '3card': '#7A7FD1', '5card': '#8C8499', live: '#C9B4EC',
+    '3card': '#7A7FD1', '5card': '#8C8499', live: '#C9B4EC', payl: '#C99A4B',
 };
 const colorFor = (id: string) => SERVICE_COLOR[id] || '#B5AEC4';
 

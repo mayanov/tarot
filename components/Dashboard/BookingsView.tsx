@@ -8,7 +8,7 @@ import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooki
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
-import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
+import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
 import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle, matchCustomers } from './lib/calendarEntry';
 
@@ -21,6 +21,8 @@ const MANUAL_SERVICES: { id: string; name: string }[] = [
     { id: '3card', name: '3-Card Spread' },
     { id: '5card', name: '5-Card Deep' },
     { id: 'live', name: 'Live Session' },
+    // any amount, typed in by hand (no packages)
+    { id: 'payl', name: 'Pay as you like' },
 ];
 
 // Packages per service (from the public pricelist) — picking one prefills the price.
@@ -57,11 +59,6 @@ const extractPhone = (contact?: string) => {
 const normPhone = (p: string) => p.replace(/\D/g, '');
 const fmtAmt = (n: number, c: 'IDR' | 'USD') => c === 'USD' ? `$${n}` : `Rp ${n.toLocaleString('id-ID')}`;
 const fmtOptPrice = (o: SvcOpt) => fmtAmt(o.amount, o.currency);
-// "Pay as you like": any service, at an amount typed in by hand (the package menu's last
-// choice). Saved as "<service> · Pay as you like" with that amount, so Sales, Revenue and
-// Customers count it like any other booking.
-const PAY_AS_YOU_LIKE = -1;
-const PAY_AS_YOU_LIKE_LABEL = 'Pay as you like';
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const toHHMM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
@@ -96,9 +93,44 @@ const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const FLD = "w-full rounded-lg border border-adm-line-2 bg-bg-dark px-3 py-2 text-sm text-text-light focus:border-lilac focus:outline-none";
 const LBL = "block text-xs font-medium text-text-subtle mb-1.5";
 
+// Sessions with a time of their own (they go on the calendar); readings and chats don't.
+const TIMED = new Set(['call', 'meetup', 'live']);
+const CHIP_NAME: Record<string, string> = {
+    chat: 'Chat', call: 'Call', meetup: 'Meetup', special: 'Special', '3card': '3-Card', '5card': '5-Card', live: 'Live', payl: 'Pay as you like',
+};
+const chipCls = (on: boolean) =>
+    `rounded-full border px-3 py-1.5 text-sm transition-colors ${on ? 'border-lilac bg-lilac text-white' : 'border-adm-line-2 text-text-light hover:border-lilac/60'}`;
+const SECTION = 'text-[11px] font-semibold uppercase tracking-wider text-text-subtle mb-2';
+type Client = { key: string; name: string; contact: string; phone: string; email: string; count: number };
+// a phone written any way (0812…, 62812…, +62 812…) → the same digits
+const phoneTail = (p: string) => normPhone(p).replace(/^(62|0)/, '');
+const dayShort = (iso: string) => parseISO(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+const bookingsWord = (n: number) => `${n} booking${n === 1 ? '' : 's'}`;
+
+// Who it may be: name words that start with what's typed first, then a name containing it,
+// a phone with those digits, an email; then the calendar-style guess ("ika" → "Ika Putri").
+const searchClients = (q: string, clients: Client[], max = 6): Client[] => {
+    const t = q.trim().toLowerCase();
+    if (!t) return clients.slice(0, 5); // the most recent
+    const digits = phoneTail(t);
+    const scored = clients.map((c) => {
+        const n = c.name.toLowerCase();
+        let s = 0;
+        if (n.split(/\s+/).some((w) => w.startsWith(t)) || n.startsWith(t)) s = 3;
+        else if (n.includes(t)) s = 2;
+        else if (digits.length >= 3 && phoneTail(c.phone).includes(digits)) s = 2;
+        else if (c.email.toLowerCase().includes(t) || c.contact.toLowerCase().includes(t)) s = 1;
+        return { c, s };
+    }).filter((x) => x.s > 0).sort((a, b) => b.s - a.s || b.c.count - a.c.count).map((x) => x.c);
+    matchCustomers(q, clients.filter((c) => c.name)).forEach((c) => { if (!scored.includes(c)) scored.push(c); });
+    return scored.slice(0, max);
+};
+
 // Modal to record a booking taken manually (e.g. over WhatsApp). With `fromEntry`, it turns
 // a session Mayanov put in her Google Calendar herself into a booking: its time comes from
 // the entry, and the entry itself becomes the booking's (nothing new on her calendar).
+// Laid out in the order she thinks of it: who, what, when, paid, then anything unusual
+// tucked under "More options".
 export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEvent; onClose: () => void; onCreated: (msg: string) => void }> = ({ bookings, fromEntry, onClose, onCreated }) => {
     const today = toISO(new Date());
     const entrySvc = fromEntry ? serviceFromTitle(fromEntry.title) : null;
@@ -110,28 +142,25 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
         : 0;
     const [serviceId, setServiceId] = useState<string>(entrySvc || MANUAL_SERVICES[0].id);
     const [detailIdx, setDetailIdx] = useState(entryIdx);
-    // (a name only from an entry that looks like a session: "Finalize Website" isn't anyone)
-    const [name, setName] = useState(fromEntry && isSessionTitle(fromEntry.title) ? nameFromTitle(fromEntry.title) : '');
-    // the name is still the guess from the calendar title (not typed or picked)
-    const [guessed, setGuessed] = useState(Boolean(name));
-    const [contact, setContact] = useState('');
-    const autoContact = useRef(''); // the contact filled in from a known customer
+    const [customAmount, setCustomAmount] = useState('');
+    const [customCur, setCustomCur] = useState<'IDR' | 'USD'>('IDR');
     const [tip, setTip] = useState('');
     const [showTip, setShowTip] = useState(false);
     const [orderDate, setOrderDate] = useState(fromEntry?.date || today);
-    const [status, setStatus] = useState<'confirmed' | 'done' | 'pending'>(fromEntry?.date && fromEntry.date < today ? 'done' : 'confirmed');
+    const [statusSet, setStatusSet] = useState<'confirmed' | 'done' | 'pending' | null>(null);
     const [payment, setPayment] = useState<'paid' | 'unpaid'>('paid');
     const [question, setQuestion] = useState('');
-    const [schedule, setSchedule] = useState(Boolean(fromEntry));
+    const [more, setMore] = useState(false);
+    const [schedule, setSchedule] = useState(Boolean(fromEntry) || TIMED.has(serviceId));
     const [date, setDate] = useState(fromEntry?.date || today);
     const [time, setTime] = useState(fromEntry?.time || '11:00');
     const [durationMin, setDurationMin] = useState(fromEntry ? String(entryMin) : '60');
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState('');
 
-    // Existing clients, deduped by phone (newest name wins — bookings arrive newest-first).
+    // Everyone already in the dashboard, one per phone (or contact), newest first.
     const clients = useMemo(() => {
-        const map = new Map<string, { key: string; name: string; contact: string; phone: string; count: number }>();
+        const map = new Map<string, Client>();
         bookings.forEach((b) => {
             if (b.extraFor) return; // extra time is part of a session, not another booking
             const phone = extractPhone(b.contact);
@@ -139,25 +168,57 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
             if (!key) return;
             const c = map.get(key);
             if (c) c.count++;
-            else map.set(key, { key, name: b.name || '', contact: b.contact || '', phone, count: 1 });
+            else map.set(key, { key, name: b.name || '', contact: b.contact || '', phone, email: emailOf(b.contact), count: 1 });
         });
-        return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+        return [...map.values()].filter((c) => c.name);
     }, [bookings]);
 
-    // Price/currency come straight from the chosen package, or, for Pay as you like,
-    // from what's typed in (in the service's own currency unless switched).
+    // ── Customer: one search box. Pick someone, or "+ New customer" to type their details.
+    // (a name only from an entry that looks like a session: "Finalize Website" isn't anyone)
+    const guess = fromEntry && isSessionTitle(fromEntry.title) ? nameFromTitle(fromEntry.title) : '';
+    const guessExact = guess ? clients.find((c) => c.name.trim().toLowerCase() === guess.toLowerCase()) : undefined;
+    const [picked, setPicked] = useState<Client | null>(guessExact || null);
+    const [creating, setCreating] = useState(false);
+    const [query, setQuery] = useState(guessExact ? '' : guess);
+    const [guessed, setGuessed] = useState(Boolean(guess) && !guessExact);
+    const [open, setOpen] = useState(false);
+    const [hi, setHi] = useState(0);
+    const [name, setName] = useState('');
+    const [contact, setContact] = useState('');
+    const results = useMemo(() => searchClients(query, clients), [query, clients]);
+    const choose = (c: Client | null) => {
+        setOpen(false);
+        setGuessed(false);
+        if (c) { setPicked(c); setCreating(false); return; }
+        setCreating(true); setName(query.trim()); setContact('');
+    };
+    const change = () => { setPicked(null); setCreating(false); setQuery(''); setOpen(true); setHi(0); };
+    const onSearchKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        const n = results.length + 1; // + New customer
+        if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true); setHi((hi + 1) % n); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setOpen(true); setHi((hi - 1 + n) % n); }
+        else if (e.key === 'Enter') { e.preventDefault(); choose(hi < results.length ? results[hi] : null); }
+        else if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(false); }
+    };
+    const customerName = picked ? picked.name : creating ? name.trim() : '';
+    const customerContact = picked ? picked.contact : creating ? contact.trim() : '';
+
+    // ── Service and package: the price comes from the package; Pay as you like is typed in.
     const opts = SERVICE_OPTIONS[serviceId] || [];
-    const custom = detailIdx === PAY_AS_YOU_LIKE;
-    const [customAmount, setCustomAmount] = useState('');
-    const [customCur, setCustomCur] = useState<'IDR' | 'USD' | null>(null);
-    const svcCur: 'IDR' | 'USD' = opts[0]?.currency || 'IDR';
-    const opt: SvcOpt | undefined = custom
-        ? { label: PAY_AS_YOU_LIKE_LABEL, amount: Math.max(0, Number(customAmount) || 0), currency: customCur || svcCur }
+    const payl = serviceId === 'payl';
+    const opt: SvcOpt | undefined = payl
+        ? { label: '', amount: Math.max(0, Number(customAmount) || 0), currency: customCur }
         : opts[detailIdx] || opts[0];
     const baseAmount = opt?.amount || 0;
     const currency: 'IDR' | 'USD' = opt?.currency || 'IDR';
     const tipNum = Math.max(0, Number(tip) || 0);
     const total = baseAmount + tipNum;
+    const pickService = (id: string) => {
+        if (id === serviceId) return;
+        setServiceId(id);
+        setDetailIdx(0);
+        if (!fromEntry) setSchedule(TIMED.has(id));
+    };
 
     // Picking a timed session prefills its duration for calendar scheduling (a calendar
     // entry keeps its own length: that's when the session really is).
@@ -166,40 +227,23 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [serviceId, detailIdx]);
 
-    // One field for the customer: typing suggests the people already in the dashboard;
-    // picking one fills in their WhatsApp (unless one was typed by hand).
-    const typeName = (v: string) => {
-        setName(v);
-        setGuessed(false);
-        const c = clients.find((c) => c.name.trim().toLowerCase() === v.trim().toLowerCase());
-        if (contact && contact !== autoContact.current) return;
-        autoContact.current = c ? c.contact : '';
-        setContact(c ? c.contact : '');
-    };
+    // ── When: for sessions; Pay as you like may have one too (off unless switched on).
+    const showWhen = !fromEntry && (TIMED.has(serviceId) || payl);
+    const sessionDate = fromEntry ? fromEntry.date : schedule ? date : '';
+    // a session already over is Done unless she says otherwise
+    const status = statusSet || (sessionDate && sessionDate < today ? 'done' : 'confirmed');
+    const STATUS_LABEL = { confirmed: 'Confirmed', done: 'Done', pending: 'Pending' } as const;
 
-    // People this may be: shown as buttons under the field (the browser's own list only
-    // shows names that match what's typed). None once it's exactly someone's name.
-    const exact = clients.find((c) => c.name.trim().toLowerCase() === name.trim().toLowerCase());
-    const matches = useMemo(() => (exact ? [] : matchCustomers(name, clients.filter((c) => c.name))), [name, clients, exact]);
-    // a guess that is exactly someone already here brings their WhatsApp with it
-    useEffect(() => {
-        if (guessed && exact && !contact) { autoContact.current = exact.contact; setContact(exact.contact); }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    const pick = (c: { name: string; contact: string }) => {
-        setName(c.name);
-        setGuessed(false);
-        if (contact && contact !== autoContact.current) return;
-        autoContact.current = c.contact;
-        setContact(c.contact);
-    };
+    const svcName = SERVICE_NAME[serviceId] || serviceId;
+    const pkg = !payl && opt && opts.length > 1 ? packageEn(opt.label) : '';
+    const when = fromEntry ? `${dayShort(fromEntry.date)} ${fromEntry.time}` : schedule && showWhen ? `${dayShort(date)} ${time}` : '';
+    const ready = Boolean(customerName) && baseAmount > 0;
 
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErr('');
-        if (!name.trim()) { setErr('Customer name is required.'); return; }
-        if (custom && baseAmount <= 0) { setErr('Type in the amount they pay.'); return; }
-        if (!opt || baseAmount <= 0) { setErr('Pick a package.'); return; }
+        if (!customerName) { setErr(creating ? 'Type the customer’s name.' : 'Pick a customer, or add a new one.'); return; }
+        if (baseAmount <= 0) { setErr(payl ? 'Type in the amount they pay.' : 'Pick a package.'); return; }
         setBusy(true);
         try {
             const token = localStorage.getItem('authToken') || undefined;
@@ -212,11 +256,11 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
             const notes = [question.trim(), tipNote].filter(Boolean).join(' · ');
             await createManualBooking({
                 serviceId, serviceName,
-                name: name.trim(), contact: contact.trim(), question: notes,
+                name: customerName, contact: customerContact, question: notes,
                 amount: total, currency, orderDate, status, paymentStatus: payment,
                 ...(fromEntry
                     ? { date: fromEntry.date, time: fromEntry.time, durationMin: entryMin, linkEventId: fromEntry.id }
-                    : schedule ? { date, time, durationMin: Number(durationMin) || 60 } : {}),
+                    : schedule && showWhen ? { date, time, durationMin: Number(durationMin) || 60 } : {}),
             }, token);
             onCreated(fromEntry ? 'Booking added, linked to your calendar entry' : 'Booking added');
         } catch (e2) {
@@ -230,155 +274,211 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
     return (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
             <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-surface-1 border border-adm-line-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between px-6 py-4 border-b border-adm-line sticky top-0 bg-surface-1">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-adm-line sticky top-0 z-10 bg-surface-1">
                     <h3 className="text-lg font-serif font-bold text-text-light">{fromEntry ? 'Turn into a booking' : 'Add booking'}</h3>
                     <button type="button" onClick={onClose} className="p-1.5 rounded-full text-text-subtle hover:text-text-light hover:bg-white/5"><X size={18} /></button>
                 </div>
-                <form onSubmit={submit} className="px-6 py-5 space-y-4">
-                    {fromEntry ? (
+                <form onSubmit={submit} className="px-6 py-5 space-y-5">
+                    {fromEntry && (
                         <div className="rounded-lg bg-adm-hover border border-adm-line-2 px-3 py-2.5 text-xs text-text-subtle leading-relaxed">
                             <div className="text-sm text-text-light font-medium">“{fromEntry.title}”</div>
                             <div className="mt-0.5">{fmtDate(fromEntry.date)} · {fromEntry.time}–{fromEntry.endTime || toHHMM(toMin(fromEntry.time || '00:00') + entryMin)} ({entryMin} min)</div>
                             <div className="mt-1.5">Your calendar entry stays as it is; it becomes this booking's entry, so nothing new is added to your calendar. It then counts in Sales, Revenue and Customers.</div>
                         </div>
-                    ) : (
-                        <p className="text-xs text-text-subtle leading-relaxed">For orders taken manually (e.g. over WhatsApp) — they'll appear in Orders, Customers and the Revenue report.</p>
                     )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label className={LBL}>Service</label>
-                            <select value={serviceId} onChange={(e) => { setServiceId(e.target.value); setDetailIdx(custom ? PAY_AS_YOU_LIKE : 0); setCustomCur(null); }} className={FLD}>
-                                {MANUAL_SERVICES.map((s) => <option key={s.id} value={s.id}>{SERVICE_NAME[s.id] || s.name}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label className={LBL}>Package / detail</label>
-                            <select value={detailIdx} onChange={(e) => setDetailIdx(Number(e.target.value))} className={FLD}>
-                                {opts.map((o, i) => <option key={i} value={i}>{packageEn(o.label)} — {fmtOptPrice(o)}</option>)}
-                                <option value={PAY_AS_YOU_LIKE}>{PAY_AS_YOU_LIKE_LABEL}</option>
-                            </select>
-                        </div>
-                    </div>
-                    {custom && (
-                        <div>
-                            <label className={LBL}>Amount they pay</label>
-                            <div className="flex gap-2">
-                                <select value={currency} onChange={(e) => setCustomCur(e.target.value as 'IDR' | 'USD')} aria-label="Currency"
-                                    className="rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-2 text-sm text-text-light focus:border-lilac focus:outline-none">
-                                    <option value="IDR">Rp</option>
-                                    <option value="USD">$</option>
-                                </select>
-                                <input type="number" min="0" step={currency === 'USD' ? '0.01' : '1000'} inputMode="decimal" value={customAmount} autoFocus
-                                    onChange={(e) => setCustomAmount(e.target.value)} placeholder={currency === 'USD' ? 'e.g. 30' : 'e.g. 200000'} className={FLD} />
+                    {/* Customer */}
+                    <section>
+                        <div className={SECTION}>Customer</div>
+                        {picked ? (
+                            <div className="flex items-center gap-3 rounded-lg border border-adm-line-2 bg-adm-hover px-3 py-2.5">
+                                <div className="min-w-0 flex-1">
+                                    <div className="text-sm font-medium text-text-light truncate">{picked.name}</div>
+                                    <div className="text-xs text-text-subtle truncate">{[picked.phone ? fmtPhone(picked.phone) : picked.email, bookingsWord(picked.count)].filter(Boolean).join(' · ')}</div>
+                                </div>
+                                <button type="button" onClick={change} className="text-xs text-lilac hover:underline shrink-0">Change</button>
                             </div>
-                        </div>
-                    )}
+                        ) : creating ? (
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" aria-label="Name" autoFocus={!name} className={FLD} />
+                                    <input value={contact} onChange={(e) => setContact(e.target.value)} autoFocus={Boolean(name)}
+                                        placeholder={currency === 'USD' ? 'Email' : 'WhatsApp, 0812…'} aria-label={currency === 'USD' ? 'Email' : 'WhatsApp'} className={FLD} />
+                                </div>
+                                <div className="flex items-center justify-between text-xs">
+                                    <span className="text-text-subtle">New customer</span>
+                                    <button type="button" onClick={change} className="text-lilac hover:underline">Find an existing one</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="relative">
+                                {guessed && <div className="mb-1.5 text-xs text-text-subtle">From your calendar: <span className="text-text-light">“{guess}”</span>. Pick who it is, or add them.</div>}
+                                <input value={query} autoFocus autoComplete="off" placeholder="Search name or number, or add a new one" aria-label="Search or add customer"
+                                    onChange={(e) => { setQuery(e.target.value); setGuessed(false); setOpen(true); setHi(0); }}
+                                    onFocus={(e) => { setOpen(true); if (guessed) e.currentTarget.select(); }}
+                                    onBlur={() => setOpen(false)} onKeyDown={onSearchKey}
+                                    role="combobox" aria-expanded={open} aria-controls="mt-customer-list" className={FLD} />
+                                {open && (
+                                    <ul id="mt-customer-list" role="listbox" className="absolute z-20 left-0 right-0 mt-1 max-h-72 overflow-y-auto rounded-lg border border-adm-line-2 bg-surface-1 shadow-xl py-1">
+                                        {!query.trim() && results.length > 0 && <li className="px-3 pt-1 pb-0.5 text-[10px] uppercase tracking-wider text-text-subtle">Recent</li>}
+                                        {results.map((c, i) => (
+                                            <li key={c.key} role="option" aria-selected={hi === i}
+                                                onMouseDown={(e) => { e.preventDefault(); choose(c); }} onMouseEnter={() => setHi(i)}
+                                                className={`px-3 py-2 cursor-pointer flex items-baseline justify-between gap-3 ${hi === i ? 'bg-adm-hover' : ''}`}>
+                                                <span className="text-sm text-text-light truncate">{c.name}</span>
+                                                <span className="text-xs text-text-subtle whitespace-nowrap">{[c.phone ? fmtPhone(c.phone) : c.email, bookingsWord(c.count)].filter(Boolean).join(' · ')}</span>
+                                            </li>
+                                        ))}
+                                        <li role="option" aria-selected={hi === results.length}
+                                            onMouseDown={(e) => { e.preventDefault(); choose(null); }} onMouseEnter={() => setHi(results.length)}
+                                            className={`px-3 py-2 cursor-pointer text-sm text-lilac flex items-center gap-1.5 ${results.length ? 'border-t border-adm-line' : ''} ${hi === results.length ? 'bg-adm-hover' : ''}`}>
+                                            <Plus size={14} className="shrink-0" /><span className="truncate">New customer{query.trim() ? <> “<span className="font-medium">{query.trim()}</span>”</> : ''}</span>
+                                        </li>
+                                    </ul>
+                                )}
+                            </div>
+                        )}
+                    </section>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label className={LBL}>Customer</label>
-                            <input value={name} onChange={(e) => typeName(e.target.value)} list="mt-known-customers" autoComplete="off" placeholder="Name (new or existing)"
-                                onFocus={(e) => { if (guessed) e.currentTarget.select(); }} className={FLD} />
-                            <datalist id="mt-known-customers">
-                                {clients.filter((c) => c.name).map((c) => <option key={c.key} value={c.name}>{c.phone}</option>)}
-                            </datalist>
-                            {exact ? (
-                                <div className="mt-1 text-[11px] text-text-subtle">{guessed ? 'From your calendar · e' : 'E'}xisting customer, {exact.count} booking{exact.count === 1 ? '' : 's'}</div>
-                            ) : guessed && name ? (
-                                <div className="mt-1 text-[11px] text-text-subtle">{matches.length ? 'From your calendar. One of these?' : 'From your calendar · new customer'}</div>
-                            ) : null}
-                        </div>
-                        <div>
-                            <label className={LBL}>WhatsApp</label>
-                            <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="0812…" className={FLD} />
-                        </div>
-                    </div>
-                    {matches.length > 0 && (
-                        <div className="-mt-1 flex flex-wrap gap-1.5">
-                            {matches.map((c) => (
-                                <button key={c.key} type="button" onClick={() => pick(c)}
-                                    className="text-left rounded-lg border border-adm-line-2 bg-adm-hover hover:border-lilac/60 px-2.5 py-1.5 transition">
-                                    <div className="text-xs font-medium text-text-light">{c.name}</div>
-                                    <div className="text-[10px] text-text-subtle">{[c.phone, `${c.count} booking${c.count === 1 ? '' : 's'}`].filter(Boolean).join(' · ')}</div>
+                    {/* Service, then its package (or the amount, for Pay as you like) */}
+                    <section>
+                        <div className={SECTION}>Service</div>
+                        <div className="flex flex-wrap gap-1.5">
+                            {MANUAL_SERVICES.map((s) => (
+                                <button key={s.id} type="button" onClick={() => pickService(s.id)} aria-pressed={serviceId === s.id} className={chipCls(serviceId === s.id)}>
+                                    {CHIP_NAME[s.id] || s.name}
                                 </button>
                             ))}
                         </div>
-                    )}
+                        {payl ? (
+                            <div className="mt-3 flex items-center gap-2">
+                                <div className="inline-flex rounded-lg border border-adm-line-2 overflow-hidden shrink-0" role="group" aria-label="Currency">
+                                    {(['IDR', 'USD'] as const).map((c) => (
+                                        <button key={c} type="button" onClick={() => setCustomCur(c)} aria-pressed={customCur === c}
+                                            className={`px-3 py-2 text-sm ${customCur === c ? 'bg-lilac text-white' : 'text-text-subtle hover:text-text-light'}`}>{c === 'IDR' ? 'Rp' : '$'}</button>
+                                    ))}
+                                </div>
+                                <input type="number" min="0" step={customCur === 'USD' ? '0.01' : '1000'} inputMode="decimal" value={customAmount}
+                                    onChange={(e) => setCustomAmount(e.target.value)} placeholder={customCur === 'USD' ? 'Amount they pay, e.g. 30' : 'Amount they pay, e.g. 200000'}
+                                    aria-label="Amount they pay" className={FLD} />
+                            </div>
+                        ) : opts.length > 1 ? (
+                            <div className="mt-3 flex flex-wrap gap-1.5">
+                                {opts.map((o, i) => (
+                                    <button key={i} type="button" onClick={() => setDetailIdx(i)} aria-pressed={detailIdx === i}
+                                        className={`rounded-lg border px-3 py-1.5 text-left transition-colors ${detailIdx === i ? 'border-lilac bg-lilac/10' : 'border-adm-line-2 hover:border-lilac/60'}`}>
+                                        <div className="text-sm text-text-light">{packageEn(o.label)}</div>
+                                        <div className="text-xs text-text-subtle tabular-nums">{fmtOptPrice(o)}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        ) : opt ? (
+                            <div className="mt-2 text-xs text-text-subtle">{packageEn(opt.label)} · {fmtOptPrice(opt)}</div>
+                        ) : null}
+                    </section>
 
-                    {/* the price is the package's (shown in its menu too); a tip only when there is one */}
-                    <div className="flex items-center justify-between gap-3 rounded-lg bg-lilac/10 border border-lilac/30 px-3 py-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-sm text-text-subtle">Total</span>
-                            {showTip ? (
-                                <span className="flex items-center gap-1.5 text-sm text-text-subtle">
-                                    incl. tip
-                                    <input type="number" min="0" step="any" value={tip} onChange={(e) => setTip(e.target.value)} placeholder="0" autoFocus
-                                        className="w-28 rounded-md border border-adm-line-2 bg-bg-dark px-2 py-1 text-sm text-text-light focus:border-lilac focus:outline-none" aria-label="Tip" />
-                                </span>
+                    {/* When: sessions only (a calendar entry already has its time, shown above) */}
+                    {showWhen && (
+                        <section>
+                            <div className="flex items-center justify-between mb-2">
+                                <div className={SECTION.replace(' mb-2', '')}>When</div>
+                                <label className="flex items-center gap-1.5 text-xs text-text-subtle cursor-pointer select-none">
+                                    <input type="checkbox" checked={schedule} onChange={(e) => setSchedule(e.target.checked)} className="accent-lilac w-3.5 h-3.5" />
+                                    Put on the calendar
+                                </label>
+                            </div>
+                            {schedule ? (
+                                <div className="grid grid-cols-[1fr_auto_auto] gap-2">
+                                    <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Date" className={FLD} />
+                                    <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Time" className={`${FLD} w-28`} />
+                                    <div className="relative">
+                                        <input type="number" min="15" step="15" value={durationMin} onChange={(e) => setDurationMin(e.target.value)} aria-label="Minutes" className={`${FLD} w-24 pr-10`} />
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-subtle pointer-events-none">min</span>
+                                    </div>
+                                </div>
                             ) : (
-                                <button type="button" onClick={() => setShowTip(true)} className="text-xs text-lilac hover:underline">+ tip</button>
+                                <div className="text-xs text-text-subtle">{payl ? 'No session time.' : 'Not on the calendar (e.g. a session already held).'}</div>
                             )}
-                        </div>
-                        <span className="text-base font-bold text-text-light tabular-nums whitespace-nowrap">{fmtAmt(total, currency)}</span>
-                    </div>
-
-                    <div>
-                        <label className={LBL}>Booking date</label>
-                        <input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} className={FLD} />
-                        <p className="mt-1 text-[0.7rem] text-text-subtle">Date the client booked — revenue is reported on this date.</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className={LBL}>Status</label>
-                            <select value={status} onChange={(e) => setStatus(e.target.value as 'confirmed' | 'done' | 'pending')} className={FLD}>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="done">Done</option>
-                                <option value="pending">Pending</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className={LBL}>Payment</label>
-                            <select value={payment} onChange={(e) => setPayment(e.target.value as 'paid' | 'unpaid')} className={FLD}>
-                                <option value="paid">Paid</option>
-                                <option value="unpaid">Unpaid</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className={LBL}>Notes (optional)</label>
-                        <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={2} placeholder="Their question, or notes…" className={FLD} />
-                    </div>
-
-                    {!fromEntry && <label className="flex items-center gap-2.5 text-sm text-text-light cursor-pointer select-none">
-                        <input type="checkbox" checked={schedule} onChange={(e) => setSchedule(e.target.checked)} className="accent-lilac w-4 h-4" />
-                        Also schedule a session on the calendar
-                    </label>}
-                    {schedule && !fromEntry && (
-                        <div className="grid grid-cols-3 gap-3">
-                            <div>
-                                <label className={LBL}>Date</label>
-                                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={FLD} />
-                            </div>
-                            <div>
-                                <label className={LBL}>Time</label>
-                                <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={FLD} />
-                            </div>
-                            <div>
-                                <label className={LBL}>Minutes</label>
-                                <input type="number" min="15" step="15" value={durationMin} onChange={(e) => setDurationMin(e.target.value)} className={FLD} />
-                            </div>
-                        </div>
+                        </section>
                     )}
+
+                    {/* Payment */}
+                    <section>
+                        <div className={SECTION}>Payment</div>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="inline-flex rounded-full border border-adm-line-2 p-0.5" role="group" aria-label="Payment">
+                                {(['paid', 'unpaid'] as const).map((p) => (
+                                    <button key={p} type="button" onClick={() => setPayment(p)} aria-pressed={payment === p}
+                                        className={`px-3.5 py-1 rounded-full text-sm transition-colors ${payment === p ? (p === 'paid' ? 'bg-lilac text-white' : 'bg-adm-hover text-text-light') : 'text-text-subtle hover:text-text-light'}`}>
+                                        {p === 'paid' ? 'Paid' : 'Not paid yet'}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="ml-auto flex items-center gap-2">
+                                {showTip ? (
+                                    <span className="flex items-center gap-1.5 text-xs text-text-subtle">
+                                        tip
+                                        <input type="number" min="0" step="any" value={tip} onChange={(e) => setTip(e.target.value)} placeholder="0" autoFocus
+                                            className="w-24 rounded-md border border-adm-line-2 bg-bg-dark px-2 py-1 text-sm text-text-light focus:border-lilac focus:outline-none" aria-label="Tip" />
+                                    </span>
+                                ) : (
+                                    <button type="button" onClick={() => setShowTip(true)} className="text-xs text-lilac hover:underline">+ tip</button>
+                                )}
+                                <span className="text-base font-bold text-text-light tabular-nums whitespace-nowrap">{fmtAmt(total, currency)}</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* The rest is the same nearly every time: folded away, its values shown */}
+                    <section>
+                        <button type="button" onClick={() => setMore(!more)} className="w-full flex items-center justify-between gap-3 text-left">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-text-subtle">More options</span>
+                            <span className="text-xs text-text-subtle truncate flex items-center gap-1">
+                                {!more && <>Booked {orderDate === today ? 'today' : dayShort(orderDate)} · {STATUS_LABEL[status]}{question.trim() ? ' · note' : ''}</>}
+                                <ChevronRight size={14} className={`transition-transform ${more ? 'rotate-90' : ''}`} />
+                            </span>
+                        </button>
+                        {more && (
+                            <div className="mt-3 space-y-3">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className={LBL}>Booking date</label>
+                                        <input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} className={FLD} />
+                                    </div>
+                                    <div>
+                                        <label className={LBL}>Status</label>
+                                        <select value={status} onChange={(e) => setStatusSet(e.target.value as 'confirmed' | 'done' | 'pending')} className={FLD}>
+                                            <option value="confirmed">Confirmed</option>
+                                            <option value="done">Done</option>
+                                            <option value="pending">Pending</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <p className="-mt-1 text-[0.7rem] text-text-subtle">The day they booked: revenue is counted on it.</p>
+                                <div>
+                                    <label className={LBL}>Notes</label>
+                                    <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={2} placeholder="Their question, or notes…" className={FLD} />
+                                </div>
+                            </div>
+                        )}
+                    </section>
 
                     {err && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-3 py-2">{err}</div>}
 
-                    <div className="flex justify-end gap-2 pt-1">
-                        <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-sm text-text-subtle hover:text-text-light transition-colors">Cancel</button>
-                        <button type="submit" disabled={busy} className="px-5 py-2 rounded-full bg-lilac text-white text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors disabled:opacity-60">
-                            {busy ? 'Adding…' : fromEntry ? 'Turn into booking' : 'Add booking'}
-                        </button>
+                    <div className="border-t border-adm-line pt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div className="flex-1 min-w-0 text-xs text-text-subtle leading-relaxed" aria-live="polite">
+                            <span className={customerName ? 'text-text-light font-medium' : ''}>{customerName || 'No customer yet'}</span>
+                            {' · '}{svcName}{pkg ? ` ${pkg}` : ''}
+                            {when ? ` · ${when}` : ''}
+                            {' · '}{baseAmount > 0 ? fmtAmt(total, currency) : payl ? 'no amount yet' : '—'}
+                            {' · '}{payment === 'paid' ? 'Paid' : 'Not paid'}
+                        </div>
+                        <div className="flex justify-end gap-2 shrink-0">
+                            <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-sm text-text-subtle hover:text-text-light transition-colors">Cancel</button>
+                            <button type="submit" disabled={busy || !ready} className="px-5 py-2 rounded-full bg-lilac text-white text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                {busy ? 'Adding…' : fromEntry ? 'Turn into booking' : 'Add booking'}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

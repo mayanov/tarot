@@ -23,7 +23,7 @@ const genRef = () => 'MYV-' + crypto.randomBytes(5).toString('hex').toUpperCase(
 // A booking's code: the service's letter and a running number, C-42 is the 42nd booking,
 // a call (M meetup, H chat, S special, T 3-card, F 5-card, L live). Short to say over
 // WhatsApp; numbers never repeat (the emails' send-once keys use the code).
-const SERVICE_LETTER = { call: 'C', meetup: 'M', chat: 'H', special: 'S', '3card': 'T', '5card': 'F', live: 'L' };
+const SERVICE_LETTER = { call: 'C', meetup: 'M', chat: 'H', special: 'S', '3card': 'T', '5card': 'F', live: 'L', payl: 'P' };
 const REF_PATTERN = /^[A-Z]-(\d+)$/;
 async function nextRef(data) {
   try {
