@@ -10,15 +10,48 @@ export const isSessionTitle = (title: string) => SESSION_WORDS.test(title || '')
 
 const STRIP = /\b(call|calls|tarot|telp|telpon|telepon|vc|video|meet|meetup|meet ?up|tatap|muka|ketemu|consult\w*|konsul\w*|session|sesi|reading|baca|live|klien|client|with|dengan|sama|bareng|w)\b/gi;
 
-/** the customer's name in the title, if there is one ("Call tarot ika" → "Ika") */
+// how she may address someone in a title ("te niniek", "kak ika"): not part of the name
+const ADDRESS = /\b(te|tante|om|kak|ka|kakak|mbak|mba|mas|bu|ibu|pak|bapak|bang|abang|cik|ci|cici|ko|koh|sis|bro|mr|mrs|ms|miss|dr)\b\.?/gi;
+// lengths, times and counts ("60min", "1h", "14:00", "2nd", "#3", "x2"): not part of the name either
+const NUMBERS = /\b\d+\s*(min|mins|menit|mnt|m|h|hr|hrs|jam|x|st|nd|rd|th|pm|am)?\b|\b[x#]\d+\b|\d+[:.]\d+/gi;
+
+const titleCase = (s: string) => s.replace(/(^|\s)\p{L}/gu, (c) => c.toUpperCase());
+
+/** the customer's name in the title, if there is one ("Call tarot ika" → "Ika",
+    "Meetup te niniek 60min" → "Niniek") */
 export const nameFromTitle = (title: string) => {
-    const rest = (title || '')
+    const words = (title || '')
         .replace(/[\p{Extended_Pictographic}]/gu, ' ')
         .replace(STRIP, ' ')
-        .replace(/[-–—:·|/,()[\]]+/g, ' ')
+        .replace(NUMBERS, ' ')
+        .replace(/[-–—:·|/,()[\]#+&]+/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
-    return rest ? rest.replace(/(^|\s)\p{L}/gu, (c) => c.toUpperCase()) : '';
+    // drop a form of address, unless that's all there is ("Call om" → "Om")
+    const bare = words.replace(ADDRESS, ' ').replace(/\s+/g, ' ').trim();
+    return titleCase(bare || words);
+};
+
+/** a name made comparable: lower case, no form of address, single spaces */
+const normName = (s: string) => (s || '').toLowerCase().replace(ADDRESS, ' ').replace(/[^\p{L}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+
+/** the people already in the dashboard this name may be, best first: the same name,
+    then the same first name ("Ika" → "Ika Putri"), then a name with that word in it */
+export const matchCustomers = <T extends { name: string }>(guess: string, people: T[], max = 4): T[] => {
+    const g = normName(guess);
+    if (g.length < 2) return [];
+    const gFirst = g.split(' ')[0];
+    const scored = people.map((p) => {
+        const n = normName(p.name);
+        if (!n) return { p, s: 0 };
+        const words = n.split(' ');
+        if (n === g) return { p, s: 4 };
+        if (n.startsWith(g + ' ') || g.startsWith(n + ' ')) return { p, s: 3 };
+        if (words[0] === gFirst) return { p, s: 2 };
+        if (gFirst.length >= 3 && words.some((w) => w.startsWith(gFirst))) return { p, s: 1 };
+        return { p, s: 0 };
+    }).filter((x) => x.s > 0);
+    return scored.sort((a, b) => b.s - a.s).slice(0, max).map((x) => x.p);
 };
 
 const toMin = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + (m || 0); };

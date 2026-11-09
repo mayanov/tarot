@@ -9,7 +9,7 @@ import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton from './WaConfirmButton';
 import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
-import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle } from './lib/calendarEntry';
+import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle, matchCustomers } from './lib/calendarEntry';
 
 // Services offered — id drives revenue colour/stacking; name is the display label.
 const MANUAL_SERVICES: { id: string; name: string }[] = [
@@ -106,6 +106,8 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
     const [detailIdx, setDetailIdx] = useState(entryIdx);
     // (a name only from an entry that looks like a session: "Finalize Website" isn't anyone)
     const [name, setName] = useState(fromEntry && isSessionTitle(fromEntry.title) ? nameFromTitle(fromEntry.title) : '');
+    // the name is still the guess from the calendar title (not typed or picked)
+    const [guessed, setGuessed] = useState(Boolean(name));
     const [contact, setContact] = useState('');
     const autoContact = useRef(''); // the contact filled in from a known customer
     const [tip, setTip] = useState('');
@@ -123,12 +125,15 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
 
     // Existing clients, deduped by phone (newest name wins — bookings arrive newest-first).
     const clients = useMemo(() => {
-        const map = new Map<string, { key: string; name: string; contact: string; phone: string }>();
+        const map = new Map<string, { key: string; name: string; contact: string; phone: string; count: number }>();
         bookings.forEach((b) => {
+            if (b.extraFor) return; // extra time is part of a session, not another booking
             const phone = extractPhone(b.contact);
             const key = normPhone(phone) || (b.contact || '').trim().toLowerCase();
             if (!key) return;
-            if (!map.has(key)) map.set(key, { key, name: b.name || '', contact: b.contact || '', phone });
+            const c = map.get(key);
+            if (c) c.count++;
+            else map.set(key, { key, name: b.name || '', contact: b.contact || '', phone, count: 1 });
         });
         return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
     }, [bookings]);
@@ -152,10 +157,28 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
     // picking one fills in their WhatsApp (unless one was typed by hand).
     const typeName = (v: string) => {
         setName(v);
+        setGuessed(false);
         const c = clients.find((c) => c.name.trim().toLowerCase() === v.trim().toLowerCase());
         if (contact && contact !== autoContact.current) return;
         autoContact.current = c ? c.contact : '';
         setContact(c ? c.contact : '');
+    };
+
+    // People this may be: shown as buttons under the field (the browser's own list only
+    // shows names that match what's typed). None once it's exactly someone's name.
+    const exact = clients.find((c) => c.name.trim().toLowerCase() === name.trim().toLowerCase());
+    const matches = useMemo(() => (exact ? [] : matchCustomers(name, clients.filter((c) => c.name))), [name, clients, exact]);
+    // a guess that is exactly someone already here brings their WhatsApp with it
+    useEffect(() => {
+        if (guessed && exact && !contact) { autoContact.current = exact.contact; setContact(exact.contact); }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    const pick = (c: { name: string; contact: string }) => {
+        setName(c.name);
+        setGuessed(false);
+        if (contact && contact !== autoContact.current) return;
+        autoContact.current = c.contact;
+        setContact(c.contact);
     };
 
     const submit = async (e: React.FormEvent) => {
@@ -226,16 +249,33 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label className={LBL}>Customer</label>
-                            <input value={name} onChange={(e) => typeName(e.target.value)} list="mt-known-customers" autoComplete="off" placeholder="Name (new or existing)" className={FLD} />
+                            <input value={name} onChange={(e) => typeName(e.target.value)} list="mt-known-customers" autoComplete="off" placeholder="Name (new or existing)"
+                                onFocus={(e) => { if (guessed) e.currentTarget.select(); }} className={FLD} />
                             <datalist id="mt-known-customers">
                                 {clients.filter((c) => c.name).map((c) => <option key={c.key} value={c.name}>{c.phone}</option>)}
                             </datalist>
+                            {exact ? (
+                                <div className="mt-1 text-[11px] text-text-subtle">{guessed ? 'From your calendar · e' : 'E'}xisting customer, {exact.count} booking{exact.count === 1 ? '' : 's'}</div>
+                            ) : guessed && name ? (
+                                <div className="mt-1 text-[11px] text-text-subtle">{matches.length ? 'From your calendar. One of these?' : 'From your calendar · new customer'}</div>
+                            ) : null}
                         </div>
                         <div>
                             <label className={LBL}>WhatsApp</label>
                             <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="0812…" className={FLD} />
                         </div>
                     </div>
+                    {matches.length > 0 && (
+                        <div className="-mt-1 flex flex-wrap gap-1.5">
+                            {matches.map((c) => (
+                                <button key={c.key} type="button" onClick={() => pick(c)}
+                                    className="text-left rounded-lg border border-adm-line-2 bg-adm-hover hover:border-lilac/60 px-2.5 py-1.5 transition">
+                                    <div className="text-xs font-medium text-text-light">{c.name}</div>
+                                    <div className="text-[10px] text-text-subtle">{[c.phone, `${c.count} booking${c.count === 1 ? '' : 's'}`].filter(Boolean).join(' · ')}</div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     {/* the price is the package's (shown in its menu too); a tip only when there is one */}
                     <div className="flex items-center justify-between gap-3 rounded-lg bg-lilac/10 border border-lilac/30 px-3 py-2">
