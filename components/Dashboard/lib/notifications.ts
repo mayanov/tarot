@@ -136,6 +136,18 @@ export function readingTodo(b: Booking, now: number): Todo | null {
         tone: left <= 0 ? 'late' : left < soonMs(b.serviceId) ? 'soon' : 'calm',
     };
 }
+// any open order (a reading or chat), paid or not: Orders' To do
+export function orderTodo(b: Booking, now: number): Todo {
+    const r = readingTodo(b, now);
+    if (r) return r;
+    const name = b.name || 'someone';
+    return {
+        b, kind: 'reading', at: Infinity,
+        title: b.serviceId === 'chat' ? `Answer ${name}’s chat` : `Send ${name}’s reading`,
+        detail: [serviceLabel(b), amountLabel(b), `ordered ${new Date(Date.parse(b.createdAt || '') || now).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })}`].filter(Boolean).join(' · '),
+        pill: 'Not paid yet', tone: 'calm',
+    };
+}
 export function todosFrom(bookings: Booking[], now: number): Todo[] {
     const out: Todo[] = [];
     for (const b of bookings) {

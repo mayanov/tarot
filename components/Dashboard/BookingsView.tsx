@@ -14,7 +14,7 @@ import { StatusSelect, PaymentPill } from './lib/status';
 import { sameCustomer, normPhone as waNumber, moneyLabel, type Money } from './lib/customers';
 import { openCustomerOf } from './lib/nav';
 import TodoCard from './TodoCard';
-import { readingTodo, type Todo } from './lib/notifications';
+import { readingTodo, orderTodo, type Todo } from './lib/notifications';
 import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle, matchCustomers } from './lib/calendarEntry';
 
 // Services offered — id drives revenue colour/stacking; name is the display label.
@@ -600,67 +600,7 @@ const ScheduleKey: React.FC = () => (
     </div>
 );
 
-// Days as a list, one line per session or calendar entry, in time order: the Today screen,
-// and the Schedule on a phone (where seven columns don't fit).
-const Agenda: React.FC<{
-    days: string[]; todayISO: string; bookings: Booking[]; entries: CalEvent[];
-    onBooking: (id: string) => void; onEntry: (e: CalEvent) => void;
-    hideEmptyAfter?: number; // days past this index show only when something's on them
-}> = ({ days, todayISO, bookings, entries, onBooking, onEntry, hideEmptyAfter }) => (
-    <div className="divide-y divide-adm-line">
-        {days.map((iso, i) => {
-            type Row = { t: string; k: 'b'; b: Booking } | { t: string; k: 'e'; e: CalEvent };
-            const rows: Row[] = [
-                ...bookings.filter((b) => b.date === iso && b.time && b.status !== 'cancelled').map((b): Row => ({ t: b.time, k: 'b', b })),
-                ...entries.filter((e) => e.date === iso && !isHelperEntry(e)).map((e): Row => ({ t: e.time!, k: 'e', e })),
-            ].sort((a, b) => a.t.localeCompare(b.t));
-            if (!rows.length && hideEmptyAfter !== undefined && i > hideEmptyAfter) return null;
-            return (
-                <div key={iso} className="px-4 py-3">
-                    <div className={`text-[0.7rem] uppercase tracking-[0.14em] mb-1.5 ${iso === todayISO ? 'text-lilac font-semibold' : 'text-text-subtle'}`}>{dayLabel(iso, todayISO)}</div>
-                    {!rows.length && <div className="text-sm text-text-subtle py-1">Nothing booked.</div>}
-                    <div className="space-y-1">
-                        {rows.map((r) => {
-                            if (r.k === 'b') {
-                                const b = r.b;
-                                const end = b.durationMin ? toHHMM(toMin(b.time) + b.durationMin) : '';
-                                return (
-                                    <button key={b.id} type="button" onClick={() => onBooking(b.id)}
-                                        className="w-full flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 text-left hover:bg-adm-hover transition-colors">
-                                        <span className="w-[5.5rem] shrink-0 text-xs tabular-nums text-text-light">{b.time}{end && `–${end}`}</span>
-                                        <span className={`svc-${svcKey(b.serviceId)} svc-dot w-2.5 h-2.5 shrink-0 rounded-full ${b.status === 'done' ? 'opacity-50' : ''}`} />
-                                        <span className="min-w-0 flex-1">
-                                            <span className="block text-sm font-medium text-text-light truncate">{b.name || '—'}</span>
-                                            <span className="block text-xs text-text-subtle truncate">{serviceLabel(b)}{STATUS_WORD[b.status] && <> · <span className="font-medium">{STATUS_WORD[b.status]}</span></>}</span>
-                                        </span>
-                                        {b.paymentStatus !== 'paid' && <span className="shrink-0 text-[0.7rem] font-semibold text-coral-deep">Unpaid</span>}
-                                    </button>
-                                );
-                            }
-                            const e = r.e;
-                            const session = isSessionTitle(e.title);
-                            return (
-                                <button key={e.id} type="button" onClick={() => onEntry(e)}
-                                    title="From your Google Calendar. Click to turn it into a booking."
-                                    className={`w-full flex items-center gap-3 rounded-lg px-2 py-2 -mx-2 text-left hover:bg-adm-hover transition-colors ${session ? '' : 'opacity-55 hover:opacity-100'}`}>
-                                    <span className="w-[5.5rem] shrink-0 text-xs tabular-nums text-text-subtle">{e.time}{e.endTime && e.endDate === e.date ? `–${e.endTime}` : ''}</span>
-                                    <span className={`w-2.5 h-2.5 shrink-0 rounded-full ${session ? `svc-${serviceFromTitle(e.title)} dot-entry` : 'border border-text-subtle/50'}`} />
-                                    <span className="min-w-0 flex-1">
-                                        <span className="block text-sm text-text-light truncate">{e.title}</span>
-                                        <span className="block text-xs text-text-subtle truncate">{session ? 'On your calendar, not a booking yet' : 'Your calendar'}</span>
-                                    </span>
-                                    {session && <span className="shrink-0 inline-flex items-center gap-1 text-[0.7rem] font-semibold text-lilac">Add <ArrowRight size={12} /></span>}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            );
-        })}
-    </div>
-);
-
-// Today's sessions as one day of the calendar: hours down the side, each session a block
+// One day of the calendar (Today, and the Schedule on a phone): hours down the side, each session a block
 // as tall as it lasts (the Schedule's colours: colour = service, style = status), her own
 // calendar entries next to them, and a line at the time it is now.
 const DAY_HOUR_H = 64; // px per hour
@@ -1130,7 +1070,6 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
     // the clocks on Orders move on by themselves
     const [now, setNow] = useState(() => Date.now());
     useEffect(() => {
-        if (tab === 'calendar') return;
         setNow(Date.now());
         const iv = window.setInterval(() => setNow(Date.now()), 60_000);
         return () => clearInterval(iv);
@@ -1151,6 +1090,12 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
     }, [calendarSessions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+    // the day the phone's calendar shows: picked in the week strip; today when it's this
+    // week, else the week's first day
+    const [pickDay, setPickDay] = useState<string | null>(null);
+    useEffect(() => setPickDay(null), [weekStart]);
+    const dayShown = pickDay && weekDays.some((d) => toISO(d) === pickDay) ? pickDay
+        : weekDays.some((d) => toISO(d) === toISO(new Date())) ? toISO(new Date()) : toISO(weekDays[0]);
     const byDay = useMemo(() => {
         const map: Record<string, Booking[]> = {};
         calendarSessions.forEach((b) => { (map[b.date] ||= []).push(b); });
@@ -1196,7 +1141,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 title={tab === 'today' ? 'Today' : tab === 'calendar' ? 'Schedule' : 'Orders'}
                 subtitle={tab === 'today'
                     ? new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Jakarta' })
-                    : tab === 'calendar' ? 'Sessions with a time. Click one for details, drag it to move it. Grey is your own calendar: click a session there to make it a booking.' : 'Readings and chats with no fixed time. Click a row for details.'}
+                    : tab === 'calendar' ? 'Sessions with a time. Click one for details, drag it to move it. Grey is your own calendar: click a session there to make it a booking.' : 'Readings and chats with no fixed time. Click one for details.'}
                 onRefresh={load}
                 refreshing={loading}
             >
@@ -1239,9 +1184,25 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                             <h2 className="text-text-light font-serif font-semibold text-sm">{weekLabel}</h2>
                         </div>
 
-                        {/* on a phone: the week as a list of days */}
+                        {/* on a phone: the week as a strip of days, and the day picked as a calendar */}
                         <div className="xl:hidden">
-                            <Agenda days={weekDays.map(toISO)} todayISO={todayISO} bookings={calendarSessions} entries={weekEntries}
+                            <div className="grid grid-cols-7 gap-1 px-2 py-2 border-b border-adm-line">
+                                {weekDays.map((d, i) => {
+                                    const iso = toISO(d);
+                                    const on = iso === dayShown;
+                                    const isToday = iso === todayISO;
+                                    const n = calendarSessions.filter((b) => b.date === iso && b.time).length;
+                                    return (
+                                        <button key={iso} onClick={() => setPickDay(iso)} aria-pressed={on} aria-label={`${WEEKDAYS[i]} ${d.getDate()}${n ? `, ${n} session${n > 1 ? 's' : ''}` : ''}`}
+                                            className={`flex flex-col items-center gap-0.5 py-1.5 rounded-xl transition-colors ${on ? 'bg-lilac text-white' : isToday ? 'bg-lilac/10 text-lilac' : 'text-text-light hover:bg-adm-hover'}`}>
+                                            <span className={`text-[10px] uppercase tracking-wider ${on ? 'text-white/80' : 'text-text-subtle'}`}>{WEEKDAYS[i].slice(0, 2)}</span>
+                                            <span className="text-[15px] font-serif font-bold leading-none">{d.getDate()}</span>
+                                            <span className={`h-1 w-1 rounded-full ${n ? (on ? 'bg-white' : 'bg-lilac') : 'bg-transparent'}`} />
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <DayTimeline iso={dayShown} bookings={calendarSessions} entries={weekEntries} now={now}
                                 onBooking={setSelectedId} onEntry={setFromEntry} />
                         </div>
 
@@ -1595,7 +1556,33 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                             <span className="text-xs text-text-subtle">{orderView === 'active' ? 'Most urgent first' : orderView === 'cancelled' ? 'Sessions & readings · newest first' : 'Newest first'}</span>
                         </div>
 
-                        {list.length > 0 && (
+                        {/* To do: one card per order, like Today and the bell; Done and Cancelled stay a table */}
+                        {showDue && list.length > 0 && (
+                            <ul className="p-3 grid gap-2 xl:grid-cols-2 bg-bg-deep/60">
+                                {list.map((b) => {
+                                    const t = orderTodo(b, now);
+                                    return (
+                                        <li key={b.id}>
+                                            <TodoCard t={t} now={now} done={ticking.has(b.id)} onOpen={() => setSelectedId(b.id)}
+                                                onTick={async () => {
+                                                    setTicking((s) => new Set(s).add(b.id));
+                                                    await new Promise((r) => setTimeout(r, 450));
+                                                    if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Order'} marked done. It's under Done.`, 'ok');
+                                                    setTicking((s) => { const n = new Set(s); n.delete(b.id); return n; });
+                                                }}
+                                                footer={<span className="flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                                    <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
+                                                    {b.market === 'ID'
+                                                        ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
+                                                        : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />}
+                                                </span>} />
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        )}
+
+                        {!showDue && list.length > 0 && (
                             <div className={`hidden ${COLS} px-4 py-2 text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle border-b border-adm-line`}>
                                 <div>{showDue ? 'Due' : 'Ordered'}</div><div>Customer</div><div>Service</div><div className="text-right">Amount</div><div>Payment</div><div>Status</div><div>Confirmation</div>
                             </div>
@@ -1609,7 +1596,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                         )}
 
                         <div className="divide-y divide-adm-line">
-                            {list.map((b) => {
+                            {!showDue && list.map((b) => {
                                 return (
                                     <div key={b.id} onClick={() => setSelectedId(b.id)}
                                         className={`${COLS} px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5`}>

@@ -22,7 +22,8 @@ const dayWord = (t: number, now: number) => {
 const TodoCard: React.FC<{
     t: Todo; now: number; done?: boolean; fresh?: boolean;
     onOpen: () => void; onTick: () => void;
-}> = ({ t, now, done, fresh, onOpen, onTick }) => {
+    footer?: React.ReactNode; // more buttons under it (Orders: paid / confirmation)
+}> = ({ t, now, done, fresh, onOpen, onTick, footer }) => {
     const reply = t.kind === 'reading' ? replyLink(t.b) : null;
     return (
         <div role="button" tabIndex={0} onClick={onOpen} onKeyDown={(e) => { if (e.key === 'Enter' && e.target === e.currentTarget) onOpen(); }}
@@ -55,6 +56,7 @@ const TodoCard: React.FC<{
                         </a>
                     )}
                 </span>
+                {footer && !done && <span className="block mt-2.5">{footer}</span>}
             </span>
             {fresh && !done && <span aria-label="new" className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-coral-deep ring-2 ring-surface-1" />}
         </div>
