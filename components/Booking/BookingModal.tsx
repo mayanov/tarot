@@ -1243,11 +1243,11 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   <p className="letterpress text-[11px] font-semibold uppercase tracking-[0.16em] text-ink/50">What happens next</p>
                   <ol className="mt-3 space-y-3.5">
                     {(live ? [
-                      <>Check your inbox. Your confirmation is on its way to <span className="font-semibold text-ink break-all">{email.trim()}</span></>,
+                      <>Check your inbox. Your confirmation is on its way to <span className="font-semibold text-ink inline-block max-w-full break-words">{email.trim()}</span></>,
                       <>The Google Meet link arrives by email before your session.</>,
                       <>Join from that link at your time (below). See you there ✨</>,
                     ] : [
-                      <>Check your inbox. Your confirmation is on its way to <span className="font-semibold text-ink break-all">{email.trim()}</span></>,
+                      <>Check your inbox. Your confirmation is on its way to <span className="font-semibold text-ink inline-block max-w-full break-words">{email.trim()}</span></>,
                       <>Reply to that email with your question.</>,
                       <>Your reading arrives by email within <span className="font-semibold text-ink">24 hours</span> of your reply.</>,
                     ]).map((txt, i) => (
