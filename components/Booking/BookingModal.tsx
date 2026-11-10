@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
-import { X, Check, CalendarDays, Clock, Copy } from 'lucide-react';
+import { X, Check, CalendarDays, Clock, Copy, Mail } from 'lucide-react';
 import PencilArrow from '../UI/PencilArrow';
 import CelestialMark from '../UI/CelestialMark';
 import { PaintSwatch, MarkerFrame, InkLoop, PencilFrame } from '../UI/ButtonInk';
@@ -675,6 +675,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     : `Hi Mayanov, I've just booked:\n• ${waServiceLine}\n• Name: ${name}\n• Total: ${totalPrice}\n\nHere's my payment proof 🙏`;
   const waLink = `https://api.whatsapp.com/send?phone=${PAYMENT.waNumber}&text=${encodeURIComponent(waMessage)}`;
   // already paid here: just a way to reach Mayanov, with the booking for reference
+  // the done step's "Email me" (global): to Mayanov, with the booking filled in (its code in
+  // the email, not the subject)
+  const contactMail = `mailto:tarotreadingbymayanov@gmail.com?subject=${encodeURIComponent('About my booking')}&body=${encodeURIComponent(
+    `Hi Mayanov,\n\n\n\n— ${name || ''}\nBooking: ${[waServiceLine, bookedRef].filter(Boolean).join(' · ')}\nEmail: ${email.trim()}\n`)}`;
   const waPaidLink = `https://api.whatsapp.com/send?phone=${PAYMENT.waNumber}&text=${encodeURIComponent(`Halo Mayanov, aku sudah booking & bayar:\n• ${waServiceLine}\n• Nama: ${name}\n\n`)}`;
 
   // ---- shared bits of the layout ----
@@ -1284,7 +1288,13 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     {swatch}
                     <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">Done</span>
                   </button>
-                  <span className="letterpress text-[13px] text-ink/50">Questions? Email tarotreadingbymayanov@gmail.com</span>
+                  {/* the confirmation didn't come, or anything to ask: an email to Mayanov, with the booking filled in */}
+                  <a href={contactMail} onClick={() => trackEvent('contact_email', { market: 'Global', placement: 'booked' })}
+                    className="group/mail relative isolate mt-1 inline-flex items-center gap-2 px-5 py-2.5 text-[14px] font-medium text-ink/80 hover:text-ink transition-colors">
+                    <PencilFrame className="text-ink/30 group-hover/mail:text-ink/55 transition-colors" />
+                    <Mail className="w-4 h-4 text-moon" strokeWidth={1.8} /> Email me
+                  </a>
+                  <span className="letterpress text-[13px] text-ink/50 max-w-xs">No confirmation email, or a question? Email me at tarotreadingbymayanov@gmail.com</span>
                   </>}
                 </div>
               )}
