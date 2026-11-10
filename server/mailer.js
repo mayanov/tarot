@@ -121,7 +121,7 @@ export function paidEmail(booking, amount) {
   // an email reading without its question yet: the customer replies to this email with it
   const ask = reading && !question;
   // the booking code first, so every email (and every reply, "Re: …") is easy to find
-  const subject = `${booking.ref ? `${booking.ref} · ` : ''}Your ${service} is booked${ask ? ': reply with your question' : ''} ✨`;
+  const subject = `Your ${service} is booked${ask ? ': reply with your question' : ''} ✨`;
 
   const paras = [
     `Hi ${first},`,
@@ -147,7 +147,7 @@ export function paidEmail(booking, amount) {
     ['Booking code', booking.ref],
   ].filter(([, v]) => v);
   const closing = ask
-    ? 'Just hit reply. Keep the subject as it is, so your question finds your booking.'
+    ? 'Just hit reply to this email.'
     : reading
     ? 'If you’d like to add anything to your question, just reply to this email.'
     : 'Any questions before then? Just reply to this email.';

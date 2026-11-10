@@ -108,7 +108,6 @@ ${rows.map(([k, v]) => `    <tr><td style="padding:2px 18px 2px 0;color:#7a6f70;
 }
 
 const dashboard = { label: 'Open the dashboard', href: ADMIN_URL };
-const tag = (b) => (b.ref ? `${b.ref} · ` : '');
 
 // ---- to Mayanov ----
 
@@ -152,7 +151,7 @@ export function dueSoonEmail(b, now = Date.now()) {
   const question = String(b.question || '').trim();
   return letter({
     to: OWNER,
-    subject: `${tag(b)}${late ? `Overdue by ${span(-left)}` : `Due in ${span(left)}`}: ${serviceOf(b)} for ${b.name || 'a customer'}`,
+    subject: `${late ? `Overdue by ${span(-left)}` : `Due in ${span(left)}`}: ${serviceOf(b)} for ${b.name || 'a customer'}`,
     kicker: `${b.serviceId === 'chat' ? 'Chat reply' : 'Reading'} ${late ? 'overdue' : 'due soon'}`,
     heading: `${b.name || 'A customer'}’s ${b.serviceId === 'chat' ? 'chat reply' : 'reading'} is ${late ? 'overdue' : `due in ${span(left)}`}`,
     paras: [
@@ -186,7 +185,7 @@ export function reminderEmail(b, kind, meet = '') {
   const day = kind === 'day';
   return letter({
     to: emailOf(b),
-    subject: `${tag(b)}${day ? `Your ${service} is tomorrow` : `Your ${service} starts in an hour`} ✨`,
+    subject: `${day ? `Your ${service} is tomorrow` : `Your ${service} starts in an hour`} ✨`,
     heading: day ? `See you tomorrow` : `See you in an hour`,
     paras: [
       `Hi ${firstName(b)},`,
@@ -209,7 +208,7 @@ export function movedEmail(b, from) {
   const service = serviceOf(b);
   return letter({
     to: emailOf(b),
-    subject: `${tag(b)}Your ${service} has a new time`,
+    subject: `Your ${service} has a new time`,
     heading: 'Your session has a new time',
     paras: [
       `Hi ${firstName(b)},`,
@@ -227,7 +226,7 @@ export function cancelledEmail(b) {
   const when = jakarta(startOf(b));
   return letter({
     to: emailOf(b),
-    subject: `${tag(b)}Your ${service} has been cancelled`,
+    subject: `Your ${service} has been cancelled`,
     heading: 'Your session has been cancelled',
     paras: [
       `Hi ${firstName(b)},`,
