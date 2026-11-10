@@ -333,8 +333,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   }, [isIndonesian]);
 
   // Each step reached, counted once per opening of the form (see trackFormStep): the
-  // dashboard lines them up to show where people stop. (A PayPal payment leaves for
-  // the thank-you page before the form gets to "done": paidWithPayPal counts that.)
+  // dashboard lines them up to show where people stop.
   const stepsSeen = useRef<Set<FormStep>>(new Set());
   const reachStep = (s: FormStep) => {
     if (stepsSeen.current.has(s)) return;
@@ -398,15 +397,14 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   });
 
   // Paid through PayPal's buttons: the booking is already saved (as paid). Count the
-  // sale here, with PayPal's id, and move on to the thank-you page (which then won't
-  // count it again).
+  // sale here, with PayPal's id, and finish in the form, as an Indonesian payment does.
   const paidWithPayPal = (b: Booking) => {
+    if (paidHere) return;
     const trackName = SERVICE_TRACK_NAME[b.serviceId] || b.serviceName;
     const value = Number(String(service?.price || '').replace(/[^\d.]/g, '')) || undefined;
     trackEvent('purchase', { item_name: trackName, market: 'Global', value, currency: 'USD', transaction_id: (b as Booking & { paypalCaptureId?: string }).paypalCaptureId || b.id }, 'Purchase', { value, currency: 'USD', content_name: trackName });
-    reachStep('done');
-    try { sessionStorage.setItem(`mt:paid:${b.serviceId}`, '1'); } catch { /* storage blocked */ }
-    window.location.assign(`/?payment_success=${encodeURIComponent(b.serviceId)}`);
+    setPaidHere(true); setError('');
+    setStep(4);
   };
 
   const payPalFailed = (code: string) => {
@@ -1218,9 +1216,13 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 <Check className="w-8 h-8" strokeWidth={1.9} />
               </div>
               )}
-              <h3 className="letterpress-lg font-serif font-semibold text-2xl text-ink">{paidHere ? 'Booking terkonfirmasi!' : t('Booking diterima!', 'One last step')}</h3>
+              <h3 className="letterpress-lg font-serif font-semibold text-2xl text-ink">{paidHere ? t('Booking terkonfirmasi!', 'You’re booked!') : t('Booking diterima!', 'One last step')}</h3>
               <p className="letterpress mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
-                {paidHere
+                {paidHere && !isIndonesian
+                  ? <>Thank you, {name || 'friend'}! Your payment came through.<br />{live
+                      ? <>A confirmation email is on its way to {email.trim()}, and the Google Meet link comes before the session.</>
+                      : <>A confirmation email is on its way to {email.trim()}: reply to it with your question, and your reading comes within 24 hours. If it isn’t there, check your spam folder.</>}</>
+                  : paidHere
                   ? <>Terima kasih, {name || 'kamu'}! Pembayaranmu sudah masuk.<br />{scheduled ? 'Sampai ketemu di sesi nanti ✨' : 'Sampai ngobrol nanti ✨'}</>
                   : isIndonesian
                   ? <>Terima kasih, {name || 'kamu'}. Aku akan menghubungimu via WhatsApp ({whatsapp}) untuk konfirmasi.{invited && <><br />Undangan kalender{service?.id === 'meetup' ? '' : ' & link Google Meet'} dikirim ke {email.trim()} setelah pembayaranmu masuk.</>}</>
@@ -1242,11 +1244,19 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
               {paidHere && (
                 <div className="mt-6 flex flex-col items-center gap-2">
+                  {isIndonesian ? <>
                   <a href={waPaidLink} target="_blank" rel="noopener noreferrer" onClick={() => trackWhatsApp('after_paid', 'ID')} className={`${primaryBtn} px-8 py-3`}>
                     {swatch}
                     <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]"><span className="inline-flex items-center gap-2"><FaWhatsapp size={18} /> Hubungi via WhatsApp</span></span>
                   </a>
                   <span className="letterpress text-[13px] text-ink/50">Ada yang perlu ditanyakan? Chat aja.</span>
+                  </> : <>
+                  <button onClick={close} className={`${primaryBtn} px-8 py-3`}>
+                    {swatch}
+                    <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">Done</span>
+                  </button>
+                  <span className="letterpress text-[13px] text-ink/50">Questions? Email tarotreadingbymayanov@gmail.com</span>
+                  </>}
                 </div>
               )}
 

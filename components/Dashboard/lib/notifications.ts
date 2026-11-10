@@ -43,8 +43,8 @@ const span = (ms: number) => {
 export function notesFrom(bookings: Booking[], now: number): Note[] {
     const out: Note[] = [];
     for (const b of bookings) {
-        // mid-checkout holds and extra time aren't bookings of their own yet
-        if (b.holdOnly || b.extraFor) continue;
+        // extra time on a session isn't a booking of its own
+        if (b.extraFor) continue;
         const created = Date.parse(b.createdAt || '') || 0;
         const fromSite = b.source !== 'manual';
         const paid = b.paymentStatus === 'paid';

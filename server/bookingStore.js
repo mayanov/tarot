@@ -549,6 +549,9 @@ export const findByMidtransOrder = (orderId) => findBy('midtransOrderId', orderI
 export const findByXenditOrder = (orderId) => findBy('xenditOrderId', orderId);
 /** notes the Xendit invoice opened for a hold */
 export const setXenditInvoice = (id, invoiceId) => patch(id, { xenditInvoiceId: invoiceId });
+/** a booking waiting for its online payment, moved on to a new try (a new order id, the
+ *  details as given now); its hour to pay doesn't start again */
+export const updateHold = (id, fields) => patch(id, fields);
 /** the booking (or hold) a PayPal order belongs to, or null */
 export const findByPayPalOrder = (orderId) => findBy('paypalOrderId', orderId);
 

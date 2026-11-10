@@ -565,9 +565,32 @@ app.post('/api/paypal/orders', async (req, res) => {
         console.error('PayPal order failed:', e.message);
         return res.status(502).json({ error: 'Could not start the payment' });
     }
-    // the booking is saved now, pending + unpaid, until PayPal says it's paid (a live
-    // session's slot is held meanwhile, so nobody else takes it); unpaid after an hour,
-    // it's cancelled
+    // the booking is saved now, pending + unpaid (in the dashboard), until PayPal says it's
+    // paid (a live session's slot is held meanwhile, so nobody else takes it); unpaid after
+    // an hour, it's cancelled. Closing PayPal's window leaves it so; trying again in the
+    // same form (`replaces`: the order tried before) reuses it rather than saving another.
+    const details = {
+        name: String(name).slice(0, 120),
+        dob: /^\d{4}-\d{2}-\d{2}$/.test(String(dob || '')) ? String(dob) : '',
+        contact: String(contact).slice(0, 160),
+        question: String(question || '').slice(0, 2000),
+    };
+    try {
+        const prev = req.body?.replaces ? await bookingStore.findByPayPalOrder(String(req.body.replaces).slice(0, 64)) : null;
+        const open = prev?.holdOnly && prev.status === 'pending' && prev.paymentStatus !== 'paid'
+            && Date.parse(prev.holdUntil || '') >= Date.now();
+        if (open) {
+            const same = prev.serviceId === serviceId
+                && (prev.date || '') === (reading.durationMin ? date : '') && (prev.time || '') === (reading.durationMin ? time : '');
+            if (same) {
+                await bookingStore.updateHold(prev.id, { ...details, paypalOrderId: id });
+                return res.status(201).json({ id });
+            }
+            await bookingStore.releaseHold(prev, 'closed'); // another service or time now: this one's let go
+        }
+    } catch (e) {
+        console.error('PayPal retry check failed:', e.message); // a new booking is saved below
+    }
     {
         try {
             await bookingStore.createBooking({
