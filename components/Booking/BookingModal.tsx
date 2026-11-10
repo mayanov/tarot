@@ -1259,7 +1259,6 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                       </li>
                     ))}
                   </ol>
-                  <p className="letterpress mt-3.5 pl-10 text-[13px] text-ink/50">No email in a few minutes? Check your spam folder.</p>
                 </div>
               )}
 
@@ -1289,12 +1288,12 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                     <span className="print-text inline-flex items-center gap-[inherit] py-[0.2em] -my-[0.2em]">Done</span>
                   </button>
                   {/* the confirmation didn't come, or anything to ask: an email to Mayanov, with the booking filled in */}
+                  <span className="letterpress mt-2 text-[13px] text-ink/50">No confirmation email, or a question?</span>
                   <a href={contactMail} onClick={() => trackEvent('contact_email', { market: 'Global', placement: 'booked' })}
-                    className="group/mail relative isolate mt-1 inline-flex items-center gap-2 px-5 py-2.5 text-[14px] font-medium text-ink/80 hover:text-ink transition-colors">
+                    className="group/mail relative isolate inline-flex items-center gap-2 px-5 py-2.5 text-[14px] font-medium text-ink/80 hover:text-ink transition-colors">
                     <PencilFrame className="text-ink/30 group-hover/mail:text-ink/55 transition-colors" />
                     <Mail className="w-4 h-4 text-moon" strokeWidth={1.8} /> Email me
                   </a>
-                  <span className="letterpress text-[13px] text-ink/50 max-w-xs">No confirmation email, or a question? Email me at tarotreadingbymayanov@gmail.com</span>
                   </>}
                 </div>
               )}
