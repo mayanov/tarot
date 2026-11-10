@@ -13,7 +13,7 @@
 // bookings still work — they just don't sync.
 
 import { JWT, OAuth2Client } from 'google-auth-library';
-import { dueOf, ADMIN_URL } from './promise.js';
+import { dueOf, ADMIN_URL, warnBeforeMs, promisedOnSite } from './promise.js';
 
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || '';
 const TZ = process.env.BOOKING_TIMEZONE || 'Asia/Jakarta';
@@ -294,7 +294,7 @@ export const readingBody = (booking) => {
   return {
     summary: `${tick || '🔔 Due: '}${label} — ${booking.name}`,
     description: [
-      done ? 'Done, marked in the dashboard.' : `Due by ${local.time} WIB on ${local.date}, as promised on the site.`,
+      done ? 'Done, marked in the dashboard.' : `Due by ${local.time} WIB on ${local.date}${promisedOnSite(booking) ? ', as promised on the site' : ''}.`,
       done ? '' : `Once it's sent, mark it done on the Orders screen (its alert switches off): ${ADMIN_URL}`,
       '',
       descriptionFor(booking),
@@ -302,7 +302,7 @@ export const readingBody = (booking) => {
     start: { dateTime: at, timeZone: TZ, date: null },
     end: { dateTime: new Date(due + 15 * 60000).toISOString(), timeZone: TZ, date: null },
     transparency: 'transparent',
-    reminders: done ? { useDefault: false, overrides: [] } : { useDefault: false, overrides: [{ method: 'popup', minutes: READING_ALERT_MIN }] },
+    reminders: done ? { useDefault: false, overrides: [] } : { useDefault: false, overrides: [{ method: 'popup', minutes: Math.round(warnBeforeMs(booking) / 60_000) || READING_ALERT_MIN }] },
   };
 };
 

@@ -9,7 +9,7 @@ import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooki
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton, { waNumberOf } from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
-import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone } from './lib/format';
+import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone, soonMs } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
 import { sameCustomer, normPhone as waNumber, moneyLabel, type Money } from './lib/customers';
 import { openCustomerOf } from './lib/nav';
@@ -910,7 +910,7 @@ const dueText = (b: Booking, now: number): { text: string; cls: string } => {
     const time = at.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
     const when = sameDay(at, new Date(now)) ? `today ${time}` : `${at.toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'Asia/Jakarta' })} ${time}`;
     if (left < 0) return { text: `Overdue ${leftLabel(-left)}`, cls: 'due-late-text font-semibold' };
-    return { text: `${leftLabel(left)} left · ${when}`, cls: left < 6 * 3_600_000 ? 'due-soon-text font-semibold' : 'text-text-subtle' };
+    return { text: `${leftLabel(left)} left · ${when}`, cls: left < soonMs(b.serviceId) ? 'due-soon-text font-semibold' : 'text-text-subtle' };
 };
 // The details' top line for a reading or chat still to send: the exact time it's due and
 // how long is left ("Due Tue 10 Nov, 14:41 · 21 h left"), or how long a chat has waited.
@@ -925,7 +925,7 @@ const detailDue = (b: Booking, now: number): { text: string; cls: string } | nul
     }
     const left = c.due - now;
     if (left < 0) return { text: `Overdue ${leftLabel(-left)} · was due ${fmt(c.due)}`, cls: 'due-late-text font-semibold' };
-    return { text: `Due ${fmt(c.due)} · ${leftLabel(left)} left`, cls: left < 6 * 3_600_000 ? 'due-soon-text font-semibold' : 'text-text-subtle' };
+    return { text: `Due ${fmt(c.due)} · ${leftLabel(left)} left`, cls: left < soonMs(b.serviceId) ? 'due-soon-text font-semibold' : 'text-text-subtle' };
 };
 // "Chat · 1 question" for "sasa chat" is just "1 question": the name already says it
 const serviceAfterName = (b: Booking) => {

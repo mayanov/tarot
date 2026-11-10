@@ -170,7 +170,10 @@ const PROMISE: Record<string, { hours?: number; workDays?: number }> = {
     '3card': { hours: 24 },
     '5card': { hours: 24 },
     special: { workDays: 2 },
+    chat: { hours: 6 }, // Mayanov's own target for a chat reply
 };
+/** how close to due an order turns amber: 2 hours for a chat (6 h in all), 6 for readings */
+export const soonMs = (serviceId: string) => (serviceId === 'chat' ? 2 : 6) * HOUR;
 const HOUR = 3_600_000;
 // Jakarta weekday (0 Sun … 6 Sat) of an instant
 const jktDay = (ms: number) => new Date(ms + 7 * HOUR).getUTCDay();

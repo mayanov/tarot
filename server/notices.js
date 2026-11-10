@@ -17,7 +17,7 @@
 import * as mailer from './mailer.js';
 import * as bookingStore from './bookingStore.js';
 import * as gcal from './googleCalendar.js';
-import { PROMISE, dueOf, ADMIN_URL } from './promise.js';
+import { PROMISE, dueOf, ADMIN_URL, warnBeforeMs, promisedOnSite } from './promise.js';
 
 export { dueOf };
 
@@ -125,7 +125,7 @@ export function newBookingEmail(b, amount) {
     paras: [
       session
         ? `Paid and on your calendar for **${when}**.`
-        : `Paid${Number.isFinite(due) ? `. The reading is due by **${jakarta(due)}**` : ''}.`,
+        : `Paid${Number.isFinite(due) ? `. The ${b.serviceId === 'chat' ? 'reply' : 'reading'} is due by **${jakarta(due)}**` : ''}.`,
       b.serviceId in PROMISE && !String(b.question || '').trim() && !mailer.isIndonesian(b)
         ? 'Their question comes as a reply to their confirmation email.'
         : null,
@@ -153,10 +153,10 @@ export function dueSoonEmail(b, now = Date.now()) {
   return letter({
     to: OWNER,
     subject: `${tag(b)}${late ? `Overdue by ${span(-left)}` : `Due in ${span(left)}`}: ${serviceOf(b)} for ${b.name || 'a customer'}`,
-    kicker: late ? 'Reading overdue' : 'Reading due soon',
-    heading: late ? `${b.name || 'A customer'}’s reading is overdue` : `${b.name || 'A customer'}’s reading is due in ${span(left)}`,
+    kicker: `${b.serviceId === 'chat' ? 'Chat reply' : 'Reading'} ${late ? 'overdue' : 'due soon'}`,
+    heading: `${b.name || 'A customer'}’s ${b.serviceId === 'chat' ? 'chat reply' : 'reading'} is ${late ? 'overdue' : `due in ${span(left)}`}`,
     paras: [
-      `The site promised it by **${jakarta(due)}**${late ? '' : ', and it isn’t marked done yet'}.`,
+      `${promisedOnSite(b) ? 'The site promised it' : 'It’s due'} by **${jakarta(due)}**${late ? '' : ', and it isn’t marked done yet'}.`,
       question ? null : (mailer.isIndonesian(b) ? 'Their story and question are in your WhatsApp.' : 'Their question is in your inbox, as a reply to their confirmation email.'),
       'Once it’s sent, mark it done on the Orders screen.',
     ].filter(Boolean),
@@ -289,7 +289,7 @@ export function dueNotices(b, now = Date.now()) {
   // a reading due in 5 hours or less, not done; one more than 6 hours past due is left
   // alone (an old order nobody marked done shouldn't set off a pile of emails)
   const due = dueOf(b);
-  if (Number.isFinite(due) && due - now <= DUE_WARN_MS && due - now > -6 * HOUR && !b.dueWarnSentAt) out.push('dueWarnSentAt');
+  if (Number.isFinite(due) && due - now <= warnBeforeMs(b) && due - now > -6 * HOUR && !b.dueWarnSentAt) out.push('dueWarnSentAt');
   // a global Live Session: tomorrow, and in an hour
   if (b.status === 'confirmed' && customerSession(b)) {
     const left = startOf(b) - now;
