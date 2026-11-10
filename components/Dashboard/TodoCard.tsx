@@ -45,18 +45,20 @@ const TodoCard: React.FC<{
                     <span className={`text-[13.5px] leading-snug font-semibold text-text-light ${done ? 'line-through' : ''}`}>{t.title}</span>
                     <span className={`shrink-0 mt-px px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${PILL[t.tone]}`}>{done ? 'Done' : t.pill}</span>
                 </span>
-                <span className="flex items-end justify-between gap-2 mt-1">
-                    <span className="text-[12.5px] text-text-subtle leading-snug">{t.detail}</span>
+                {/* with buttons of its own (Orders): all on the second row, so the card is two rows */}
+                <span className={`flex gap-2 mt-1 ${footer ? 'items-center' : 'items-end justify-between'}`}>
+                    <span className={`text-[12.5px] text-text-subtle leading-snug ${footer ? 'min-w-0 flex-1 truncate' : ''}`}>{t.detail}</span>
+                    {footer && !done && <span className="shrink-0" onClick={(e) => e.stopPropagation()}>{footer}</span>}
                     {reply && !done && (
                         <a href={reply.href} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
                             title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${t.b.name || 'their'} WhatsApp chat`}
-                            className="shrink-0 -mb-0.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-adm-line-2 text-[11.5px] font-medium text-text-light hover:bg-adm-hover-2 transition-colors">
+                            aria-label={reply.kind === 'email' ? 'Email' : 'WhatsApp'}
+                            className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-adm-line-2 text-[11.5px] font-medium text-text-light hover:bg-adm-hover-2 transition-colors">
                             {reply.kind === 'email' ? <Mail size={12} className="text-lilac" /> : <FaWhatsapp size={12} className="text-[#25D366]" />}
-                            {reply.kind === 'email' ? 'Email' : 'WhatsApp'}
+                            <span className={footer ? 'hidden sm:inline' : ''}>{reply.kind === 'email' ? 'Email' : 'WhatsApp'}</span>
                         </a>
                     )}
                 </span>
-                {footer && !done && <span className="block mt-2.5">{footer}</span>}
             </span>
             {fresh && !done && <span aria-label="new" className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-coral-deep ring-2 ring-surface-1" />}
         </div>
