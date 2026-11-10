@@ -13,6 +13,8 @@ import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, service
 import { StatusSelect, PaymentPill } from './lib/status';
 import { sameCustomer, normPhone as waNumber, moneyLabel, type Money } from './lib/customers';
 import { openCustomerOf } from './lib/nav';
+import TodoCard from './TodoCard';
+import { readingTodo, type Todo } from './lib/notifications';
 import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle, matchCustomers } from './lib/calendarEntry';
 
 // Services offered — id drives revenue colour/stacking; name is the display label.
@@ -932,48 +934,6 @@ const serviceAfterName = (b: Booking) => {
     const title = serviceTitle(b), pkg = packageOf(b);
     return (b.name || '').toLowerCase().includes(title.toLowerCase().split(/[\s/-]/)[0]) && pkg ? pkg : serviceLabel(b);
 };
-// Where a reading is answered: the customer's emails in the business Gmail (the thread
-// with their question, to reply to with the reading), or their WhatsApp chat for a chat
-// question or when there's no email.
-const BUSINESS_GMAIL = 'tarotreadingbymayanov@gmail.com';
-const replyLink = (b: Booking): { href: string; kind: 'email' | 'wa' } | null => {
-    const email = emailOf(b.contact);
-    const wa = waNumberOf(b.contact);
-    if (wa && (b.serviceId === 'chat' || !email)) return { kind: 'wa', href: `https://wa.me/${wa}` }; // a chat is answered on WhatsApp
-    return email ? { kind: 'email', href: `https://mail.google.com/mail/?authuser=${encodeURIComponent(BUSINESS_GMAIL)}#search/${encodeURIComponent(email)}` } : null;
-};
-
-const ReadingLine: React.FC<{ b: Booking; now: number; onOpen: () => void; onDone: () => void }> = ({ b, now, onOpen, onDone }) => {
-    const d = dueText(b, now);
-    const reply = replyLink(b);
-    return (
-        <div onClick={onOpen} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors">
-            <div className="min-w-0 flex-1">
-                <div className="text-sm truncate"><span className="font-medium text-text-light">{b.name || '—'}</span> <span className="text-text-subtle">· {serviceAfterName(b)}</span></div>
-                <div className="text-[0.7rem] text-text-subtle tabular-nums mt-0.5">
-                    {amountLabel(b)}
-                    {/* on a phone the time sits here, under the name */}
-                    <span className={`sm:hidden ${d.cls}`}> · {d.text}</span>
-                </div>
-            </div>
-            <div className={`hidden sm:block shrink-0 text-xs tabular-nums whitespace-nowrap ${d.cls}`}>{d.text}</div>
-            {reply && (
-                <a href={reply.href} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                    title={reply.kind === 'email' ? `Open ${emailOf(b.contact)}'s emails in Gmail` : `Open ${b.name || 'their'} WhatsApp chat`}
-                    aria-label={reply.kind === 'email' ? `Email ${b.name || ''}` : `WhatsApp ${b.name || ''}`}
-                    className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 transition-colors">
-                    {reply.kind === 'email' ? <Mail size={13} className="text-lilac" /> : <FaWhatsapp size={13} className="text-[#25D366]" />}
-                    <span className="hidden sm:inline">{reply.kind === 'email' ? 'Email' : 'WhatsApp'}</span>
-                </a>
-            )}
-            <button type="button" onClick={(e) => { e.stopPropagation(); onDone(); }} title="Mark this reading done (sent)"
-                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 transition-colors">
-                <Check size={13} className="text-sage" />Done
-            </button>
-        </div>
-    );
-};
-
 // A line on Today's lists: something not paid yet.
 const TodayLine: React.FC<{ b: Booking; onOpen: () => void; children?: React.ReactNode; note: React.ReactNode }> = ({ b, onOpen, children, note }) => (
     <div onClick={onOpen} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors">
@@ -994,6 +954,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
     const [error, setError] = useState('');
     const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
     const [selectedId, setSelectedId] = useState<string | null>(openId || null);
+    const [ticking, setTicking] = useState<Set<string>>(new Set()); // readings being ticked off on Today
     const detailOnly = tab === 'detail';
     useEffect(() => { if (detailOnly && !selectedId) onClosed?.(); }, [selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
     const [editing, setEditing] = useState(false);
@@ -1438,12 +1399,19 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                 {head('Readings to send', readingsDue.length, onOpen && (() => onOpen('orders')), 'Orders')}
                                 {readingsDue.length === 0
                                     ? <p className="px-4 py-5 text-sm text-text-subtle">Nothing waiting. All readings are sent.</p>
-                                    : <div className="divide-y divide-adm-line">
-                                        {readingsDue.map((b) => (
-                                            <ReadingLine key={b.id} b={b} now={now} onOpen={() => setSelectedId(b.id)}
-                                                onDone={async () => { if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Reading'} marked done. It's under Orders → Done.`, 'ok'); }} />
+                                    : <ul className="p-3 space-y-2 bg-bg-deep/60 border-t border-adm-line">
+                                        {readingsDue.map((b) => readingTodo(b, now)).filter((t): t is Todo => !!t).sort((x, y) => x.at - y.at).map((t) => (
+                                            <li key={t.b.id}>
+                                                <TodoCard t={t} now={now} done={ticking.has(t.b.id)} onOpen={() => setSelectedId(t.b.id)}
+                                                    onTick={async () => {
+                                                        setTicking((s) => new Set(s).add(t.b.id));
+                                                        await new Promise((r) => setTimeout(r, 450)); // let the tick show first
+                                                        if (await changeStatus(t.b.id, 'done')) flash(`${t.b.name || 'Reading'} marked done. It's under Orders → Done.`, 'ok');
+                                                        setTicking((s) => { const n = new Set(s); n.delete(t.b.id); return n; });
+                                                    }} />
+                                            </li>
                                         ))}
-                                    </div>}
+                                    </ul>}
                             </Card>
                             <Card className="overflow-hidden">
                                 {head('Not paid yet', unpaid.length)}

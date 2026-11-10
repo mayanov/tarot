@@ -116,37 +116,38 @@ export interface Todo {
     pill: string;        // '3 h left', 'Overdue 2 d', 'in 5 h'
     tone: 'late' | 'soon' | 'calm';
 }
+// a paid reading or chat not sent yet, as a to do (null for anything else)
+export function readingTodo(b: Booking, now: number): Todo | null {
+    if (b.extraFor || b.holdOnly || b.status === 'cancelled' || b.status === 'done' || (b.date && b.time)) return null;
+    const c = orderClock(b);
+    if (c.kind === 'unpaid') return null;
+    const name = b.name || 'someone';
+    const pkg = packageOf(b);
+    const chat = b.serviceId === 'chat';
+    const title = chat ? `Answer ${name}’s chat` : `Send ${name}’s reading`;
+    if (c.kind === 'waiting') {
+        return { b, kind: 'reading', at: Infinity, title, detail: [serviceLabel(b), amountLabel(b)].filter(Boolean).join(' · '), pill: `paid ${spanLabel(now - c.since)} ago`, tone: 'calm' };
+    }
+    const left = c.due - now;
+    return {
+        b, kind: 'reading', at: c.due, title,
+        detail: [chat ? pkg || 'Chat' : serviceTitle(b) + (pkg ? ` · ${pkg}` : ''), amountLabel(b), `due ${whenLabel(c.due, now)}`].filter(Boolean).join(' · '),
+        pill: left <= 0 ? `Overdue ${spanLabel(-left)}` : `${spanLabel(left)} left`,
+        tone: left <= 0 ? 'late' : left < soonMs(b.serviceId) ? 'soon' : 'calm',
+    };
+}
 export function todosFrom(bookings: Booking[], now: number): Todo[] {
     const out: Todo[] = [];
     for (const b of bookings) {
-        if (b.extraFor || b.holdOnly || b.status === 'cancelled' || b.status === 'done') continue;
-        const name = b.name || 'someone';
-        const pkg = packageOf(b);
-        if (!(b.date && b.time)) {
-            // a reading or chat that's paid and not sent yet
-            const c = orderClock(b);
-            if (c.kind === 'unpaid') continue;
-            const chat = b.serviceId === 'chat';
-            const title = chat ? `Answer ${name}’s chat` : `Send ${name}’s reading`;
-            if (c.kind === 'waiting') {
-                out.push({ b, kind: 'reading', at: Infinity, title, detail: [serviceLabel(b), amountLabel(b)].filter(Boolean).join(' · '), pill: `paid ${spanLabel(now - c.since)} ago`, tone: 'calm' });
-                continue;
-            }
-            const left = c.due - now;
-            out.push({
-                b, kind: 'reading', at: c.due, title,
-                detail: [chat ? pkg || 'Chat' : serviceTitle(b) + (pkg ? ` · ${pkg}` : ''), amountLabel(b), `due ${whenLabel(c.due, now)}`].filter(Boolean).join(' · '),
-                pill: left <= 0 ? `Overdue ${spanLabel(-left)}` : `${spanLabel(left)} left`,
-                tone: left <= 0 ? 'late' : left < soonMs(b.serviceId) ? 'soon' : 'calm',
-            });
-            continue;
-        }
+        const r = readingTodo(b, now);
+        if (r) { out.push(r); continue; }
+        if (b.extraFor || b.holdOnly || b.status === 'cancelled' || b.status === 'done' || !(b.date && b.time)) continue;
         // a session in the next day
         const start = startOf(b);
         if (start > now && start - now <= DAY) out.push({
             b, kind: 'session', at: start,
-            title: `${serviceTitle(b)} with ${name}`,
-            detail: [pkg, b.paymentStatus === 'paid' ? '' : 'not paid yet'].filter(Boolean).join(' · ') || amountLabel(b),
+            title: `${serviceTitle(b)} with ${b.name || 'someone'}`,
+            detail: [packageOf(b), b.paymentStatus === 'paid' ? '' : 'not paid yet'].filter(Boolean).join(' · ') || amountLabel(b),
             pill: `in ${spanLabel(start - now)}`,
             tone: start - now <= 2 * HOUR ? 'soon' : 'calm',
         });
