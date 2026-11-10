@@ -21,6 +21,8 @@ import { getAllBookings, BOOKINGS_CHANGED, type Booking } from '../../services/b
 import SalesView from './SalesView';
 import { LoaderCard } from './ui/InlineLoader';
 import Segmented from './ui/Segmented';
+import { TitleWash } from './ui/PageHeader';
+import { TONE, type Tone } from './lib/sections';
 
 // Same base as services/booking.ts — empty in prod (relative /api) so calls hit the
 // deployed serverless API instead of a hardcoded localhost that only works in dev.
@@ -35,24 +37,28 @@ interface AnalyticsDashboardProps {
 // Sidebar nav, grouped by purpose and ordered most-used first (day-to-day
 // operations → money → insights → admin). Data-driven so it stays tidy.
 type View = 'today' | 'analytics' | 'users' | 'schedule' | 'orders' | 'sales' | 'revenue' | 'customers' | 'events';
-const NAV_GROUPS: { label: string; items: { id: View; name: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] }[] = [
-    { label: 'Operations', items: [
-        // the day's work first (who's coming, what to answer), then money, then people
-        { id: 'today', name: 'Today', icon: Home },
-        { id: 'schedule', name: 'Schedule', icon: Calendar },
-        { id: 'orders', name: 'Orders', icon: Inbox },
-        { id: 'sales', name: 'Sales', icon: Receipt },
-        { id: 'customers', name: 'Customers', icon: Contact },
+// Grouped by the job each page is for, each group with its own colour (lib/sections):
+// the day's work first, then money, people, the website, admin. A hover hint says what
+// each page is for.
+const NAV_GROUPS: { label: string; tone: Tone; items: { id: View; name: string; hint: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] }[] = [
+    { label: 'Daily work', tone: 'work', items: [
+        { id: 'today', name: 'Today', hint: "Who's coming and what to send", icon: Home },
+        { id: 'schedule', name: 'Schedule', hint: 'Every session with a time', icon: Calendar },
+        { id: 'orders', name: 'Orders', hint: 'Readings and chats to send', icon: Inbox },
     ] },
-    { label: 'Insights', items: [
-        { id: 'analytics', name: 'Analytics', icon: BarChart2 },
-        { id: 'revenue', name: 'Report', icon: Wallet },
+    { label: 'Money', tone: 'money', items: [
+        { id: 'sales', name: 'Payments', hint: 'Mark payments as they come in', icon: Receipt },
+        { id: 'revenue', name: 'Money report', hint: 'How much came in, and is it growing?', icon: Wallet },
     ] },
-    { label: 'Website', items: [
-        { id: 'events', name: 'Events', icon: Sparkles },
+    { label: 'People', tone: 'people', items: [
+        { id: 'customers', name: 'Customers', hint: 'Who books, and who comes back', icon: Contact },
     ] },
-    { label: 'Admin', items: [
-        { id: 'users', name: 'Manage Users', icon: Users },
+    { label: 'Website', tone: 'site', items: [
+        { id: 'analytics', name: 'Site visits', hint: 'How people find and use the site', icon: BarChart2 },
+        { id: 'events', name: 'Events', hint: "What the site's Events section shows", icon: Sparkles },
+    ] },
+    { label: 'Admin', tone: 'admin', items: [
+        { id: 'users', name: 'Manage users', hint: 'Who can sign in here', icon: Users },
     ] },
 ];
 
@@ -472,7 +478,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 <nav className="flex-1 p-3 overflow-y-auto">
                     {NAV_GROUPS.map((group) => (
                         <div key={group.label} className="mb-1">
-                            <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-subtle/50">
+                            <p className="px-3 pt-4 pb-1.5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-subtle/60">
+                                <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${TONE[group.tone].dot}`} />
                                 {group.label}
                             </p>
                             <div className="space-y-1">
@@ -484,10 +491,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             key={item.id}
                                             onClick={() => { setActiveView(item.id); setSidebarOpen(false); }}
                                             aria-current={active ? 'page' : undefined}
-                                            className={`group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${active ? 'bg-lilac/10 text-lilac' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}
+                                            title={item.hint}
+                                            className={`group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${active ? `${TONE[group.tone].soft} text-text-light` : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}
                                         >
-                                            {active && <span aria-hidden className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-lilac" />}
-                                            <Icon size={18} className={active ? 'text-lilac' : 'text-text-subtle group-hover:text-text-light transition-colors'} />
+                                            {active && <span aria-hidden className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full ${TONE[group.tone].bar}`} />}
+                                            <Icon size={18} className={active ? TONE[group.tone].icon : 'text-text-subtle group-hover:text-text-light transition-colors'} />
                                             <span>{item.name}</span>
                                         </button>
                                     );
@@ -546,10 +554,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 ) : activeView === 'users' ? (
                     /* USER MANAGEMENT VIEW (Full Page) */
                     <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
-                        <div className="pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="relative isolate pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <TitleWash tone="admin" />
                             <div>
-                                <h1 className="text-2xl font-serif font-bold text-text-light mb-2">User Management</h1>
-                                <p className="text-text-subtle text-sm">Control who has access to the admin dashboard.</p>
+                                <h1 className="text-2xl font-serif font-bold text-text-light mb-1.5">Manage users</h1>
+                                <p className="text-text-subtle text-sm">Who can sign in to this dashboard</p>
                             </div>
                             <button
                                 onClick={() => setShowAddUserModal(true)}
@@ -761,11 +770,12 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         )}
 
                         {/* Header Area */}
-                        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 pb-4 border-b border-adm-line">
+                        <div className="relative isolate flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 pb-4 border-b border-adm-line">
+                            <TitleWash tone="site" />
                             <div>
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-2xl font-serif font-bold text-text-light">
-                                        Analytics Overview
+                                        Site visits
                                     </h1>
                                     {isConnected && (
                                         <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-[10px] uppercase font-bold tracking-wider rounded border border-green-500/20">
@@ -774,7 +784,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                     )}
                                 </div>
                                 <p className="text-text-subtle mt-1 text-sm">
-                                    Performance metrics for <span className="text-text-light font-medium">{startDate}</span> to <span className="text-text-light font-medium">{endDate}</span>
+                                    How people find and use the site · <span className="text-text-light font-medium">{startDate}</span> to <span className="text-text-light font-medium">{endDate}</span>
                                     {' · '}<span className="text-text-light font-medium">{site === 'live' ? 'tarotreadingbymayanov.com' : 'mayanov-tarot.vercel.app (staging)'}</span>
                                 </p>
                                 {data?.since && (

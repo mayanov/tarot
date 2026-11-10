@@ -183,7 +183,8 @@ const CustomersView: React.FC = () => {
         <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
             <PageHeader
                 title="Customers"
-                subtitle={`${inMarket.length} ${inMarket.length === 1 ? 'client' : 'clients'}${market === 'ID' ? ' in Indonesia' : market === 'Global' ? ' abroad' : ''} · ${repeatCount} came back${inMarket.length ? ` (${Math.round((repeatCount / inMarket.length) * 100)}%)` : ''}`}
+                tone="people"
+                subtitle={`Who books, and who comes back · ${inMarket.length} ${inMarket.length === 1 ? 'client' : 'clients'}${market === 'ID' ? ' in Indonesia' : market === 'Global' ? ' abroad' : ''} · ${repeatCount} came back${inMarket.length ? ` (${Math.round((repeatCount / inMarket.length) * 100)}%)` : ''}`}
                 onRefresh={load}
                 refreshing={loading}
             >

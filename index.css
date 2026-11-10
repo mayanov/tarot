@@ -387,6 +387,12 @@ html.booting .boot-hide { opacity: 0; pointer-events: none; transition: none; }
   --adm-confirmed: 26 138 76;     /* WhatsApp-family green, darkened for text */
   --adm-done: 32 42 92;           /* indigo  #202A5C */
   --adm-cancelled: 87 81 103;     /* ink-soft #575167 */
+  /* one colour per menu group (menu icon, page-title wash) */
+  --sec-work: 107 63 160;         /* daily work: violet */
+  --sec-money: 26 138 76;         /* money: green */
+  --sec-people: 196 120 40;       /* people: warm sand */
+  --sec-site: 30 110 170;         /* website: blue */
+  --sec-admin: 87 81 103;         /* admin: ink */
 }
 .admin-shell[data-theme="dark"] {
   --adm-bg-deep: #141220;
@@ -412,6 +418,11 @@ html.booting .boot-hide { opacity: 0; pointer-events: none; transition: none; }
   --adm-confirmed: 74 214 132;
   --adm-done: 142 155 224;
   --adm-cancelled: 169 163 189;
+  --sec-work: 140 100 200;
+  --sec-money: 74 214 132;
+  --sec-people: 241 159 88;
+  --sec-site: 110 170 230;
+  --sec-admin: 169 163 189;
 }
 /* Native date inputs inside dark admin — keep the picker icon visible. */
 .admin-shell[data-theme="dark"] input[type="date"] { color-scheme: dark; }

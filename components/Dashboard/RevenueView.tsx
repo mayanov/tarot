@@ -281,8 +281,10 @@ const RevenueView: React.FC = () => {
     return (
         <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
             <PageHeader
-                title="Report"
-                subtitle="Money that came in: bookings marked paid (cancelled left out), by order date. Rupiah and dollars are kept apart, never added together. Who your customers are is under Customers."
+                title="Money report"
+                tone="money"
+                subtitle="How much came in, and is it growing?"
+                note="Bookings marked paid (cancelled left out), counted on the day they were ordered. Rupiah and dollars are kept apart, never added together. Marking payments is under Payments; who your customers are is under Customers."
                 onRefresh={load}
                 refreshing={loading}
             />

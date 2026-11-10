@@ -125,8 +125,10 @@ const EventsView: React.FC = () => {
     return (
         <div className="space-y-6 pt-20 lg:pt-8 p-4 md:px-8 pb-16">
             <PageHeader
-                title="Events & Collaborations"
-                subtitle={<>The list shown on the website’s Events section. Changes go live right away · {events.length} events</>}
+                title="Events"
+                tone="site"
+                subtitle={<>What the site’s Events section shows · {events.length} events</>}
+                note="Events and collaborations, as listed on the website. Changes go live right away."
                 onRefresh={load}
                 refreshing={loading}
             />

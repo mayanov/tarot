@@ -1139,9 +1139,13 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
         <div className={detailOnly ? '' : 'space-y-5 pt-20 lg:pt-8 p-4 md:px-8'}>
             {!detailOnly && <PageHeader
                 title={tab === 'today' ? 'Today' : tab === 'calendar' ? 'Schedule' : 'Orders'}
+                tone="work"
                 subtitle={tab === 'today'
-                    ? new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Jakarta' })
-                    : tab === 'calendar' ? 'Sessions with a time. Click one for details, drag it to move it. Grey is your own calendar: click a session there to make it a booking.' : 'Readings and chats with no fixed time. Click one for details.'}
+                    ? `Who's coming and what to send · ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Jakarta' })}`
+                    : tab === 'calendar' ? 'Every session with a time' : 'Readings and chats to send'}
+                note={tab === 'today' ? undefined
+                    : tab === 'calendar' ? 'Click a session for its details, drag it to move it. Grey is your own calendar: click a session there to make it a booking.'
+                        : 'Readings and chats have no fixed time; each has until when it’s due. Click one for its details, tick its circle once it’s sent.'}
                 onRefresh={load}
                 refreshing={loading}
             >

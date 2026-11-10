@@ -164,7 +164,9 @@ const SalesView: React.FC = () => {
 
     return (
         <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
-            <PageHeader title="Sales" subtitle="Every order, newest first (cancelled left out). Mark payments as they come in." onRefresh={load} refreshing={loading} />
+            <PageHeader title="Payments" tone="money" subtitle="Mark payments as they come in"
+                note="Every order, newest first; cancelled ones are left out. Rupiah and dollars are never added together. How the money is trending is under Money report."
+                onRefresh={load} refreshing={loading} />
 
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
 

@@ -30,6 +30,12 @@ export default {
         // letterpress ink: a flat deep blue-black (.letterpress)
         press: '#221D3C',
         sage: 'rgb(var(--adm-confirmed) / <alpha-value>)',
+        // one colour per admin menu group (index.css --sec-*)
+        'sec-work': 'rgb(var(--sec-work) / <alpha-value>)',
+        'sec-money': 'rgb(var(--sec-money) / <alpha-value>)',
+        'sec-people': 'rgb(var(--sec-people) / <alpha-value>)',
+        'sec-site': 'rgb(var(--sec-site) / <alpha-value>)',
+        'sec-admin': 'rgb(var(--sec-admin) / <alpha-value>)',
         // --- The one light surface for the whole public site ---
         cream: '#F3F1EC',
         paper: '#F3F1EC',
