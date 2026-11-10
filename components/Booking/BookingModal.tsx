@@ -213,6 +213,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   };
   const [payWait, setPayWait] = useState(false); // ID: waiting for a payment to come in
   const [paidHere, setPaidHere] = useState(false); // paid inside the form (the done step says so)
+  const [bookedRef, setBookedRef] = useState(''); // the booking's code, shown on the done step
   const [showPay, setShowPay] = useState(false); // reveal payment details on the success step
   const [payTab, setPayTab] = useState<'qris' | 'bank'>('qris');
   const [copied, setCopied] = useState(false);
@@ -240,7 +241,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const reset = useCallback(() => {
     setStep(0); setService(null); setDate(undefined); setTime(null); setPkg(null);
     setName(''); setDob(''); setDobDay(''); setDobMonth(''); setDobYear(''); setWhatsapp(''); setEmail(''); setQuestion(''); setError(''); setSubmitting(false); setShowPay(false); setPayTab('qris'); setCopied(false);
-    mtOrder.current = null; setPayWait(false); setPaidHere(false);
+    mtOrder.current = null; setPayWait(false); setPaidHere(false); setBookedRef('');
   }, []);
 
   // Leaving the review step (back, or closing the form) with a payment still open:
@@ -403,6 +404,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     const trackName = SERVICE_TRACK_NAME[b.serviceId] || b.serviceName;
     const value = Number(String(service?.price || '').replace(/[^\d.]/g, '')) || undefined;
     trackEvent('purchase', { item_name: trackName, market: 'Global', value, currency: 'USD', transaction_id: (b as Booking & { paypalCaptureId?: string }).paypalCaptureId || b.id }, 'Purchase', { value, currency: 'USD', content_name: trackName });
+    setBookedRef(b.ref || '');
     setPaidHere(true); setError('');
     setStep(4);
   };
@@ -425,8 +427,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   };
 
   // ---- Indonesia: Midtrans's payment window on the review step ----
-  const paidWithMidtrans = () => {
+  const paidWithMidtrans = (ref?: string) => {
     if (!service || paidHere) return;
+    if (ref) setBookedRef(ref);
     const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
     const value = rupiah(totalPrice);
     trackEvent('purchase', { item_name: trackName, market: 'ID', value, currency: 'IDR', transaction_id: mtOrder.current?.orderId || `bk-${Date.now()}` }, 'Purchase', { value, currency: 'IDR', content_name: trackName });
@@ -439,9 +442,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     const open = mtOrder.current;
     if (!open) return;
     const via = open.invoiceUrl ? 'Xendit' : 'Midtrans';
-    const state = await (open.invoiceUrl ? xenditStatus : midtransStatus)(open.orderId);
+    const { state, ref } = await (open.invoiceUrl ? xenditStatus : midtransStatus)(open.orderId);
     if (mtOrder.current !== open) return; // left or restarted meanwhile
-    if (state === 'paid') paidWithMidtrans();
+    if (state === 'paid') paidWithMidtrans(ref);
     else if (state === 'failed') {
       trackPaymentIssue('failed', via, 'ID');
       mtOrder.current = null; setPayWait(false);
@@ -546,7 +549,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     setSubmitting(true); setError('');
     let leaving = false; // on the way to PayPal: the button keeps saying so
     try {
-      await createBooking(bookingInput(service));
+      const saved = await createBooking(bookingInput(service));
+      setBookedRef(saved?.ref || '');
       const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
       // GA4 only counts a purchase with a transaction id. A global reading is only
       // bought once PayPal sends them back (the thank-you page counts it there).
@@ -1256,6 +1260,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               )}
 
               <div className="mt-5 text-left">
+                {bookedRef && row(t('Kode booking', 'Booking code'), <span className="tracking-[0.06em] tabular-nums select-all">{bookedRef}</span>)}
                 {row(t('Layanan', 'Service'), serviceLine())}
                 {scheduleRows()}
                 {rule}

@@ -56,13 +56,14 @@ export async function startMidtrans(input: MidtransCheckoutInput): Promise<{ tok
 }
 
 /** where the payment stands (the server asks Midtrans, and confirms the booking if paid) */
-export async function midtransStatus(orderId: string): Promise<PayState> {
+export async function midtransStatus(orderId: string): Promise<{ state: PayState; ref?: string }> {
   try {
     const res = await fetch(`${API_BASE}/api/midtrans/status/${encodeURIComponent(orderId)}`);
-    if (!res.ok) return 'pending';
-    return (await res.json()).state || 'pending';
+    if (!res.ok) return { state: 'pending' };
+    const d = await res.json();
+    return { state: d.state || 'pending', ref: d.ref }; // ref: the booking's code, once it's paid
   } catch {
-    return 'pending';
+    return { state: 'pending' };
   }
 }
 
