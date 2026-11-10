@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaWhatsapp } from 'react-icons/fa';
 import type { Booking } from '../../services/booking';
 import { amountForBooking, fmtMoney } from './lib/format';
@@ -85,7 +85,7 @@ export const paymentRequestText = (b: Booking) => {
         '',
         'Pembayarannya bisa lewat:',
         `• Transfer ${BANK.name} ${BANK.number} a.n. ${BANK.holder}`,
-        '• QRIS (aku kirim gambarnya di bawah ini)',
+        '• QRIS (gambarnya aku kirim di bawah ini)',
         '',
         'Kalau sudah, kirim bukti bayarnya di sini ya. Terima kasih! ☺️',
       ].filter((l) => l !== null).join('\n')
@@ -103,6 +103,28 @@ export const paymentRequestText = (b: Booking) => {
 const sentLabel = (iso: string) =>
   new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 
+// The QRIS sticker (public/payment-qris-full.jpg) as a PNG, the one picture type every
+// browser can put on the clipboard. Made once, ahead of the click, so copying it is instant.
+let qrisPromise: Promise<Blob> | null = null;
+const qrisPng = (): Promise<Blob> => (qrisPromise ||= fetch('/payment-qris-full.jpg')
+  .then((r) => { if (!r.ok) throw new Error('QRIS image'); return r.blob(); })
+  .then((blob) => createImageBitmap(blob))
+  .then((bmp) => new Promise<Blob>((resolve, reject) => {
+    const c = document.createElement('canvas');
+    c.width = bmp.width; c.height = bmp.height;
+    c.getContext('2d')!.drawImage(bmp, 0, 0);
+    c.toBlob((png) => (png ? resolve(png) : reject(new Error('QRIS png'))), 'image/png');
+  }))
+  .catch((e) => { qrisPromise = null; throw e; }));
+/** puts the QRIS picture on the clipboard, to paste into the chat; true when it worked.
+ *  Called straight from the click (browsers only allow it then), before WhatsApp opens. */
+export const copyQris = (): Promise<boolean> => {
+  try {
+    if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') return Promise.resolve(false);
+    return navigator.clipboard.write([new ClipboardItem({ 'image/png': qrisPng() })]).then(() => true, () => false);
+  } catch { return Promise.resolve(false); }
+};
+
 // the two messages: the confirmation (as it always was) and the payment request
 const KIND = {
   confirm: { text: confirmationText, path: 'wa-confirmed', field: 'waConfirmSentAt', label: 'Confirm', what: 'Confirmation' },
@@ -110,14 +132,26 @@ const KIND = {
 } as const;
 
 /** a small pill: opens WhatsApp with the message typed in, then remembers it was sent.
- *  kind 'confirm' (default) is the confirmation, 'pay' asks for the payment */
-const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; compact?: boolean; kind?: 'confirm' | 'pay' }> = ({ b, onSent, kind = 'confirm' }) => {
+ *  kind 'confirm' (default) is the confirmation, 'pay' asks for the payment: it also copies
+ *  the QRIS picture, to paste into the chat (onNote says whether that worked; when it
+ *  didn't, a "Copy QRIS" button appears beside it to try again) */
+const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; compact?: boolean; kind?: 'confirm' | 'pay'; onNote?: (text: string, kind: 'ok' | 'err') => void }> = ({ b, onSent, kind = 'confirm', onNote }) => {
   const [busy, setBusy] = useState(false);
+  const [qrFailed, setQrFailed] = useState(false);
+  // have the QRIS ready before the click
+  useEffect(() => { if (kind === 'pay') qrisPng().catch(() => { /* tried again on the click */ }); }, [kind]);
   const number = waNumberOf(b.contact);
   if (!number) return null;
   const k = KIND[kind];
   const sentAt = b[k.field];
   const send = async () => {
+    // the QRIS on the clipboard first (it has to start in the click, while this page has focus)
+    if (kind === 'pay') {
+      copyQris().then((ok) => {
+        setQrFailed(!ok);
+        onNote?.(ok ? 'QRIS copied: paste it in the chat after the message.' : 'Couldn’t copy the QRIS. Use “Copy QRIS”, then paste it in the chat.', ok ? 'ok' : 'err');
+      });
+    }
     // open WhatsApp first (in the click, so it isn't blocked as a pop-up), then record it
     // api.whatsapp.com rather than wa.me: wa.me's redirect garbles emoji into "�" on
     // WhatsApp Web and the desktop app
@@ -133,7 +167,7 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; comp
       if (r.ok && data[k.field]) onSent(data[k.field]);
     } catch { /* WhatsApp still opened; only the note is missing */ } finally { setBusy(false); }
   };
-  return (
+  const pill = (
     <button
       type="button"
       onClick={(e) => { e.stopPropagation(); send(); }}
@@ -144,6 +178,15 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; comp
       <span className={sentAt ? '' : 'text-[#1fae55]'}><FaWhatsapp size={13} /></span>
       {sentAt ? `${kind === 'pay' ? 'Asked' : 'Sent'} ${sentLabel(sentAt).split(',')[0]}` : k.label}
     </button>
+  );
+  if (!qrFailed) return pill;
+  return (
+    <>
+      {pill}
+      <button type="button" title="Copy the QRIS picture, to paste it in the chat"
+        onClick={(e) => { e.stopPropagation(); copyQris().then((ok) => { setQrFailed(!ok); onNote?.(ok ? 'QRIS copied: paste it in the chat.' : 'Couldn’t copy the QRIS on this browser.', ok ? 'ok' : 'err'); }); }}
+        className="inline-flex items-center px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 whitespace-nowrap">Copy QRIS</button>
+    </>
   );
 };
 

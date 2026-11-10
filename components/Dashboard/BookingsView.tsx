@@ -1570,7 +1570,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                             {b.market === 'ID'
                                                 ? <>
                                                     {/* not paid yet: ask for it first (the total, BCA and QRIS) */}
-                                                    {b.paymentStatus !== 'paid' && <WaConfirmButton b={b} kind="pay" onSent={(at) => markPayAsked(b.id, at)} />}
+                                                    {b.paymentStatus !== 'paid' && <WaConfirmButton b={b} kind="pay" onSent={(at) => markPayAsked(b.id, at)} onNote={flash} />}
                                                     <WaConfirmButton b={b} compact onSent={(at) => markWaSent(b.id, at)} />
                                                 </>
                                                 : <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} />}
