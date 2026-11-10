@@ -1224,10 +1224,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                 <Check className="w-8 h-8" strokeWidth={1.9} />
               </div>
               )}
-              <h3 className="letterpress-lg font-serif font-semibold text-2xl text-ink">{paidHere ? t('Booking terkonfirmasi!', 'You’re booked!') : t('Booking diterima!', 'One last step')}</h3>
+              <h3 className="letterpress-lg font-serif font-semibold text-2xl text-ink">{paidHere ? t('Booking terkonfirmasi!', `Thank you, ${name || 'friend'} ✨`) : t('Booking diterima!', 'One last step')}</h3>
               <p className="letterpress mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
                 {paidHere && !isIndonesian
-                  ? <>Thank you, {name || 'friend'}. Your payment came through.</>
+                  ? <>Your {live ? 'session' : 'reading'} is booked. Here’s what happens next.</>
                   : paidHere
                   ? <>Terima kasih, {name || 'kamu'}! Pembayaranmu sudah masuk.<br />{scheduled ? 'Sampai ketemu di sesi nanti ✨' : 'Sampai ngobrol nanti ✨'}</>
                   : isIndonesian
@@ -1240,8 +1240,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               {/* paid from abroad: what happens next, one short step at a time */}
               {paidHere && !isIndonesian && (
                 <div className="mt-6 text-left">
-                  <p className="letterpress text-[11px] font-semibold uppercase tracking-[0.16em] text-ink/50">What happens next</p>
-                  <ol className="mt-3 space-y-3.5">
+                  <ol className="space-y-3.5">
                     {(live ? [
                       <>Check your inbox. Your confirmation is on its way to <span className="font-semibold text-ink inline-block max-w-full break-words">{email.trim()}</span></>,
                       <>The Google Meet link arrives by email before your session.</>,
