@@ -1120,6 +1120,19 @@ app.post('/api/admin/bookings/:id/wa-confirmed', verifyToken, async (req, res) =
     }
 });
 
+// Admin: the dashboard's "Ask to pay" opened WhatsApp with the payment details typed in;
+// remember when (shown by the button)
+app.post('/api/admin/bookings/:id/wa-pay-asked', verifyToken, async (req, res) => {
+    try {
+        const updated = await bookingStore.markWhatsAppPayAsked(req.params.id);
+        if (!updated) return res.status(404).json({ error: 'Not found' });
+        res.json(updated);
+    } catch (e) {
+        console.error('mark WhatsApp payment request failed:', e);
+        res.status(500).json({ error: 'Failed to save' });
+    }
+});
+
 // Admin: send a global booking's confirmation email ("your … is booked", the one a PayPal
 // payment sends by itself) from the Sales screen, for one that never got it: paid by hand,
 // or entered in the dashboard. Once per booking: one already emailed is left as it is.

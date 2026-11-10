@@ -66,57 +66,84 @@ export const confirmationText = (b: Booking) => {
       ].filter((l) => l !== null).join('\n');
 };
 
+// "Ask to pay": the total and how to pay it (BCA transfer, or the QRIS picture Mayanov
+// sends right after, since a link can't carry an image), and to send the proof here
+const BANK = { name: 'BCA', number: '2671708182', holder: 'Maya Noviana' };
+export const paymentRequestText = (b: Booking) => {
+  const id = b.market === 'ID';
+  const first = (b.name || '').trim().split(/\s+/)[0] || (id ? 'kamu' : 'there');
+  const service = (b.serviceName || '').split(' · ').filter((p) => !/^(Rp|\$)/i.test(p.trim())).join(' · ');
+  const total = totalOf(b);
+  const timed = !!(b.date && b.time);
+  return id
+    ? [
+        `Halo ${first}, terima kasih sudah booking di Mayanov Tarot ✨`,
+        '',
+        `Layanan: ${service}`,
+        timed ? `Jadwal: ${scheduleOf(b, true)}` : null,
+        total ? `Total: ${total}` : null,
+        '',
+        'Pembayarannya bisa lewat:',
+        `• Transfer ${BANK.name} ${BANK.number} a.n. ${BANK.holder}`,
+        '• QRIS (aku kirim gambarnya di bawah ini)',
+        '',
+        'Kalau sudah, kirim bukti bayarnya di sini ya. Terima kasih! ☺️',
+      ].filter((l) => l !== null).join('\n')
+    : [
+        `Hi ${first}, thank you for booking with Mayanov Tarot ✨`,
+        '',
+        `Service: ${service}`,
+        timed ? `When: ${scheduleOf(b, false)}` : null,
+        total ? `Total: ${total}` : null,
+        '',
+        'I’ll send the payment link right here. Once it’s paid, you’re all set! ☺️',
+      ].filter((l) => l !== null).join('\n');
+};
+
 const sentLabel = (iso: string) =>
   new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 
-/** `compact`: a small pill for table rows (Orders, Sales) */
-const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; compact?: boolean }> = ({ b, onSent, compact }) => {
+// the two messages: the confirmation (as it always was) and the payment request
+const KIND = {
+  confirm: { text: confirmationText, path: 'wa-confirmed', field: 'waConfirmSentAt', label: 'Confirm', what: 'Confirmation' },
+  pay: { text: paymentRequestText, path: 'wa-pay-asked', field: 'waPayAskSentAt', label: 'Ask to pay', what: 'Payment request' },
+} as const;
+
+/** a small pill: opens WhatsApp with the message typed in, then remembers it was sent.
+ *  kind 'confirm' (default) is the confirmation, 'pay' asks for the payment */
+const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; compact?: boolean; kind?: 'confirm' | 'pay' }> = ({ b, onSent, kind = 'confirm' }) => {
   const [busy, setBusy] = useState(false);
   const number = waNumberOf(b.contact);
   if (!number) return null;
+  const k = KIND[kind];
+  const sentAt = b[k.field];
   const send = async () => {
     // open WhatsApp first (in the click, so it isn't blocked as a pop-up), then record it
     // api.whatsapp.com rather than wa.me: wa.me's redirect garbles emoji into "�" on
     // WhatsApp Web and the desktop app
-    window.open(`https://api.whatsapp.com/send?phone=${number}&text=${encodeURIComponent(confirmationText(b))}`, '_blank', 'noopener');
+    window.open(`https://api.whatsapp.com/send?phone=${number}&text=${encodeURIComponent(k.text(b))}`, '_blank', 'noopener');
     setBusy(true);
     try {
       const token = localStorage.getItem('authToken');
-      const r = await fetch(`/api/admin/bookings/${encodeURIComponent(b.id)}/wa-confirmed`, {
+      const r = await fetch(`/api/admin/bookings/${encodeURIComponent(b.id)}/${k.path}`, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await r.json().catch(() => ({}));
-      if (r.ok && data.waConfirmSentAt) onSent(data.waConfirmSentAt);
+      if (r.ok && data[k.field]) onSent(data[k.field]);
     } catch { /* WhatsApp still opened; only the note is missing */ } finally { setBusy(false); }
   };
-  if (compact) {
-    return (
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); send(); }}
-        disabled={busy}
-        title={b.waConfirmSentAt ? `Confirmation sent ${sentLabel(b.waConfirmSentAt)} · click to send again` : 'Send the WhatsApp confirmation'}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-colors disabled:opacity-50 ${b.waConfirmSentAt ? 'text-text-subtle hover:text-text-light hover:bg-adm-hover-2' : 'border border-adm-line-2 text-text-light font-medium hover:bg-adm-hover-2'}`}
-      >
-        <span className={b.waConfirmSentAt ? '' : 'text-[#1fae55]'}><FaWhatsapp size={13} /></span>
-        {b.waConfirmSentAt ? `Sent ${sentLabel(b.waConfirmSentAt).split(',')[0]}` : 'Confirm'}
-      </button>
-    );
-  }
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-      <button
-        type="button"
-        onClick={send}
-        disabled={busy}
-        className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors disabled:opacity-50 ${b.waConfirmSentAt ? 'bg-adm-hover-2 text-text-light hover:bg-adm-hover-3' : 'bg-[#25D366] text-[#0b2e17] hover:bg-[#1fbe5b]'}`}
-      >
-        <FaWhatsapp size={15} />
-        {b.waConfirmSentAt ? 'Send again' : 'Send WhatsApp confirmation'}
-      </button>
-      {b.waConfirmSentAt && <span className="text-xs text-text-subtle">✓ Confirmation sent {sentLabel(b.waConfirmSentAt)}</span>}
-    </div>
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); send(); }}
+      disabled={busy}
+      title={sentAt ? `${k.what} sent ${sentLabel(sentAt)} · click to send again` : `Send the ${k.what.toLowerCase()} on WhatsApp`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-colors disabled:opacity-50 ${sentAt ? 'text-text-subtle hover:text-text-light hover:bg-adm-hover-2' : 'border border-adm-line-2 text-text-light font-medium hover:bg-adm-hover-2'}`}
+    >
+      <span className={sentAt ? '' : 'text-[#1fae55]'}><FaWhatsapp size={13} /></span>
+      {sentAt ? `${kind === 'pay' ? 'Asked' : 'Sent'} ${sentLabel(sentAt).split(',')[0]}` : k.label}
+    </button>
   );
 };
 

@@ -56,6 +56,7 @@ export interface Booking extends BookingInput {
   paymentStatus?: 'unpaid' | 'paid'; // reporting: whether the order has been paid
   amountDue?: number | string; // what a paid-online booking cost (Midtrans: rupiah; PayPal: "45.00" dollars)
   waConfirmSentAt?: string; // when the dashboard's WhatsApp confirmation was sent
+  waPayAskSentAt?: string;  // when the dashboard's WhatsApp payment request was sent
   paymentMethod?: string; // how it was paid online: 'PayPal', 'Midtrans · qris', …
   paidEmailSentAt?: string; // when the customer was emailed that their payment came through
   inviteOnPay?: boolean; // its calendar invite goes out once it's marked paid

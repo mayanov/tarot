@@ -1082,6 +1082,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
     // the confirmation went out from Mayanov's WhatsApp: show it on the booking
     const markWaSent = (id: string, at: string) =>
         setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, waConfirmSentAt: at } : x)));
+    const markPayAsked = (id: string, at: string) =>
+        setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, waPayAskSentAt: at } : x)));
     const markEmailSent = (id: string, at: string) =>
         setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, paidEmailSentAt: at } : x)));
 
@@ -1564,9 +1566,13 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                     <Row label="Status"><StatusControl b={b} /></Row>
                                     {/* Indonesia is confirmed on WhatsApp, Global by email */}
                                     {b.status !== 'cancelled' && (b.market === 'ID' ? !!waNumberOf(b.contact) : !!email) && (
-                                        <Row label="Confirmation">
+                                        <Row label={b.market === 'ID' ? 'WhatsApp' : 'Confirmation'}>
                                             {b.market === 'ID'
-                                                ? <WaConfirmButton b={b} compact onSent={(at) => markWaSent(b.id, at)} />
+                                                ? <>
+                                                    {/* not paid yet: ask for it first (the total, BCA and QRIS) */}
+                                                    {b.paymentStatus !== 'paid' && <WaConfirmButton b={b} kind="pay" onSent={(at) => markPayAsked(b.id, at)} />}
+                                                    <WaConfirmButton b={b} compact onSent={(at) => markWaSent(b.id, at)} />
+                                                </>
                                                 : <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} />}
                                         </Row>
                                     )}

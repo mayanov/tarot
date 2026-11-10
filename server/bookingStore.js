@@ -611,6 +611,9 @@ async function stamp(id, field) {
 /** Admin sent the booking confirmation from their own WhatsApp (the dashboard's button) */
 export const markWhatsAppConfirmed = (id) => stamp(id, 'waConfirmSentAt');
 
+/** Admin asked for the payment from their own WhatsApp (the dashboard's "Ask to pay") */
+export const markWhatsAppPayAsked = (id) => stamp(id, 'waPayAskSentAt');
+
 /** The customer was emailed that their payment came through (server/mailer.js) */
 export const markPaidEmailSent = (id) => stamp(id, 'paidEmailSentAt');
 
