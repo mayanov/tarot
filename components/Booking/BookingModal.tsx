@@ -1219,9 +1219,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
               <h3 className="letterpress-lg font-serif font-semibold text-2xl text-ink">{paidHere ? t('Booking terkonfirmasi!', 'You’re booked!') : t('Booking diterima!', 'One last step')}</h3>
               <p className="letterpress mt-2 text-ink/65 leading-relaxed max-w-sm mx-auto text-[15px]">
                 {paidHere && !isIndonesian
-                  ? <>Thank you, {name || 'friend'}! Your payment came through.<br />{live
-                      ? <>A confirmation email is on its way to {email.trim()}, and the Google Meet link comes before the session.</>
-                      : <>A confirmation email is on its way to {email.trim()}: reply to it with your question, and your reading comes within 24 hours. If it isn’t there, check your spam folder.</>}</>
+                  ? <>Thank you, {name || 'friend'}. Your payment came through.</>
                   : paidHere
                   ? <>Terima kasih, {name || 'kamu'}! Pembayaranmu sudah masuk.<br />{scheduled ? 'Sampai ketemu di sesi nanti ✨' : 'Sampai ngobrol nanti ✨'}</>
                   : isIndonesian
@@ -1230,6 +1228,32 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   ? <>Thank you, {name || 'friend'}. Your time is held: message me on WhatsApp to pay. Your booking is confirmed once it’s paid, and the Google Meet link comes to {email.trim()}.</>
                   : <>Thank you, {name || 'friend'}. One last step: pay on PayPal. Once payment comes through, a confirmation email arrives at {email.trim()}: reply to it with your question, and your reading comes within 24 hours.</>}
               </p>
+
+              {/* paid from abroad: what happens next, one short step at a time */}
+              {paidHere && !isIndonesian && (
+                <div className="mt-6 text-left">
+                  <p className="letterpress text-[11px] font-semibold uppercase tracking-[0.16em] text-ink/50">What happens next</p>
+                  <ol className="mt-3 space-y-3.5">
+                    {(live ? [
+                      <>Check your inbox. Your confirmation is on its way to <span className="font-semibold text-ink break-all">{email.trim()}</span></>,
+                      <>The Google Meet link arrives by email before your session.</>,
+                      <>Join from that link at your time (below). See you there ✨</>,
+                    ] : [
+                      <>Check your inbox. Your confirmation is on its way to <span className="font-semibold text-ink break-all">{email.trim()}</span></>,
+                      <>Reply to that email with your question.</>,
+                      <>Your reading arrives by email within <span className="font-semibold text-ink">24 hours</span> of your reply.</>,
+                    ]).map((txt, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <span className="relative isolate shrink-0 w-7 h-7 grid place-items-center font-serif font-semibold text-[14px] text-moon">
+                          <PaintSwatch round className="opacity-[0.16]" />{i + 1}
+                        </span>
+                        <span className="letterpress text-[15px] leading-snug text-ink/75 pt-[3px]">{txt}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="letterpress mt-3.5 pl-10 text-[13px] text-ink/50">No email in a few minutes? Check your spam folder.</p>
+                </div>
+              )}
 
               <div className="mt-5 text-left">
                 {row(t('Layanan', 'Service'), serviceLine())}
