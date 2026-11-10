@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import type { Booking } from '../../services/booking';
 import { amountForBooking, fmtMoney } from './lib/format';
@@ -125,26 +126,48 @@ export const copyQris = (): Promise<boolean> => {
   } catch { return Promise.resolve(false); }
 };
 
-// the two messages: the confirmation (as it always was) and the payment request
+// the two messages: the payment request and the confirmation (as it always was)
 const KIND = {
-  confirm: { text: confirmationText, path: 'wa-confirmed', field: 'waConfirmSentAt', label: 'Confirm', what: 'Confirmation' },
-  pay: { text: paymentRequestText, path: 'wa-pay-asked', field: 'waPayAskSentAt', label: 'Ask to pay', what: 'Payment request' },
+  pay: { text: paymentRequestText, path: 'wa-pay-asked', field: 'waPayAskSentAt', label: 'Ask to pay', hint: 'Total, BCA and QRIS (copied to paste)' },
+  confirm: { text: confirmationText, path: 'wa-confirmed', field: 'waConfirmSentAt', label: 'Send confirmation', hint: 'Booked, with the date and total' },
 } as const;
+type Kind = keyof typeof KIND;
+export type WaField = (typeof KIND)[Kind]['field'];
 
-/** a small pill: opens WhatsApp with the message typed in, then remembers it was sent.
- *  kind 'confirm' (default) is the confirmation, 'pay' asks for the payment: it also copies
- *  the QRIS picture, to paste into the chat (onNote says whether that worked; when it
- *  didn't, a "Copy QRIS" button appears beside it to try again) */
-const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; compact?: boolean; kind?: 'confirm' | 'pay'; onNote?: (text: string, kind: 'ok' | 'err') => void }> = ({ b, onSent, kind = 'confirm', onNote }) => {
+/** One WhatsApp button: a click opens a little menu with the two messages, Ask to pay and
+ *  Send confirmation (each says when it was last sent). Picking one opens Mayanov's
+ *  WhatsApp on the customer's chat with it typed in, and remembers it was sent; Ask to pay
+ *  also copies the QRIS picture to paste after it (onNote says whether that worked). The
+ *  button itself shows the latest one sent. The menu is fixed to the screen, so a table
+ *  that clips its rows doesn't cut it off. */
+const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: string) => void; onNote?: (text: string, kind: 'ok' | 'err') => void; compact?: boolean }> = ({ b, onSent, onNote }) => {
   const [busy, setBusy] = useState(false);
+  const [menu, setMenu] = useState<{ top: number; left: number; up: boolean } | null>(null);
   const [qrFailed, setQrFailed] = useState(false);
-  // have the QRIS ready before the click
-  useEffect(() => { if (kind === 'pay') qrisPng().catch(() => { /* tried again on the click */ }); }, [kind]);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const number = waNumberOf(b.contact);
+  const paid = b.paymentStatus === 'paid';
+  // have the QRIS ready before it's asked for
+  useEffect(() => { if (menu && !paid) qrisPng().catch(() => { /* tried again on the click */ }); }, [menu, paid]);
+  // closes on a click elsewhere, Escape, scrolling or resizing
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(null);
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('mousedown', close);
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('resize', close);
+    window.addEventListener('scroll', close, true);
+    return () => {
+      window.removeEventListener('mousedown', close); window.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', close); window.removeEventListener('scroll', close, true);
+    };
+  }, [menu]);
   if (!number) return null;
-  const k = KIND[kind];
-  const sentAt = b[k.field];
-  const send = async () => {
+
+  const send = async (kind: Kind) => {
+    const k = KIND[kind];
+    setMenu(null);
     // the QRIS on the clipboard first (it has to start in the click, while this page has focus)
     if (kind === 'pay') {
       copyQris().then((ok) => {
@@ -164,28 +187,60 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (at: string) => void; comp
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await r.json().catch(() => ({}));
-      if (r.ok && data[k.field]) onSent(data[k.field]);
+      if (r.ok && data[k.field]) onSent(k.field, data[k.field]);
     } catch { /* WhatsApp still opened; only the note is missing */ } finally { setBusy(false); }
   };
-  const pill = (
-    <button
-      type="button"
-      onClick={(e) => { e.stopPropagation(); send(); }}
-      disabled={busy}
-      title={sentAt ? `${k.what} sent ${sentLabel(sentAt)} · click to send again` : `Send the ${k.what.toLowerCase()} on WhatsApp`}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-colors disabled:opacity-50 ${sentAt ? 'text-text-subtle hover:text-text-light hover:bg-adm-hover-2' : 'border border-adm-line-2 text-text-light font-medium hover:bg-adm-hover-2'}`}
-    >
-      <span className={sentAt ? '' : 'text-[#1fae55]'}><FaWhatsapp size={13} /></span>
-      {sentAt ? `${kind === 'pay' ? 'Asked' : 'Sent'} ${sentLabel(sentAt).split(',')[0]}` : k.label}
-    </button>
-  );
-  if (!qrFailed) return pill;
+
+  const open = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (menu) { setMenu(null); return; }
+    const r = btnRef.current!.getBoundingClientRect();
+    const W = 256, H = 132;
+    const up = r.bottom + H + 8 > window.innerHeight;
+    setMenu({ top: up ? r.top - 6 : r.bottom + 6, left: Math.max(8, Math.min(r.right - W, window.innerWidth - W - 8)), up });
+  };
+
+  // the button shows the latest message sent: the confirmation, else the payment request
+  const last = b.waConfirmSentAt ? `Confirmed ${sentLabel(b.waConfirmSentAt).split(',')[0]}`
+    : b.waPayAskSentAt && !paid ? `Asked to pay ${sentLabel(b.waPayAskSentAt).split(',')[0]}` : '';
+  const Item: React.FC<{ kind: Kind; disabled?: string }> = ({ kind, disabled }) => {
+    const k = KIND[kind];
+    const at = b[k.field];
+    return (
+      <button type="button" disabled={!!disabled} onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); send(kind); }}
+        className="w-full text-left px-3 py-2 rounded-lg hover:bg-adm-hover disabled:opacity-50 disabled:hover:bg-transparent transition-colors">
+        <span className="flex items-center justify-between gap-3">
+          <span className="text-sm font-medium text-text-light">{k.label}</span>
+          {at && <span className="text-[0.7rem] text-text-subtle whitespace-nowrap">sent {sentLabel(at).split(',')[0]}</span>}
+        </span>
+        <span className="block text-xs text-text-subtle mt-0.5">{disabled || k.hint}</span>
+      </button>
+    );
+  };
+
   return (
     <>
-      {pill}
-      <button type="button" title="Copy the QRIS picture, to paste it in the chat"
-        onClick={(e) => { e.stopPropagation(); copyQris().then((ok) => { setQrFailed(!ok); onNote?.(ok ? 'QRIS copied: paste it in the chat.' : 'Couldn’t copy the QRIS on this browser.', ok ? 'ok' : 'err'); }); }}
-        className="inline-flex items-center px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 whitespace-nowrap">Copy QRIS</button>
+      <button ref={btnRef} type="button" onClick={open} onMouseDown={(e) => e.stopPropagation()} disabled={busy} aria-haspopup="menu" aria-expanded={!!menu}
+        title={last ? `${last} · click to send a message` : 'Send a WhatsApp message: ask to pay, or the confirmation'}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-colors disabled:opacity-50 ${last ? 'text-text-subtle hover:text-text-light hover:bg-adm-hover-2' : 'border border-adm-line-2 text-text-light font-medium hover:bg-adm-hover-2'}`}>
+        <span className={last ? '' : 'text-[#1fae55]'}><FaWhatsapp size={13} /></span>
+        {last || 'WhatsApp'}
+        <ChevronDown size={12} className={`transition-transform ${menu ? 'rotate-180' : ''}`} />
+      </button>
+      {qrFailed && (
+        <button type="button" title="Copy the QRIS picture, to paste it in the chat"
+          onClick={(e) => { e.stopPropagation(); copyQris().then((ok) => { setQrFailed(!ok); onNote?.(ok ? 'QRIS copied: paste it in the chat.' : 'Couldn’t copy the QRIS on this browser.', ok ? 'ok' : 'err'); }); }}
+          className="inline-flex items-center px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 whitespace-nowrap">Copy QRIS</button>
+      )}
+      {menu && (
+        <div role="menu" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}
+          className="fixed z-[120] w-64 p-1.5 rounded-xl bg-surface-1 border border-adm-line-2 shadow-2xl"
+          style={{ top: menu.top, left: menu.left, transform: menu.up ? 'translateY(-100%)' : undefined }}>
+          <Item kind="pay" disabled={paid ? 'Already paid' : undefined} />
+          <Item kind="confirm" />
+        </div>
+      )}
     </>
   );
 };

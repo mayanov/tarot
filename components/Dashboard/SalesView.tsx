@@ -289,7 +289,7 @@ const SalesView: React.FC = () => {
                                     <StatusPill status={b.status} />
                                     <span className="ml-auto">
                                         {market === 'ID'
-                                            ? <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
+                                            ? <WaConfirmButton compact b={b} onSent={(f, at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, [f]: at } : x)))} />
                                             : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
                                     </span>
                                 </div>
@@ -342,7 +342,7 @@ const SalesView: React.FC = () => {
                                         <td className="px-4 py-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                             {/* Indonesia is confirmed on WhatsApp, Global by email */}
                                             {market === 'ID'
-                                                ? <WaConfirmButton compact b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, waConfirmSentAt: at } : x)))} />
+                                                ? <WaConfirmButton compact b={b} onSent={(f, at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, [f]: at } : x)))} />
                                                 : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
                                         </td>
                                     </tr>

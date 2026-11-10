@@ -7,7 +7,7 @@ import Card from './ui/Card';
 import Segmented from './ui/Segmented';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, updateBookingDetails, BOOKINGS_CHANGED, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
-import WaConfirmButton, { waNumberOf } from './WaConfirmButton';
+import WaConfirmButton, { waNumberOf, type WaField } from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
 import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone, soonMs } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
@@ -1080,10 +1080,9 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
     };
 
     // the confirmation went out from Mayanov's WhatsApp: show it on the booking
-    const markWaSent = (id: string, at: string) =>
-        setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, waConfirmSentAt: at } : x)));
-    const markPayAsked = (id: string, at: string) =>
-        setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, waPayAskSentAt: at } : x)));
+    // a WhatsApp message went out (the confirmation, or the payment request)
+    const markWa = (id: string, field: WaField, at: string) =>
+        setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, [field]: at } : x)));
     const markEmailSent = (id: string, at: string) =>
         setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, paidEmailSentAt: at } : x)));
 
@@ -1566,13 +1565,9 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                     <Row label="Status"><StatusControl b={b} /></Row>
                                     {/* Indonesia is confirmed on WhatsApp, Global by email */}
                                     {b.status !== 'cancelled' && (b.market === 'ID' ? !!waNumberOf(b.contact) : !!email) && (
-                                        <Row label={b.market === 'ID' ? 'WhatsApp' : 'Confirmation'}>
+                                        <Row label={b.market === 'ID' ? 'Message' : 'Confirmation'}>
                                             {b.market === 'ID'
-                                                ? <>
-                                                    {/* not paid yet: ask for it first (the total, BCA and QRIS) */}
-                                                    {b.paymentStatus !== 'paid' && <WaConfirmButton b={b} kind="pay" onSent={(at) => markPayAsked(b.id, at)} onNote={flash} />}
-                                                    <WaConfirmButton b={b} compact onSent={(at) => markWaSent(b.id, at)} />
-                                                </>
+                                                ? <WaConfirmButton b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
                                                 : <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} />}
                                         </Row>
                                     )}
@@ -1649,7 +1644,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                             <div><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} /></div>
                                             <div><StatusControl b={b} /></div>
                                             <div>{b.market === 'ID'
-                                                ? <WaConfirmButton compact b={b} onSent={(at) => markWaSent(b.id, at)} />
+                                                ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
                                                 : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />}</div>
                                         </div>
                                     </div>
