@@ -523,7 +523,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 <div className="fixed inset-0 z-[60] bg-black/20 lg:bg-transparent" onClick={() => setNotesOpen(false)} aria-hidden />
                 <div role="dialog" aria-label="Notifications"
                     className="fixed z-[61] inset-x-0 top-14 bottom-0 lg:inset-auto lg:top-3 lg:left-[15.5rem] lg:w-[420px] lg:max-h-[calc(100vh-1.5rem)] lg:h-[640px] bg-surface-1 lg:border lg:border-adm-line lg:rounded-2xl shadow-2xl overflow-hidden animate-[fade-up_0.2s_ease-out]">
-                    <NotificationsView notes={notes} now={notesNow} seenAt={pageSeenAt} loading={notesLoading} refreshing={notesRefreshing}
+                    <NotificationsView bookings={allBookings} notes={notes} now={notesNow} seenAt={pageSeenAt} loading={notesLoading} refreshing={notesRefreshing}
                         onRefresh={loadNotes} onMarkAll={() => setPageSeenAt(Date.now())} onClose={() => setNotesOpen(false)} />
                 </div>
             </>}

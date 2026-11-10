@@ -2,7 +2,7 @@
 // stored): what came in, what's due, who's coming. Each has the moment it happened, so
 // the list reads newest first and "unread" is simply anything after the last look.
 import type { Booking } from '../../../services/booking';
-import { orderClock, serviceLabel, amountLabel, paymentMethodOf } from './format';
+import { orderClock, serviceLabel, serviceTitle, packageOf, amountLabel, paymentMethodOf, spanLabel, soonMs } from './format';
 
 export type NoteKind = 'new' | 'awaiting' | 'dueSoon' | 'overdue' | 'session' | 'cancelled';
 export interface Note {
@@ -104,6 +104,54 @@ export function notesFrom(bookings: Booking[], now: number): Note[] {
         }
     }
     return out.filter((n) => n.at <= now).sort((a, b) => b.at - a.at);
+}
+
+// ---- the to do list: what's still to be done, soonest deadline first ----
+export interface Todo {
+    b: Booking;
+    kind: 'reading' | 'session';
+    at: number;          // its deadline: when the reading is due, or when the session starts
+    title: string;       // what to do
+    detail: string;
+    pill: string;        // '3 h left', 'Overdue 2 d', 'in 5 h'
+    tone: 'late' | 'soon' | 'calm';
+}
+export function todosFrom(bookings: Booking[], now: number): Todo[] {
+    const out: Todo[] = [];
+    for (const b of bookings) {
+        if (b.extraFor || b.holdOnly || b.status === 'cancelled' || b.status === 'done') continue;
+        const name = b.name || 'someone';
+        const pkg = packageOf(b);
+        if (!(b.date && b.time)) {
+            // a reading or chat that's paid and not sent yet
+            const c = orderClock(b);
+            if (c.kind === 'unpaid') continue;
+            const chat = b.serviceId === 'chat';
+            const title = chat ? `Answer ${name}’s chat` : `Send ${name}’s reading`;
+            if (c.kind === 'waiting') {
+                out.push({ b, kind: 'reading', at: Infinity, title, detail: [serviceLabel(b), amountLabel(b)].filter(Boolean).join(' · '), pill: `paid ${spanLabel(now - c.since)} ago`, tone: 'calm' });
+                continue;
+            }
+            const left = c.due - now;
+            out.push({
+                b, kind: 'reading', at: c.due, title,
+                detail: [chat ? pkg || 'Chat' : serviceTitle(b) + (pkg ? ` · ${pkg}` : ''), amountLabel(b), `due ${whenLabel(c.due, now)}`].filter(Boolean).join(' · '),
+                pill: left <= 0 ? `Overdue ${spanLabel(-left)}` : `${spanLabel(left)} left`,
+                tone: left <= 0 ? 'late' : left < soonMs(b.serviceId) ? 'soon' : 'calm',
+            });
+            continue;
+        }
+        // a session in the next day
+        const start = startOf(b);
+        if (start > now && start - now <= DAY) out.push({
+            b, kind: 'session', at: start,
+            title: `${serviceTitle(b)} with ${name}`,
+            detail: [pkg, b.paymentStatus === 'paid' ? '' : 'not paid yet'].filter(Boolean).join(' · ') || amountLabel(b),
+            pill: `in ${spanLabel(start - now)}`,
+            tone: start - now <= 2 * HOUR ? 'soon' : 'calm',
+        });
+    }
+    return out.sort((x, y) => x.at - y.at);
 }
 
 // ---- read / unread: the moment of the last look, kept in this browser ----
