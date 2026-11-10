@@ -4,7 +4,7 @@ import 'react-day-picker/style.css';
 import { X, Check, CalendarDays, Clock, Copy } from 'lucide-react';
 import PencilArrow from '../UI/PencilArrow';
 import CelestialMark from '../UI/CelestialMark';
-import { PaintSwatch, MarkerFrame, InkLoop } from '../UI/ButtonInk';
+import { PaintSwatch, MarkerFrame, InkLoop, PencilFrame } from '../UI/ButtonInk';
 import WatercolorWash from '../UI/WatercolorWash';
 import PencilRule from '../UI/PencilRule';
 import PaintProgress from '../UI/PaintProgress';
@@ -628,13 +628,16 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   // fields are lines to write on, ruled in pencil (.pencil-field), not boxes; the line
   // darkens to the brand purple while you write on it
   const field = 'letterpress pencil-field w-full bg-transparent px-1 pt-2 pb-2.5 font-elegant text-[17px] text-ink placeholder-ink/30 focus:outline-none';
-  // options are words on the paper, not boxes: hovering one lays a pale wash under it,
-  // and the chosen one is circled in ink, as you'd mark a printed form (put
-  // {chipInk(active)} as the first child)
-  const chip = (active: boolean) => `group/chip flex flex-col items-center text-center px-2 py-1.5 transition-colors ${active ? 'text-moon' : 'text-ink/80 hover:text-moon'}`;
-  const chipInk = (active: boolean) => active
-    ? <InkLoop className="text-moon" />
-    : <PaintSwatch round className="text-moon opacity-0 transition-opacity duration-300 group-hover/chip:opacity-[0.12]" />;
+  // a package or duration: a box sketched round it in pencil, so each choice reads as its
+  // own; hovering lays a pale wash in it, and the chosen one is drawn over in purple with
+  // the wash left in (put {chipInk(active)} as the first child)
+  const chip = (active: boolean) => `group/chip relative isolate flex flex-col items-center justify-center text-center px-2 py-3 transition-colors ${active ? 'text-moon' : 'text-ink/80 hover:text-moon'}`;
+  const chipInk = (active: boolean) => (
+    <>
+      <PaintSwatch className={`text-moon transition-opacity duration-300 ${active ? 'opacity-[0.15]' : 'opacity-0 group-hover/chip:opacity-[0.07]'}`} />
+      <PencilFrame className={`transition-colors duration-300 ${active ? 'text-moon' : 'text-ink/30 group-hover/chip:text-ink/50'}`} />
+    </>
+  );
   // painted on the paper like the site's buttons (a swatch ruled round in marker): put
   // {swatch} as the first child. Not ready yet → only the marker outline, the paint not in
   const primaryBtn = 'group/btn relative isolate inline-flex items-center gap-1.5 px-6 py-2.5 text-cream text-sm font-semibold transition-colors duration-300 disabled:text-ink/40 disabled:pointer-events-none';
@@ -893,9 +896,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                         {service.packages.map((p) => {
                           const [pName, ...pRest] = p.split(' · ');
                           return (
-                            <button key={p} type="button" onClick={() => { setPkg(p); setTime(null); }} className={chip(pkg === p)}>
-                              <span className="relative isolate flex flex-col items-center px-4 py-1">
-                                {chipInk(pkg === p)}
+                            <button key={p} type="button" onClick={() => { setPkg(p); setTime(null); }} className={chip(pkg === p)} aria-pressed={pkg === p}>
+                              {chipInk(pkg === p)}
+                              <span className="flex flex-col items-center px-2">
                                 <span className="letterpress font-serif font-semibold text-[15px] leading-snug">{pName}</span>
                                 <span className={`letterpress mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-moon/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
                               </span>
@@ -984,9 +987,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                       {service.packages.map((p) => {
                         const [pName, ...pRest] = p.split(' · ');
                         return (
-                          <button key={p} type="button" onClick={() => setPkg(p)} className={chip(pkg === p)}>
-                            <span className="relative isolate flex flex-col items-center px-4 py-1">
-                              {chipInk(pkg === p)}
+                          <button key={p} type="button" onClick={() => setPkg(p)} className={chip(pkg === p)} aria-pressed={pkg === p}>
+                            {chipInk(pkg === p)}
+                            <span className="flex flex-col items-center px-2">
                               <span className="letterpress font-serif font-semibold text-[15px] leading-snug">{pName}</span>
                               <span className={`letterpress mt-0.5 text-[12px] leading-snug ${pkg === p ? 'text-moon/75' : 'text-ink/50'}`}>{pRest.join(' · ')}</span>
                             </span>
