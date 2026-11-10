@@ -932,8 +932,20 @@ const serviceAfterName = (b: Booking) => {
     const title = serviceTitle(b), pkg = packageOf(b);
     return (b.name || '').toLowerCase().includes(title.toLowerCase().split(/[\s/-]/)[0]) && pkg ? pkg : serviceLabel(b);
 };
+// Where a reading is answered: the customer's emails in the business Gmail (the thread
+// with their question, to reply to with the reading), or their WhatsApp chat for a chat
+// question or when there's no email.
+const BUSINESS_GMAIL = 'tarotreadingbymayanov@gmail.com';
+const replyLink = (b: Booking): { href: string; kind: 'email' | 'wa' } | null => {
+    const email = emailOf(b.contact);
+    const wa = waNumberOf(b.contact);
+    if (wa && (b.serviceId === 'chat' || !email)) return { kind: 'wa', href: `https://wa.me/${wa}` }; // a chat is answered on WhatsApp
+    return email ? { kind: 'email', href: `https://mail.google.com/mail/?authuser=${encodeURIComponent(BUSINESS_GMAIL)}#search/${encodeURIComponent(email)}` } : null;
+};
+
 const ReadingLine: React.FC<{ b: Booking; now: number; onOpen: () => void; onDone: () => void }> = ({ b, now, onOpen, onDone }) => {
     const d = dueText(b, now);
+    const reply = replyLink(b);
     return (
         <div onClick={onOpen} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors">
             <div className="min-w-0 flex-1">
@@ -945,6 +957,15 @@ const ReadingLine: React.FC<{ b: Booking; now: number; onOpen: () => void; onDon
                 </div>
             </div>
             <div className={`hidden sm:block shrink-0 text-xs tabular-nums whitespace-nowrap ${d.cls}`}>{d.text}</div>
+            {reply && (
+                <a href={reply.href} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+                    title={reply.kind === 'email' ? `Open ${emailOf(b.contact)}'s emails in Gmail` : `Open ${b.name || 'their'} WhatsApp chat`}
+                    aria-label={reply.kind === 'email' ? `Email ${b.name || ''}` : `WhatsApp ${b.name || ''}`}
+                    className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 transition-colors">
+                    {reply.kind === 'email' ? <Mail size={13} className="text-lilac" /> : <FaWhatsapp size={13} className="text-[#25D366]" />}
+                    <span className="hidden sm:inline">{reply.kind === 'email' ? 'Email' : 'WhatsApp'}</span>
+                </a>
+            )}
             <button type="button" onClick={(e) => { e.stopPropagation(); onDone(); }} title="Mark this reading done (sent)"
                 className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 transition-colors">
                 <Check size={13} className="text-sage" />Done
