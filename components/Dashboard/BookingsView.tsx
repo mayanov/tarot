@@ -1405,7 +1405,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 );
                 return (
                     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start">
-                        <Card className="overflow-hidden">
+                        {/* on a phone the day's schedule comes last, after what needs doing */}
+                        <Card className="overflow-hidden order-last lg:order-none">
                             {head("Today's schedule", 0, onOpen && (() => onOpen('calendar')), 'Week')}
                             {/* only today, drawn as a day of the calendar */}
                             <DayTimeline iso={todayISO} bookings={calendarSessions} entries={soonEntries} now={now}
