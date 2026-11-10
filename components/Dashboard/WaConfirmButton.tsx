@@ -140,7 +140,8 @@ export type WaField = (typeof KIND)[Kind]['field'];
  *  also copies the QRIS picture to paste after it (onNote says whether that worked). The
  *  button itself shows the latest one sent. The menu is fixed to the screen, so a table
  *  that clips its rows doesn't cut it off. */
-const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: string) => void; onNote?: (text: string, kind: 'ok' | 'err') => void; compact?: boolean }> = ({ b, onSent, onNote }) => {
+// direct 'pay': no menu, the button itself sends Ask to pay (Today's Not paid yet)
+const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: string) => void; onNote?: (text: string, kind: 'ok' | 'err') => void; compact?: boolean; direct?: 'pay' }> = ({ b, onSent, onNote, direct }) => {
   const [busy, setBusy] = useState(false);
   const [menu, setMenu] = useState<{ top: number; left: number; up: boolean } | null>(null);
   const [qrFailed, setQrFailed] = useState(false);
@@ -219,6 +220,26 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: strin
     );
   };
 
+  const qrRetry = qrFailed && (
+    <button type="button" title="Copy the QRIS picture, to paste it in the chat"
+      onClick={(e) => { e.stopPropagation(); copyQris().then((ok) => { setQrFailed(!ok); onNote?.(ok ? 'QRIS copied: paste it in the chat.' : 'Couldn’t copy the QRIS on this browser.', ok ? 'ok' : 'err'); }); }}
+      className="inline-flex items-center px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 whitespace-nowrap">Copy QRIS</button>
+  );
+  if (direct === 'pay') {
+    const asked = b.waPayAskSentAt ? `Asked ${sentLabel(b.waPayAskSentAt).split(',')[0]}` : '';
+    return (
+      <span className="inline-flex items-center gap-1.5">
+        <button type="button" disabled={busy || paid} onClick={(e) => { e.stopPropagation(); send('pay'); }}
+          title={asked ? `${asked} · click to ask again (opens WhatsApp with the total, BCA and QRIS)` : 'Opens WhatsApp with the total, BCA and QRIS'}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-colors disabled:opacity-50 ${asked ? 'text-text-subtle hover:text-text-light hover:bg-adm-hover-2' : 'border border-adm-line-2 text-text-light font-medium hover:bg-adm-hover-2'}`}>
+          <span className={asked ? '' : 'text-[#1fae55]'}><FaWhatsapp size={13} /></span>
+          {asked || 'Ask to pay'}
+        </button>
+        {qrRetry}
+      </span>
+    );
+  }
+
   return (
     <>
       <button ref={btnRef} type="button" onClick={open} onMouseDown={(e) => e.stopPropagation()} disabled={busy} aria-haspopup="menu" aria-expanded={!!menu}
@@ -228,11 +249,7 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: strin
         {last || 'WhatsApp'}
         <ChevronDown size={12} className={`transition-transform ${menu ? 'rotate-180' : ''}`} />
       </button>
-      {qrFailed && (
-        <button type="button" title="Copy the QRIS picture, to paste it in the chat"
-          onClick={(e) => { e.stopPropagation(); copyQris().then((ok) => { setQrFailed(!ok); onNote?.(ok ? 'QRIS copied: paste it in the chat.' : 'Couldn’t copy the QRIS on this browser.', ok ? 'ok' : 'err'); }); }}
-          className="inline-flex items-center px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 whitespace-nowrap">Copy QRIS</button>
-      )}
+      {qrRetry}
       {menu && (
         <div role="menu" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}
           className="fixed z-[120] w-64 p-1.5 rounded-xl bg-surface-1 border border-adm-line-2 shadow-2xl"

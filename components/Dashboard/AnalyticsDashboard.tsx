@@ -62,6 +62,9 @@ const NAV_GROUPS: { label: string; tone: Tone; items: { id: View; name: string; 
     ] },
 ];
 
+// the phone's bottom bar: the pages used every day
+const TAB_BAR: View[] = ['today', 'schedule', 'orders', 'sales'];
+
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => {
     // State
     const [startDate, setStartDate] = useState<string>('');
@@ -1335,11 +1338,46 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         )}
                     </div>
                 )}
+                {/* room for the phone's bottom bar */}
+                <div aria-hidden className="h-20 lg:hidden" />
             </main>
+
+            {/* PHONE BOTTOM BAR — the day's pages one tap away; the rest are under Menu */}
+            <nav aria-label="Main" className={`${sidebarOpen ? 'hidden' : ''} lg:hidden fixed bottom-0 inset-x-0 z-40 bg-surface-1/95 backdrop-blur-md border-t border-adm-line pb-[env(safe-area-inset-bottom)]`}>
+                <div className="grid grid-cols-5 h-16">
+                    {TAB_BAR.map((id) => {
+                        const group = NAV_GROUPS.find((g) => g.items.some((i) => i.id === id))!;
+                        const item = group.items.find((i) => i.id === id)!;
+                        const active = activeView === id;
+                        const Icon = item.icon;
+                        return (
+                            <button key={id} type="button" onClick={() => { setActiveView(id); setSidebarOpen(false); }} aria-current={active ? 'page' : undefined}
+                                className={`relative flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${active ? 'text-text-light' : 'text-text-subtle'}`}>
+                                {active && <span aria-hidden className={`absolute top-0 h-[3px] w-8 rounded-b-full ${TONE[group.tone].bar}`} />}
+                                <Icon size={20} className={active ? TONE[group.tone].icon : ''} />
+                                {item.name}
+                            </button>
+                        );
+                    })}
+                    {/* everything else: the full menu */}
+                    {(() => {
+                        const elsewhere = !TAB_BAR.includes(activeView);
+                        const group = NAV_GROUPS.find((g) => g.items.some((i) => i.id === activeView));
+                        return (
+                            <button type="button" onClick={() => setSidebarOpen(true)} aria-label="Menu, more pages"
+                                className={`relative flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${elsewhere ? 'text-text-light' : 'text-text-subtle'}`}>
+                                {elsewhere && group && <span aria-hidden className={`absolute top-0 h-[3px] w-8 rounded-b-full ${TONE[group.tone].bar}`} />}
+                                <Menu size={20} className={elsewhere && group ? TONE[group.tone].icon : ''} />
+                                {elsewhere && group ? group.items.find((i) => i.id === activeView)!.name : 'More'}
+                            </button>
+                        );
+                    })()}
+                </div>
+            </nav>
 
             {/* TOAST NOTIFICATION */}
             {toast && (
-                <div className={`fixed bottom-6 right-6 p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right-10 fade-in duration-300 z-50 border ${toast.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-300'}`}>
+                <div className={`fixed bottom-20 lg:bottom-6 right-4 lg:right-6 p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right-10 fade-in duration-300 z-50 border ${toast.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-300'}`}>
                     {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
                     <span className="font-bold text-sm">{toast.message}</span>
                     <button onClick={() => setToast(null)} className="ml-2 hover:opacity-75">

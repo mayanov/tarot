@@ -7,7 +7,7 @@ import Card from './ui/Card';
 import Segmented from './ui/Segmented';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, updateBookingDetails, BOOKINGS_CHANGED, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
-import WaConfirmButton, { waNumberOf, type WaField } from './WaConfirmButton';
+import WaConfirmButton, { waNumberOf, paymentRequestText, type WaField } from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
 import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone, soonMs } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
@@ -875,14 +875,32 @@ const serviceAfterName = (b: Booking) => {
     return (b.name || '').toLowerCase().includes(title.toLowerCase().split(/[\s/-]/)[0]) && pkg ? pkg : serviceLabel(b);
 };
 // A line on Today's lists: something not paid yet.
+// Ask an unpaid customer to pay, in one click: on WhatsApp when there's a number (the
+// total, BCA and QRIS), else a Gmail draft to their address with the same message
+const BUSINESS_GMAIL = 'tarotreadingbymayanov@gmail.com';
+const AskToPay: React.FC<{ b: Booking; onSent: (field: WaField, at: string) => void; onNote: (text: string, kind: 'ok' | 'err') => void }> = ({ b, onSent, onNote }) => {
+    if (waNumberOf(b.contact)) return <WaConfirmButton direct="pay" b={b} onSent={onSent} onNote={onNote} />;
+    const email = emailOf(b.contact);
+    if (!email) return null;
+    const href = `https://mail.google.com/mail/?authuser=${encodeURIComponent(BUSINESS_GMAIL)}&view=cm&fs=1&to=${encodeURIComponent(email)}`
+        + `&su=${encodeURIComponent('Your booking with Mayanov Tarot')}&body=${encodeURIComponent(paymentRequestText(b))}`;
+    return (
+        <a href={href} target="_blank" rel="noopener noreferrer" title={`Opens a Gmail draft to ${email} with the total`}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 whitespace-nowrap transition-colors">
+            <Mail size={13} className="text-lilac" />Ask to pay
+        </a>
+    );
+};
+
 const TodayLine: React.FC<{ b: Booking; onOpen: () => void; children?: React.ReactNode; note: React.ReactNode }> = ({ b, onOpen, children, note }) => (
-    <div onClick={onOpen} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors">
+    // on a phone the buttons go on a line of their own, so the name isn't squeezed
+    <div onClick={onOpen} className="flex flex-wrap sm:flex-nowrap items-center gap-x-3 gap-y-2 px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors">
         <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-text-light truncate">{b.name || '—'} <span className="font-normal text-text-subtle">· {serviceLabel(b)}</span></div>
             {note}
         </div>
         <div className="shrink-0 text-right text-sm font-semibold text-text-light tabular-nums whitespace-nowrap">{amountLabel(b)}</div>
-        {children && <div className="shrink-0" onClick={(e) => e.stopPropagation()}>{children}</div>}
+        {children && <div className="shrink-0 basis-full sm:basis-auto flex justify-end" onClick={(e) => e.stopPropagation()}>{children}</div>}
     </div>
 );
 
@@ -1167,7 +1185,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
             {error && !detailOnly && <div className="text-sm text-red-300 bg-red-500/10 border border-red-400/25 rounded-xl px-3 py-2.5">{error}</div>}
 
             {notice && (
-                <div className={`fixed bottom-6 right-6 z-[60] px-3 py-2.5 rounded-xl shadow-lg text-sm border ${notice.kind === 'ok' ? 'bg-sage/15 border-sage/40 text-sage' : 'bg-coral/15 border-coral/40 text-coral-deep'}`}>
+                <div className={`fixed bottom-20 lg:bottom-6 right-4 lg:right-6 z-[60] px-3 py-2.5 rounded-xl shadow-lg text-sm border ${notice.kind === 'ok' ? 'bg-sage/15 border-sage/40 text-sage' : 'bg-coral/15 border-coral/40 text-coral-deep'}`}>
                     {notice.text}
                 </div>
             )}
@@ -1388,7 +1406,11 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                                 note={<div className="text-[0.7rem] text-text-subtle tabular-nums mt-0.5">
                                                     {b.date && b.time ? `Session ${fmtDate(b.date)} · ${b.time}` : b.extraFor ? `Extra time · session ${fmtDate(b.createdAt)}` : `Ordered ${fmtDate(b.createdAt)}`}
                                                 </div>}>
-                                                <PaymentPill paid={false} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
+                                                {/* ask for it, or mark it paid once it's in */}
+                                                <span className="flex items-center gap-1.5">
+                                                    <AskToPay b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
+                                                    <PaymentPill paid={false} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
+                                                </span>
                                             </TodayLine>
                                         ))}
                                     </div>}
