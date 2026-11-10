@@ -6,7 +6,9 @@
 // and PAYPAL_ENV = 'live' | 'sandbox' (default sandbox). Without the keys the form
 // falls back to the plain payment links.
 
-const LIVE = process.env.PAYPAL_ENV === 'live';
+// the keys as pasted into Vercel, without the spaces or line breaks a copy can bring along
+const env = (k) => String(process.env[k] || '').trim();
+const LIVE = env('PAYPAL_ENV').toLowerCase() === 'live';
 const API = LIVE ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
 
 // What each reading costs — the only source of the amount charged. A session with a
@@ -24,21 +26,28 @@ const CURRENCY = 'USD';
 export const SIMULATE = process.env.PAYPAL_SIMULATE === '1' && !process.env.VERCEL;
 const simOrders = new Map(); // made-up order id → service
 
-export const configured = () => SIMULATE || Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_SECRET);
+export const configured = () => SIMULATE || Boolean(env('PAYPAL_CLIENT_ID') && env('PAYPAL_SECRET'));
 export const publicConfig = () => SIMULATE
     ? { simulate: true, clientId: 'simulated', env: 'sandbox', currency: CURRENCY }
-    : { clientId: process.env.PAYPAL_CLIENT_ID, env: LIVE ? 'live' : 'sandbox', currency: CURRENCY };
+    : { clientId: env('PAYPAL_CLIENT_ID'), env: LIVE ? 'live' : 'sandbox', currency: CURRENCY };
 
 let token = null; // { value, expires }
 async function accessToken() {
     if (token && token.expires > Date.now() + 60_000) return token.value;
-    const auth = Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`).toString('base64');
+    const id = env('PAYPAL_CLIENT_ID'), secret = env('PAYPAL_SECRET');
+    const auth = Buffer.from(`${id}:${secret}`).toString('base64');
     const res = await fetch(`${API}/v1/oauth2/token`, {
         method: 'POST',
         headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'grant_type=client_credentials',
     });
-    if (!res.ok) throw new Error(`PayPal auth failed (${res.status})`);
+    if (!res.ok) {
+        // what's likely wrong, never the keys themselves
+        const hint = secret === id ? 'the secret is the client ID pasted twice'
+            : res.status === 401 ? `the client ID and secret don't match a ${LIVE ? 'live' : 'sandbox'} app (a secret from another app, or ${LIVE ? 'sandbox' : 'live'} keys?)`
+            : 'PayPal refused';
+        throw new Error(`PayPal auth failed (${res.status}): ${hint}`);
+    }
     const data = await res.json();
     token = { value: data.access_token, expires: Date.now() + data.expires_in * 1000 };
     return token.value;
