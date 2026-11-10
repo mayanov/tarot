@@ -9,11 +9,12 @@ import EmailConfirmButton from './EmailConfirmButton';
 import { StatusPill, PaymentPill } from './lib/status';
 import Card from './ui/Card';
 import PageHeader from './ui/PageHeader';
-import Segmented from './ui/Segmented';
 import Button from './ui/Button';
 import { SearchInput, Select } from './ui/Field';
 
 type Market = 'ID' | 'Global';
+type Cur = 'IDR' | 'USD';
+const marketOf = (b: Booking): Market => (b.market === 'ID' ? 'ID' : 'Global');
 
 const SalesView: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -32,8 +33,9 @@ const SalesView: React.FC = () => {
     // the booking whose details are open (the same popup as Orders and Schedule)
     const [openId, setOpenId] = useState<string | null>(null);
     const [savingId, setSavingId] = useState<string | null>(null);
-    // one market at a time, so rupiah and dollars never share a list or a total
-    const [market, setMarket] = useState<Market>('ID');
+    // every order in one list; narrowed to one market by its filter. Rupiah and dollars
+    // are still never added together: each total has a line per currency
+    const [market, setMarket] = useState<Market | 'all'>('all');
 
     // close the date popover on outside click / Escape
     useEffect(() => {
@@ -80,22 +82,26 @@ const SalesView: React.FC = () => {
 
     // This market's orders except cancelled — newest booking date first (API already sorts desc).
     const live = useMemo(() => bookings.filter((b) => b.status !== 'cancelled'), [bookings]);
-    const countBy = useMemo(() => ({ ID: live.filter((b) => b.market === 'ID').length, Global: live.filter((b) => b.market !== 'ID').length }), [live]);
-    const orders = useMemo(() => live.filter((b) => (b.market === 'ID' ? 'ID' : 'Global') === market), [live, market]);
-    const cur = market === 'ID' ? 'IDR' : 'USD';
+    const orders = useMemo(() => (market === 'all' ? live : live.filter((b) => marketOf(b) === market)), [live, market]);
+    // the currencies on show: both for all markets
+    const curs: Cur[] = market === 'ID' ? ['IDR'] : market === 'Global' ? ['USD'] : ['IDR', 'USD'];
 
-    // Collected vs still owed, in this market's currency.
+    // Collected vs still owed, per currency.
     const totals = useMemo(() => {
-        const t = { paid: 0, unpaid: 0, paidCount: 0, unpaidCount: 0 };
+        const t = { paidCount: 0, unpaidCount: 0, paid: { IDR: 0, USD: 0 } as Record<Cur, number>, unpaid: { IDR: 0, USD: 0 } as Record<Cur, number> };
         orders.forEach((b) => {
             const paid = b.paymentStatus === 'paid';
             paid ? t.paidCount++ : t.unpaidCount++;
             const a = amountOf(b);
             if (!a) return;
-            paid ? (t.paid += a.amount) : (t.unpaid += a.amount);
+            (paid ? t.paid : t.unpaid)[a.currency as Cur] += a.amount;
         });
         return t;
     }, [orders]);
+    // one line per currency, rupiah over dollars
+    const money = (by: (c: Cur) => number) => curs.map((c) => (
+        <div key={c} className="text-sm sm:text-xl font-bold text-text-light tabular-nums whitespace-nowrap">{fmtMoney(by(c), c)}</div>
+    ));
 
     // Distinct services present in the data, for the Service dropdown.
     const serviceOptions = useMemo(() => {
@@ -121,14 +127,7 @@ const SalesView: React.FC = () => {
             return !needle || matchesSearch(needle, b.name, b.serviceName, serviceLabel(b), b.contact, b.ref, b.adminNote);
         }).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
     }, [orders, q, payFilter, serviceFilter, sourceFilter, dateFrom, dateTo]);
-    // the same search in the other market's orders (it only looks in the tab that's open)
-    const otherMarket: Market = market === 'ID' ? 'Global' : 'ID';
-    const otherMatches = useMemo(() => (q.trim()
-        ? live.filter((b) => (b.market === 'ID' ? 'ID' : 'Global') === otherMarket
-            && matchesSearch(q, b.name, b.serviceName, serviceLabel(b), b.contact, b.ref, b.adminNote)).length
-        : 0), [live, q, otherMarket]);
-
-    const activeFilters = (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0)
+    const activeFilters = (market !== 'all' ? 1 : 0) + (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0)
         + (sourceFilter !== 'all' ? 1 : 0)
         + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
 
@@ -168,11 +167,7 @@ const SalesView: React.FC = () => {
 
     return (
         <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
-            <PageHeader title="Sales" subtitle={`${orders.length} ${market === 'ID' ? 'Indonesia' : 'Global'} orders · mark payments as they come in`} onRefresh={load} refreshing={loading}>
-                {/* market: rupiah and dollars are kept apart */}
-                <Segmented value={market} onChange={(m) => { setMarket(m); setServiceFilter('all'); }}
-                    options={[{ id: 'ID', label: 'Indonesia · IDR', count: countBy.ID }, { id: 'Global', label: 'Global · USD', count: countBy.Global }]} />
-            </PageHeader>
+            <PageHeader title="Sales" subtitle={`${orders.length} ${market === 'ID' ? 'Indonesia ' : market === 'Global' ? 'Global ' : ''}orders · mark payments as they come in`} onRefresh={load} refreshing={loading} />
 
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
 
@@ -180,31 +175,30 @@ const SalesView: React.FC = () => {
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 <Card className="p-3 sm:p-4 min-w-0">
                     <div className="flex items-center gap-1.5 sm:gap-2 text-text-subtle text-[10px] sm:text-xs uppercase tracking-wider mb-1.5 sm:mb-2 truncate"><CheckCircle2 size={14} className="text-sage" /> Collected</div>
-                    <div className="text-sm sm:text-xl font-bold text-text-light tabular-nums truncate">{fmtMoney(totals.paid, cur)}</div>
+                    {money((c) => totals.paid[c])}
                     <div className="text-[11px] sm:text-xs text-text-subtle mt-0.5 truncate">{totals.paidCount} paid {totals.paidCount === 1 ? 'order' : 'orders'}</div>
                 </Card>
                 <Card className="p-3 sm:p-4 min-w-0">
                     <div className="flex items-center gap-1.5 sm:gap-2 text-text-subtle text-[10px] sm:text-xs uppercase tracking-wider mb-1.5 sm:mb-2 truncate"><AlertCircle size={14} className="text-coral-deep" /> Outstanding</div>
-                    <div className="text-sm sm:text-xl font-bold text-text-light tabular-nums truncate">{fmtMoney(totals.unpaid, cur)}</div>
+                    {money((c) => totals.unpaid[c])}
                     <div className="text-[11px] sm:text-xs text-text-subtle mt-0.5 truncate">{totals.unpaidCount} unpaid {totals.unpaidCount === 1 ? 'order' : 'orders'}</div>
                 </Card>
                 <Card className="p-3 sm:p-4 min-w-0">
                     <div className="flex items-center gap-1.5 sm:gap-2 text-text-subtle text-[10px] sm:text-xs uppercase tracking-wider mb-1.5 sm:mb-2 truncate"><Wallet size={14} className="text-blue" /> Total booked</div>
-                    <div className="text-sm sm:text-xl font-bold text-text-light tabular-nums truncate">{fmtMoney(totals.paid + totals.unpaid, cur)}</div>
+                    {money((c) => totals.paid[c] + totals.unpaid[c])}
                     <div className="text-[11px] sm:text-xs text-text-subtle mt-0.5 truncate">{orders.length} {orders.length === 1 ? 'order' : 'orders'}, cancelled left out</div>
                 </Card>
             </div>
 
-            {otherMatches > 0 && (
-                <button type="button" onClick={() => { setMarket(otherMarket); setServiceFilter('all'); }}
-                    className="text-sm text-lilac hover:underline">
-                    {otherMatches} {otherMatches === 1 ? 'order' : 'orders'} for “{q.trim()}” in {otherMarket === 'ID' ? 'Indonesia' : 'Global'} →
-                </button>
-            )}
             {/* toolbar */}
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                 <SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, service, ref or note" />
                 <div className="flex flex-wrap items-center gap-2">
+                    <Select value={market} active={market !== 'all'} onChange={(e) => { setMarket(e.target.value as Market | 'all'); setServiceFilter('all'); }}>
+                        <option value="all">All markets</option>
+                        <option value="ID">Indonesia · IDR</option>
+                        <option value="Global">Global · USD</option>
+                    </Select>
                     <Select value={payFilter} active={payFilter !== 'all'} onChange={(e) => setPayFilter(e.target.value as 'all' | 'paid' | 'unpaid')}>
                         <option value="all">All payments</option>
                         <option value="paid">Paid</option>
@@ -261,7 +255,7 @@ const SalesView: React.FC = () => {
                         )}
                     </div>
                     {activeFilters > 0 && (
-                        <Button variant="ghost" onClick={() => { setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }}>
+                        <Button variant="ghost" onClick={() => { setMarket('all'); setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }}>
                             Clear
                         </Button>
                     )}
@@ -288,7 +282,7 @@ const SalesView: React.FC = () => {
                                     <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={savingId === b.id} />
                                     <StatusPill status={b.status} />
                                     <span className="ml-auto">
-                                        {market === 'ID'
+                                        {b.market === 'ID'
                                             ? <WaConfirmButton compact b={b} onSent={(f, at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, [f]: at } : x)))} />
                                             : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
                                     </span>
@@ -311,7 +305,7 @@ const SalesView: React.FC = () => {
                                 <th className="font-semibold px-4 py-3 text-right">Amount</th>
                                 <th className="font-semibold px-4 py-3">Status</th>
                                 <th className="font-semibold px-4 py-3">Payment</th>
-                                <th className="font-semibold px-4 py-3 text-right">{market === 'ID' ? 'WhatsApp' : 'Email'}</th>
+                                <th className="font-semibold px-4 py-3 text-right">{market === 'ID' ? 'WhatsApp' : market === 'Global' ? 'Email' : 'Confirm'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -341,7 +335,7 @@ const SalesView: React.FC = () => {
                                         <td className="px-4 py-3"><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={savingId === b.id} /></td>
                                         <td className="px-4 py-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                             {/* Indonesia is confirmed on WhatsApp, Global by email */}
-                                            {market === 'ID'
+                                            {b.market === 'ID'
                                                 ? <WaConfirmButton compact b={b} onSent={(f, at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, [f]: at } : x)))} />
                                                 : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
                                         </td>
