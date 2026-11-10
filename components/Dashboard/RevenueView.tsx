@@ -1,10 +1,11 @@
 import PageHeader from './ui/PageHeader';
 import Segmented from './ui/Segmented';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { TrendingUp, Wallet, ShoppingBag, Award, CalendarDays, ChevronDown, Check, ArrowUp, ArrowDown } from 'lucide-react';
+import { CalendarDays, ChevronDown, Check, ArrowUp, ArrowDown } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
+import StatStrip from './ui/StatStrip';
 import { Cur as Currency, amountForBooking, fmtIDR, fmtUSD, fmtMoney } from './lib/format';
 
 type Gran = 'day' | 'week';
@@ -259,24 +260,6 @@ const RevenueView: React.FC = () => {
             </span>
         );
     };
-    const KPI: React.FC<{ icon: React.ReactNode; label: string; lines: { cur: Currency; value: string; sub?: string; now?: number; before?: number }[] }> = ({ icon, label, lines }) => (
-        <div className="rounded-2xl bg-surface-1 border border-adm-line p-4">
-            <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider">{icon}<span>{label}</span></div>
-            <div className="mt-2 space-y-1.5">
-                {lines.map((l) => (
-                    <div key={l.cur} className="flex items-baseline gap-2 min-w-0">
-                        <span className="shrink-0 w-7 sm:w-8 text-[10px] font-semibold tracking-wider text-text-subtle">{l.cur}</span>
-                        {/* the change or the date goes under the figure when there's no room beside it */}
-                        <span className="min-w-0 flex flex-wrap items-baseline gap-x-2">
-                            <span className="text-[15px] sm:text-lg font-serif font-bold text-text-light tabular-nums">{l.value}</span>
-                            {l.sub && <span className="text-[11px] text-text-subtle">{l.sub}</span>}
-                            {l.now !== undefined && <Delta now={l.now} before={l.before} />}
-                        </span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
     const chartCard = (title: string, r: Report, data: StackRow[], empty: string, extra?: React.ReactNode) => (
         <div key={r.currency} className="rounded-2xl bg-surface-1 border border-adm-line p-4 min-w-0">
             <div className="flex items-center justify-between gap-3 mb-3">
@@ -349,12 +332,13 @@ const RevenueView: React.FC = () => {
                 {prevStart && <span className="text-[12px] text-text-subtle">Compared with {rangeLabel(prevStart, prevEnd)}</span>}
             </div>
 
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-                <KPI icon={<Wallet size={14} />} label="Total revenue" lines={reports.map((r) => ({ cur: r.currency, value: fmtMoney(r.total, r.currency), now: r.total, before: r.prev?.total }))} />
-                <KPI icon={<ShoppingBag size={14} />} label="Paid bookings" lines={reports.map((r) => ({ cur: r.currency, value: String(r.count), now: r.count, before: r.prev?.count }))} />
-                <KPI icon={<TrendingUp size={14} />} label="Avg order value" lines={reports.map((r) => ({ cur: r.currency, value: fmtMoney(r.avg, r.currency), now: r.avg, before: r.prev && r.prev.count ? r.prev.avg : r.prev ? 0 : undefined }))} />
-                <KPI icon={<Award size={14} />} label={`Best ${gran}`} lines={reports.map((r) => ({ cur: r.currency, value: fmtMoney(r.best.value, r.currency), sub: r.best.value > 0 ? r.best.label : undefined }))} />
-            </div>
+            {/* a line per currency, with the change against the range before beside it */}
+            <StatStrip layout="four" stats={[
+                { label: 'Total revenue', lines: reports.map((r) => ({ key: r.currency, value: fmtMoney(r.total, r.currency), note: <Delta now={r.total} before={r.prev?.total} /> })) },
+                { label: 'Paid bookings', lines: reports.map((r) => ({ key: r.currency, value: String(r.count), note: <span className="inline-flex items-baseline gap-2">{r.currency === 'IDR' ? 'in Rp' : 'in $'}<Delta now={r.count} before={r.prev?.count} /></span> })) },
+                { label: 'Avg order', lines: reports.map((r) => ({ key: r.currency, value: fmtMoney(r.avg, r.currency), note: <Delta now={r.avg} before={r.prev ? (r.prev.count ? r.prev.avg : 0) : undefined} /> })) },
+                { label: `Best ${gran}`, lines: reports.map((r) => ({ key: r.currency, value: fmtMoney(r.best.value, r.currency), note: r.best.value > 0 ? r.best.label : undefined })) },
+            ]} />
 
             {/* Daily / weekly stacked charts, one per currency */}
             <div className="grid gap-4 xl:grid-cols-2">

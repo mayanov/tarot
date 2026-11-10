@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Wallet, AlertCircle, CheckCircle2, ChevronDown, CalendarDays, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, CalendarDays, SlidersHorizontal } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle } from './lib/format';
@@ -8,6 +8,7 @@ import WaConfirmButton from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
 import { StatusPill, PaymentPill } from './lib/status';
 import Card from './ui/Card';
+import StatStrip from './ui/StatStrip';
 import PageHeader from './ui/PageHeader';
 import Button from './ui/Button';
 import { SearchInput, Select } from './ui/Field';
@@ -98,10 +99,6 @@ const SalesView: React.FC = () => {
         });
         return t;
     }, [orders]);
-    // one line per currency, rupiah over dollars
-    const money = (by: (c: Cur) => number) => curs.map((c) => (
-        <div key={c} className="text-sm sm:text-xl font-bold text-text-light tabular-nums whitespace-nowrap">{fmtMoney(by(c), c)}</div>
-    ));
 
     // Distinct services present in the data, for the Service dropdown.
     const serviceOptions = useMemo(() => {
@@ -167,28 +164,16 @@ const SalesView: React.FC = () => {
 
     return (
         <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
-            <PageHeader title="Sales" subtitle={`${orders.length} ${market === 'ID' ? 'Indonesia ' : market === 'Global' ? 'Global ' : ''}orders · mark payments as they come in`} onRefresh={load} refreshing={loading} />
+            <PageHeader title="Sales" subtitle="Every order, newest first (cancelled left out). Mark payments as they come in." onRefresh={load} refreshing={loading} />
 
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
 
-            {/* summary cards */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <Card className="p-3 sm:p-4 min-w-0">
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-text-subtle text-[10px] sm:text-xs uppercase tracking-wider mb-1.5 sm:mb-2 truncate"><CheckCircle2 size={14} className="text-sage" /> Collected</div>
-                    {money((c) => totals.paid[c])}
-                    <div className="text-[11px] sm:text-xs text-text-subtle mt-0.5 truncate">{totals.paidCount} paid {totals.paidCount === 1 ? 'order' : 'orders'}</div>
-                </Card>
-                <Card className="p-3 sm:p-4 min-w-0">
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-text-subtle text-[10px] sm:text-xs uppercase tracking-wider mb-1.5 sm:mb-2 truncate"><AlertCircle size={14} className="text-coral-deep" /> Outstanding</div>
-                    {money((c) => totals.unpaid[c])}
-                    <div className="text-[11px] sm:text-xs text-text-subtle mt-0.5 truncate">{totals.unpaidCount} unpaid {totals.unpaidCount === 1 ? 'order' : 'orders'}</div>
-                </Card>
-                <Card className="p-3 sm:p-4 min-w-0">
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-text-subtle text-[10px] sm:text-xs uppercase tracking-wider mb-1.5 sm:mb-2 truncate"><Wallet size={14} className="text-blue" /> Total booked</div>
-                    {money((c) => totals.paid[c] + totals.unpaid[c])}
-                    <div className="text-[11px] sm:text-xs text-text-subtle mt-0.5 truncate">{orders.length} {orders.length === 1 ? 'order' : 'orders'}, cancelled left out</div>
-                </Card>
-            </div>
+            {/* what came in, what's still owed, and both together; a line per currency */}
+            <StatStrip layout="three" stats={[
+                { label: 'Collected', lines: curs.map((c) => ({ key: c, value: fmtMoney(totals.paid[c], c) })), foot: `${totals.paidCount} paid` },
+                { label: 'Outstanding', lines: curs.map((c) => ({ key: c, value: fmtMoney(totals.unpaid[c], c) })), foot: `${totals.unpaidCount} unpaid` },
+                { label: 'Total booked', lines: curs.map((c) => ({ key: c, value: fmtMoney(totals.paid[c] + totals.unpaid[c], c) })), foot: `${orders.length} ${orders.length === 1 ? 'order' : 'orders'}` },
+            ]} />
 
             {/* toolbar */}
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
