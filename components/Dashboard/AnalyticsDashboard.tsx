@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound, Sparkles, MousePointerClick, ArrowDownToLine, HelpCircle, Repeat, Inbox, Home } from 'lucide-react';
+import { Users, Globe, Smartphone, Clock, Calendar, RefreshCcw, ChevronDown, BarChart2, Zap, Lock, LogIn, LogOut, Trash2, Plus, X, Menu, CheckCircle, AlertCircle, Wallet, Sun, Moon, Contact, Receipt, KeyRound, Sparkles, MousePointerClick, ArrowDownToLine, HelpCircle, Repeat, Inbox, Home, Bell } from 'lucide-react';
 import { getMockAnalyticsData, DailyVisit, UserLocation, UserDevice, AnalyticsSummary, ServicePerformance, WhatsAppClicks, FormFunnels, Journey } from '../../services/mockAnalytics';
 import { FaWhatsapp } from 'react-icons/fa';
 import { initGoogleAPI, loginToGoogle, fetchGA4Data, resetAnalytics, undoAnalyticsReset } from '../../services/ga4';
@@ -15,6 +15,9 @@ import ServiceFunnel from './ServiceFunnel';
 import RevenueView from './RevenueView';
 import CustomersView from './CustomersView';
 import { OPEN_CUSTOMER } from './lib/nav';
+import NotificationsView from './NotificationsView';
+import { notesFrom, lastSeen, markSeen } from './lib/notifications';
+import { getAllBookings, BOOKINGS_CHANGED, type Booking } from '../../services/booking';
 import SalesView from './SalesView';
 import { LoaderCard } from './ui/InlineLoader';
 import Segmented from './ui/Segmented';
@@ -31,11 +34,12 @@ interface AnalyticsDashboardProps {
 
 // Sidebar nav, grouped by purpose and ordered most-used first (day-to-day
 // operations → money → insights → admin). Data-driven so it stays tidy.
-type View = 'today' | 'analytics' | 'users' | 'schedule' | 'orders' | 'sales' | 'revenue' | 'customers' | 'events';
+type View = 'notifications' | 'today' | 'analytics' | 'users' | 'schedule' | 'orders' | 'sales' | 'revenue' | 'customers' | 'events';
 const NAV_GROUPS: { label: string; items: { id: View; name: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] }[] = [
     { label: 'Operations', items: [
         // the day's work first (who's coming, what to answer), then money, then people
         { id: 'today', name: 'Today', icon: Home },
+        { id: 'notifications', name: 'Notifications', icon: Bell },
         { id: 'schedule', name: 'Schedule', icon: Calendar },
         { id: 'orders', name: 'Orders', icon: Inbox },
         { id: 'sales', name: 'Sales', icon: Receipt },
@@ -121,6 +125,46 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         window.addEventListener(OPEN_CUSTOMER, go);
         return () => window.removeEventListener(OPEN_CUSTOMER, go);
     }, []);
+
+    // Notifications: worked out from the bookings, which are fetched now, every minute
+    // and whenever a screen changes one. "New" is anything after the last look (kept in
+    // this browser); opening the page counts as a look, but what was new stays marked
+    // there until you leave it or press Mark all read.
+    const [allBookings, setAllBookings] = useState<Booking[]>([]);
+    const [notesLoading, setNotesLoading] = useState(true);
+    const [notesRefreshing, setNotesRefreshing] = useState(false);
+    const [notesNow, setNotesNow] = useState(() => Date.now());
+    const [seenAt, setSeenAt] = useState(lastSeen);
+    const [pageSeenAt, setPageSeenAt] = useState(seenAt);
+    const loadNotes = React.useCallback(async () => {
+        setNotesRefreshing(true);
+        try {
+            setAllBookings(await getAllBookings(localStorage.getItem('authToken') || undefined));
+        } catch { /* keep what we had; the next try is a minute away */ }
+        setNotesNow(Date.now());
+        setNotesLoading(false);
+        setNotesRefreshing(false);
+    }, []);
+    useEffect(() => {
+        loadNotes();
+        const t = window.setInterval(loadNotes, 60_000);
+        window.addEventListener(BOOKINGS_CHANGED, loadNotes);
+        return () => { window.clearInterval(t); window.removeEventListener(BOOKINGS_CHANGED, loadNotes); };
+    }, [loadNotes]);
+    const notes = React.useMemo(() => notesFrom(allBookings, notesNow), [allBookings, notesNow]);
+    const onNotesPage = activeView === 'notifications';
+    // what was new when the page was opened stays marked on it (seenAt here is still the
+    // last look before this one)
+    useEffect(() => { if (onNotesPage) setPageSeenAt(seenAt); }, [onNotesPage]); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        // while the page is open, everything on it counts as seen (the badge stays clear)
+        if (!onNotesPage) return;
+        const now = Date.now();
+        markSeen(now);
+        setSeenAt(now);
+    }, [onNotesPage, notes]);
+    const unreadNotes = onNotesPage ? 0 : notes.filter((n) => n.at > seenAt).length;
+    const badge = unreadNotes > 9 ? '9+' : String(unreadNotes);
 
     // Init: the date range and real data. Nothing is fetched yet: the dashboard opens on
     // Today, and Analytics' numbers (and Google's script, only needed to connect by hand)
@@ -387,6 +431,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 <h2 className="text-lg font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
                     Mayanov Admin
                 </h2>
+                <button onClick={() => setActiveView('notifications')} aria-label={unreadNotes ? `Notifications, ${unreadNotes} new` : 'Notifications'}
+                    className={`relative ml-auto p-2 -mr-2 rounded-lg transition-colors hover:bg-adm-hover ${onNotesPage ? 'text-lilac' : 'text-text-subtle hover:text-text-light'}`}>
+                    <Bell size={21} />
+                    {unreadNotes > 0 && (
+                        <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-coral-deep text-white text-[10px] font-semibold flex items-center justify-center">{badge}</span>
+                    )}
+                </button>
             </div>
 
             {/* MOBILE DRAWER BACKDROP */}
@@ -425,6 +476,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             {active && <span aria-hidden className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-lilac" />}
                                             <Icon size={18} className={active ? 'text-lilac' : 'text-text-subtle group-hover:text-text-light transition-colors'} />
                                             <span>{item.name}</span>
+                                            {item.id === 'notifications' && unreadNotes > 0 && (
+                                                <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-coral-deep text-white text-[11px] font-semibold flex items-center justify-center" aria-label={`${unreadNotes} new`}>{badge}</span>
+                                            )}
                                         </button>
                                     );
                                 })}
@@ -458,7 +512,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
             <main className="flex-1 overflow-y-auto relative bg-bg-deep" data-lenis-prevent>
                 {/* Mobile Header (Hamburger would go here if we were doing mobile fully, keeping simple for now) */}
                 {/* MAIN CONTENT SWITCHER */}
-                {activeView === 'today' || activeView === 'schedule' || activeView === 'orders' ? (
+                {activeView === 'notifications' ? (
+                    <NotificationsView notes={notes} now={notesNow} seenAt={pageSeenAt} loading={notesLoading} refreshing={notesRefreshing}
+                        onRefresh={loadNotes} onMarkAll={() => setPageSeenAt(Date.now())} />
+                ) : activeView === 'today' || activeView === 'schedule' || activeView === 'orders' ? (
                     <BookingsView view={activeView === 'orders' ? 'orders' : activeView === 'today' ? 'today' : 'calendar'}
                         onOpen={(v) => setActiveView(v === 'orders' ? 'orders' : 'schedule')} />
                 ) : activeView === 'events' ? (

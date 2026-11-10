@@ -64,6 +64,8 @@ export interface Booking extends BookingInput {
   cancelReason?: 'unpaid' | 'closed' | 'failed' | null; // 'unpaid': not paid within the hour
   extraFor?: string; // extra time on a session (its ref): a record of its own, with its own price
   extraMinutes?: number;
+  holdOnly?: boolean; // a slot held while it's paid for online, not a booking yet
+  holdUntil?: string | null; // when an unpaid one is let go
   adminNote?: string; // a private note only the dashboard shows
 }
 
