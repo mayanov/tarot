@@ -13,6 +13,7 @@ import * as userStore from './userStore.js';
 import * as gcal from './googleCalendar.js';
 import * as paypal from './paypal.js';
 import * as midtrans from './midtrans.js';
+import * as xendit from './xendit.js';
 import * as mailer from './mailer.js';
 import * as notices from './notices.js';
 import crypto from 'node:crypto';
@@ -742,24 +743,25 @@ async function settleMidtrans(orderId) {
 }
 
 app.get('/api/midtrans/config', (req, res) => {
-    if (!midtrans.configured()) return res.json({ enabled: false });
+    if (!midtrans.configured() || xendit.active()) return res.json({ enabled: false });
     res.json({ enabled: true, ...midtrans.publicConfig() });
 });
 
-app.post('/api/midtrans/checkout', async (req, res) => {
-    if (!midtrans.configured()) return res.status(503).json({ error: 'Midtrans not configured' });
-    const { serviceId, pkg, date, time, name, dob, contact, question, phone, email } = req.body || {};
+// Checks an Indonesian checkout's details and holds its slot while it's paid (hidden
+// from the dashboard and calendar until then). Answers the request itself and returns
+// null when it can't; otherwise the quote, the order id and the hold.
+async function holdForPayment(req, res, provider, extra) {
+    const { serviceId, pkg, date, time, name, dob, contact, question } = req.body || {};
     const q = midtrans.quote(serviceId, String(pkg || ''));
-    if (!q || !name || !contact) return res.status(400).json({ error: 'Missing required fields' });
-    if (missingEmail(serviceId, contact)) return res.status(400).json({ error: 'EMAIL_REQUIRED' });
-    if (underAge(req.body?.dob)) return res.status(400).json({ error: 'UNDER_18' });
+    if (!q || !name || !contact) { res.status(400).json({ error: 'Missing required fields' }); return null; }
+    if (missingEmail(serviceId, contact)) { res.status(400).json({ error: 'EMAIL_REQUIRED' }); return null; }
+    if (underAge(req.body?.dob)) { res.status(400).json({ error: 'UNDER_18' }); return null; }
     if (q.scheduled && (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || !/^\d{2}:\d{2}$/.test(String(time)))) {
-        return res.status(400).json({ error: 'Missing date or time' });
+        res.status(400).json({ error: 'Missing date or time' }); return null;
     }
     const orderId = `MYV-${Date.now().toString(36)}-${crypto.randomBytes(3).toString('hex')}`.toUpperCase();
-    let hold;
     try {
-        hold = await bookingStore.createBooking({
+        const hold = await bookingStore.createBooking({
             serviceId,
             serviceName: q.name,
             date: q.scheduled ? date : '',
@@ -774,14 +776,24 @@ app.post('/api/midtrans/checkout', async (req, res) => {
             holdOnly: true,
             holdUntil: bookingStore.payBy(),
             amountDue: q.amount,
-            midtransOrderId: orderId,
+            ...extra(orderId),
             skipCalendar: true,
         });
+        return { q, orderId, hold };
     } catch (e) {
-        if (e.code === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
-        console.error('Midtrans hold failed:', e);
-        return res.status(500).json({ error: 'Failed to start booking' });
+        if (e.code === 'SLOT_TAKEN') { res.status(409).json({ error: 'SLOT_TAKEN' }); return null; }
+        console.error(`${provider} hold failed:`, e);
+        res.status(500).json({ error: 'Failed to start booking' });
+        return null;
     }
+}
+
+app.post('/api/midtrans/checkout', async (req, res) => {
+    if (!midtrans.configured() || xendit.active()) return res.status(503).json({ error: 'Midtrans not configured' });
+    const held = await holdForPayment(req, res, 'Midtrans', (orderId) => ({ midtransOrderId: orderId }));
+    if (!held) return;
+    const { q, orderId, hold } = held;
+    const { serviceId, name, phone, email } = req.body;
     try {
         const token = await midtrans.createTransaction({
             orderId,
@@ -839,6 +851,109 @@ app.post('/api/midtrans/notify', async (req, res) => {
         res.json({ ok: true });
     } catch (e) {
         console.error('Midtrans notification failed:', req.body.order_id, e.message);
+        res.status(500).json({ error: 'Retry' });
+    }
+});
+
+// Public: Xendit for the Indonesian bookings (server/xendit.js), the alternative to
+// Midtrans with the same steps: checkout holds the slot and opens an invoice on
+// Xendit's page; the booking turns real once Xendit confirms it (its webhook or the
+// visitor's own check); an expired invoice frees the slot.
+async function settleXendit(orderId) {
+    const booking = await bookingStore.findByXenditOrder(orderId);
+    if (!booking) return { state: 'failed' };
+    if (!booking.holdOnly) return { state: booking.status === 'cancelled' ? 'failed' : 'paid', booking };
+    if (booking.status === 'cancelled' && booking.cancelReason !== 'unpaid') return { state: 'failed' };
+    const st = await xendit.getStatus(booking.xenditInvoiceId);
+    if (st.state === 'paid') {
+        if (st.amount !== booking.amountDue) {
+            console.error('Xendit amount mismatch:', orderId, st.amount, booking.amountDue);
+            return { state: 'pending' };
+        }
+        const paid = await bookingStore.confirmPaidHold(booking, {
+            paymentMethod: `Xendit · ${st.method}`,
+            xenditPaymentId: st.transactionId,
+            paidAt: new Date().toISOString(),
+        });
+        await notices.notifyNewBooking(paid, st.amount); // (once, whichever check lands first)
+        return { state: 'paid', booking: paid };
+    }
+    if (st.state === 'failed') {
+        await bookingStore.releaseHold(booking, 'failed');
+        return { state: 'failed' };
+    }
+    return { state: 'pending' };
+}
+
+app.get('/api/xendit/config', (req, res) => {
+    res.json(xendit.active() ? { enabled: true, test: xendit.testMode() } : { enabled: false });
+});
+
+app.post('/api/xendit/checkout', async (req, res) => {
+    if (!xendit.active()) return res.status(503).json({ error: 'Xendit not configured' });
+    // filled in once the invoice exists; the order id is enough to find the hold until then
+    const held = await holdForPayment(req, res, 'Xendit', (orderId) => ({ xenditOrderId: orderId }));
+    if (!held) return;
+    const { q, orderId, hold } = held;
+    // after paying, Xendit's page comes back to the site, which closes that tab
+    // (the form, still open in the first tab, has seen the payment by then)
+    const site = /^https?:\/\/[\w.-]+(:\d+)?$/.test(String(req.get('origin') || '')) ? req.get('origin') : '';
+    try {
+        const { invoiceId, invoiceUrl } = await xendit.createInvoice({
+            orderId,
+            amount: q.amount,
+            item: { name: q.name },
+            customer: { name: String(req.body.name), email: String(req.body.email || '').trim() },
+            returnUrl: site ? `${site}/?bayar=${encodeURIComponent(orderId)}` : '',
+        });
+        await bookingStore.setXenditInvoice(hold.id, invoiceId);
+        res.status(201).json({ orderId, invoiceUrl });
+    } catch (e) {
+        console.error('Xendit checkout failed:', e.message);
+        await bookingStore.releaseHold(hold).catch(() => {});
+        res.status(502).json({ error: 'Could not start the payment' });
+    }
+});
+
+app.get('/api/xendit/status/:orderId', async (req, res) => {
+    if (!xendit.configured()) return res.status(503).json({ error: 'Xendit not configured' });
+    try {
+        const { state, booking } = await settleXendit(String(req.params.orderId).slice(0, 64));
+        res.json({ state, ...(booking ? { ref: booking.ref } : {}) });
+    } catch (e) {
+        console.error('Xendit status failed:', e.message);
+        res.json({ state: 'pending' });
+    }
+});
+
+// the visitor went back or closed the form before paying: expire the invoice, then
+// free the slot (unless it was paid just now — then it's confirmed)
+app.post('/api/xendit/release/:orderId', async (req, res) => {
+    if (!xendit.configured()) return res.status(503).json({ error: 'Xendit not configured' });
+    const orderId = String(req.params.orderId).slice(0, 64);
+    try {
+        const settled = await settleXendit(orderId);
+        if (settled.state !== 'pending') return res.json({ state: settled.state });
+        const booking = await bookingStore.findByXenditOrder(orderId);
+        if (booking?.xenditInvoiceId && await xendit.expire(booking.xenditInvoiceId)) await bookingStore.releaseHold(booking);
+        res.json({ state: 'failed' });
+    } catch (e) {
+        console.error('Xendit release failed:', orderId, e.message);
+        res.json({ state: 'pending' }); // the hold runs out on its own
+    }
+});
+
+// Xendit's "Invoices paid" webhook (set in its dashboard), proven by the verification
+// token in its header; it retries on anything but a 2xx, so a failure answers 500
+app.post('/api/xendit/notify', async (req, res) => {
+    if (!xendit.configured() || !xendit.validCallback(req.get('x-callback-token'))) return res.status(403).json({ error: 'Invalid' });
+    const orderId = String(req.body?.external_id || '');
+    if (!orderId.startsWith('MYV-')) return res.json({ ok: true }); // not one of ours (e.g. the dashboard's test)
+    try {
+        await settleXendit(orderId);
+        res.json({ ok: true });
+    } catch (e) {
+        console.error('Xendit notification failed:', orderId, e.message);
         res.status(500).json({ error: 'Retry' });
     }
 });

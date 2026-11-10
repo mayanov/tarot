@@ -545,6 +545,10 @@ export async function updateDetails(id, fields) {
 
 /** the booking a Midtrans payment belongs to (its hold), or null */
 export const findByMidtransOrder = (orderId) => findBy('midtransOrderId', orderId);
+/** the booking a Xendit invoice belongs to (its hold), by our order id, or null */
+export const findByXenditOrder = (orderId) => findBy('xenditOrderId', orderId);
+/** notes the Xendit invoice opened for a hold */
+export const setXenditInvoice = (id, invoiceId) => patch(id, { xenditInvoiceId: invoiceId });
 /** the booking (or hold) a PayPal order belongs to, or null */
 export const findByPayPalOrder = (orderId) => findBy('paypalOrderId', orderId);
 
@@ -579,7 +583,7 @@ export async function confirmPaidHold(booking, payment) {
   if (!booking.holdOnly) return booking;
   const fields = { status: 'confirmed', paymentStatus: 'paid', holdOnly: false, holdUntil: null, cancelReason: null, ...payment };
   // the other caller is confirming it right now: same result, without a second invite/message
-  if (!(await claimOnce(`confirm_${booking.id}_${booking.midtransOrderId || booking.paypalOrderId || ''}`))) return { ...booking, ...fields };
+  if (!(await claimOnce(`confirm_${booking.id}_${booking.midtransOrderId || booking.xenditOrderId || booking.paypalOrderId || ''}`))) return { ...booking, ...fields };
   await patch(booking.id, fields);
   const confirmed = { ...booking, ...fields };
   try {

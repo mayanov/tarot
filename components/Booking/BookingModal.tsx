@@ -14,6 +14,7 @@ import { SLOT_TIMES, CLOSING_TIME, getTakenSlots, createBooking, slotNeed, Booki
 import { paypalConfig, PayPalConfig } from '../../services/paypal';
 import PayPalButtons from './PayPalButtons';
 import { midtransConfig, MidtransConfig, loadSnap, startMidtrans, midtransStatus, releaseMidtrans } from '../../services/midtrans';
+import { xenditConfig, XenditConfig, startXendit, xenditStatus, releaseXendit } from '../../services/xendit';
 import { trackEvent, trackWhatsApp, trackFormStep, trackPaymentIssue, trackBookedVia, FormStep, SERVICE_TRACK_NAME } from '../../services/analytics';
 import { lockPage, unlockPage } from '../UI/scroll';
 import { COUNTRY_CODES, guessCountry, withCountryCode, splitTypedCode } from './countryCodes';
@@ -194,7 +195,9 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const [error, setError] = useState('');
   const [ppConfig, setPpConfig] = useState<PayPalConfig | null>(null); // global: PayPal Checkout available?
   const [mtConfig, setMtConfig] = useState<MidtransConfig | null>(null); // ID: Midtrans available?
-  const mtOrder = useRef<{ token: string; orderId: string } | null>(null); // the payment open right now
+  const [xdConfig, setXdConfig] = useState<XenditConfig | null>(null); // ID: Xendit instead of Midtrans?
+  // the payment open right now (Midtrans: its Snap token; Xendit: its invoice page)
+  const mtOrder = useRef<{ orderId: string; token?: string; invoiceUrl?: string } | null>(null);
   // the month of birth can be typed as its number: "8" → August, "1" then "2" → December
   const monthTyped = useRef({ buf: '', at: 0 });
   const typeMonth = (e: React.KeyboardEvent) => {
@@ -247,7 +250,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
     if (!open) return;
     mtOrder.current = null;
     setPayWait(false);
-    releaseMidtrans(open.orderId);
+    if (open.invoiceUrl) releaseXendit(open.orderId);
+    else releaseMidtrans(open.orderId);
   }, []);
 
   // opened from a pricelist card (still open underneath): closing the form closes that too
@@ -363,7 +367,10 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
 
   useEffect(() => {
     if (!isIndonesian) paypalConfig().then(setPpConfig);
-    else if (MIDTRANS_ON) midtransConfig().then(setMtConfig);
+    else if (MIDTRANS_ON) {
+      xenditConfig().then(setXdConfig);
+      midtransConfig().then(setMtConfig);
+    }
   }, [isIndonesian]);
 
   // Load taken slots when a date is picked.
@@ -433,19 +440,63 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const checkMidtrans = async (closed = false) => {
     const open = mtOrder.current;
     if (!open) return;
-    const state = await midtransStatus(open.orderId);
+    const via = open.invoiceUrl ? 'Xendit' : 'Midtrans';
+    const state = await (open.invoiceUrl ? xenditStatus : midtransStatus)(open.orderId);
     if (mtOrder.current !== open) return; // left or restarted meanwhile
     if (state === 'paid') paidWithMidtrans();
     else if (state === 'failed') {
-      trackPaymentIssue('failed', 'Midtrans', 'ID');
+      trackPaymentIssue('failed', via, 'ID');
       mtOrder.current = null; setPayWait(false);
       setError('Pembayaran gagal atau sudah kedaluwarsa, dan belum ada dana yang terpotong. Silakan coba lagi.');
     } else {
-      if (closed) trackPaymentIssue('closed', 'Midtrans', 'ID');
+      if (closed) trackPaymentIssue('closed', via, 'ID');
       setPayWait(true);
     }
   };
+  // Xendit: its payment page opens in a new tab (opened right on the click, so it isn't
+  // blocked as a pop-up); this form keeps checking and moves on once it's paid
+  const payXendit = async () => {
+    if (!service) return;
+    setError('');
+    if (mtOrder.current?.invoiceUrl) { // "Lanjutkan pembayaran": the same invoice again
+      window.open(mtOrder.current.invoiceUrl, '_blank');
+      setPayWait(true);
+      return;
+    }
+    const tab = window.open('', '_blank');
+    setSubmitting(true);
+    try {
+      mtOrder.current = await startXendit({
+        serviceId: service.id,
+        pkg: pkg ? pkg.split(' · ')[0] : '',
+        date: service.scheduled && jkIso ? jkIso : '',
+        time: service.scheduled ? (time || '') : '',
+        name: name.trim(), dob,
+        contact: bookingInput(service).contact,
+        question: question.trim(),
+        phone: waNumber, email: email.trim(),
+      });
+      const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
+      trackEvent('add_payment_info', { item_name: trackName, market: 'ID' }, 'AddPaymentInfo', { content_name: trackName });
+      if (tab) tab.location.href = mtOrder.current.invoiceUrl!;
+      else window.location.assign(mtOrder.current.invoiceUrl!); // no new tab: pay here, back after
+      setPayWait(true);
+    } catch (e) {
+      tab?.close();
+      const taken = e instanceof Error && e.message === 'SLOT_TAKEN';
+      trackPaymentIssue(taken ? 'slot_taken' : 'not_opened', 'Xendit', 'ID');
+      if (taken) {
+        setError('Maaf, slot itu baru saja terisi. Pilih waktu lain ya.');
+        setStep(1);
+      } else {
+        setError('Pembayaran belum bisa dibuka. Coba lagi sebentar.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
   const payMidtrans = async () => {
+    if (xdConfig?.enabled) return payXendit();
     if (!service || !mtConfig) return;
     setError(''); setSubmitting(true);
     try {
@@ -464,7 +515,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
         const trackName = SERVICE_TRACK_NAME[service.id] || service.name;
         trackEvent('add_payment_info', { item_name: trackName, market: 'ID' }, 'AddPaymentInfo', { content_name: trackName });
       }
-      snap.pay(mtOrder.current.token, {
+      snap.pay(mtOrder.current.token!, {
         onSuccess: () => checkMidtrans(),
         onPending: () => setPayWait(true),
         onError: () => checkMidtrans(),
@@ -609,7 +660,8 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
   const live = service?.id === 'live';
   // ID + Midtrans switched on (MIDTRANS_ON) and its keys on the server → paid right here
   // on the review step too; otherwise QRIS / bank transfer and the proof on WhatsApp
-  const midtransHere = MIDTRANS_ON && isIndonesian && !!mtConfig?.enabled;
+  // (Xendit when the server has its keys, else Midtrans)
+  const midtransHere = MIDTRANS_ON && isIndonesian && (!!xdConfig?.enabled || !!mtConfig?.enabled);
 
   // WhatsApp deep link for the success step — prefilled with the booking so the
   // customer just attaches their payment proof.
@@ -1104,7 +1156,7 @@ const BookingModal: React.FC<BookingModalProps> =({ isIndonesian = false }) => {
                   <h3 className="letterpress font-serif font-semibold text-ink text-lg mb-1">Pembayaran</h3>
                   <p className="letterpress text-[13px] text-ink/60 leading-relaxed">
                     {payWait
-                      ? <>Menunggu pembayaranmu masuk… Kalau sudah bayar, tunggu sebentar di sini. {scheduled ? 'Jadwalmu kami tahan selama 1 jam.' : ''}</>
+                      ? <>Menunggu pembayaranmu masuk… {xdConfig?.enabled ? 'Selesaikan pembayaran di tab yang baru terbuka, lalu kembali ke sini.' : 'Kalau sudah bayar, tunggu sebentar di sini.'} {scheduled ? 'Jadwalmu kami tahan selama 1 jam.' : ''}</>
                       : <>Bayar {totalPrice} lewat QRIS, e-wallet (GoPay, ShopeePay, dll.), atau transfer bank. Booking-mu langsung tercatat begitu pembayaran masuk.</>}
                   </p>
                 </div>

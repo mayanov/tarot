@@ -8,10 +8,11 @@
 // used rather than browser Basic auth because the admin API already uses the
 // Authorization header for its own login.
 // The daily cron is left open — it has its own CRON_SECRET check — and so are
-// Midtrans's payment notifications, which are checked by their signature.
+// Midtrans's and Xendit's payment notifications, which are checked by their
+// signature / verification token.
 
 export const config = {
-  matcher: '/((?!api/cron/|api/midtrans/notify).*)',
+  matcher: '/((?!api/cron/|api/midtrans/notify|api/xendit/notify).*)',
 };
 
 const COOKIE = 'site_pass';

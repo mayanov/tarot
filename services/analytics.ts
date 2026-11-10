@@ -137,7 +137,7 @@ export const PAYMENT_ISSUES: Record<PaymentIssue, string> = {
     not_opened: 'Payment couldn’t open',
     save_failed: 'Paid, but the booking didn’t save',
 };
-export const trackPaymentIssue = (reason: PaymentIssue, method: 'PayPal' | 'Midtrans' | 'Manual', market: 'ID' | 'Global') =>
+export const trackPaymentIssue = (reason: PaymentIssue, method: 'PayPal' | 'Midtrans' | 'Xendit' | 'Manual', market: 'ID' | 'Global') =>
     trackEvent('payment_issue', { reason, method, market, link_text: `${market}:${reason}` });
 
 // The item_name each service is tracked under (pricelist card opens, "Pesan"
