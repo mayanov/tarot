@@ -1,14 +1,19 @@
 import PageHeader from './ui/PageHeader';
 import Segmented from './ui/Segmented';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { TrendingUp, Wallet, ShoppingBag, Award } from 'lucide-react';
+import { TrendingUp, Wallet, ShoppingBag, Award, CalendarDays, ChevronDown, Check, ArrowUp, ArrowDown } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import { Cur as Currency, amountForBooking, fmtIDR, fmtUSD, fmtMoney } from './lib/format';
 
 type Gran = 'day' | 'week';
-type Preset = '7d' | '30d' | '90d' | 'thisMonth' | 'year' | 'all' | 'custom';
+type Preset = '7d' | '30d' | 'thisMonth' | 'lastMonth' | 'year' | 'all' | 'custom';
+const PRESETS: { id: Preset; label: string }[] = [
+    { id: '7d', label: 'Last 7 days' }, { id: '30d', label: 'Last 30 days' },
+    { id: 'thisMonth', label: 'This month' }, { id: 'lastMonth', label: 'Last month' },
+    { id: 'year', label: 'This year' }, { id: 'all', label: 'All time' }, { id: 'custom', label: 'Custom' },
+];
 
 const SERVICE_LABEL: Record<string, string> = {
     chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'New Year Reading (PDF)',
@@ -26,6 +31,14 @@ const parseISO = (s: string) => { const [y, m, d] = s.split('-').map(Number); re
 const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const startOfWeek = (d: Date) => { const x = new Date(d); const dow = (x.getDay() + 6) % 7; x.setDate(x.getDate() - dow); x.setHours(0, 0, 0, 0); return x; };
 const dayLabel = (iso: string) => { const d = parseISO(iso); return `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('en-US', { month: 'short' })}`; };
+const daysBetween = (a: string, b: string) => Math.round((parseISO(b).getTime() - parseISO(a).getTime()) / 86_400_000);
+// '12 Oct – 10 Nov', with the year when it isn't this one
+const rangeLabel = (a: string, b: string) => {
+    const y = new Date().getFullYear();
+    const one = (iso: string, withYear: boolean) => { const d = parseISO(iso); return `${d.getDate()} ${d.toLocaleDateString('en-US', { month: 'short' })}${withYear ? ` ${d.getFullYear()}` : ''}`; };
+    const showYear = parseISO(a).getFullYear() !== y || parseISO(b).getFullYear() !== y;
+    return a === b ? one(a, showYear) : `${one(a, showYear)} – ${one(b, showYear)}`;
+};
 const monthLabel = (key: string) => { const [y, m] = key.split('-').map(Number); return new Date(y, (m || 1) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); };
 
 type Row = { b: Booking; day: string; serviceId: string; amount: number };
@@ -54,9 +67,27 @@ const RevenueView: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [preset, setPreset] = useState<Preset>('30d');
-    const [gran, setGran] = useState<Gran>('day');
+    // by day or by week: picked from the range's length unless chosen on the chart
+    const [granPick, setGranPick] = useState<Gran | null>(null);
     const [customStart, setCustomStart] = useState('');
     const [customEnd, setCustomEnd] = useState('');
+    const [menuOpen, setMenuOpenRaw] = useState(false);
+    const [customOpen, setCustomOpen] = useState(false); // picking dates; the page changes only on Show
+    const setMenuOpen = (v: boolean | ((o: boolean) => boolean)) => { setMenuOpenRaw(v); setCustomOpen(false); };
+    const [draft, setDraft] = useState({ start: '', end: '' }); // the custom dates while being picked
+    const menuRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (!menuOpen) return;
+        const away = (e: MouseEvent) => { if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false); };
+        const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+        document.addEventListener('mousedown', away);
+        document.addEventListener('keydown', esc);
+        return () => { document.removeEventListener('mousedown', away); document.removeEventListener('keydown', esc); };
+    }, [menuOpen]);
+    const pickPreset = (id: Preset) => {
+        if (id === 'custom') { setDraft({ start: startISO, end: endISO }); setCustomOpen(true); return; }
+        setPreset(id); setGranPick(null); setMenuOpen(false);
+    };
 
     const load = async () => {
         setLoading(true); setError('');
@@ -89,20 +120,26 @@ const RevenueView: React.FC = () => {
         .map((b) => ({ b, day: (b.createdAt || '').slice(0, 10), amt: amountForBooking(b) }))
         .filter((r) => r.amt && r.day), [bookings]);
 
-    // Active window for the daily/weekly chart + KPIs.
-    const { startISO, endISO } = useMemo(() => {
+    // The range (real dates, so the chip can say them) and the one before it to compare with
+    // (the same days a month or a year back for month and year, otherwise as many days before).
+    const firstDay = useMemo(() => paidRows.map((r) => r.day).sort()[0] || toISO(new Date()), [paidRows]);
+    const { startISO, endISO, prevStart, prevEnd } = useMemo(() => {
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const end = toISO(today);
+        const y = today.getFullYear(), m = today.getMonth();
+        const back = (a: string, b: string) => { const n = daysBetween(a, b) + 1; return { prevStart: toISO(addDays(parseISO(a), -n)), prevEnd: toISO(addDays(parseISO(a), -1)) }; };
+        const monthBack = (iso: string, k: number) => { const d = parseISO(iso); const t = new Date(d.getFullYear(), d.getMonth() - k, 1); const last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate(); return toISO(new Date(t.getFullYear(), t.getMonth(), Math.min(d.getDate(), last))); };
         switch (preset) {
-            case '7d': return { startISO: toISO(addDays(today, -6)), endISO: end };
-            case '30d': return { startISO: toISO(addDays(today, -29)), endISO: end };
-            case '90d': return { startISO: toISO(addDays(today, -89)), endISO: end };
-            case 'thisMonth': return { startISO: toISO(new Date(today.getFullYear(), today.getMonth(), 1)), endISO: end };
-            case 'year': return { startISO: toISO(new Date(today.getFullYear(), 0, 1)), endISO: end };
-            case 'custom': return { startISO: customStart || '0000-01-01', endISO: customEnd || end };
-            default: return { startISO: '0000-01-01', endISO: '9999-12-31' };
+            case '7d': { const s0 = toISO(addDays(today, -6)); return { startISO: s0, endISO: end, ...back(s0, end) }; }
+            case '30d': { const s0 = toISO(addDays(today, -29)); return { startISO: s0, endISO: end, ...back(s0, end) }; }
+            case 'thisMonth': { const s0 = toISO(new Date(y, m, 1)); return { startISO: s0, endISO: end, prevStart: monthBack(s0, 1), prevEnd: monthBack(end, 1) }; }
+            case 'lastMonth': { const s0 = toISO(new Date(y, m - 1, 1)), e0 = toISO(new Date(y, m, 0)); return { startISO: s0, endISO: e0, prevStart: toISO(new Date(y, m - 2, 1)), prevEnd: toISO(new Date(y, m - 1, 0)) }; }
+            case 'year': { const s0 = toISO(new Date(y, 0, 1)); return { startISO: s0, endISO: end, prevStart: toISO(new Date(y - 1, 0, 1)), prevEnd: monthBack(end, 12) }; }
+            case 'custom': { const s0 = customStart || firstDay, e0 = customEnd || end; return { startISO: s0, endISO: e0, ...back(s0, e0) }; }
+            default: return { startISO: firstDay, endISO: end, prevStart: '', prevEnd: '' };
         }
-    }, [preset, customStart, customEnd]);
+    }, [preset, customStart, customEnd, firstDay]);
+    const gran: Gran = granPick || (daysBetween(startISO, endISO) > 62 ? 'week' : 'day');
 
     // everything for one currency: totals, the day/week chart and the monthly chart
     const report = (currency: Currency) => {
@@ -116,14 +153,15 @@ const RevenueView: React.FC = () => {
         const rangeRows = allRows.filter((r) => r.day >= startISO && r.day <= endISO);
         const total = rangeRows.reduce((sum, r) => sum + r.amount, 0);
         const avg = rangeRows.length ? total / rangeRows.length : 0;
+        const prevRows = prevStart ? allRows.filter((r) => r.day >= prevStart && r.day <= prevEnd) : [];
+        const prevTotal = prevRows.reduce((sum, r) => sum + r.amount, 0);
+        const prev = prevStart ? { total: prevTotal, count: prevRows.length, avg: prevRows.length ? prevTotal / prevRows.length : 0 } : null;
 
         // daily / weekly stacked series across the range (continuous buckets)
         let series: StackRow[] = [];
         if (rangeRows.length) {
-            const daysSorted = rangeRows.map((r) => r.day).sort();
-            const sISO = startISO === '0000-01-01' ? daysSorted[0] : startISO;
-            const eISO = endISO === '9999-12-31' ? toISO(new Date()) : endISO;
-            if (sISO && eISO >= sISO) {
+            const sISO = startISO, eISO = endISO;
+            if (eISO >= sISO) {
                 const buckets: Bucket[] = [];
                 const step = gran === 'week' ? 7 : 1;
                 let d = gran === 'week' ? startOfWeek(parseISO(sISO)) : parseISO(sISO);
@@ -153,10 +191,10 @@ const RevenueView: React.FC = () => {
         }
 
         const best = series.reduce((m, x) => ((x.total as number) > m.value ? { label: x.label, value: x.total as number } : m), { label: '—', value: 0 });
-        return { currency, services, count: rangeRows.length, total, avg, series, monthlySeries, best };
+        return { currency, services, count: rangeRows.length, total, avg, prev, series, monthlySeries, best };
     };
     const reports = useMemo(() => (['IDR', 'USD'] as Currency[]).map(report),
-        [paidRows, startISO, endISO, gran]); // eslint-disable-line react-hooks/exhaustive-deps
+        [paidRows, startISO, endISO, prevStart, prevEnd, gran]); // eslint-disable-line react-hooks/exhaustive-deps
     type Report = ReturnType<typeof report>;
 
     const StackTooltip = ({ active, payload, label, currency }: any) => {
@@ -208,23 +246,43 @@ const RevenueView: React.FC = () => {
 
     // one figure, rupiah and dollars on a line each (never added together)
     const CUR_TAG: Record<Currency, string> = { IDR: 'IDR', USD: 'USD' };
-    const KPI: React.FC<{ icon: React.ReactNode; label: string; lines: { cur: Currency; value: string; sub?: string }[] }> = ({ icon, label, lines }) => (
+    // up or down against the range before ('new' when there was nothing then)
+    const Delta: React.FC<{ now: number; before?: number }> = ({ now, before }) => {
+        if (before === undefined || (now === 0 && before === 0)) return null;
+        if (before === 0) return <span className="text-[11px] font-semibold text-sage">new</span>;
+        const pct = Math.round(((now - before) / before) * 100);
+        if (pct === 0) return <span className="text-[11px] text-text-subtle">same</span>;
+        const up = pct > 0;
+        return (
+            <span className={`inline-flex items-center text-[11px] font-semibold tabular-nums ${up ? 'text-sage' : 'text-coral-deep'}`}>
+                {up ? <ArrowUp size={11} strokeWidth={2.5} /> : <ArrowDown size={11} strokeWidth={2.5} />}{Math.abs(pct)}%
+            </span>
+        );
+    };
+    const KPI: React.FC<{ icon: React.ReactNode; label: string; lines: { cur: Currency; value: string; sub?: string; now?: number; before?: number }[] }> = ({ icon, label, lines }) => (
         <div className="rounded-2xl bg-surface-1 border border-adm-line p-4">
             <div className="flex items-center gap-2 text-text-subtle text-xs uppercase tracking-wider">{icon}<span>{label}</span></div>
             <div className="mt-2 space-y-1.5">
                 {lines.map((l) => (
                     <div key={l.cur} className="flex items-baseline gap-2 min-w-0">
-                        <span className="shrink-0 w-7 sm:w-8 text-[10px] font-semibold tracking-wider text-text-subtle">{CUR_TAG[l.cur]}</span>
-                        <span className="text-[15px] sm:text-lg font-serif font-bold text-text-light tabular-nums truncate">{l.value}</span>
-                        {l.sub && <span className="hidden sm:inline text-[11px] text-text-subtle truncate">{l.sub}</span>}
+                        <span className="shrink-0 w-7 sm:w-8 text-[10px] font-semibold tracking-wider text-text-subtle">{l.cur}</span>
+                        {/* the change or the date goes under the figure when there's no room beside it */}
+                        <span className="min-w-0 flex flex-wrap items-baseline gap-x-2">
+                            <span className="text-[15px] sm:text-lg font-serif font-bold text-text-light tabular-nums">{l.value}</span>
+                            {l.sub && <span className="text-[11px] text-text-subtle">{l.sub}</span>}
+                            {l.now !== undefined && <Delta now={l.now} before={l.before} />}
+                        </span>
                     </div>
                 ))}
             </div>
         </div>
     );
-    const chartCard = (title: string, r: Report, data: StackRow[], empty: string) => (
+    const chartCard = (title: string, r: Report, data: StackRow[], empty: string, extra?: React.ReactNode) => (
         <div key={r.currency} className="rounded-2xl bg-surface-1 border border-adm-line p-4 min-w-0">
-            <h2 className="text-sm font-semibold text-text-light mb-3">{title} <span className="text-text-subtle font-normal">· {r.currency}</span></h2>
+            <div className="flex items-center justify-between gap-3 mb-3">
+                <h2 className="text-sm font-semibold text-text-light">{title} <span className="text-text-subtle font-normal">· {r.currency}</span></h2>
+                {extra}
+            </div>
             {data.length === 0 ? (
                 <p className="text-sm text-text-subtle py-12 text-center">{empty}</p>
             ) : (<><Legend services={r.services} /><Chart data={data} currency={r.currency} services={r.services} /></>)}
@@ -251,38 +309,57 @@ const RevenueView: React.FC = () => {
             {initialLoading && <LoaderCard />}
 
             {!initialLoading && (<>
-            <div className="rounded-2xl bg-surface-1 border border-adm-line px-3 py-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-2">
-                <Seg value={preset} options={[
-                    { id: '7d', label: '7D' }, { id: '30d', label: '30D' }, { id: '90d', label: '90D' },
-                    { id: 'thisMonth', label: 'Month' }, { id: 'year', label: 'Year' },
-                    { id: 'all', label: 'All' }, { id: 'custom', label: 'Custom' },
-                ]} onChange={setPreset} />
-                {preset === 'custom' && (
-                    <div className="flex items-center gap-1.5">
-                        <input type="date" value={customStart} max={customEnd || undefined}
-                            onChange={(e) => setCustomStart(e.target.value)}
-                            className="rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-1 text-xs text-text-light focus:border-lilac focus:outline-none" />
-                        <span className="text-xs text-text-subtle">–</span>
-                        <input type="date" value={customEnd} min={customStart || undefined}
-                            onChange={(e) => setCustomEnd(e.target.value)}
-                            className="rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-1 text-xs text-text-light focus:border-lilac focus:outline-none" />
-                    </div>
-                )}
-                <div className="ml-auto">
-                    <Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGran} />
+            {/* the range: one chip that stays under the top bar while scrolling, with a short menu */}
+            <div className="sticky top-14 lg:top-0 z-20 -mx-4 md:-mx-8 px-4 md:px-8 py-2.5 bg-bg-deep/85 backdrop-blur-md flex flex-wrap items-center gap-x-3 gap-y-1">
+                <div ref={menuRef} className="relative">
+                    <button type="button" onClick={() => setMenuOpen((o) => !o)} aria-haspopup="menu" aria-expanded={menuOpen}
+                        className={`inline-flex items-center gap-2 rounded-full bg-surface-1 border pl-3 pr-2.5 py-1.5 text-[13px] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors ${menuOpen ? 'border-lilac/50' : 'border-adm-line hover:border-adm-line-2'}`}>
+                        <CalendarDays size={15} className="text-lilac" />
+                        <span className="font-semibold text-text-light">{PRESETS.find((x) => x.id === preset)!.label}</span>
+                        <span className="text-text-subtle">· {rangeLabel(startISO, endISO)}</span>
+                        <ChevronDown size={15} className={`text-text-subtle transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {menuOpen && (
+                        <div role="menu" className="absolute left-0 top-full mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-xl bg-surface-1 border border-adm-line-2 shadow-xl p-1.5 z-30">
+                            {PRESETS.map((x) => (
+                                <button key={x.id} type="button" role="menuitemradio" aria-checked={preset === x.id} onClick={() => pickPreset(x.id)}
+                                    className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-[13px] text-left transition-colors hover:bg-adm-hover ${preset === x.id ? 'text-lilac font-semibold' : 'text-text-light'}`}>
+                                    {x.label}
+                                    {preset === x.id && <Check size={15} />}
+                                </button>
+                            ))}
+                            {(customOpen || preset === 'custom') && (
+                                <div className="mt-1 pt-2.5 px-2 pb-1.5 border-t border-adm-line space-y-2">
+                                    <label className="flex items-center justify-between gap-2 text-[12px] text-text-subtle">From
+                                        <input type="date" value={draft.start} max={draft.end || undefined} onChange={(e) => setDraft((d) => ({ ...d, start: e.target.value }))}
+                                            className="w-[9.5rem] rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-1 text-xs text-text-light focus:border-lilac focus:outline-none" />
+                                    </label>
+                                    <label className="flex items-center justify-between gap-2 text-[12px] text-text-subtle">To
+                                        <input type="date" value={draft.end} min={draft.start || undefined} onChange={(e) => setDraft((d) => ({ ...d, end: e.target.value }))}
+                                            className="w-[9.5rem] rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-1 text-xs text-text-light focus:border-lilac focus:outline-none" />
+                                    </label>
+                                    <button type="button" disabled={!draft.start || !draft.end || draft.end < draft.start}
+                                        onClick={() => { setCustomStart(draft.start); setCustomEnd(draft.end); setPreset('custom'); setGranPick(null); setMenuOpen(false); }}
+                                        className="w-full rounded-lg bg-lilac text-white text-[13px] font-semibold py-1.5 disabled:opacity-40 transition-opacity">Show these dates</button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
+                {prevStart && <span className="text-[12px] text-text-subtle">Compared with {rangeLabel(prevStart, prevEnd)}</span>}
             </div>
 
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
-                <KPI icon={<Wallet size={14} />} label="Total revenue" lines={reports.map((r) => ({ cur: r.currency, value: fmtMoney(r.total, r.currency) }))} />
-                <KPI icon={<ShoppingBag size={14} />} label="Paid bookings" lines={reports.map((r) => ({ cur: r.currency, value: String(r.count) }))} />
-                <KPI icon={<TrendingUp size={14} />} label="Avg order value" lines={reports.map((r) => ({ cur: r.currency, value: fmtMoney(r.avg, r.currency) }))} />
+                <KPI icon={<Wallet size={14} />} label="Total revenue" lines={reports.map((r) => ({ cur: r.currency, value: fmtMoney(r.total, r.currency), now: r.total, before: r.prev?.total }))} />
+                <KPI icon={<ShoppingBag size={14} />} label="Paid bookings" lines={reports.map((r) => ({ cur: r.currency, value: String(r.count), now: r.count, before: r.prev?.count }))} />
+                <KPI icon={<TrendingUp size={14} />} label="Avg order value" lines={reports.map((r) => ({ cur: r.currency, value: fmtMoney(r.avg, r.currency), now: r.avg, before: r.prev && r.prev.count ? r.prev.avg : r.prev ? 0 : undefined }))} />
                 <KPI icon={<Award size={14} />} label={`Best ${gran}`} lines={reports.map((r) => ({ cur: r.currency, value: fmtMoney(r.best.value, r.currency), sub: r.best.value > 0 ? r.best.label : undefined }))} />
             </div>
 
             {/* Daily / weekly stacked charts, one per currency */}
             <div className="grid gap-4 xl:grid-cols-2">
-                {reports.map((r) => chartCard(`${granLabel} revenue by source`, r, r.series, `No ${r.currency} revenue in this range.`))}
+                {reports.map((r) => chartCard(`${granLabel} revenue by source`, r, r.series, `No ${r.currency} revenue in this range.`,
+                    <Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGranPick} />))}
             </div>
 
             {/* Monthly stacked charts, always shown */}
