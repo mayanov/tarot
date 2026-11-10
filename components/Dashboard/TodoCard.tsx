@@ -22,8 +22,9 @@ const dayWord = (t: number, now: number) => {
 const TodoCard: React.FC<{
     t: Todo; now: number; done?: boolean; fresh?: boolean;
     onOpen: () => void; onTick: () => void;
-    footer?: React.ReactNode; // more buttons under it (Orders: paid / confirmation)
-}> = ({ t, now, done, fresh, onOpen, onTick, footer }) => {
+    footer?: React.ReactNode; // more buttons under it (Orders: the confirmation)
+    badge?: React.ReactNode;  // a label on the right, before the pill (Orders: Paid)
+}> = ({ t, now, done, fresh, onOpen, onTick, footer, badge }) => {
     const reply = t.kind === 'reading' ? replyLink(t.b) : null;
     return (
         <div role="button" tabIndex={0} onClick={onOpen} onKeyDown={(e) => { if (e.key === 'Enter' && e.target === e.currentTarget) onOpen(); }}
@@ -43,7 +44,10 @@ const TodoCard: React.FC<{
             <span className="min-w-0 flex-1">
                 <span className="flex items-start justify-between gap-2">
                     <span className={`text-[13.5px] leading-snug font-semibold text-text-light ${done ? 'line-through' : ''}`}>{t.title}</span>
-                    <span className={`shrink-0 mt-px px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${PILL[t.tone]}`}>{done ? 'Done' : t.pill}</span>
+                    <span className="shrink-0 mt-px flex items-center gap-1.5">
+                        {badge && !done && badge}
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${PILL[t.tone]}`}>{done ? 'Done' : t.pill}</span>
+                    </span>
                 </span>
                 {/* with buttons of its own (Orders): all on the second row, so the card is two rows */}
                 <span className={`flex gap-2 mt-1 ${footer ? 'items-center' : 'items-end justify-between'}`}>

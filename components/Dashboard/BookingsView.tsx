@@ -1570,13 +1570,11 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                                     if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Order'} marked done. It's under Done.`, 'ok');
                                                     setTicking((s) => { const n = new Set(s); n.delete(b.id); return n; });
                                                 }}
-                                                footer={<span className="flex items-center gap-1.5">
-                                                    {/* (on a phone it's in the details; the pill on top already says paid or not) */}
-                                                    <span className="hidden sm:inline-flex"><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} /></span>
-                                                    {b.market === 'ID'
-                                                        ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
-                                                        : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />}
-                                                </span>} />
+                                                // paid is a label up by the pill (an unpaid one's pill says Not paid yet); changing it is in the details
+                                                badge={b.paymentStatus === 'paid' ? <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap bg-sage/15 text-sage">Paid</span> : undefined}
+                                                footer={b.market === 'ID'
+                                                    ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
+                                                    : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />} />
                                         </li>
                                     );
                                 })}

@@ -137,7 +137,7 @@ export function readingTodo(b: Booking, now: number): Todo | null {
     };
 }
 // any open order (a reading or chat), paid or not: Orders' To do. Named like an order
-// (the service, then who and how much), with the same clock as the to do list
+// (the service, then who), with the same clock as the to do list
 export function orderTodo(b: Booking, now: number): Todo {
     const r = readingTodo(b, now);
     const c = orderClock(b);
@@ -147,7 +147,7 @@ export function orderTodo(b: Booking, now: number): Todo {
         ...(r || { b, kind: 'reading' as const, at: Infinity, pill: 'Not paid yet', tone: 'calm' as const }),
         title: serviceLabel(b),
         // (how long is left is on the pill; an unpaid one says when it was ordered)
-        detail: [b.name || '—', amountLabel(b), r ? '' : when].filter(Boolean).join(' · '),
+        detail: [b.name || '—', r ? '' : when].filter(Boolean).join(' · '),
     };
 }
 export function todosFrom(bookings: Booking[], now: number): Todo[] {
