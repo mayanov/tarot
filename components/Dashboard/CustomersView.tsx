@@ -172,13 +172,12 @@ const CustomersView: React.FC = () => {
 
     const spentLabel = (c: Customer) => moneyLabel(c.paid) || '—';
     const owedLabel = (c: Customer) => moneyLabel(c.owed);
-    // in the list, only someone who's booked on both sites is marked (the switch at the top
-    // already sorts the rest); their details always say where they booked
-    const MarketTag: React.FC<{ c: Customer; always?: boolean }> = ({ c, always }) => (!always && c.markets.length < 2 ? null : (
+    // where they booked, in their details only (the list has the Indonesia / Global switch)
+    const MarketTag: React.FC<{ c: Customer }> = ({ c }) => (
         <span className={`ml-1.5 text-[0.65rem] font-normal ${c.markets.length > 1 ? 'text-lilac' : 'text-text-subtle'}`}>
             {[...c.markets].sort((a) => (a === 'ID' ? -1 : 1)).map((m) => (m === 'ID' ? 'ID' : 'Global')).join(' · ')}
         </span>
-    ));
+    );
 
     return (
         <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
@@ -225,7 +224,7 @@ const CustomersView: React.FC = () => {
                             {/* narrow screens: name and what they paid, then one grey line with the rest */}
                             <div className="lg:hidden">
                                 <div className="flex items-baseline justify-between gap-3">
-                                    <span className="font-medium text-text-light truncate">{c.name}<MarketTag c={c} /></span>
+                                    <span className="font-medium text-text-light truncate">{c.name}</span>
                                     <span className="text-sm text-text-light tabular-nums whitespace-nowrap">{spentLabel(c)}</span>
                                 </div>
                                 <div className="mt-0.5 flex items-baseline justify-between gap-3 text-xs text-text-subtle">
@@ -234,7 +233,7 @@ const CustomersView: React.FC = () => {
                                 </div>
                             </div>
                             <div className="hidden lg:block lg:col-span-4 min-w-0">
-                                <div className="font-medium text-text-light truncate">{c.name}<MarketTag c={c} /></div>
+                                <div className="font-medium text-text-light truncate">{c.name}</div>
                             </div>
                             {/* their WhatsApp; for someone with only an email (abroad), the email */}
                             <div className="hidden lg:block lg:col-span-3 text-sm text-text-subtle tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : c.email || '—'}</div>
@@ -276,7 +275,7 @@ const CustomersView: React.FC = () => {
                             <div className="flex items-start gap-3.5">
                                 <span className="grid place-items-center w-12 h-12 shrink-0 rounded-full bg-lilac/15 text-lilac font-serif font-bold text-lg">{initials}</span>
                                 <div className="min-w-0 flex-1">
-                                    <h3 className="text-2xl font-serif font-bold text-text-light leading-tight">{selected.name}<MarketTag c={selected} always /></h3>
+                                    <h3 className="text-2xl font-serif font-bold text-text-light leading-tight">{selected.name}<MarketTag c={selected} /></h3>
                                     <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-sm text-text-subtle">
                                         {selected.phone && <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-lilac tabular-nums"><Phone size={13} />{fmtPhone(selected.phone)}</a>}
                                         {selected.email && <a href={`mailto:${selected.email}`} className="inline-flex items-center gap-1.5 hover:text-lilac break-all"><Mail size={13} className="shrink-0" />{selected.email}</a>}
