@@ -46,7 +46,7 @@ const NAV_GROUPS: { label: string; items: { id: View; name: string; icon: React.
     ] },
     { label: 'Insights', items: [
         { id: 'analytics', name: 'Analytics', icon: BarChart2 },
-        { id: 'revenue', name: 'Revenue', icon: Wallet },
+        { id: 'revenue', name: 'Report', icon: Wallet },
     ] },
     { label: 'Website', items: [
         { id: 'events', name: 'Events', icon: Sparkles },
