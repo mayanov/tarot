@@ -34,12 +34,11 @@ interface AnalyticsDashboardProps {
 
 // Sidebar nav, grouped by purpose and ordered most-used first (day-to-day
 // operations → money → insights → admin). Data-driven so it stays tidy.
-type View = 'notifications' | 'today' | 'analytics' | 'users' | 'schedule' | 'orders' | 'sales' | 'revenue' | 'customers' | 'events';
+type View = 'today' | 'analytics' | 'users' | 'schedule' | 'orders' | 'sales' | 'revenue' | 'customers' | 'events';
 const NAV_GROUPS: { label: string; items: { id: View; name: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] }[] = [
     { label: 'Operations', items: [
         // the day's work first (who's coming, what to answer), then money, then people
         { id: 'today', name: 'Today', icon: Home },
-        { id: 'notifications', name: 'Notifications', icon: Bell },
         { id: 'schedule', name: 'Schedule', icon: Calendar },
         { id: 'orders', name: 'Orders', icon: Inbox },
         { id: 'sales', name: 'Sales', icon: Receipt },
@@ -121,7 +120,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     const [activeView, setActiveView] = useState<View>('today'); // opens on the day's work
     // a booking's details link to its customer: go to Customers (it opens them)
     useEffect(() => {
-        const go = () => setActiveView('customers');
+        const go = () => { setActiveView('customers'); setNotesOpen(false); };
         window.addEventListener(OPEN_CUSTOMER, go);
         return () => window.removeEventListener(OPEN_CUSTOMER, go);
     }, []);
@@ -152,12 +151,19 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
         return () => { window.clearInterval(t); window.removeEventListener(BOOKINGS_CHANGED, loadNotes); };
     }, [loadNotes]);
     const notes = React.useMemo(() => notesFrom(allBookings, notesNow), [allBookings, notesNow]);
-    const onNotesPage = activeView === 'notifications';
-    // what was new when the page was opened stays marked on it (seenAt here is still the
+    const [notesOpen, setNotesOpen] = useState(false);
+    const onNotesPage = notesOpen;
+    useEffect(() => {
+        if (!notesOpen) return;
+        const esc = (e: KeyboardEvent) => { if (e.key === 'Escape' && !document.querySelector('.z-\\[90\\]')) setNotesOpen(false); };
+        window.addEventListener('keydown', esc);
+        return () => window.removeEventListener('keydown', esc);
+    }, [notesOpen]);
+    // what was new when the panel was opened stays marked in it (seenAt here is still the
     // last look before this one)
     useEffect(() => { if (onNotesPage) setPageSeenAt(seenAt); }, [onNotesPage]); // eslint-disable-line react-hooks/exhaustive-deps
     useEffect(() => {
-        // while the page is open, everything on it counts as seen (the badge stays clear)
+        // while the panel is open, everything in it counts as seen (the badge stays clear)
         if (!onNotesPage) return;
         const now = Date.now();
         markSeen(now);
@@ -431,7 +437,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 <h2 className="text-lg font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
                     Mayanov Admin
                 </h2>
-                <button onClick={() => setActiveView('notifications')} aria-label={unreadNotes ? `Notifications, ${unreadNotes} new` : 'Notifications'}
+                <button onClick={() => setNotesOpen((v) => !v)} aria-label={unreadNotes ? `Notifications, ${unreadNotes} new` : 'Notifications'} aria-expanded={notesOpen}
                     className={`relative ml-auto p-2 -mr-2 rounded-lg transition-colors hover:bg-adm-hover ${onNotesPage ? 'text-lilac' : 'text-text-subtle hover:text-text-light'}`}>
                     <Bell size={21} />
                     {unreadNotes > 0 && (
@@ -451,6 +457,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     <h2 className="text-xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
                         Mayanov Admin
                     </h2>
+                    <button onClick={() => setNotesOpen((v) => !v)} aria-label={unreadNotes ? `Notifications, ${unreadNotes} new` : 'Notifications'} aria-expanded={notesOpen}
+                        className={`hidden lg:inline-flex relative p-2 -mr-2 rounded-lg transition-colors hover:bg-adm-hover ${notesOpen ? 'text-lilac bg-lilac/10' : 'text-text-subtle hover:text-text-light'}`}>
+                        <Bell size={19} />
+                        {unreadNotes > 0 && (
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-coral-deep text-white text-[10px] font-semibold flex items-center justify-center">{badge}</span>
+                        )}
+                    </button>
                     <button onClick={() => setSidebarOpen(false)} aria-label="Close menu" className="lg:hidden p-1.5 -mr-1.5 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors">
                         <X size={20} />
                     </button>
@@ -476,9 +489,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             {active && <span aria-hidden className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-lilac" />}
                                             <Icon size={18} className={active ? 'text-lilac' : 'text-text-subtle group-hover:text-text-light transition-colors'} />
                                             <span>{item.name}</span>
-                                            {item.id === 'notifications' && unreadNotes > 0 && (
-                                                <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-coral-deep text-white text-[11px] font-semibold flex items-center justify-center" aria-label={`${unreadNotes} new`}>{badge}</span>
-                                            )}
                                         </button>
                                     );
                                 })}
@@ -508,14 +518,21 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 </div>
             </aside>
 
+            {/* NOTIFICATIONS — the bell's panel: beside the sidebar on a computer, under the top bar on a phone */}
+            {notesOpen && <>
+                <div className="fixed inset-0 z-[60] bg-black/20 lg:bg-transparent" onClick={() => setNotesOpen(false)} aria-hidden />
+                <div role="dialog" aria-label="Notifications"
+                    className="fixed z-[61] inset-x-0 top-14 bottom-0 lg:inset-auto lg:top-3 lg:left-[15.5rem] lg:w-[420px] lg:max-h-[calc(100vh-1.5rem)] lg:h-[640px] bg-surface-1 lg:border lg:border-adm-line lg:rounded-2xl shadow-2xl overflow-hidden animate-[fade-up_0.2s_ease-out]">
+                    <NotificationsView notes={notes} now={notesNow} seenAt={pageSeenAt} loading={notesLoading} refreshing={notesRefreshing}
+                        onRefresh={loadNotes} onMarkAll={() => setPageSeenAt(Date.now())} onClose={() => setNotesOpen(false)} />
+                </div>
+            </>}
+
             {/* MAIN CONTENT AREA */}
             <main className="flex-1 overflow-y-auto relative bg-bg-deep" data-lenis-prevent>
                 {/* Mobile Header (Hamburger would go here if we were doing mobile fully, keeping simple for now) */}
                 {/* MAIN CONTENT SWITCHER */}
-                {activeView === 'notifications' ? (
-                    <NotificationsView notes={notes} now={notesNow} seenAt={pageSeenAt} loading={notesLoading} refreshing={notesRefreshing}
-                        onRefresh={loadNotes} onMarkAll={() => setPageSeenAt(Date.now())} />
-                ) : activeView === 'today' || activeView === 'schedule' || activeView === 'orders' ? (
+                {activeView === 'today' || activeView === 'schedule' || activeView === 'orders' ? (
                     <BookingsView view={activeView === 'orders' ? 'orders' : activeView === 'today' ? 'today' : 'calendar'}
                         onOpen={(v) => setActiveView(v === 'orders' ? 'orders' : 'schedule')} />
                 ) : activeView === 'events' ? (
