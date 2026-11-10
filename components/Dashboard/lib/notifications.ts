@@ -136,16 +136,17 @@ export function readingTodo(b: Booking, now: number): Todo | null {
         tone: left <= 0 ? 'late' : left < soonMs(b.serviceId) ? 'soon' : 'calm',
     };
 }
-// any open order (a reading or chat), paid or not: Orders' To do
+// any open order (a reading or chat), paid or not: Orders' To do. Named like an order
+// (the service, then who and how much), with the same clock as the to do list
 export function orderTodo(b: Booking, now: number): Todo {
     const r = readingTodo(b, now);
-    if (r) return r;
-    const name = b.name || 'someone';
+    const c = orderClock(b);
+    const when = c.kind === 'due' ? `due ${whenLabel(c.due, now)}`
+        : `ordered ${new Date(Date.parse(b.createdAt || '') || now).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })}`;
     return {
-        b, kind: 'reading', at: Infinity,
-        title: b.serviceId === 'chat' ? `Answer ${name}’s chat` : `Send ${name}’s reading`,
-        detail: [serviceLabel(b), amountLabel(b), `ordered ${new Date(Date.parse(b.createdAt || '') || now).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })}`].filter(Boolean).join(' · '),
-        pill: 'Not paid yet', tone: 'calm',
+        ...(r || { b, kind: 'reading' as const, at: Infinity, pill: 'Not paid yet', tone: 'calm' as const }),
+        title: serviceLabel(b),
+        detail: [b.name || '—', amountLabel(b), when].filter(Boolean).join(' · '),
     };
 }
 export function todosFrom(bookings: Booking[], now: number): Todo[] {
