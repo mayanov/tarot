@@ -4,15 +4,21 @@
 import type { Booking } from '../../../services/booking';
 import { orderClock, serviceLabel, serviceTitle, packageOf, amountLabel, paymentMethodOf, spanLabel, soonMs } from './format';
 
-export type NoteKind = 'new' | 'awaiting' | 'dueSoon' | 'overdue' | 'session' | 'cancelled';
+export type NoteKind = 'new' | 'awaiting' | 'dueSoon' | 'overdue' | 'session' | 'cancelled' | 'done';
+/** one stage of a booking: Booked, Paid, then Due / Session / Sent; `at` once it's happened */
+export interface NoteStep { label: string; at?: number; state: 'done' | 'now' | 'next' | 'late' }
+/** One notification per booking. Its status changes in place (waiting for payment → paid →
+ *  due soon → overdue, or cancelled), and it moves back to the top, unread, when it does. */
 export interface Note {
-    id: string;          // stable per booking and kind, so read/unread holds across reloads
-    kind: NoteKind;
-    at: number;          // when it happened (ms)
-    title: string;
+    id: string;          // the booking's id
+    kind: NoteKind;      // where it is now
+    at: number;          // when that last changed (ms)
+    title: string;       // who, and what they booked
+    status: string;      // 'Waiting for payment', 'Paid', 'Due in 3 h', 'Overdue 2 d', …
     detail: string;
+    steps: NoteStep[];
     bookingId: string;
-    tone: 'accent' | 'soon' | 'late' | 'quiet';
+    tone: 'accent' | 'soon' | 'late' | 'quiet' | 'ok';
 }
 
 const HOUR = 3_600_000;
@@ -44,66 +50,79 @@ export function notesFrom(bookings: Booking[], now: number): Note[] {
     const out: Note[] = [];
     for (const b of bookings) {
         // extra time on a session isn't a booking of its own
-        if (b.extraFor) continue;
+        if (b.extraFor || b.holdOnly) continue;
         const created = Date.parse(b.createdAt || '') || 0;
         const fromSite = b.source !== 'manual';
         const paid = b.paymentStatus === 'paid';
+        const paidAt = paid ? Date.parse(b.paidAt || '') || created : 0;
         const timed = !!(b.date && b.time);
         const live = b.status !== 'cancelled' && b.status !== 'done';
 
-        // a booking that came in from the site, paid
-        if (fromSite && paid && b.status !== 'cancelled') {
-            const at = Date.parse(b.paidAt || '') || created;
-            if (now - at < KEEP) out.push({
-                id: `new:${b.id}`, kind: 'new', at, bookingId: b.id, tone: 'accent',
-                title: `New booking: ${who(b)}`,
-                detail: [amountLabel(b), paymentMethodOf(b), timed ? `session ${whenLabel(startOf(b), now)}` : ''].filter(Boolean).join(' · '),
-            });
-        }
-        // one from the site still waiting for its money
-        if (fromSite && !paid && live && now - created < KEEP) out.push({
-            id: `awaiting:${b.id}`, kind: 'awaiting', at: created, bookingId: b.id, tone: 'quiet',
-            title: `Waiting for payment: ${who(b)}`,
-            detail: [amountLabel(b), b.market === 'ID' ? 'Ask to pay on WhatsApp from its details' : 'Not paid yet'].join(' · '),
-        });
-        // a reading or chat close to (or past) when it's due
-        if (!timed && live) {
+        // where it is now: the latest thing that happened to it
+        let kind: NoteKind = paid ? 'new' : 'awaiting';
+        let at = paid ? paidAt : created;
+        let status = paid ? 'Paid' : 'Waiting for payment';
+        let tone: Note['tone'] = paid ? 'accent' : 'quiet';
+        let detail = [amountLabel(b), paid ? paymentMethodOf(b) : b.market === 'ID' ? 'Ask to pay on WhatsApp from its details' : 'not paid yet'].filter(Boolean).join(' · ');
+        let reminder = false;
+        // the last stage: when the reading is due, or the session
+        let last: NoteStep;
+
+        if (timed) {
+            const start = startOf(b);
+            last = { label: `Session ${whenLabel(start, now)}`, state: b.status === 'done' || start <= now ? 'done' : 'next' };
+            if (live && start > now && start - now <= DAY) {
+                reminder = true;
+                kind = 'session'; at = Math.max(at, start - DAY);
+                status = `Session in ${span(start - now)}`;
+                tone = start - now <= 2 * HOUR ? 'soon' : 'accent';
+                detail = amountLabel(b) || '';
+                last.state = 'now';
+            }
+        } else {
             const c = orderClock(b);
+            last = { label: b.serviceId === 'chat' ? 'Answered' : 'Sent', state: b.status === 'done' ? 'done' : 'next' };
             if (c.kind === 'due') {
+                last.label = b.status === 'done' ? last.label : `Due ${whenLabel(c.due, now)}`;
                 const soonAt = c.due - warnMs(b.serviceId);
-                if (now >= c.due) out.push({
-                    id: `overdue:${b.id}`, kind: 'overdue', at: c.due, bookingId: b.id, tone: 'late',
-                    title: `Overdue ${span(now - c.due)}: ${who(b)}`,
-                    detail: `Was due ${whenLabel(c.due, now)}. Mark it done once it's sent`,
-                });
-                else if (now >= soonAt) out.push({
-                    id: `dueSoon:${b.id}`, kind: 'dueSoon', at: soonAt, bookingId: b.id, tone: 'soon',
-                    title: `Due in ${span(c.due - now)}: ${who(b)}`,
-                    detail: `Due ${whenLabel(c.due, now)}`,
-                });
+                if (live && now >= c.due) {
+                    reminder = true;
+                    kind = 'overdue'; at = c.due; tone = 'late';
+                    status = `Overdue ${span(now - c.due)}`;
+                    detail = 'Mark it done once it’s sent';
+                    last.state = 'late';
+                } else if (live && now >= soonAt) {
+                    reminder = true;
+                    kind = 'dueSoon'; at = soonAt; tone = 'soon';
+                    status = `Due in ${span(c.due - now)}`;
+                    detail = amountLabel(b) || '';
+                    last.state = 'now';
+                }
             }
         }
-        // a session in the next day
-        if (timed && live) {
-            const start = startOf(b);
-            if (start > now && start - now <= DAY) out.push({
-                id: `session:${b.id}`, kind: 'session', at: Math.max(start - DAY, created), bookingId: b.id,
-                tone: start - now <= 2 * HOUR ? 'soon' : 'accent',
-                title: `Session ${whenLabel(start, now)}: ${who(b)}`,
-                detail: [`in ${span(start - now)}`, paid ? 'paid' : 'not paid yet'].join(' · '),
-            });
-        }
         // let go because it wasn't paid in time
-        if (fromSite && b.status === 'cancelled' && b.cancelReason === 'unpaid') {
-            const at = Date.parse(b.holdUntil || '') || created + HOUR;
-            if (now - at < KEEP && at <= now) out.push({
-                id: `cancelled:${b.id}`, kind: 'cancelled', at, bookingId: b.id, tone: 'quiet',
-                title: `Cancelled, not paid in time: ${who(b)}`,
-                detail: `${amountLabel(b)} · the slot is free again`,
-            });
+        if (b.status === 'cancelled') {
+            if (!(fromSite && b.cancelReason === 'unpaid')) continue; // cancelled by hand: nothing to tell
+            kind = 'cancelled'; tone = 'quiet'; status = 'Cancelled, not paid in time';
+            at = Math.min(now, Date.parse(b.holdUntil || '') || created + HOUR);
+            detail = `${amountLabel(b)} · the slot is free again`;
+        } else if (b.status === 'done') {
+            kind = 'done'; tone = 'ok'; status = timed ? 'Done' : b.serviceId === 'chat' ? 'Answered' : 'Sent';
         }
+        // a booking typed in by hand only shows up for its reminders
+        if (!fromSite && !reminder) continue;
+        if (now - at >= KEEP || at > now) continue;
+
+        const steps: NoteStep[] = kind === 'cancelled'
+            ? [{ label: 'Booked', at: created, state: 'done' }, { label: 'Not paid', state: 'late' }, { label: 'Cancelled', at, state: 'late' }]
+            : [
+                { label: fromSite ? 'Booked' : 'Added', at: created || undefined, state: 'done' },
+                paid ? { label: 'Paid', at: paidAt, state: 'done' } : { label: 'Paid', state: 'now' },
+                last,
+            ];
+        out.push({ id: b.id, kind, at, bookingId: b.id, tone, title: who(b), status, detail, steps });
     }
-    return out.filter((n) => n.at <= now).sort((a, b) => b.at - a.at);
+    return out.sort((a, b) => b.at - a.at);
 }
 
 // ---- the to do list: what's still to be done, soonest deadline first ----

@@ -1,20 +1,29 @@
 import React, { useMemo, useState } from 'react';
-import { BellOff, CheckCheck, Sparkles, Wallet, XCircle, RefreshCcw, X, PartyPopper } from 'lucide-react';
+import { BellOff, CheckCheck, Sparkles, Wallet, XCircle, RefreshCcw, X, PartyPopper, Clock, AlertCircle, CalendarClock, CheckCircle2 } from 'lucide-react';
 import BookingsView from './BookingsView';
 import TodoCard from './TodoCard';
 import { BOOKINGS_CHANGED, type Booking } from '../../services/booking';
-import { dayHeading, todosFrom, type Note, type NoteKind, type Todo } from './lib/notifications';
+import { dayHeading, todosFrom, type Note, type NoteKind, type NoteStep, type Todo } from './lib/notifications';
 
 // The bell's panel. On top, the to do list: every reading or chat still to send and
 // every session in the next day, as cards, soonest deadline first; a reading is ticked
-// off right here (marked done). Below, what happened lately: new bookings, ones waiting
-// for payment, ones let go unpaid. Clicking anything opens that booking's details.
-const FEED: NoteKind[] = ['new', 'awaiting', 'cancelled'];
-const FEED_ICON: Partial<Record<NoteKind, React.ComponentType<{ size?: number; className?: string }>>> = {
-    new: Sparkles, awaiting: Wallet, cancelled: XCircle,
+// off right here (marked done). Below, the latest: one line per booking, its status
+// changing in place (waiting for payment, paid, due soon, overdue, cancelled) with its
+// stages under it, so a booking never piles up several notifications. Clicking anything
+// opens that booking's details.
+const REMINDER: NoteKind[] = ['dueSoon', 'overdue', 'session'];
+const ICON: Record<NoteKind, React.ComponentType<{ size?: number; className?: string }>> = {
+    new: Sparkles, awaiting: Wallet, cancelled: XCircle, dueSoon: Clock, overdue: AlertCircle, session: CalendarClock, done: CheckCircle2,
 };
-const FEED_TONE: Partial<Record<NoteKind, string>> = {
-    new: 'text-lilac bg-lilac/12', awaiting: 'text-text-subtle bg-adm-hover', cancelled: 'text-text-subtle bg-adm-hover',
+const TONE: Record<Note['tone'], { icon: string; pill: string }> = {
+    accent: { icon: 'text-lilac bg-lilac/12', pill: 'text-lilac bg-lilac/12' },
+    soon: { icon: 'due-soon-text bg-gold-accent/12', pill: 'due-soon-text bg-gold-accent/12' },
+    late: { icon: 'due-late-text bg-coral-deep/10', pill: 'due-late-text bg-coral-deep/10' },
+    quiet: { icon: 'text-text-subtle bg-adm-hover', pill: 'text-text-subtle bg-adm-hover' },
+    ok: { icon: 'text-sage bg-sage/12', pill: 'text-sage bg-sage/12' },
+};
+const STEP_DOT: Record<NoteStep['state'], string> = {
+    done: 'bg-sage', now: 'bg-lilac ring-2 ring-lilac/25', next: 'border border-adm-line-3 bg-transparent', late: 'bg-current',
 };
 const clock = (t: number) => new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 const ago = (t: number, now: number) => {
@@ -35,11 +44,11 @@ const NotificationsView: React.FC<{
     const [err, setErr] = useState('');
     const todos = useMemo(() => todosFrom(bookings, now), [bookings, now]);
     // a to do card is new when the reminder for it hasn't been seen yet
-    const freshIds = useMemo(() => new Set(notes.filter((n) => !FEED.includes(n.kind) && n.at > seenAt).map((n) => n.bookingId)), [notes, seenAt]);
+    const freshIds = useMemo(() => new Set(notes.filter((n) => REMINDER.includes(n.kind) && n.at > seenAt).map((n) => n.bookingId)), [notes, seenAt]);
     const unread = notes.filter((n) => n.at > seenAt).length;
     const days = useMemo(() => {
         const out: { heading: string; items: Note[] }[] = [];
-        for (const n of notes.filter((x) => FEED.includes(x.kind))) {
+        for (const n of notes) {
             const h = dayHeading(n.at, now);
             if (out[out.length - 1]?.heading === h) out[out.length - 1].items.push(n);
             else out.push({ heading: h, items: [n] });
@@ -71,20 +80,38 @@ const NotificationsView: React.FC<{
         </li>
     );
 
+    const stepTime = (t: number) => (dayHeading(t, now) === 'Today' ? clock(t) : new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' }));
     const feedItem = (n: Note) => {
-        const Icon = FEED_ICON[n.kind]!;
+        const Icon = ICON[n.kind];
         const fresh = n.at > seenAt;
         return (
             <li key={n.id}>
-                <button onClick={() => setOpenId(n.bookingId)} className="w-full text-left flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-adm-hover">
-                    <span className={`mt-0.5 shrink-0 h-7 w-7 rounded-full flex items-center justify-center ${FEED_TONE[n.kind]}`}><Icon size={14} /></span>
+                <button onClick={() => setOpenId(n.bookingId)} className="w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-adm-hover">
+                    <span className={`mt-0.5 shrink-0 h-7 w-7 rounded-full flex items-center justify-center ${TONE[n.tone].icon}`}><Icon size={14} /></span>
                     <span className="min-w-0 flex-1">
-                        <span className={`block text-[13px] leading-snug ${fresh ? 'font-semibold text-text-light' : 'text-text-light/85'}`}>{n.title}</span>
-                        <span className="block text-[12px] text-text-subtle mt-0.5">{n.detail}</span>
-                    </span>
-                    <span className="shrink-0 flex items-center gap-1.5 pt-0.5">
-                        <span className="text-[11px] text-text-subtle whitespace-nowrap">{ago(n.at, now)}</span>
-                        <span className={`h-1.5 w-1.5 rounded-full ${fresh ? 'bg-lilac' : 'bg-transparent'}`} />
+                        <span className="flex items-start justify-between gap-2">
+                            <span className={`min-w-0 text-[13px] leading-snug ${fresh ? 'font-semibold text-text-light' : 'text-text-light/85'}`}>{n.title}</span>
+                            <span className="shrink-0 flex items-center gap-1.5 pt-0.5">
+                                <span className="text-[11px] text-text-subtle whitespace-nowrap">{ago(n.at, now)}</span>
+                                <span className={`h-1.5 w-1.5 rounded-full ${fresh ? 'bg-lilac' : 'bg-transparent'}`} />
+                            </span>
+                        </span>
+                        <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className={`px-1.5 py-px rounded-md text-[11px] font-semibold whitespace-nowrap ${TONE[n.tone].pill}`}>{n.status}</span>
+                            <span className="text-[12px] text-text-subtle min-w-0">{n.detail}</span>
+                        </span>
+                        {/* its stages: Booked, Paid, then Due / Session / Sent */}
+                        <span className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-text-subtle">
+                            {n.steps.map((st, i) => (
+                                <React.Fragment key={st.label + i}>
+                                    {i > 0 && <span className={`h-px w-3 ${st.state === 'next' ? 'bg-adm-line-2' : 'bg-adm-line-3'}`} />}
+                                    <span className={`inline-flex items-center gap-1 whitespace-nowrap ${st.state === 'next' ? 'opacity-60' : st.state === 'late' ? 'due-late-text' : st.state === 'now' ? 'text-text-light' : ''}`}>
+                                        <span className={`h-1.5 w-1.5 rounded-full ${STEP_DOT[st.state]}`} />
+                                        {st.label}{st.at ? <span className="opacity-70">{stepTime(st.at)}</span> : null}
+                                    </span>
+                                </React.Fragment>
+                            ))}
+                        </span>
                     </span>
                 </button>
             </li>
@@ -132,7 +159,7 @@ const NotificationsView: React.FC<{
                         {days.length === 0 ? (
                             <div className="py-8 flex flex-col items-center gap-2 text-text-subtle">
                                 <BellOff size={20} className="opacity-50" />
-                                <p className="text-[13px]">No new bookings in the last two weeks.</p>
+                                <p className="text-[13px]">No bookings in the last two weeks.</p>
                             </div>
                         ) : days.map((d) => (
                             <div key={d.heading}>
