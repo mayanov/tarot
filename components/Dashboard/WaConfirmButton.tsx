@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, CircleCheck, Wallet } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import type { Booking } from '../../services/booking';
 import { amountForBooking, fmtMoney } from './lib/format';
@@ -196,7 +196,7 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: strin
     e.stopPropagation();
     if (menu) { setMenu(null); return; }
     const r = btnRef.current!.getBoundingClientRect();
-    const W = 256, H = 132;
+    const W = 288, H = paid ? 112 : 172;
     const up = r.bottom + H + 8 > window.innerHeight;
     setMenu({ top: up ? r.top - 6 : r.bottom + 6, left: Math.max(8, Math.min(r.right - W, window.innerWidth - W - 8)), up });
   };
@@ -204,18 +204,25 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: strin
   // the button shows the latest message sent: the confirmation, else the payment request
   const last = b.waConfirmSentAt ? `Confirmed ${sentLabel(b.waConfirmSentAt).split(',')[0]}`
     : b.waPayAskSentAt && !paid ? `Asked to pay ${sentLabel(b.waPayAskSentAt).split(',')[0]}` : '';
-  const Item: React.FC<{ kind: Kind; disabled?: string }> = ({ kind, disabled }) => {
+  // one message: an icon, its name with when it was last sent, and one quiet line on what it says
+  const Item: React.FC<{ kind: Kind }> = ({ kind }) => {
     const k = KIND[kind];
     const at = b[k.field];
+    const Icon = kind === 'pay' ? Wallet : CircleCheck;
     return (
-      <button type="button" disabled={!!disabled} onMouseDown={(e) => e.stopPropagation()}
+      <button type="button" role="menuitem" onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => { e.stopPropagation(); send(kind); }}
-        className="w-full text-left px-3 py-2 rounded-lg hover:bg-adm-hover disabled:opacity-50 disabled:hover:bg-transparent transition-colors">
-        <span className="flex items-center justify-between gap-3">
-          <span className="text-sm font-medium text-text-light">{k.label}</span>
-          {at && <span className="text-[0.7rem] text-text-subtle whitespace-nowrap">sent {sentLabel(at).split(',')[0]}</span>}
+        className="w-full flex items-start gap-3 text-left px-3 py-2.5 rounded-lg hover:bg-adm-hover-2 focus-visible:bg-adm-hover-2 outline-none transition-colors">
+        <span className={`mt-0.5 shrink-0 grid place-items-center w-7 h-7 rounded-full ${kind === 'pay' ? 'bg-coral/15 text-coral-deep' : 'bg-sage/15 text-sage'}`}>
+          <Icon size={15} />
         </span>
-        <span className="block text-xs text-text-subtle mt-0.5">{disabled || k.hint}</span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-baseline justify-between gap-2">
+            <span className="text-sm font-semibold text-text-light">{k.label}</span>
+            {at && <span className="text-[11px] text-text-subtle whitespace-nowrap">Sent {sentLabel(at).split(',')[0]}</span>}
+          </span>
+          <span className="block text-xs leading-snug text-text-subtle mt-0.5">{k.hint}</span>
+        </span>
       </button>
     );
   };
@@ -252,10 +259,16 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: strin
       {qrRetry}
       {menu && (
         <div role="menu" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}
-          className="fixed z-[120] w-64 p-1.5 rounded-xl bg-surface-1 border border-adm-line-2 shadow-2xl"
+          className="fixed z-[120] w-72 rounded-xl bg-surface-1 border border-adm-line-3 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.28)] overflow-hidden"
           style={{ top: menu.top, left: menu.left, transform: menu.up ? 'translateY(-100%)' : undefined }}>
-          <Item kind="pay" disabled={paid ? 'Already paid' : undefined} />
-          <Item kind="confirm" />
+          <div className="flex items-center gap-2 px-4 pt-3 pb-2 border-b border-adm-line text-[11px] font-semibold uppercase tracking-[0.1em] text-text-subtle">
+            <span className="text-[#1fae55]"><FaWhatsapp size={13} /></span>
+            <span className="truncate">Message {(b.name || '').trim().split(/\s+/)[0] || 'them'}</span>
+          </div>
+          <div className="p-1.5">
+            {!paid && <Item kind="pay" />}
+            <Item kind="confirm" />
+          </div>
         </div>
       )}
     </>
