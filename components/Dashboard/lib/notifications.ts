@@ -13,9 +13,12 @@ export interface Note {
     id: string;          // the booking's id
     kind: NoteKind;      // where it is now
     at: number;          // when that last changed (ms)
+    name: string;        // who
+    service: string;     // what they booked
+    amount: string;      // '$12', 'Rp 450.000'
     title: string;       // who, and what they booked
     status: string;      // 'Waiting for payment', 'Paid', 'Due in 3 h', 'Overdue 2 d', …
-    detail: string;
+    detail: string;      // a few words more: how it was paid, when it's due
     steps: NoteStep[];
     bookingId: string;
     tone: 'accent' | 'soon' | 'late' | 'quiet' | 'ok';
@@ -63,7 +66,7 @@ export function notesFrom(bookings: Booking[], now: number): Note[] {
         let at = paid ? paidAt : created;
         let status = paid ? 'Paid' : 'Waiting for payment';
         let tone: Note['tone'] = paid ? 'accent' : 'quiet';
-        let detail = [amountLabel(b), paid ? paymentMethodOf(b) : b.market === 'ID' ? 'Ask to pay on WhatsApp from its details' : 'not paid yet'].filter(Boolean).join(' · ');
+        let detail = paid ? paymentMethodOf(b) || '' : '';
         let reminder = false;
         // the last stage: when the reading is due, or the session
         let last: NoteStep;
@@ -76,8 +79,8 @@ export function notesFrom(bookings: Booking[], now: number): Note[] {
                 kind = 'session'; at = Math.max(at, start - DAY);
                 status = `Session in ${span(start - now)}`;
                 tone = start - now <= 2 * HOUR ? 'soon' : 'accent';
-                detail = amountLabel(b) || '';
-                last.state = 'now';
+                detail = whenLabel(start, now);
+                if (paid) last.state = 'now'; // (unpaid: getting paid is still the step at hand)
             }
         } else {
             const c = orderClock(b);
@@ -89,13 +92,13 @@ export function notesFrom(bookings: Booking[], now: number): Note[] {
                     reminder = true;
                     kind = 'overdue'; at = c.due; tone = 'late';
                     status = `Overdue ${span(now - c.due)}`;
-                    detail = 'Mark it done once it’s sent';
+                    detail = `was due ${whenLabel(c.due, now)}`;
                     last.state = 'late';
                 } else if (live && now >= soonAt) {
                     reminder = true;
                     kind = 'dueSoon'; at = soonAt; tone = 'soon';
                     status = `Due in ${span(c.due - now)}`;
-                    detail = amountLabel(b) || '';
+                    detail = `due ${whenLabel(c.due, now)}`;
                     last.state = 'now';
                 }
             }
@@ -105,9 +108,9 @@ export function notesFrom(bookings: Booking[], now: number): Note[] {
             if (!(fromSite && b.cancelReason === 'unpaid')) continue; // cancelled by hand: nothing to tell
             kind = 'cancelled'; tone = 'quiet'; status = 'Cancelled, not paid in time';
             at = Math.min(now, Date.parse(b.holdUntil || '') || created + HOUR);
-            detail = `${amountLabel(b)} · the slot is free again`;
+            detail = 'the slot is free again';
         } else if (b.status === 'done') {
-            kind = 'done'; tone = 'ok'; status = timed ? 'Done' : b.serviceId === 'chat' ? 'Answered' : 'Sent';
+            kind = 'done'; tone = 'ok'; status = timed ? 'Done' : b.serviceId === 'chat' ? 'Answered' : 'Sent'; detail = '';
         }
         // a booking typed in by hand only shows up for its reminders
         if (!fromSite && !reminder) continue;
@@ -120,7 +123,7 @@ export function notesFrom(bookings: Booking[], now: number): Note[] {
                 paid ? { label: 'Paid', at: paidAt, state: 'done' } : { label: 'Paid', state: 'now' },
                 last,
             ];
-        out.push({ id: b.id, kind, at, bookingId: b.id, tone, title: who(b), status, detail, steps });
+        out.push({ id: b.id, kind, at, bookingId: b.id, tone, title: who(b), name: b.name || 'Someone', service: serviceLabel(b), amount: amountLabel(b) || '', status, detail, steps });
     }
     return out.sort((a, b) => b.at - a.at);
 }

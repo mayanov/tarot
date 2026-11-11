@@ -18,12 +18,15 @@ const ICON: Record<NoteKind, React.ComponentType<{ size?: number; className?: st
 const TONE: Record<Note['tone'], { icon: string; pill: string }> = {
     accent: { icon: 'text-lilac bg-lilac/12', pill: 'text-lilac bg-lilac/12' },
     soon: { icon: 'due-soon-text bg-gold-accent/12', pill: 'due-soon-text bg-gold-accent/12' },
-    late: { icon: 'due-late-text bg-coral-deep/10', pill: 'due-late-text bg-coral-deep/10' },
+    late: { icon: 'due-late-text bg-red-500/10', pill: 'due-late-text bg-red-500/10' },
     quiet: { icon: 'text-text-subtle bg-adm-hover', pill: 'text-text-subtle bg-adm-hover' },
     ok: { icon: 'text-sage bg-sage/12', pill: 'text-sage bg-sage/12' },
 };
-const STEP_DOT: Record<NoteStep['state'], string> = {
-    done: 'bg-sage', now: 'bg-lilac ring-2 ring-lilac/25', next: 'border border-adm-line-3 bg-transparent', late: 'bg-current',
+const STEP_BAR: Record<NoteStep['state'], string> = {
+    done: 'bg-sage', now: 'bg-lilac', next: 'bg-adm-line-2', late: 'bg-red-500/80',
+};
+const STEP_TEXT: Record<NoteStep['state'], string> = {
+    done: 'text-text-subtle', now: 'text-text-light font-semibold', next: 'text-text-subtle opacity-70', late: 'due-late-text font-semibold',
 };
 const clock = (t: number) => new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 const ago = (t: number, now: number) => {
@@ -48,13 +51,14 @@ const NotificationsView: React.FC<{
     const unread = notes.filter((n) => n.at > seenAt).length;
     const days = useMemo(() => {
         const out: { heading: string; items: Note[] }[] = [];
-        for (const n of notes) {
+        const inTodo = new Set(todos.map((t) => t.b.id));
+        for (const n of notes.filter((x) => !inTodo.has(x.bookingId))) {
             const h = dayHeading(n.at, now);
             if (out[out.length - 1]?.heading === h) out[out.length - 1].items.push(n);
             else out.push({ heading: h, items: [n] });
         }
         return out;
-    }, [notes, now]);
+    }, [notes, now, todos]);
 
     const tick = async (t: Todo) => {
         setErr('');
@@ -81,35 +85,37 @@ const NotificationsView: React.FC<{
     );
 
     const stepTime = (t: number) => (dayHeading(t, now) === 'Today' ? clock(t) : new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' }));
+    // one booking: who and what, its status with the amount, and a three-step track
     const feedItem = (n: Note) => {
         const Icon = ICON[n.kind];
         const fresh = n.at > seenAt;
         return (
             <li key={n.id}>
-                <button onClick={() => setOpenId(n.bookingId)} className="w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-adm-hover">
-                    <span className={`mt-0.5 shrink-0 h-7 w-7 rounded-full flex items-center justify-center ${TONE[n.tone].icon}`}><Icon size={14} /></span>
+                <button onClick={() => setOpenId(n.bookingId)} className="w-full text-left flex items-start gap-3 px-4 py-3.5 transition-colors hover:bg-adm-hover">
+                    <span className={`shrink-0 h-9 w-9 rounded-full flex items-center justify-center ${TONE[n.tone].icon}`}><Icon size={16} /></span>
                     <span className="min-w-0 flex-1">
-                        <span className="flex items-start justify-between gap-2">
-                            <span className={`min-w-0 text-[13px] leading-snug ${fresh ? 'font-semibold text-text-light' : 'text-text-light/85'}`}>{n.title}</span>
-                            <span className="shrink-0 flex items-center gap-1.5 pt-0.5">
-                                <span className="text-[11px] text-text-subtle whitespace-nowrap">{ago(n.at, now)}</span>
-                                <span className={`h-1.5 w-1.5 rounded-full ${fresh ? 'bg-lilac' : 'bg-transparent'}`} />
+                        <span className="flex items-baseline justify-between gap-3">
+                            <span className="min-w-0 truncate text-[14px] leading-snug">
+                                <span className={`${fresh ? 'font-semibold' : 'font-medium'} text-text-light`}>{n.name}</span>
+                                <span className="text-text-subtle"> · {n.service}</span>
+                            </span>
+                            <span className="shrink-0 flex items-center gap-1.5 text-[11.5px] text-text-subtle whitespace-nowrap">
+                                {ago(n.at, now)}
+                                {fresh && <span aria-label="new" className="h-2 w-2 rounded-full bg-lilac" />}
                             </span>
                         </span>
-                        <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span className={`px-1.5 py-px rounded-md text-[11px] font-semibold whitespace-nowrap ${TONE[n.tone].pill}`}>{n.status}</span>
-                            <span className="text-[12px] text-text-subtle min-w-0">{n.detail}</span>
+                        <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
+                            <span className={`px-2 py-0.5 rounded-full text-[12px] font-semibold whitespace-nowrap ${TONE[n.tone].pill}`}>{n.status}</span>
+                            {n.amount && <span className="font-semibold text-text-light tabular-nums">{n.amount}</span>}
+                            {n.detail && <span className="text-text-subtle">{n.detail}</span>}
                         </span>
-                        {/* its stages: Booked, Paid, then Due / Session / Sent */}
-                        <span className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-text-subtle">
+                        {/* the three steps: a short bar each, its name under it */}
+                        <span className="mt-2.5 grid grid-cols-3 gap-1.5" aria-label={n.steps.map((st) => st.label).join(', ')}>
                             {n.steps.map((st, i) => (
-                                <React.Fragment key={st.label + i}>
-                                    {i > 0 && <span className={`h-px w-3 ${st.state === 'next' ? 'bg-adm-line-2' : 'bg-adm-line-3'}`} />}
-                                    <span className={`inline-flex items-center gap-1 whitespace-nowrap ${st.state === 'next' ? 'opacity-60' : st.state === 'late' ? 'due-late-text' : st.state === 'now' ? 'text-text-light' : ''}`}>
-                                        <span className={`h-1.5 w-1.5 rounded-full ${STEP_DOT[st.state]}`} />
-                                        {st.label}{st.at ? <span className="opacity-70">{stepTime(st.at)}</span> : null}
-                                    </span>
-                                </React.Fragment>
+                                <span key={i} className="min-w-0" title={st.at ? `${st.label} · ${stepTime(st.at)}` : st.label}>
+                                    <span className={`block h-1 rounded-full ${STEP_BAR[st.state]}`} />
+                                    <span className={`block mt-1 text-[11px] leading-tight break-words ${STEP_TEXT[st.state]}`}>{st.label}</span>
+                                </span>
                             ))}
                         </span>
                     </span>
@@ -163,8 +169,8 @@ const NotificationsView: React.FC<{
                             </div>
                         ) : days.map((d) => (
                             <div key={d.heading}>
-                                <p className="px-4 pt-3 pb-1 text-[11px] font-medium text-text-subtle/70">{d.heading}</p>
-                                <ul>{d.items.map(feedItem)}</ul>
+                                <p className="px-4 pt-4 pb-1 text-[12px] font-semibold text-text-subtle">{d.heading}</p>
+                                <ul className="divide-y divide-adm-line">{d.items.map(feedItem)}</ul>
                             </div>
                         ))}
                     </section>

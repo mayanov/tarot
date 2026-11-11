@@ -43,7 +43,9 @@ const TodoCard: React.FC<{
             )}
             <span className="min-w-0 flex-1">
                 <span className="flex items-start justify-between gap-2">
-                    <span className={`text-[13.5px] leading-snug font-semibold text-text-light ${done ? 'line-through' : ''}`}>{t.title}</span>
+                    <span className={`text-[13.5px] leading-snug font-semibold text-text-light ${done ? 'line-through' : ''}`}>
+                        {fresh && !done && <span aria-label="new" className="inline-block align-middle mr-1.5 -mt-0.5 h-2 w-2 rounded-full bg-lilac" />}{t.title}
+                    </span>
                     <span className="shrink-0 mt-px flex items-center gap-1.5">
                         {badge && !done && badge}
                         <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${PILL[t.tone]}`}>{done ? 'Done' : t.pill}</span>
@@ -64,7 +66,6 @@ const TodoCard: React.FC<{
                     )}
                 </span>
             </span>
-            {fresh && !done && <span aria-label="new" className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-coral-deep ring-2 ring-surface-1" />}
         </div>
     );
 };
