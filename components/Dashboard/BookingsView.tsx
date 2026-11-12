@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, ChevronLeft, ChevronRight, X, Plus, ArrowRight, Pencil, Check, CalendarDays, MapPin, Clock, Mail, Cake, StickyNote } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight, Plus, ArrowRight, Pencil, Mail, StickyNote } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
+import Dialog, { DialogIconButton, Section, KV } from './ui/Dialog';
 import PageHeader from './ui/PageHeader';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -105,7 +106,7 @@ const CHIP_NAME: Record<string, string> = {
 };
 const chipCls = (on: boolean) =>
     `rounded-full border px-3 py-1.5 text-sm transition-colors ${on ? 'border-lilac bg-lilac text-white' : 'border-adm-line-2 text-text-light hover:border-lilac/60'}`;
-const SECTION = 'text-[11px] font-semibold uppercase tracking-wider text-text-subtle mb-2';
+const SECTION = 'text-[11px] font-semibold uppercase tracking-[0.12em] text-text-subtle mb-2.5';
 type Client = { key: string; name: string; contact: string; phone: string; email: string; count: number };
 // a phone written any way (0812…, 62812…, +62 812…) → the same digits
 const phoneTail = (p: string) => normPhone(p).replace(/^(62|0)/, '');
@@ -277,13 +278,26 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
     };
 
     return (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-            <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-surface-1 border border-adm-line-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between px-6 py-4 border-b border-adm-line sticky top-0 z-10 bg-surface-1">
-                    <h3 className="text-lg font-serif font-bold text-text-light">{fromEntry ? 'Turn into a booking' : 'Add booking'}</h3>
-                    <button type="button" onClick={onClose} className="p-1.5 rounded-full text-text-subtle hover:text-text-light hover:bg-white/5"><X size={18} /></button>
+        <Dialog size="lg" onClose={onClose}
+            eyebrow={fromEntry ? 'From your calendar' : 'New booking'}
+            title={fromEntry ? 'Turn into a booking' : 'Add booking'}
+            subtitle={fromEntry ? undefined : 'One taken on WhatsApp, by phone or in person'}
+            footer={<>
+                <div className="flex-1 min-w-[12rem] text-xs text-text-subtle leading-relaxed" aria-live="polite">
+                    <span className={customerName ? 'text-text-light font-medium' : ''}>{customerName || 'No customer yet'}</span>
+                    {' · '}{svcName}{pkg ? ` ${pkg}` : ''}
+                    {when ? ` · ${when}` : ''}
+                    {' · '}{baseAmount > 0 ? fmtAmt(total, currency) : payl ? 'no amount yet' : '—'}
+                    {' · '}{payment === 'paid' ? 'Paid' : 'Not paid'}
                 </div>
-                <form onSubmit={submit} className="px-6 py-5 space-y-5">
+                <div className="flex justify-end gap-2 shrink-0">
+                    <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-sm text-text-subtle hover:text-text-light transition-colors">Cancel</button>
+                    <button type="submit" form="add-booking" disabled={busy || !ready} className="px-5 py-2 rounded-full bg-lilac text-white text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        {busy ? 'Adding…' : fromEntry ? 'Turn into booking' : 'Add booking'}
+                    </button>
+                </div>
+            </>}>
+                <form id="add-booking" onSubmit={submit} className="px-5 sm:px-6 py-5 space-y-6">
                     {fromEntry && (
                         <div className="rounded-lg bg-adm-hover border border-adm-line-2 px-3 py-2.5 text-xs text-text-subtle leading-relaxed">
                             <div className="text-sm text-text-light font-medium">“{fromEntry.title}”</div>
@@ -470,24 +484,8 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
 
                     {err && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-lg px-3 py-2">{err}</div>}
 
-                    <div className="border-t border-adm-line pt-4 flex flex-col sm:flex-row sm:items-center gap-3">
-                        <div className="flex-1 min-w-0 text-xs text-text-subtle leading-relaxed" aria-live="polite">
-                            <span className={customerName ? 'text-text-light font-medium' : ''}>{customerName || 'No customer yet'}</span>
-                            {' · '}{svcName}{pkg ? ` ${pkg}` : ''}
-                            {when ? ` · ${when}` : ''}
-                            {' · '}{baseAmount > 0 ? fmtAmt(total, currency) : payl ? 'no amount yet' : '—'}
-                            {' · '}{payment === 'paid' ? 'Paid' : 'Not paid'}
-                        </div>
-                        <div className="flex justify-end gap-2 shrink-0">
-                            <button type="button" onClick={onClose} className="px-4 py-2 rounded-full text-sm text-text-subtle hover:text-text-light transition-colors">Cancel</button>
-                            <button type="submit" disabled={busy || !ready} className="px-5 py-2 rounded-full bg-lilac text-white text-sm font-semibold hover:bg-lilac-dark hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                {busy ? 'Adding…' : fromEntry ? 'Turn into booking' : 'Add booking'}
-                            </button>
-                        </div>
-                    </div>
                 </form>
-            </div>
-        </div>
+        </Dialog>
     );
 };
 
@@ -547,8 +545,8 @@ const RestoreAt: React.FC<{ b: Booking; bookings: Booking[]; onDone: (msg: strin
         } finally { setBusy(false); }
     };
     return (
-        <div className="space-y-2 pt-1">
-            <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle">Bring it back at another time</div>
+        <div className="space-y-2 pt-3 mt-1 border-t border-adm-line">
+            <div className="text-sm text-text-light">Bring it back at another time</div>
             <div className="grid grid-cols-2 gap-2">
                 <input type="date" value={date} min={toISO(new Date())} onChange={(e) => { setDate(e.target.value); setTime(''); }} className={FLD} aria-label="New date" />
                 <select value={time} onChange={(e) => setTime(e.target.value)} className={FLD} aria-label="New time">
@@ -749,15 +747,12 @@ const ExtraTime: React.FC<{
     };
     const stepBtn = 'h-9 w-9 grid place-items-center rounded-lg border border-adm-line-2 text-text-light hover:bg-adm-hover-2 disabled:opacity-40 transition-colors';
     return (
-        <div className="space-y-2.5 pt-1">
-            <div className="flex items-center justify-between gap-3">
-                <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle">Extra time</div>
-                {!open && (
-                    <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-1 text-[13px] font-semibold text-lilac hover:underline">
-                        <Plus size={14} /> Add extra time
-                    </button>
-                )}
-            </div>
+        <Section title="Extra time" aside={!open && (
+            <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-1 text-[13px] font-semibold text-lilac hover:underline">
+                <Plus size={14} /> Add extra time
+            </button>
+        )}>
+            <div className="space-y-2.5">
             {extras.map((e) => (
                 <div key={e.id} className="flex items-center justify-between gap-2 text-sm">
                     <span className="text-text-light">{e.extraMinutes ? `+${durLabel(e.extraMinutes)}` : 'Extra time'}
@@ -812,7 +807,8 @@ const ExtraTime: React.FC<{
                     {err && <p className="text-xs text-coral">{err}</p>}
                 </div>
             )}
-        </div>
+            </div>
+        </Section>
     );
 };
 
@@ -868,9 +864,9 @@ const PrivateNote: React.FC<{ b: Booking; onSaved: (b: Booking) => void }> = ({ 
     const dirty = note.trim() !== (b.adminNote || '');
     const [open, setOpen] = useState(!!b.adminNote);
     if (!open) return (
-        <div className="px-5 pb-4">
-            <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-1.5 text-xs text-text-subtle hover:text-lilac transition-colors"><StickyNote size={13} />Add a private note</button>
-        </div>
+        <Section>
+            <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-1.5 text-sm text-text-subtle hover:text-lilac transition-colors"><StickyNote size={14} />Add a private note</button>
+        </Section>
     );
     const save = async () => {
         setBusy(true); setErr('');
@@ -879,9 +875,8 @@ const PrivateNote: React.FC<{ b: Booking; onSaved: (b: Booking) => void }> = ({ 
         finally { setBusy(false); }
     };
     return (
-        <div className="px-5 pb-4">
-            <label className="flex items-center gap-1.5 text-xs text-text-subtle mb-1.5"><StickyNote size={13} />Private note <span className="opacity-70">· only you see this</span></label>
-            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Only you see this" className={FLD} autoFocus={!b.adminNote} />
+        <Section title="Private note" aside={<span className="text-[11px] text-text-subtle">only you see this</span>}>
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Anything to remember about this booking" aria-label="Private note" className={FLD} autoFocus={!b.adminNote} />
             {(dirty || err) && (
                 <div className="mt-1.5 flex items-center justify-end gap-3">
                     {err && <span className="text-xs text-coral">{err}</span>}
@@ -889,7 +884,7 @@ const PrivateNote: React.FC<{ b: Booking; onSaved: (b: Booking) => void }> = ({ 
                     {dirty && <Button onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save note'}</Button>}
                 </div>
             )}
-        </div>
+        </Section>
     );
 };
 
@@ -1492,71 +1487,75 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 const paidSum: Money = { IDR: 0, USD: 0 };
                 mine.forEach((x) => { const a = amountForBooking(x); if (a && x.paymentStatus === 'paid') paidSum[a.currency] += a.amount; });
                 const toCustomer = () => { if (onCustomer) onCustomer(); else { openCustomerOf(b.id); setSelectedId(null); } };
-                const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-                    <div className="flex items-center justify-between gap-3 min-h-[2.5rem] py-1">
-                        <div className="text-xs text-text-subtle shrink-0">{label}</div>
-                        <div className="flex items-center justify-end gap-2 min-w-0">{children}</div>
-                    </div>
-                );
-                // one line of the details: a small icon, the value, and what it is on the right
-                const Line: React.FC<{ icon: React.ReactNode; label: string; children: React.ReactNode }> = ({ icon, label, children }) => (
-                    <div className="flex items-center gap-3 text-sm min-w-0">
-                        <span className="grid place-items-center w-8 h-8 shrink-0 rounded-lg bg-adm-hover text-text-subtle">{icon}</span>
-                        <span className="min-w-0 flex-1 text-text-light break-words">{children}</span>
-                        <span className="shrink-0 text-xs text-text-subtle">{label}</span>
-                    </div>
-                );
-                const Chip: React.FC<{ icon?: React.ReactNode; children: React.ReactNode; mono?: boolean; title?: string }> = ({ icon, children, mono, title }) => (
-                    <span title={title} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-adm-hover border border-adm-line text-xs text-text-light whitespace-nowrap tabular-nums ${mono ? 'font-mono' : ''}`}>
-                        {icon && <span className="text-text-subtle">{icon}</span>}{children}
-                    </span>
-                );
                 const initial = (b.name || '?').trim().charAt(0).toUpperCase();
+                const len = b.durationMin ? durLabel(b.durationMin) : '';
+                const weekday = timed ? parseISO(b.date).toLocaleDateString('en-GB', { weekday: 'long' }) : '';
+                const contactLink = 'text-lilac hover:underline';
                 return (
-                    <div className={`fixed inset-0 ${detailOnly ? 'z-[90]' : 'z-50'} flex items-center justify-center p-4`}>
-                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedId(null)} />
-                        <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-surface-1 border border-adm-line-2 rounded-2xl shadow-2xl" data-lenis-prevent>
-                            {/* who and what, with when and where as chips */}
-                            <div className="px-5 pt-5 pb-5 border-b border-adm-line bg-gradient-to-b from-lilac/[0.08] to-transparent">
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0">
-                                        <h3 className="text-2xl font-serif font-bold text-text-light leading-tight">{b.name || '—'}</h3>
-                                        <div className="text-sm text-text-subtle mt-1">{serviceLabel(b)}</div>
-                                    </div>
-                                    <div className="shrink-0 flex items-center gap-1 -mr-1.5 -mt-1">
-                                        {!editing && (
-                                            <button aria-label="Edit" title="Edit name, contact or price" onClick={() => setEditing(true)} className="grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors">
-                                                <Pencil size={15} />
-                                            </button>
-                                        )}
-                                        <button aria-label="Close" onClick={() => setSelectedId(null)} className="grid place-items-center w-8 h-8 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors">
-                                            <X size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="mt-3 flex flex-wrap gap-1.5">
-                                    <Chip icon={<CalendarDays size={12} />}>{timed ? `${fmtDate(b.date)} · ${b.time}${endStr ? `–${endStr}` : ''}` : `Ordered ${fmtDate(b.createdAt)}`}</Chip>
-                                    <Chip icon={<MapPin size={12} />}>{b.market === 'ID' ? 'Indonesia' : 'Global'}</Chip>
-                                    {b.ref && <Chip mono title={refInWords(b.ref) || 'Booking code'}>{b.ref}</Chip>}
-                                    {b.source === 'manual' && <Chip>Added by hand</Chip>}
-                                </div>
-                                {due && (
-                                    <div className="mt-3 flex items-center gap-2 rounded-xl bg-surface-1 border border-adm-line px-3 py-2">
-                                        <Clock size={15} className={`shrink-0 ${due.cls}`} />
-                                        <span className={`text-sm tabular-nums ${due.cls}`}>{due.text}</span>
-                                    </div>
-                                )}
-                            </div>
+                    <Dialog onClose={() => setSelectedId(null)} label={`Booking for ${b.name || 'someone'}`}
+                        eyebrow={`${b.extraFor ? 'Extra time' : timed ? 'Session' : 'Order'}${b.ref ? ` · ${b.ref}` : ''}`}
+                        title={b.name || '—'}
+                        subtitle={serviceLabel(b)}
+                        actions={!editing && <DialogIconButton label="Edit name, contact or price" onClick={() => setEditing(true)}><Pencil size={16} /></DialogIconButton>}>
+                        {editing ? (
+                            <EditDetails key={b.id} b={b} onCancel={() => setEditing(false)}
+                                onSaved={(u) => { replaceBooking(u); setEditing(false); flash('Saved.', 'ok'); }} />
+                        ) : (<>
+                            {/* when (and for an order, when it's due) */}
+                            <Section title={b.extraFor ? 'Extra time' : timed ? 'When' : 'Order'}>
+                                {b.extraFor ? <>
+                                    {/* a session that ran longer: its add-on, on the session's day */}
+                                    <KV label="Length" strong>+{durLabel(b.extraMinutes || 0)}</KV>
+                                    <KV label="Session on">{fmtDate(b.createdAt)}</KV>
+                                </> : timed ? <>
+                                    <KV label="Date" strong>{weekday}, {fmtDate(b.date)}</KV>
+                                    <KV label="Time" strong>{b.time}{endStr ? `–${endStr}` : ''}{len && <span className="font-normal text-text-subtle">· {len}</span>}</KV>
+                                </> : <KV label="Ordered">{fmtDate(b.createdAt)}</KV>}
+                                {due && <KV label="Due"><span className={`tabular-nums ${due.cls}`}>{due.text}</span></KV>}
+                                <KV label="Market">{b.market === 'ID' ? 'Indonesia' : 'Global'}{b.source === 'manual' && <span className="text-text-subtle">· added by hand</span>}</KV>
+                            </Section>
 
-                            {editing ? (
-                                <EditDetails key={b.id} b={b} onCancel={() => setEditing(false)}
-                                    onSaved={(u) => { replaceBooking(u); setEditing(false); flash('Saved.', 'ok'); }} />
-                            ) : (<>
-                            <div className="px-5 py-4 space-y-4">
-                                {/* their profile on Customers, with what they've booked and paid */}
+                            {/* the money: how much, and whether it's in */}
+                            <Section title="Payment">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <div className="text-2xl font-serif font-bold text-text-light tabular-nums leading-tight">{amountLabel(b) || '—'}</div>
+                                        {method && <div className="text-xs text-text-subtle truncate mt-0.5">{method}</div>}
+                                    </div>
+                                    <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
+                                </div>
+                                {b.inviteOnPay && b.status !== 'cancelled' && b.paymentStatus !== 'paid' && (
+                                    <p className="mt-2 text-xs text-text-subtle">The calendar invite{b.serviceId === 'meetup' ? '' : ' and Meet link'} go out when you mark it paid.</p>
+                                )}
+                            </Section>
+
+                            {/* where it stands, and the message to send */}
+                            <Section title="Status">
+                                <KV label="Booking"><StatusControl b={b} /></KV>
+                                {/* Indonesia is confirmed on WhatsApp, Global by email */}
+                                {b.status !== 'cancelled' && !b.extraFor && (b.market === 'ID' ? !!waNumberOf(b.contact) : !!email) && (
+                                    <KV label={b.market === 'ID' ? 'WhatsApp' : 'Email'}>
+                                        {b.market === 'ID'
+                                            ? <WaConfirmButton b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
+                                            : <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} />}
+                                    </KV>
+                                )}
+                                {b.status === 'cancelled' && timed && (
+                                    <RestoreAt key={b.id} b={b} bookings={bookings}
+                                        onDone={(msg) => { setSelectedId(null); flash(msg, 'ok'); load(); }} />
+                                )}
+                            </Section>
+
+                            {timed && b.status !== 'cancelled' && EXTRA[b.serviceId] && (
+                                <ExtraTime key={b.id} b={b} extras={bookings.filter((x) => x.extraFor && x.extraFor === (b.ref || b.id))}
+                                    onDone={(msg) => { flash(msg, 'ok'); load(); }} onToggle={togglePaid} payBusy={payBusy} />
+                            )}
+
+                            {/* who: their page on Customers, and how to reach them */}
+                            <Section title="Customer">
                                 {real && (
                                     <button type="button" onClick={toCustomer}
-                                        className="group w-full flex items-center gap-3 rounded-xl border border-adm-line px-3 py-2.5 text-left hover:bg-adm-hover hover:border-adm-line-2 transition-colors">
+                                        className="group w-full mb-2 flex items-center gap-3 rounded-xl border border-adm-line px-3 py-2.5 text-left hover:bg-adm-hover hover:border-adm-line-2 transition-colors">
                                         <span className="grid place-items-center w-9 h-9 shrink-0 rounded-full bg-lilac/15 text-lilac font-serif font-bold">{initial}</span>
                                         <span className="min-w-0 flex-1">
                                             <span className="block text-sm font-medium text-text-light truncate">{b.name || 'Customer'}</span>
@@ -1565,59 +1564,22 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                         <ChevronRight size={16} className="shrink-0 text-text-subtle group-hover:text-lilac transition-colors" />
                                     </button>
                                 )}
-                                {(phone || email || timed || b.dob) && (
-                                    <div className="space-y-2">
-                                        {phone && <Line icon={<FaWhatsapp size={14} />} label="WhatsApp"><a href={`https://wa.me/${waNumber(phone)}`} target="_blank" rel="noopener noreferrer" className="text-lilac hover:underline tabular-nums">{fmtPhone(phone)}</a></Line>}
-                                        {email && <Line icon={<Mail size={14} />} label="Email"><a href={`mailto:${email}`} className="text-lilac hover:underline break-all">{email}</a></Line>}
-                                        {timed && <Line icon={<ShoppingBag size={14} />} label="Ordered">{fmtDate(b.createdAt)}</Line>}
-                                        {b.dob && <Line icon={<Cake size={14} />} label="Born">{fmtDate(b.dob)}</Line>}
-                                    </div>
-                                )}
-                                {b.question && (
-                                    <figure className="rounded-xl bg-adm-hover border-l-2 border-lilac/60 px-4 py-3">
-                                        <figcaption className="text-xs text-text-subtle mb-1">Their question</figcaption>
-                                        <blockquote className="font-serif italic text-[0.95rem] leading-relaxed text-text-light">“{b.question}”</blockquote>
-                                    </figure>
-                                )}
-                            </div>
-                            <PrivateNote key={b.id} b={b} onSaved={(u) => { replaceBooking(u); flash('Note saved.', 'ok'); }} />
-                            </>)}
+                                {phone && <KV label="WhatsApp"><a href={`https://wa.me/${waNumber(phone)}`} target="_blank" rel="noopener noreferrer" className={`${contactLink} tabular-nums`}>{fmtPhone(phone)}</a></KV>}
+                                {email && <KV label="Email"><a href={`mailto:${email}`} className={`${contactLink} break-all`}>{email}</a></KV>}
+                                {b.dob && <KV label="Born">{fmtDate(b.dob)}</KV>}
+                                {timed && <KV label="Ordered">{fmtDate(b.createdAt)}</KV>}
+                                {!phone && !email && !real && <p className="text-sm text-text-subtle">No contact saved. Add it with Edit.</p>}
+                            </Section>
 
-                            <div className="px-5 py-4 border-t border-adm-line bg-adm-hover space-y-3">
-                                {/* the money first, big; then what's left to do with it */}
-                                <div className="flex items-end justify-between gap-3">
-                                    <div className="min-w-0">
-                                        <div className="text-xs text-text-subtle">Total</div>
-                                        <div className="text-xl font-serif font-bold text-text-light tabular-nums leading-tight">{amountLabel(b)}</div>
-                                        {method && <div className="text-xs text-text-subtle truncate mt-0.5">{method}</div>}
-                                    </div>
-                                    <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
-                                </div>
-                                <div className="border-t border-adm-line divide-y divide-adm-line">
-                                    <Row label="Status"><StatusControl b={b} /></Row>
-                                    {/* Indonesia is confirmed on WhatsApp, Global by email */}
-                                    {b.status !== 'cancelled' && (b.market === 'ID' ? !!waNumberOf(b.contact) : !!email) && (
-                                        <Row label={b.market === 'ID' ? 'Message' : 'Confirmation'}>
-                                            {b.market === 'ID'
-                                                ? <WaConfirmButton b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
-                                                : <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} />}
-                                        </Row>
-                                    )}
-                                </div>
-                                {b.inviteOnPay && b.status !== 'cancelled' && (
-                                    <p className="text-xs text-text-subtle">The calendar invite{b.serviceId === 'meetup' ? '' : ' and Meet link'} go out when you mark it paid.</p>
-                                )}
-                                {timed && b.status !== 'cancelled' && EXTRA[b.serviceId] && (
-                                    <ExtraTime key={b.id} b={b} extras={bookings.filter((x) => x.extraFor && x.extraFor === (b.ref || b.id))}
-                                        onDone={(msg) => { flash(msg, 'ok'); load(); }} onToggle={togglePaid} payBusy={payBusy} />
-                                )}
-                                {b.status === 'cancelled' && timed && (
-                                    <RestoreAt key={b.id} b={b} bookings={bookings}
-                                        onDone={(msg) => { setSelectedId(null); flash(msg, 'ok'); load(); }} />
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                            {b.question && (
+                                <Section title="Their question">
+                                    <blockquote className="border-l-2 border-lilac/60 pl-3.5 font-serif italic text-[0.95rem] leading-relaxed text-text-light">“{b.question}”</blockquote>
+                                </Section>
+                            )}
+
+                            <PrivateNote key={b.id} b={b} onSaved={(u) => { replaceBooking(u); flash('Note saved.', 'ok'); }} />
+                        </>)}
+                    </Dialog>
                 );
             })()}
 

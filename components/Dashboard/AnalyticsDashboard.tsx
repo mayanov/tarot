@@ -16,6 +16,7 @@ import RevenueView from './RevenueView';
 import CustomersView from './CustomersView';
 import { OPEN_CUSTOMER } from './lib/nav';
 import NotificationsView from './NotificationsView';
+import Dialog, { FIELD, FIELD_LABEL } from './ui/Dialog';
 import { notesFrom, lastSeen, markSeen } from './lib/notifications';
 import { getAllBookings, BOOKINGS_CHANGED, type Booking } from '../../services/booking';
 import SalesView from './SalesView';
@@ -629,114 +630,41 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                             </div>
                         </div>
 
-                        {/* ADD USER MODAL */}
+                        {/* ADD USER */}
                         {showAddUserModal && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                                <div className="bg-surface-1 border border-adm-line-2 rounded-2xl w-full max-w-md p-5 shadow-2xl animate-in zoom-in-95 relative">
-                                    <button
-                                        onClick={() => setShowAddUserModal(false)}
-                                        className="absolute top-4 right-4 text-text-subtle hover:text-text-light transition-colors"
-                                    >
-                                        <X size={20} />
-                                    </button>
-
-                                    <h3 className="text-xl font-bold text-text-light mb-6 flex items-center gap-2">
-                                        <Users size={20} className="text-lilac" /> Grant New Access
-                                    </h3>
-
-                                    <form onSubmit={handleAddUser} className="space-y-4">
-                                        <div>
-                                            <label className="block text-xs uppercase tracking-wider text-text-subtle mb-1.5 font-bold">Email Address</label>
-                                            <input
-                                                type="email"
-                                                required
-                                                value={newUserEmail}
-                                                onChange={(e) => setNewUserEmail(e.target.value)}
-                                                className="w-full bg-bg-dark border border-adm-line-2 rounded-xl px-4 py-2.5 text-text-light text-sm focus:border-lilac focus:ring-1 focus:ring-lilac outline-none transition-all"
-                                                placeholder="new.admin@example.com"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs uppercase tracking-wider text-text-subtle mb-1.5 font-bold">Password</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={newUserPassword}
-                                                onChange={(e) => setNewUserPassword(e.target.value)}
-                                                className="w-full bg-bg-dark border border-adm-line-2 rounded-xl px-4 py-2.5 text-text-light text-sm focus:border-lilac focus:ring-1 focus:ring-lilac outline-none transition-all"
-                                                placeholder="Create specific password"
-                                            />
-                                        </div>
-
-                                        <div className="flex gap-3 pt-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowAddUserModal(false)}
-                                                className="flex-1 py-3 text-text-subtle hover:text-text-light transition-colors text-sm font-bold"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                className="flex-1 py-3 bg-lilac text-white font-bold rounded-xl hover:bg-lilac-dark hover:scale-[1.02] active:scale-[0.98] transition-all text-sm shadow-lg shadow-lilac/20"
-                                            >
-                                                Add Admin
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
+                            <Dialog size="sm" onClose={() => setShowAddUserModal(false)}
+                                eyebrow="Manage users" title="Add an admin" subtitle="They can sign in to this dashboard with these"
+                                footer={<>
+                                    <button type="button" onClick={() => setShowAddUserModal(false)} className="px-4 py-2 rounded-full text-sm text-text-subtle hover:text-text-light transition-colors">Cancel</button>
+                                    <button type="submit" form="add-admin" className="px-5 py-2 rounded-full bg-lilac text-white text-sm font-semibold hover:bg-lilac-dark transition-colors">Add admin</button>
+                                </>}>
+                                <form id="add-admin" onSubmit={handleAddUser} className="px-5 sm:px-6 py-5 space-y-4">
+                                    <div>
+                                        <label htmlFor="add-admin-email" className={FIELD_LABEL}>Email</label>
+                                        <input id="add-admin-email" type="email" required autoFocus value={newUserEmail} onChange={(e) => setNewUserEmail(e.target.value)} className={FIELD} placeholder="name@example.com" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="add-admin-pw" className={FIELD_LABEL}>Password</label>
+                                        <input id="add-admin-pw" type="text" required value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} className={FIELD} placeholder="At least 6 characters" />
+                                    </div>
+                                </form>
+                            </Dialog>
                         )}
 
-                        {/* RESET PASSWORD MODAL */}
+                        {/* RESET PASSWORD */}
                         {resetUser && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                                <div className="bg-surface-1 border border-adm-line-2 rounded-2xl w-full max-w-md p-5 shadow-2xl animate-in zoom-in-95 relative">
-                                    <button
-                                        onClick={() => { setResetUser(null); setResetPassword(''); }}
-                                        className="absolute top-4 right-4 text-text-subtle hover:text-text-light transition-colors"
-                                    >
-                                        <X size={20} />
-                                    </button>
-
-                                    <h3 className="text-xl font-bold text-text-light mb-1 flex items-center gap-2">
-                                        <KeyRound size={20} className="text-lilac" /> {resetUser === currentUserEmail ? 'Change Your Password' : 'Reset Password'}
-                                    </h3>
-                                    <p className="text-text-subtle text-sm mb-6 break-all">{resetUser}</p>
-
-                                    <form onSubmit={handleResetPassword} className="space-y-4">
-                                        <div>
-                                            <label className="block text-xs uppercase tracking-wider text-text-subtle mb-1.5 font-bold">New Password</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                autoFocus
-                                                value={resetPassword}
-                                                onChange={(e) => setResetPassword(e.target.value)}
-                                                className="w-full bg-bg-dark border border-adm-line-2 rounded-xl px-4 py-2.5 text-text-light text-sm focus:border-lilac focus:ring-1 focus:ring-lilac outline-none transition-all"
-                                                placeholder="At least 6 characters"
-                                            />
-                                        </div>
-
-                                        <div className="flex gap-3 pt-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => { setResetUser(null); setResetPassword(''); }}
-                                                className="flex-1 py-3 text-text-subtle hover:text-text-light transition-colors text-sm font-bold"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                disabled={resetSaving}
-                                                className="flex-1 py-3 bg-lilac text-white font-bold rounded-xl hover:bg-lilac-dark hover:scale-[1.02] active:scale-[0.98] transition-all text-sm shadow-lg shadow-lilac/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                                            >
-                                                {resetSaving ? 'Saving…' : 'Update Password'}
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
+                            <Dialog size="sm" onClose={() => { setResetUser(null); setResetPassword(''); }}
+                                eyebrow="Manage users" title={resetUser === currentUserEmail ? 'Change your password' : 'Reset password'}
+                                subtitle={<span className="break-all">{resetUser}</span>}
+                                footer={<>
+                                    <button type="button" onClick={() => { setResetUser(null); setResetPassword(''); }} className="px-4 py-2 rounded-full text-sm text-text-subtle hover:text-text-light transition-colors">Cancel</button>
+                                    <button type="submit" form="reset-pw" disabled={resetSaving} className="px-5 py-2 rounded-full bg-lilac text-white text-sm font-semibold hover:bg-lilac-dark transition-colors disabled:opacity-50">{resetSaving ? 'Saving…' : 'Save password'}</button>
+                                </>}>
+                                <form id="reset-pw" onSubmit={handleResetPassword} className="px-5 sm:px-6 py-5">
+                                    <label htmlFor="reset-pw-input" className={FIELD_LABEL}>New password</label>
+                                    <input id="reset-pw-input" type="text" required autoFocus value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} className={FIELD} placeholder="At least 6 characters" />
+                                </form>
+                            </Dialog>
                         )}
                     </div>
                 ) : isLoading ? (
