@@ -1147,21 +1147,29 @@ app.post('/api/admin/bookings', verifyToken, async (req, res) => {
 // record (extraFor: the session's ref), with its own price and Paid switch, so Sales,
 // Revenue and Customers count it like any order; the session itself gets longer, here and
 // on the calendar (without Google emailing the guest), unless `keepTime` (the time after it
-// is booked: only the money is recorded).
+// is booked: only the money is recorded). Any length in its steps (a meetup by the half
+// hour, a call by 15 minutes); the price is the rate for that time unless one is given.
 const EXTRA_TIME = {
-    call: { minutes: 15, amount: 110000, label: 'Tambahan 15 Menit' },
-    meetup: { minutes: 60, amount: 360000, label: 'Jam Berikutnya (per jam)' },
+    call: { minutes: 15, amount: 110000, step: 15 },
+    meetup: { minutes: 60, amount: 360000, step: 30 },
+};
+// 'Tambahan 1 jam 30 menit'
+const extraLabel = (min) => {
+    const h = Math.floor(min / 60), m = min % 60;
+    return `Tambahan ${[h ? `${h} jam` : '', m ? `${m} menit` : ''].filter(Boolean).join(' ')}`;
 };
 app.post('/api/admin/bookings/:id/extra', verifyToken, async (req, res) => {
-    const { units: rawUnits, paid, keepTime } = req.body || {};
-    const units = Math.round(Number(rawUnits) || 1);
-    if (units < 1 || units > 8) return res.status(400).json({ error: 'Invalid amount of time' });
+    const { units: rawUnits, minutes: rawMinutes, amount: rawAmount, paid, keepTime } = req.body || {};
     try {
         const b = await bookingStore.getBooking(req.params.id);
         if (!b) return res.status(404).json({ error: 'Not found' });
         const x = EXTRA_TIME[b.serviceId];
         if (!x || !b.date || !b.time || b.status === 'cancelled') return res.status(400).json({ error: 'Not a session that can run longer' });
-        const minutes = x.minutes * units;
+        // how long: in minutes (or, as before, a number of the service's add-ons)
+        const minutes = rawMinutes !== undefined ? Math.round(Number(rawMinutes)) : x.minutes * Math.round(Number(rawUnits) || 1);
+        if (!Number.isFinite(minutes) || minutes < x.step || minutes > 480 || minutes % x.step) return res.status(400).json({ error: 'Invalid amount of time' });
+        const amount = rawAmount !== undefined && rawAmount !== null && rawAmount !== '' ? Math.round(Number(rawAmount)) : Math.round((x.amount * minutes) / x.minutes);
+        if (!Number.isFinite(amount) || amount < 0 || amount > 100_000_000) return res.status(400).json({ error: 'Invalid price' });
         let session = b;
         if (!keepTime) {
             session = await bookingStore.rescheduleBooking(b.id, {
@@ -1171,13 +1179,13 @@ app.post('/api/admin/bookings/:id/extra', verifyToken, async (req, res) => {
         const svc = String(b.serviceName || '').split(' · ')[0].trim() || b.serviceId;
         const extra = await bookingStore.createBooking({
             serviceId: b.serviceId,
-            serviceName: `${svc} · ${x.label}${units > 1 ? ` ×${units}` : ''}`,
+            serviceName: `${svc} · ${extraLabel(minutes)}`,
             name: b.name || '',
             dob: '',
             contact: b.contact || '',
             question: `Extra time for the session on ${b.date} ${b.time}`,
             market: 'ID',
-            price: `Rp ${x.amount * units}`,
+            price: `Rp ${amount}`,
             source: 'manual',
             status: 'done',
             paymentStatus: paid ? 'paid' : 'unpaid',

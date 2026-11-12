@@ -121,12 +121,13 @@ export async function createManualBooking(input: ManualBookingInput, token?: str
 
 // Admin — a call or meetup ran longer: `units` of its add-on (call 15 min, meetup 1 h).
 // `keepTime`: only the money is recorded (the time after it is booked).
-export async function addExtraTime(id: string, units: number, paid: boolean, keepTime: boolean, token?: string): Promise<{ session: Booking; extra: Booking }> {
+/** a call or meetup that ran longer: `minutes` more, at `amount` rupiah */
+export async function addExtraTime(id: string, extra: { minutes: number; amount: number; paid: boolean; keepTime: boolean }, token?: string): Promise<{ session: Booking; extra: Booking }> {
   const res = await fetch(`${API_BASE}/api/admin/bookings/${encodeURIComponent(id)}/extra`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     credentials: 'include',
-    body: JSON.stringify({ units, paid, keepTime }),
+    body: JSON.stringify(extra),
   });
   if (res.status === 409) throw new Error('SLOT_TAKEN');
   if (!res.ok) throw new Error(`HTTP_${res.status}`);

@@ -703,60 +703,115 @@ const DayTimeline: React.FC<{
     );
 };
 
-// A call or meetup that ran longer: add its add-on (call +15 min, meetup +1 hour). Each is
-// a small record of its own with its own Paid switch (so it counts in Sales and Revenue),
-// and the session gets longer here and on the calendar. If the time after it is booked,
-// only the money can be recorded.
-const EXTRA: Record<string, { label: string; amount: number }> = {
-    call: { label: '+15 min', amount: 110000 },
-    meetup: { label: '+1 hour', amount: 360000 },
+// A call or meetup that ran longer: pick how much longer (a meetup by the half hour, a
+// call by 15 minutes), see when it now ends, and the price for that time (which can be
+// changed). It's a small record of its own with its own Paid switch (so it counts in
+// Payments and the Money report), and the session gets longer here and on the calendar.
+// If the time after it is booked, only the money can be recorded.
+const EXTRA: Record<string, { rate: number; per: number; step: number }> = {
+    call: { rate: 110000, per: 15, step: 15 },   // Rp 110.000 per 15 minutes
+    meetup: { rate: 360000, per: 60, step: 30 }, // Rp 360.000 per hour
+};
+// '1 h 30 min', '45 min', '2 h'
+const durLabel = (min: number) => {
+    const h = Math.floor(min / 60), m = min % 60;
+    return [h ? `${h} h` : '', m ? `${m} min` : ''].filter(Boolean).join(' ') || '0 min';
 };
 const ExtraTime: React.FC<{
     b: Booking; extras: Booking[]; onDone: (msg: string) => void;
     onToggle: (x: Booking) => void; payBusy: string | null;
 }> = ({ b, extras, onDone, onToggle, payBusy }) => {
     const x = EXTRA[b.serviceId];
-    const [paid, setPaid] = useState(true);
+    const [open, setOpen] = useState(false);
+    const [minutes, setMinutes] = useState(x?.step === 30 ? 60 : 15);
+    const [price, setPrice] = useState<string | null>(null); // null: the rate for the time
+    const [paid, setPaid] = useState(b.paymentStatus === 'paid'); // usually paid together with the session
     const [busy, setBusy] = useState(false);
     const [clash, setClash] = useState(false);
     const [err, setErr] = useState('');
     if (!x) return null;
+    const rated = Math.round((x.rate * minutes) / x.per);
+    const amount = price === null ? rated : Number(price) || 0;
+    const start = b.time ? toMin(b.time) : 0;
+    const booked = b.durationMin || 60;
+    const change = (d: number) => { setMinutes((m) => Math.max(x.step, Math.min(480, m + d))); setClash(false); };
     const add = async (keepTime: boolean) => {
         setBusy(true); setErr('');
         try {
-            const { session } = await addExtraTime(b.id, 1, paid, keepTime, localStorage.getItem('authToken') || undefined);
+            const { session } = await addExtraTime(b.id, { minutes, amount, paid, keepTime }, localStorage.getItem('authToken') || undefined);
             const end = session.durationMin ? toHHMM(toMin(session.time) + session.durationMin) : '';
-            onDone(keepTime ? `${x.label} recorded (the time stays as it was).` : `${x.label} added. The session now ends at ${end}.`);
-            setClash(false);
+            onDone(keepTime ? `+${durLabel(minutes)} recorded (the time stays as it was).` : `+${durLabel(minutes)} added. The session now ends at ${end}.`);
+            setClash(false); setOpen(false); setPrice(null);
         } catch (e) {
             if (e instanceof Error && e.message === 'SLOT_TAKEN') setClash(true);
             else setErr('Could not add it. Try again.');
         } finally { setBusy(false); }
     };
+    const stepBtn = 'h-9 w-9 grid place-items-center rounded-lg border border-adm-line-2 text-text-light hover:bg-adm-hover-2 disabled:opacity-40 transition-colors';
     return (
-        <div className="space-y-2 pt-1">
-            <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle">Ran longer?</div>
+        <div className="space-y-2.5 pt-1">
+            <div className="flex items-center justify-between gap-3">
+                <div className="text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle">Extra time</div>
+                {!open && (
+                    <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-1 text-[13px] font-semibold text-lilac hover:underline">
+                        <Plus size={14} /> Add extra time
+                    </button>
+                )}
+            </div>
             {extras.map((e) => (
                 <div key={e.id} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="text-text-light">{e.extraMinutes ? (e.extraMinutes >= 60 ? `+${e.extraMinutes / 60} hour${e.extraMinutes > 60 ? 's' : ''}` : `+${e.extraMinutes} min`) : 'Extra time'}
+                    <span className="text-text-light">{e.extraMinutes ? `+${durLabel(e.extraMinutes)}` : 'Extra time'}
                         <span className="ml-2 text-text-subtle tabular-nums">{amountLabel(e)}</span></span>
                     <PaymentPill paid={e.paymentStatus === 'paid'} onToggle={() => onToggle(e)} busy={payBusy === e.id} />
                 </div>
             ))}
-            <div className="flex flex-wrap items-center gap-3">
-                <Button onClick={() => add(false)} disabled={busy}>{busy ? 'Adding…' : `${x.label} · ${fmtAmt(x.amount, 'IDR')}`}</Button>
-                <label className="flex items-center gap-2 text-sm text-text-light cursor-pointer select-none">
-                    <input type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)} className="accent-lilac w-4 h-4" />
-                    Paid already
-                </label>
-            </div>
-            {clash && (
-                <div className="text-xs text-text-subtle space-y-1.5">
-                    <p>Another booking starts right after this session, so it can't get longer on the calendar.</p>
-                    <button type="button" onClick={() => add(true)} disabled={busy} className="text-lilac font-semibold hover:underline">Record the price only</button>
+            {!open && !extras.length && <p className="text-[13px] text-text-subtle">Booked for {durLabel(booked)}. If it ran longer, add the extra time here.</p>}
+            {open && (
+                <div className="rounded-xl border border-adm-line-2 p-3.5 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <span className="text-sm text-text-light">How much longer?</span>
+                        <span className="flex items-center gap-2">
+                            <button type="button" onClick={() => change(-x.step)} disabled={minutes <= x.step} aria-label={`${x.step} minutes less`} className={stepBtn}><span className="text-lg leading-none">−</span></button>
+                            <span className="min-w-[6.5rem] text-center font-serif font-bold text-lg text-text-light tabular-nums">+{durLabel(minutes)}</span>
+                            <button type="button" onClick={() => change(x.step)} disabled={minutes >= 480} aria-label={`${x.step} minutes more`} className={stepBtn}><Plus size={16} /></button>
+                        </span>
+                    </div>
+                    {b.time && (
+                        <p className="text-[13px] text-text-subtle">
+                            {durLabel(booked)} → <span className="text-text-light font-semibold">{durLabel(booked + minutes)}</span> in all · ends {toHHMM(start + booked + minutes)} instead of {toHHMM(start + booked)}
+                        </p>
+                    )}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <label className="flex items-center gap-2 text-sm text-text-light">
+                            Price
+                            <span className="relative">
+                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-text-subtle">Rp</span>
+                                <input type="number" min="0" step="1000" inputMode="numeric" value={price === null ? String(rated) : price}
+                                    onChange={(e) => setPrice(e.target.value)}
+                                    className="w-36 rounded-lg border border-adm-line-2 bg-bg-dark pl-9 pr-2 py-1.5 text-sm text-text-light tabular-nums focus:border-lilac focus:outline-none" />
+                            </span>
+                        </label>
+                        {price !== null && Number(price) !== rated
+                            ? <button type="button" onClick={() => setPrice(null)} className="text-[12px] text-lilac hover:underline">Use the usual {fmtAmt(rated, 'IDR')}</button>
+                            : <span className="text-[12px] text-text-subtle">{fmtAmt(x.rate, 'IDR')} per {x.per === 60 ? 'hour' : `${x.per} min`}</span>}
+                    </div>
+                    <label className="flex items-center gap-2 text-sm text-text-light cursor-pointer select-none">
+                        <input type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)} className="accent-lilac w-4 h-4" />
+                        Paid already
+                    </label>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button onClick={() => add(false)} disabled={busy}>{busy ? 'Adding…' : `Add +${durLabel(minutes)} · ${fmtAmt(amount, 'IDR')}`}</Button>
+                        <button type="button" onClick={() => { setOpen(false); setPrice(null); setClash(false); }} className="px-3 py-2 text-sm text-text-subtle hover:text-text-light">Cancel</button>
+                    </div>
+                    {clash && (
+                        <div className="text-xs text-text-subtle space-y-1.5">
+                            <p>Another booking starts before {toHHMM(start + booked + minutes)}, so the session can't get that long on the calendar.</p>
+                            <button type="button" onClick={() => add(true)} disabled={busy} className="text-lilac font-semibold hover:underline">Record the price only</button>
+                        </div>
+                    )}
+                    {err && <p className="text-xs text-coral">{err}</p>}
                 </div>
             )}
-            {err && <p className="text-xs text-coral">{err}</p>}
         </div>
     );
 };
