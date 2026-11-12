@@ -141,7 +141,7 @@ export type WaField = (typeof KIND)[Kind]['field'];
  *  button itself shows the latest one sent. The menu is fixed to the screen, so a table
  *  that clips its rows doesn't cut it off. */
 // direct 'pay': no menu, the button itself sends Ask to pay (Today's Not paid yet)
-const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: string) => void; onNote?: (text: string, kind: 'ok' | 'err') => void; compact?: boolean; direct?: 'pay' }> = ({ b, onSent, onNote, direct }) => {
+const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: string) => void; onNote?: (text: string, kind: 'ok' | 'err') => void; compact?: boolean; direct?: 'pay'; big?: boolean }> = ({ b, onSent, onNote, direct, big }) => {
   const [busy, setBusy] = useState(false);
   const [menu, setMenu] = useState<{ top: number; left: number; up: boolean } | null>(null);
   const [qrFailed, setQrFailed] = useState(false);
@@ -234,6 +234,18 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: strin
   );
   if (direct === 'pay') {
     const asked = b.waPayAskSentAt ? `Asked ${sentLabel(b.waPayAskSentAt).split(',')[0]}` : '';
+    const first = (b.name || '').trim().split(/\s+/)[0] || 'them';
+    if (big) return (
+      <span className="block">
+        <button type="button" disabled={busy || paid} onClick={(e) => { e.stopPropagation(); send('pay'); }}
+          title="Opens WhatsApp with the total, BCA and QRIS"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-lilac text-white px-4 py-3 text-[15px] font-semibold hover:bg-lilac/90 transition-colors disabled:opacity-50">
+          <FaWhatsapp size={16} />{asked ? `Ask ${first} again` : `Ask ${first} to pay on WhatsApp`}
+        </button>
+        {asked && <span className="block mt-1.5 text-center text-xs text-text-subtle">{asked}</span>}
+        {qrRetry && <span className="mt-1.5 flex justify-center">{qrRetry}</span>}
+      </span>
+    );
     return (
       <span className="inline-flex items-center gap-1.5">
         <button type="button" disabled={busy || paid} onClick={(e) => { e.stopPropagation(); send('pay'); }}

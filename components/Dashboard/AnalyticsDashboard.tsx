@@ -17,7 +17,7 @@ import CustomersView from './CustomersView';
 import { OPEN_CUSTOMER } from './lib/nav';
 import NotificationsView from './NotificationsView';
 import Dialog, { FIELD, FIELD_LABEL } from './ui/Dialog';
-import { notesFrom, lastSeen, markSeen } from './lib/notifications';
+import { notesFrom, lastSeen, markSeen, readingTodo } from './lib/notifications';
 import { getAllBookings, BOOKINGS_CHANGED, type Booking } from '../../services/booking';
 import SalesView from './SalesView';
 import { LoaderCard } from './ui/InlineLoader';
@@ -181,6 +181,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     }, [onNotesPage, notes]);
     const unreadNotes = onNotesPage ? 0 : notes.filter((n) => n.at > seenAt).length;
     const badge = unreadNotes > 9 ? '9+' : String(unreadNotes);
+    // the menu's counts: readings to send (Today) and bookings not paid yet (Payments)
+    const menuCounts = React.useMemo(() => {
+        const t = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+        return {
+            today: allBookings.filter((b) => readingTodo(b, notesNow)).length,
+            unpaid: allBookings.filter((b) => !b.extraFor && b.paymentStatus !== 'paid' && b.status !== 'cancelled' && !(b.date && b.time && b.date < t && b.status === 'done')).length,
+        };
+    }, [allBookings, notesNow]);
 
     // Init: the date range and real data. Nothing is fetched yet: the dashboard opens on
     // Today, and Analytics' numbers (and Google's script, only needed to connect by hand)
@@ -440,18 +448,16 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
     return (
         <div className="admin-shell flex h-screen bg-bg-deep text-text-light font-sans overflow-hidden" data-theme={theme}>
             {/* MOBILE TOP BAR — hamburger to open the drawer */}
-            <div className="lg:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center gap-3 px-4 bg-surface-1 border-b border-adm-line">
-                <button onClick={() => setSidebarOpen(true)} aria-label="Open menu" className="p-2 -ml-2 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors">
+            <div className="lg:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center gap-3 px-4 bg-[var(--adm-nav)] text-white">
+                <button onClick={() => setSidebarOpen(true)} aria-label="Open menu" className="p-2 -ml-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors">
                     <Menu size={22} />
                 </button>
-                <h2 className="text-lg font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
-                    Mayanov Admin
-                </h2>
+                <h2 className="text-[22px] font-serif font-bold text-white">Mayanov</h2>
                 <button onClick={() => setNotesOpen((v) => !v)} aria-label={unreadNotes ? `Notifications, ${unreadNotes} new` : 'Notifications'} aria-expanded={notesOpen}
-                    className={`relative ml-auto p-2 -mr-2 rounded-lg transition-colors hover:bg-adm-hover ${onNotesPage ? 'text-lilac' : 'text-text-subtle hover:text-text-light'}`}>
+                    className={`relative ml-auto p-2 -mr-2 rounded-lg transition-colors hover:bg-white/10 ${onNotesPage ? 'text-white bg-white/10' : 'text-white/80 hover:text-white'}`}>
                     <Bell size={21} />
                     {unreadNotes > 0 && (
-                        <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-coral-deep text-white text-[10px] font-semibold flex items-center justify-center">{badge}</span>
+                        <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-white text-[var(--adm-nav)] text-[10px] font-bold flex items-center justify-center">{badge}</span>
                     )}
                 </button>
             </div>
@@ -462,69 +468,63 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
             )}
 
             {/* SIDEBAR — static on desktop, slide-in drawer on mobile */}
-            <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-60 shrink-0 max-w-[82vw] bg-surface-1 border-r border-adm-line flex flex-col transition-transform duration-300 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-                <div className="p-5 border-b border-adm-line flex items-center justify-between">
-                    <h2 className="text-xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-lilac to-teal-accent">
-                        Mayanov Admin
-                    </h2>
+            <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-60 shrink-0 max-w-[82vw] bg-[var(--adm-nav)] text-[#E9E3F5] flex flex-col transition-transform duration-300 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+                <div className="px-5 pt-6 pb-5 flex items-center justify-between">
+                    <h2 className="text-[26px] leading-none font-serif font-bold text-white">Mayanov</h2>
                     <button onClick={() => setNotesOpen((v) => !v)} aria-label={unreadNotes ? `Notifications, ${unreadNotes} new` : 'Notifications'} aria-expanded={notesOpen}
-                        className={`hidden lg:inline-flex relative p-2 -mr-2 rounded-lg transition-colors hover:bg-adm-hover ${notesOpen ? 'text-lilac bg-lilac/10' : 'text-text-subtle hover:text-text-light'}`}>
+                        className={`hidden lg:inline-flex relative p-2 -mr-2 rounded-lg transition-colors ${notesOpen ? 'text-white bg-white/15' : 'text-white/75 hover:text-white hover:bg-white/10'}`}>
                         <Bell size={19} />
                         {unreadNotes > 0 && (
-                            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-coral-deep text-white text-[10px] font-semibold flex items-center justify-center">{badge}</span>
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-white text-[var(--adm-nav)] text-[10px] font-bold flex items-center justify-center">{badge}</span>
                         )}
                     </button>
-                    <button onClick={() => setSidebarOpen(false)} aria-label="Close menu" className="lg:hidden p-1.5 -mr-1.5 rounded-lg text-text-subtle hover:text-text-light hover:bg-adm-hover transition-colors">
+                    <button onClick={() => setSidebarOpen(false)} aria-label="Close menu" className="lg:hidden p-1.5 -mr-1.5 rounded-lg text-white/75 hover:text-white hover:bg-white/10 transition-colors">
                         <X size={20} />
                     </button>
                 </div>
 
-                <nav className="flex-1 p-3 overflow-y-auto">
+                {/* the pages, a little space between the groups; the one open is a white tab */}
+                <nav className="flex-1 px-3 pb-3 overflow-y-auto space-y-4">
                     {NAV_GROUPS.map((group) => (
-                        <div key={group.label} className="mb-1">
-                            <p className="px-3 pt-4 pb-1.5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-subtle/60">
-                                <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${TONE[group.tone].dot}`} />
-                                {group.label}
-                            </p>
-                            <div className="space-y-1">
-                                {group.items.map((item) => {
-                                    const active = activeView === item.id;
-                                    const Icon = item.icon;
-                                    return (
-                                        <button
-                                            key={item.id}
-                                            onClick={() => { setActiveView(item.id); setSidebarOpen(false); }}
-                                            aria-current={active ? 'page' : undefined}
-                                            title={item.hint}
-                                            className={`group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${active ? `${TONE[group.tone].soft} text-text-light` : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}
-                                        >
-                                            {active && <span aria-hidden className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full ${TONE[group.tone].bar}`} />}
-                                            <Icon size={18} className={active ? TONE[group.tone].icon : 'text-text-subtle group-hover:text-text-light transition-colors'} />
-                                            <span>{item.name}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                        <div key={group.label} role="group" aria-label={group.label} className="space-y-0.5">
+                            {group.items.map((item) => {
+                                const active = activeView === item.id;
+                                const Icon = item.icon;
+                                const count = item.id === 'today' ? (menuCounts.today ? String(menuCounts.today) : '')
+                                    : item.id === 'sales' ? (menuCounts.unpaid ? `${menuCounts.unpaid} unpaid` : '') : '';
+                                return (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => { setActiveView(item.id); setSidebarOpen(false); }}
+                                        aria-current={active ? 'page' : undefined}
+                                        title={item.hint}
+                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[15px] transition-colors ${active ? 'bg-white text-[#251B3A] font-semibold' : 'text-[#D9D1EA] hover:text-white hover:bg-white/10'}`}
+                                    >
+                                        <Icon size={17} className={active ? 'text-[#4A3482]' : 'opacity-70'} />
+                                        <span className="flex-1 text-left">{item.name}</span>
+                                        {count && <span className={`text-[12.5px] tabular-nums ${item.id === 'sales' ? (active ? 'text-[#8A5A00] font-semibold' : 'text-[#F1C27A]') : active ? 'text-[#4A3482]' : 'text-white/70'}`}>{count}</span>}
+                                    </button>
+                                );
+                            })}
                         </div>
                     ))}
-
                 </nav>
 
-                <div className="p-4 border-t border-adm-line space-y-1">
+                <div className="p-3 space-y-0.5">
                     <button
                         onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-text-subtle hover:text-text-light hover:bg-adm-hover rounded-xl transition-all"
+                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[#B5ABC9] hover:text-white hover:bg-white/10 rounded-[10px] transition-colors"
                     >
-                        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                        {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
                         <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
                     </button>
                     {onLogout && (
                         <button
                             onClick={onLogout}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 text-text-subtle hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all"
+                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[#B5ABC9] hover:text-white hover:bg-white/10 rounded-[10px] transition-colors"
                         >
-                            <LogOut size={18} />
-                            <span>Logout</span>
+                            <LogOut size={16} />
+                            <span>Log out</span>
                         </button>
                     )}
                 </div>
@@ -1280,9 +1280,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         const Icon = item.icon;
                         return (
                             <button key={id} type="button" onClick={() => { setActiveView(id); setSidebarOpen(false); }} aria-current={active ? 'page' : undefined}
-                                className={`relative flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${active ? 'text-text-light' : 'text-text-subtle'}`}>
-                                {active && <span aria-hidden className={`absolute top-0 h-[3px] w-8 rounded-b-full ${TONE[group.tone].bar}`} />}
-                                <Icon size={20} className={active ? TONE[group.tone].icon : ''} />
+                                className={`relative flex flex-col items-center justify-center gap-1 text-[11px] transition-colors ${active ? 'text-lilac font-bold' : 'text-text-subtle font-medium'}`}>
+                                {active && <span aria-hidden className="absolute top-0 h-[3px] w-8 rounded-b-full bg-lilac" />}
+                                <Icon size={20} />
                                 {item.name}
                             </button>
                         );
@@ -1293,9 +1293,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         const group = NAV_GROUPS.find((g) => g.items.some((i) => i.id === activeView));
                         return (
                             <button type="button" onClick={() => setSidebarOpen(true)} aria-label="Menu, more pages"
-                                className={`relative flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${elsewhere ? 'text-text-light' : 'text-text-subtle'}`}>
-                                {elsewhere && group && <span aria-hidden className={`absolute top-0 h-[3px] w-8 rounded-b-full ${TONE[group.tone].bar}`} />}
-                                <Menu size={20} className={elsewhere && group ? TONE[group.tone].icon : ''} />
+                                className={`relative flex flex-col items-center justify-center gap-1 text-[11px] transition-colors ${elsewhere ? 'text-lilac font-bold' : 'text-text-subtle font-medium'}`}>
+                                {elsewhere && group && <span aria-hidden className="absolute top-0 h-[3px] w-8 rounded-b-full bg-lilac" />}
+                                <Menu size={20} />
                                 {elsewhere && group ? group.items.find((i) => i.id === activeView)!.name : 'More'}
                             </button>
                         );

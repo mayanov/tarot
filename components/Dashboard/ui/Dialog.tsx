@@ -23,7 +23,9 @@ export const Dialog: React.FC<{
     size?: 'sm' | 'md' | 'lg';
     children: React.ReactNode;
     label?: string;                // for screen readers when the title isn't plain text
-}> = ({ onClose, title, eyebrow, subtitle, actions, footer, size = 'md', children, label }) => {
+    accent?: string;               // a colour to tint the header with (a booking's service)
+    hero?: React.ReactNode;        // the big fact under the title (a session's time)
+}> = ({ onClose, title, eyebrow, subtitle, actions, footer, size = 'md', children, label, accent, hero }) => {
     const id = useRef(Symbol('dialog'));
     const close = useRef(onClose);
     close.current = onClose;
@@ -53,11 +55,13 @@ export const Dialog: React.FC<{
                 className={`relative w-full ${width} max-h-[92vh] sm:max-h-[88vh] flex flex-col bg-surface-1 border border-adm-line-2 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden`}>
                 {/* a grab line on a phone, where it's a sheet */}
                 <span className="sm:hidden mx-auto mt-2 h-1 w-10 rounded-full bg-adm-line-3" aria-hidden />
-                <header className="shrink-0 flex items-start justify-between gap-3 px-5 sm:px-6 pt-4 sm:pt-5 pb-4 border-b border-adm-line">
-                    <div className="min-w-0">
+                <header className={`shrink-0 flex items-start justify-between gap-3 px-5 sm:px-6 pt-4 sm:pt-5 pb-4 ${accent ? '' : 'border-b border-adm-line'}`}
+                    style={accent ? { background: `color-mix(in srgb, ${accent} 14%, var(--adm-surface-1))` } : undefined}>
+                    <div className="min-w-0 flex-1">
                         {eyebrow && <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-subtle mb-1">{eyebrow}</div>}
-                        <h2 className="text-[22px] font-serif font-bold text-text-light leading-tight break-words">{title}</h2>
+                        <h2 className="text-[26px] font-bold tracking-[-0.02em] text-text-light leading-tight break-words">{title}</h2>
                         {subtitle && <div className="mt-1 text-sm text-text-subtle">{subtitle}</div>}
+                        {hero && <div className="mt-3">{hero}</div>}
                     </div>
                     <div className="shrink-0 flex items-center gap-1 -mr-2 -mt-1">
                         {actions}

@@ -1,16 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, CalendarDays, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, CalendarDays, SlidersHorizontal, RefreshCcw } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle } from './lib/format';
-import BookingsView from './BookingsView';
+import BookingsView, { AskToPay } from './BookingsView';
 import WaConfirmButton from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
-import { StatusPill, PaymentPill } from './lib/status';
-import Card from './ui/Card';
-import StatStrip from './ui/StatStrip';
-import PageHeader from './ui/PageHeader';
-import Button from './ui/Button';
+import { PaymentPill } from './lib/status';
+import Button, { IconButton } from './ui/Button';
+import { colorFor } from './lib/serviceColor';
 import { SearchInput, Select } from './ui/Field';
 
 type Market = 'ID' | 'Global';
@@ -162,178 +160,153 @@ const SalesView: React.FC = () => {
         return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     };
 
+    // the not-paid ones first (they're what needs doing), then the rest by month
+    const unpaidRows = filtered.filter((b) => b.paymentStatus !== 'paid');
+    const paidRows = filtered.filter((b) => b.paymentStatus === 'paid');
+    const markWa = (id: string) => (f: string, at: string) => setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, [f]: at } : x)));
+    const chip = (on: boolean) => `inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13.5px] font-semibold transition-colors ${on ? 'bg-text-light text-bg-deep' : 'bg-adm-hover-2 text-text-light hover:bg-adm-hover-3'}`;
+    const unpaidAll = orders.filter((b) => b.paymentStatus !== 'paid').length;
+    const figure = (label: React.ReactNode, money: Record<Cur, number>, foot: string, cls = '') => {
+        const [main, ...rest] = curs.filter((c) => money[c] || curs.length === 1);
+        return (
+            <div className={`py-4 min-w-0 ${cls}`}>
+                <div className="text-[13px] sm:text-sm text-text-subtle">{label}</div>
+                <div className="mt-1 text-[16px] sm:text-[30px] font-bold tracking-[-0.02em] leading-tight tabular-nums text-text-light whitespace-nowrap">{fmtMoney(main ? money[main] : 0, main || curs[0])}</div>
+                <div className="text-[12.5px] sm:text-[14px] font-semibold text-text-subtle tabular-nums">{rest.map((c) => `+ ${fmtMoney(money[c], c)} · `).join('')}{foot}</div>
+            </div>
+        );
+    };
+    const row = (b: Booking) => {
+        const a = amountOf(b);
+        const paid = b.paymentStatus === 'paid';
+        return (
+            <div key={b.id} onClick={() => setOpenId(b.id)}
+                className={`grid grid-cols-[0.75rem_minmax(0,1fr)_auto] sm:grid-cols-[4.5rem_0.75rem_minmax(0,1fr)_8.5rem_15rem] gap-x-3 sm:gap-x-4 gap-y-2 items-center px-4 sm:px-5 py-3.5 border-b border-adm-line last:border-0 cursor-pointer transition-colors ${paid ? 'hover:bg-adm-hover' : 'bg-amber-400/[0.07] hover:bg-amber-400/[0.12]'}`}>
+                <span className="hidden sm:block text-[14px] text-text-subtle tabular-nums">{dayOf(b.createdAt)}</span>
+                <span aria-hidden className="w-2.5 h-2.5 rounded-full" style={{ background: colorFor(b.serviceId) }} />
+                <span className="min-w-0">
+                    <b className="text-[15.5px] text-text-light">{b.name || '—'}</b>{' '}
+                    <span className="text-[14px] text-text-subtle">{serviceLabel(b)}<span className="sm:hidden"> · {dayOf(b.createdAt)}</span>{b.status === 'pending' ? ' · pending' : b.status === 'done' ? ' · done' : ''}</span>
+                </span>
+                <b className="text-[15.5px] text-right tabular-nums text-text-light whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</b>
+                <span className="col-start-2 col-span-2 sm:col-start-auto sm:col-span-1 flex flex-wrap items-center sm:justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                    {paid ? <>
+                        <PaymentPill paid onToggle={() => togglePaid(b)} busy={savingId === b.id} />
+                        {b.market === 'ID'
+                            ? <WaConfirmButton compact b={b} onSent={markWa(b.id)} />
+                            : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
+                    </> : <>
+                        <AskToPay b={b} onSent={markWa(b.id)} onNote={() => {}} />
+                        <button type="button" onClick={() => togglePaid(b)} disabled={savingId === b.id}
+                            className="rounded-[10px] border border-adm-line-2 bg-surface-1 px-3 py-1.5 text-[13px] font-semibold text-text-light hover:bg-adm-hover disabled:opacity-50 whitespace-nowrap">Mark paid</button>
+                    </>}
+                </span>
+            </div>
+        );
+    };
+    const groupHead = (text: string) => <div className="px-4 sm:px-5 pt-5 pb-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-text-subtle border-b border-adm-line">{text}</div>;
+
     return (
-        <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
-            <PageHeader title="Payments" tone="money" subtitle="Mark payments as they come in"
-                note="Every order, newest first; cancelled ones are left out. Rupiah and dollars are never added together. How the money is trending is under Money report."
-                onRefresh={load} refreshing={loading} />
-
-            {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
-
-            {/* what came in, what's still owed, and both together; a line per currency */}
-            <StatStrip layout="three" stats={[
-                { label: 'Collected', lines: curs.map((c) => ({ key: c, value: fmtMoney(totals.paid[c], c) })), foot: `${totals.paidCount} paid` },
-                { label: 'Outstanding', lines: curs.map((c) => ({ key: c, value: fmtMoney(totals.unpaid[c], c) })), foot: `${totals.unpaidCount} unpaid` },
-                { label: 'Total booked', lines: curs.map((c) => ({ key: c, value: fmtMoney(totals.paid[c] + totals.unpaid[c], c) })), foot: `${orders.length} ${orders.length === 1 ? 'order' : 'orders'}` },
-            ]} />
-
-            {/* toolbar */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-                <SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, service, ref or note" />
-                <div className="flex flex-wrap items-center gap-2">
-                    <Select value={market} active={market !== 'all'} onChange={(e) => { setMarket(e.target.value as Market | 'all'); setServiceFilter('all'); }}>
-                        <option value="all">All markets</option>
-                        <option value="ID">Indonesia · IDR</option>
-                        <option value="Global">Global · USD</option>
-                    </Select>
-                    <Select value={payFilter} active={payFilter !== 'all'} onChange={(e) => setPayFilter(e.target.value as 'all' | 'paid' | 'unpaid')}>
-                        <option value="all">All payments</option>
-                        <option value="paid">Paid</option>
-                        <option value="unpaid">Unpaid</option>
-                    </Select>
-                    <Select value={serviceFilter} active={serviceFilter !== 'all'} onChange={(e) => setServiceFilter(e.target.value)} className="max-w-[14rem]">
-                        <option value="all">All services</option>
-                        {serviceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-                    </Select>
-                    {/* booking-date range — collapsed to a single button, opens a range panel */}
-                    <div className="relative" ref={dateRef}>
-                        <button type="button" onClick={() => setDateOpen((o) => !o)}
-                            className={`inline-flex items-center gap-2 pl-3 pr-8 py-2 rounded-lg border bg-bg-dark text-sm focus:border-lilac focus:outline-none cursor-pointer relative ${dateActive ? 'border-lilac text-text-light' : 'border-adm-line-2 text-text-subtle hover:text-text-light'}`}>
-                            <CalendarDays size={15} />
-                            {dateLabel}
-                            <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
-                        </button>
-                        {dateOpen && (
-                            <div className="absolute z-20 mt-2 right-0 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-3 space-y-3">
-                                <div>
-                                    <label className="block text-xs text-text-subtle mb-1">From</label>
-                                    <input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)}
-                                        className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer [color-scheme:dark]" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs text-text-subtle mb-1">To</label>
-                                    <input type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)}
-                                        className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer [color-scheme:dark]" />
-                                </div>
-                                {dateActive && (
-                                    <button onClick={() => { setDateFrom(''); setDateTo(''); }}
-                                        className="w-full text-center text-xs text-text-subtle hover:text-text-light transition-colors py-1">
-                                        Clear dates
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                    {/* rarely needed: where the order came from */}
-                    <div className="relative" ref={moreRef}>
-                        <button type="button" onClick={() => setMoreOpen((o) => !o)} title="More filters"
-                            className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border bg-bg-dark text-sm focus:border-lilac focus:outline-none ${sourceFilter !== 'all' ? 'border-lilac text-text-light' : 'border-adm-line-2 text-text-subtle hover:text-text-light'}`}>
-                            <SlidersHorizontal size={15} />
-                            <span className="hidden sm:inline">{sourceFilter === 'all' ? 'More' : sourceFilter === 'manual' ? 'Added by hand' : 'From the site'}</span>
-                        </button>
-                        {moreOpen && (
-                            <div className="absolute z-20 mt-2 right-0 w-56 max-w-[calc(100vw-2rem)] rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-3">
-                                <div className="text-xs text-text-subtle mb-1.5">Where the order came from</div>
-                                {([['all', 'Anywhere'], ['booking', 'Booked on the site'], ['manual', 'Added by hand']] as const).map(([id, label]) => (
-                                    <button key={id} type="button" onClick={() => { setSourceFilter(id); setMoreOpen(false); }}
-                                        className={`w-full text-left px-2 py-1.5 rounded-md text-sm hover:bg-adm-hover ${sourceFilter === id ? 'text-lilac font-semibold' : 'text-text-light'}`}>{label}</button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    {activeFilters > 0 && (
-                        <Button variant="ghost" onClick={() => { setMarket('all'); setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }}>
-                            Clear
-                        </Button>
-                    )}
+        <div className="space-y-6 pt-20 lg:pt-8 p-4 md:px-8">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <div className="text-sm text-text-subtle">Every order, newest first</div>
+                    <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">Payments</h1>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="flex-1 sm:w-72"><SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, ref or note" /></div>
+                    <IconButton onClick={load} title="Refresh" aria-label="Refresh"><RefreshCcw size={16} className={loading ? 'animate-spin' : ''} /></IconButton>
                 </div>
             </div>
 
-            {/* phones, tablets and small laptops: one card per sale, tap for the details */}
-            <Card className="overflow-hidden xl:hidden">
+            {error && <div className="text-sm due-late-text bg-red-500/10 border border-red-500/25 rounded-xl px-3 py-2.5">{error}</div>}
+
+            {/* what came in, what's still to come, and both together (rupiah and dollars apart) */}
+            <div className="grid grid-cols-3 border-y border-adm-line">
+                {figure('Came in', totals.paid, `${totals.paidCount} paid`, 'pr-3')}
+                {figure(<span className="due-soon-text font-semibold">Still to come in</span>, totals.unpaid, `${totals.unpaidCount} not paid`, 'px-3 sm:px-6 border-l border-adm-line')}
+                {figure('Booked in all', { IDR: totals.paid.IDR + totals.unpaid.IDR, USD: totals.paid.USD + totals.unpaid.USD }, `${orders.length} ${orders.length === 1 ? 'order' : 'orders'}`, 'pl-3 sm:pl-6 border-l border-adm-line')}
+            </div>
+
+            {/* the usual filters one tap away; the rest in the menus beside them */}
+            <div className="flex flex-wrap items-center gap-2">
+                <button type="button" className={chip(payFilter === 'all')} onClick={() => setPayFilter('all')}>All <span className="opacity-70 tabular-nums">{orders.length}</span></button>
+                <button type="button" className={chip(payFilter === 'unpaid')} onClick={() => setPayFilter(payFilter === 'unpaid' ? 'all' : 'unpaid')}>Not paid <span className="opacity-70 tabular-nums">{unpaidAll}</span></button>
+                <button type="button" className={chip(market === 'ID')} onClick={() => { setMarket(market === 'ID' ? 'all' : 'ID'); setServiceFilter('all'); }}>Indonesia</button>
+                <button type="button" className={chip(market === 'Global')} onClick={() => { setMarket(market === 'Global' ? 'all' : 'Global'); setServiceFilter('all'); }}>Abroad</button>
+                <span className="w-px h-6 bg-adm-line-2 mx-1 hidden sm:block" aria-hidden />
+                <Select value={serviceFilter} active={serviceFilter !== 'all'} onChange={(e) => setServiceFilter(e.target.value)} className="max-w-[14rem]">
+                    <option value="all">All services</option>
+                    {serviceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+                </Select>
+                {/* booking-date range — collapsed to a single button, opens a range panel */}
+                <div className="relative" ref={dateRef}>
+                    <button type="button" onClick={() => setDateOpen((o) => !o)}
+                        className={`inline-flex items-center gap-2 pl-3 pr-8 py-2 rounded-lg border bg-bg-dark text-sm focus:border-lilac focus:outline-none cursor-pointer relative ${dateActive ? 'border-lilac text-text-light' : 'border-adm-line-2 text-text-subtle hover:text-text-light'}`}>
+                        <CalendarDays size={15} />
+                        {dateLabel}
+                        <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
+                    </button>
+                    {dateOpen && (
+                        <div className="absolute z-20 mt-2 left-0 sm:left-auto sm:right-0 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-3 space-y-3">
+                            <div>
+                                <label className="block text-xs text-text-subtle mb-1">From</label>
+                                <input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)}
+                                    className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer" />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-text-subtle mb-1">To</label>
+                                <input type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)}
+                                    className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer" />
+                            </div>
+                            {dateActive && (
+                                <button onClick={() => { setDateFrom(''); setDateTo(''); }}
+                                    className="w-full text-center text-xs text-text-subtle hover:text-text-light transition-colors py-1">
+                                    Clear dates
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+                {/* rarely needed: where the order came from */}
+                <div className="relative" ref={moreRef}>
+                    <button type="button" onClick={() => setMoreOpen((o) => !o)} title="More filters" aria-label="More filters"
+                        className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border bg-bg-dark text-sm focus:border-lilac focus:outline-none ${sourceFilter !== 'all' ? 'border-lilac text-text-light' : 'border-adm-line-2 text-text-subtle hover:text-text-light'}`}>
+                        <SlidersHorizontal size={15} />
+                        <span className="hidden sm:inline">{sourceFilter === 'all' ? 'More' : sourceFilter === 'manual' ? 'Added by hand' : 'From the site'}</span>
+                    </button>
+                    {moreOpen && (
+                        <div className="absolute z-20 mt-2 right-0 w-56 max-w-[calc(100vw-2rem)] rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-3">
+                            <div className="text-xs text-text-subtle mb-1.5">Where the order came from</div>
+                            {([['all', 'Anywhere'], ['booking', 'Booked on the site'], ['manual', 'Added by hand']] as const).map(([id, label]) => (
+                                <button key={id} type="button" onClick={() => { setSourceFilter(id); setMoreOpen(false); }}
+                                    className={`w-full text-left px-2 py-1.5 rounded-md text-sm hover:bg-adm-hover ${sourceFilter === id ? 'text-lilac font-semibold' : 'text-text-light'}`}>{label}</button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                {activeFilters > 0 && (
+                    <Button variant="ghost" onClick={() => { setMarket('all'); setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }}>
+                        Clear
+                    </Button>
+                )}
+            </div>
+
+            {/* one list: not paid first, then month by month */}
+            <div className="rounded-2xl bg-surface-1 overflow-hidden">
+                <div className="hidden sm:grid grid-cols-[4.5rem_0.75rem_minmax(0,1fr)_8.5rem_15rem] gap-x-4 px-5 py-3 text-[13px] font-semibold text-text-subtle border-b border-adm-line">
+                    <span>Date</span><span /><span>Who and what</span><span className="text-right">Amount</span><span className="text-right">Payment</span>
+                </div>
                 {loading && filtered.length === 0 && <InlineLoader />}
                 {!loading && filtered.length === 0 && <p className="text-center text-sm text-text-subtle py-12">No orders found{q.trim() ? ` for “${q.trim()}”` : ''}.</p>}
-                {filtered.map((b, i) => {
-                    const a = amountOf(b);
-                    const newMonth = i === 0 || monthOf(filtered[i - 1]) !== monthOf(b);
-                    return (
-                        <React.Fragment key={b.id}>
-                            {newMonth && <div className="px-4 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-subtle border-b border-adm-line">{monthName(monthOf(b))}</div>}
-                            <div onClick={() => setOpenId(b.id)} className="px-4 py-3 border-b border-adm-line last:border-0 hover:bg-adm-hover/50 cursor-pointer">
-                                <div className="flex items-baseline justify-between gap-3">
-                                    <span className="font-semibold text-text-light truncate">{b.name || '—'}</span>
-                                    <span className="tabular-nums text-text-light font-medium whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</span>
-                                </div>
-                                <div className="text-xs text-text-subtle mt-0.5 truncate">{serviceLabel(b)} · {dayOf(b.createdAt)}</div>
-                                <div className="mt-2 flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                                    <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={savingId === b.id} />
-                                    <StatusPill status={b.status} />
-                                    <span className="ml-auto">
-                                        {b.market === 'ID'
-                                            ? <WaConfirmButton compact b={b} onSent={(f, at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, [f]: at } : x)))} />
-                                            : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
-                                    </span>
-                                </div>
-                            </div>
-                        </React.Fragment>
-                    );
-                })}
-            </Card>
-
-            {/* wide screens: the table */}
-            <Card className="overflow-hidden hidden xl:block">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[900px]">
-                        <thead>
-                            <tr className="text-left text-text-subtle text-xs uppercase tracking-wider border-b border-adm-line">
-                                <th className="font-semibold px-4 py-3">Booked</th>
-                                <th className="font-semibold px-4 py-3">Customer</th>
-                                <th className="font-semibold px-4 py-3">Service</th>
-                                <th className="font-semibold px-4 py-3 text-right">Amount</th>
-                                <th className="font-semibold px-4 py-3">Status</th>
-                                <th className="font-semibold px-4 py-3">Payment</th>
-                                <th className="font-semibold px-4 py-3 text-right">{market === 'ID' ? 'WhatsApp' : market === 'Global' ? 'Email' : 'Confirm'}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading && filtered.length === 0 && (
-                                <tr><td colSpan={7}><InlineLoader /></td></tr>
-                            )}
-                            {!loading && filtered.length === 0 && (
-                                <tr><td colSpan={7} className="text-center text-text-subtle py-16">No orders found{q.trim() ? ` for “${q.trim()}”` : ''}.</td></tr>
-                            )}
-                            {filtered.map((b, i) => {
-                                const a = amountOf(b);
-                                const newMonth = i === 0 || monthOf(filtered[i - 1]) !== monthOf(b);
-                                return (
-                                    <React.Fragment key={b.id}>
-                                    {newMonth && (
-                                        <tr className="border-b border-adm-line">
-                                            <td colSpan={7} className="px-4 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-subtle">{monthName(monthOf(b))}</td>
-                                        </tr>
-                                    )}
-                                    <tr onClick={() => setOpenId(b.id)} className="border-b border-adm-line last:border-0 hover:bg-adm-hover/50 cursor-pointer">
-                                        <td className="px-4 py-3 whitespace-nowrap text-text-subtle tabular-nums">{dayOf(b.createdAt)}</td>
-                                        {/* one line per sale: contact, session time and payment method are in its details */}
-                                        <td className="px-4 py-3 min-w-[10rem] font-semibold text-text-light">{b.name || '—'}</td>
-                                        <td className="px-4 py-3 min-w-[12rem] text-text-light">{serviceLabel(b)}</td>
-                                        <td className="px-4 py-3 text-right whitespace-nowrap tabular-nums text-text-light font-medium">{a ? fmtMoney(a.amount, a.currency) : '—'}</td>
-                                        <td className="px-4 py-3"><StatusPill status={b.status} /></td>
-                                        <td className="px-4 py-3"><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={savingId === b.id} /></td>
-                                        <td className="px-4 py-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                                            {/* Indonesia is confirmed on WhatsApp, Global by email */}
-                                            {b.market === 'ID'
-                                                ? <WaConfirmButton compact b={b} onSent={(f, at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, [f]: at } : x)))} />
-                                                : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
-                                        </td>
-                                    </tr>
-                                    </React.Fragment>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            </Card>
+                {unpaidRows.length > 0 && <>{groupHead(`Not paid yet · ${unpaidRows.length}`)}{unpaidRows.map(row)}</>}
+                {paidRows.map((b, i) => (
+                    <React.Fragment key={b.id}>
+                        {(i === 0 || monthOf(paidRows[i - 1]) !== monthOf(b)) && groupHead(`Paid · ${monthName(monthOf(b))}`)}
+                        {row(b)}
+                    </React.Fragment>
+                ))}
+            </div>
 
             {openId && <BookingsView view="detail" openId={openId} onClosed={() => { setOpenId(null); load(); }} />}
         </div>

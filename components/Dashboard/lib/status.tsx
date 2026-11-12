@@ -48,8 +48,9 @@ export const StatusSelect: React.FC<{ status: Booking['status']; onChange: (s: B
 
 /** Paid / Unpaid; a button that flips it when `onToggle` is given. Unpaid is the one in colour. */
 export const PaymentPill: React.FC<{ paid: boolean; onToggle?: () => void; busy?: boolean }> = ({ paid, onToggle, busy }) => {
-    const cls = `inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs whitespace-nowrap transition-colors disabled:opacity-50 ${paid ? 'text-text-subtle' : 'text-coral-deep font-semibold'}`;
-    const inner = <><Dot cls={paid ? 'bg-sage' : 'bg-coral-deep'} />{paid ? 'Paid' : 'Unpaid'}</>;
+    // paid in green; not paid in amber, the colour of money still to come in
+    const cls = `inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-colors disabled:opacity-50 ${paid ? 'text-sage' : 'due-soon-text'}`;
+    const inner = <><Dot cls={paid ? 'bg-sage' : 'bg-amber-500'} />{paid ? 'Paid' : 'Not paid'}</>;
     return onToggle
         ? <button type="button" onClick={(e) => { e.stopPropagation(); onToggle(); }} disabled={busy} title={paid ? 'Mark unpaid' : 'Mark paid'} className={`${cls} hover:bg-adm-hover-2`}>{inner}</button>
         : <span className={cls}>{inner}</span>;

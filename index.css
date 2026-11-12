@@ -364,8 +364,10 @@ html.booting .boot-hide { opacity: 0; pointer-events: none; transition: none; }
    ========================================= */
 :root {
   /* Mayanov palette: violet #6B3FA0 · plum #39234E · ink #211E2E / #575167 · indigo #202A5C */
-  --adm-bg-deep: #F3F1F7;
+  --adm-bg-deep: #FAF9FC;
   --adm-bg-dark: #F6F4FA;
+  /* the menu: deep plum in both themes */
+  --adm-nav: #251B3A;
   --adm-surface-1: #FFFFFF;
   --adm-surface-2: #F0EDF6;
   --adm-surface-highlight: #E7E2F0;
@@ -379,7 +381,7 @@ html.booting .boot-hide { opacity: 0; pointer-events: none; transition: none; }
   --adm-hover-3: rgba(107, 63, 160, 0.16);
   --adm-axis: #575167;
   /* RGB triples so Tailwind opacity modifiers (bg-lilac/10) work */
-  --adm-accent: 107 63 160;       /* violet  #6B3FA0 */
+  --adm-accent: 74 52 130;        /* plum-violet #4A3482 */
   --adm-accent-deep: 57 35 78;    /* plum    #39234E */
   --adm-accent-2: 122 127 209;    /* periwinkle #7A7FD1 */
   --adm-pending: 107 63 160;
@@ -397,6 +399,7 @@ html.booting .boot-hide { opacity: 0; pointer-events: none; transition: none; }
 .admin-shell[data-theme="dark"] {
   --adm-bg-deep: #141220;
   --adm-bg-dark: #1A1729;
+  --adm-nav: #1D1530;
   --adm-surface-1: #211E2E;
   --adm-surface-2: #2A2640;
   --adm-surface-highlight: #342F4D;

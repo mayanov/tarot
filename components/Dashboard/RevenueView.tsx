@@ -1,6 +1,7 @@
 import PageHeader from './ui/PageHeader';
 import Segmented from './ui/Segmented';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { colorFor } from './lib/serviceColor';
 import { CalendarDays, ChevronDown, Check, ArrowUp, ArrowDown, Repeat, UserPlus } from 'lucide-react';
 import { BarChart, Bar, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
@@ -22,12 +23,6 @@ const SERVICE_LABEL: Record<string, string> = {
     '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
     payl: 'Pay as you like',
 };
-// a clearly different colour per service (muted, so they sit well together in both themes)
-const SERVICE_COLOR: Record<string, string> = {
-    chat: '#7C5CC4', call: '#3E7CC9', meetup: '#2E9E6A', special: '#D98E2B',
-    '3card': '#C8578F', '5card': '#2A9DA6', live: '#E0A93B', payl: '#9A93A8',
-};
-const colorFor = (id: string) => SERVICE_COLOR[id] || '#B5AEC4';
 
 const toISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const parseISO = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, (m || 1) - 1, d || 1); };
