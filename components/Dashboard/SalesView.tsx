@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, CalendarDays, SlidersHorizontal, RefreshCcw } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle } from './lib/format';
+import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, shortLabel, nameOf } from './lib/format';
 import BookingsView, { AskToPay } from './BookingsView';
 import WaConfirmButton from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
@@ -185,8 +185,8 @@ const SalesView: React.FC = () => {
                 <span className="hidden sm:block text-[14px] text-text-subtle tabular-nums">{dayOf(b.createdAt)}</span>
                 <span aria-hidden className="w-2.5 h-2.5 rounded-full" style={{ background: colorFor(b.serviceId) }} />
                 <span className="min-w-0">
-                    <b className="text-[15.5px] text-text-light">{b.name || '—'}</b>{' '}
-                    <span className="text-[14px] text-text-subtle">{serviceLabel(b)}<span className="sm:hidden"> · {dayOf(b.createdAt)}</span>{b.status === 'pending' ? ' · pending' : b.status === 'done' ? ' · done' : ''}</span>
+                    <b className="text-[15.5px] text-text-light">{nameOf(b)}</b>{' '}
+                    <span className="text-[14px] text-text-subtle">{shortLabel(b)}<span className="sm:hidden"> · {dayOf(b.createdAt)}</span></span>
                 </span>
                 <b className="text-[15.5px] text-right tabular-nums text-text-light whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</b>
                 <span className="col-start-2 col-span-2 sm:col-start-auto sm:col-span-1 flex flex-wrap items-center sm:justify-end gap-2" onClick={(e) => e.stopPropagation()}>

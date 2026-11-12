@@ -10,7 +10,7 @@ import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooki
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton, { waNumberOf, paymentRequestText, type WaField } from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
-import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone, soonMs } from './lib/format';
+import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, fmtMoney, dayWord, nameOf, sessionTitle, shortLabel, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone, soonMs } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
 import { sameCustomer, normPhone as waNumber, moneyLabel, type Money } from './lib/customers';
 import { openCustomerOf } from './lib/nav';
@@ -762,7 +762,7 @@ const ExtraTime: React.FC<{
                     <PaymentPill paid={e.paymentStatus === 'paid'} onToggle={() => onToggle(e)} busy={payBusy === e.id} />
                 </div>
             ))}
-            {!open && !extras.length && <p className="text-[13px] text-text-subtle">Booked for {durLabel(booked)}. If it ran longer, add the extra time here.</p>}
+            {!open && !extras.length && <p className="text-[13px] text-text-subtle">None</p>}
             {open && (
                 <div className="rounded-xl border border-adm-line-2 p-3.5 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -903,7 +903,7 @@ const dueText = (b: Booking, now: number): { text: string; cls: string } => {
     const sameDay = (x: Date, y: Date) => x.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) === y.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
     const time = at.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
     const when = sameDay(at, new Date(now)) ? `today ${time}` : `${at.toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'Asia/Jakarta' })} ${time}`;
-    if (left < 0) return { text: `Overdue ${leftLabel(-left)}`, cls: 'due-late-text font-semibold' };
+    if (left < 0) return { text: `${leftLabel(-left)} late`, cls: 'due-late-text font-semibold' };
     return { text: `${leftLabel(left)} left · ${when}`, cls: left < soonMs(b.serviceId) ? 'due-soon-text font-semibold' : 'text-text-subtle' };
 };
 // The details' top line for a reading or chat still to send: the exact time it's due and
@@ -918,7 +918,7 @@ const detailDue = (b: Booking, now: number): { text: string; cls: string } | nul
         return { text: `Waiting ${leftLabel(now - c.since)} · paid ${fmt(c.since)}`, cls: late ? 'due-soon-text' : 'text-text-subtle' };
     }
     const left = c.due - now;
-    if (left < 0) return { text: `Overdue ${leftLabel(-left)} · was due ${fmt(c.due)}`, cls: 'due-late-text font-semibold' };
+    if (left < 0) return { text: `${leftLabel(-left)} late · was due ${fmt(c.due)}`, cls: 'due-late-text font-semibold' };
     return { text: `Due ${fmt(c.due)} · ${leftLabel(left)} left`, cls: left < soonMs(b.serviceId) ? 'due-soon-text font-semibold' : 'text-text-subtle' };
 };
 // "Chat · 1 question" for "sasa chat" is just "1 question": the name already says it
@@ -1430,7 +1430,6 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 const at = (iso: string, hhmm: string) => Date.parse(`${iso}T${hhmm}:00+07:00`);
                 const dayOf = (t: number) => new Date(t).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
                 const clock = (t: number) => new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
-                const wd = (t: number) => new Date(t).toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'Asia/Jakarta' });
                 // what's on: readings to send, sessions today and tomorrow, and sessions in
                 // her own calendar not booked yet
                 type Row = { key: string; at: number; day: string; todo?: Todo; b?: Booking; e?: CalEvent };
@@ -1453,7 +1452,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 const sessionsToday = soonSessions.filter((b) => b.date === todayISO).length;
                 const owed: Money = { IDR: 0, USD: 0 };
                 unpaid.forEach((b) => { const a = amountForBooking(b); if (a) owed[a.currency] += a.amount; });
-                const owedShort = [owed.IDR && `Rp ${owed.IDR >= 1_000_000 ? `${+(owed.IDR / 1_000_000).toFixed(1)} jt` : `${Math.round(owed.IDR / 1000)}rb`}`, owed.USD && `$${owed.USD}`].filter(Boolean) as string[];
+                const owedShort = [owed.IDR && fmtMoney(owed.IDR, 'IDR'), owed.USD && fmtMoney(owed.USD, 'USD')].filter(Boolean) as string[];
                 const ask = 'inline-flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold whitespace-nowrap transition-colors';
                 const tick = async (b: Booking) => {
                     setTicking((s) => new Set(s).add(b.id));
@@ -1469,9 +1468,10 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                     if (t && b) {
                         const reply = replyLink(b);
                         const tone = t.tone === 'late' ? 'due-late-text font-semibold' : t.tone === 'soon' ? 'due-soon-text font-semibold' : '';
-                        time = Number.isFinite(t.at) ? <>{before && <>{wd(r.at)}<br /></>}<span className={before ? 'font-medium' : ''}>{clock(r.at)}</span></> : <span className="font-medium">waiting</span>;
+                        time = !Number.isFinite(t.at) ? <span className="font-medium">waiting</span> : t.tone === 'late' && before ? 'Late' : clock(r.at);
                         title = t.title;
-                        meta = <>{serviceLabel(b)} · {amountLabel(b)} paid · <span className={tone}>{t.pill}</span></>;
+                        // (a reading to send is always paid, so the line doesn't say it)
+                        meta = <>{[serviceLabel(b), amountLabel(b)].filter(Boolean).join(' · ')} · <span className={tone}>{t.pill}</span></>;
                         action = <>
                             {reply && <a href={reply.href} target="_blank" rel="noopener noreferrer" title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${b.name || 'their'} WhatsApp chat`}
                                 className={`${ask} ${t.tone === 'late' ? 'bg-text-light text-bg-deep hover:opacity-90' : 'border border-adm-line-2 bg-surface-1 text-text-light hover:bg-adm-hover'}`}>
@@ -1486,13 +1486,15 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                         const end = r.at + (b.durationMin || 60) * 60_000;
                         const over = b.status === 'done' || end < now;
                         time = clock(r.at);
-                        title = `${serviceTitle(b)} with ${b.name || 'someone'}`;
-                        meta = <>{[packageOf(b), amountLabel(b)].filter(Boolean).join(' · ')} · {b.paymentStatus === 'paid' ? 'paid' : <span className="due-soon-text font-semibold">not paid yet</span>}{b.status === 'pending' && ' · pending'}{over && (b.status === 'done' ? ' · done' : ' · ended')}</>;
+                        title = sessionTitle(b);
+                        // how long, how much, then one word for where it stands
+                        meta = <>{[b.durationMin ? durLabel(b.durationMin) : '', amountLabel(b)].filter(Boolean).join(' · ')} · {b.paymentStatus !== 'paid'
+                            ? <span className="due-soon-text font-semibold">not paid</span> : over ? 'done' : 'paid'}</>;
                         if (b.paymentStatus !== 'paid') action = <AskToPay b={b} onSent={(f, at2) => markWa(b.id, f, at2)} onNote={flash} />;
                     } else if (e) {
                         time = clock(r.at);
                         title = e.title;
-                        meta = 'In your calendar, not booked yet';
+                        meta = 'Only in your calendar, not booked here';
                         action = <button type="button" onClick={() => setFromEntry(e)} className={`${ask} border border-dashed border-adm-line-3 text-text-light hover:bg-adm-hover`}><Plus size={14} />Make it a booking</button>;
                     } else return null;
                     const late = t?.tone === 'late';
@@ -1547,13 +1549,14 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                 {unpaid.length === 0 ? <p className="py-4 text-sm text-text-subtle border-t border-adm-line">Everything is paid.</p> : unpaid.map((b) => (
                                     <div key={b.id} onClick={() => setSelectedId(b.id)} className="py-4 border-t border-adm-line cursor-pointer group">
                                         <div className="flex items-baseline justify-between gap-3 text-[15px]">
-                                            <span className="flex items-center gap-2 min-w-0"><span aria-hidden className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colorFor(b.serviceId) }} /><b className="truncate text-text-light group-hover:underline">{b.name || '—'}</b></span>
+                                            <span className="flex items-center gap-2 min-w-0"><span aria-hidden className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colorFor(b.serviceId) }} /><b className="truncate text-text-light group-hover:underline">{nameOf(b)}</b></span>
                                             <b className="tabular-nums text-text-light whitespace-nowrap">{amountLabel(b)}</b>
                                         </div>
-                                        <div className="text-[13px] text-text-subtle mt-0.5">{serviceLabel(b)} · {b.date && b.time ? `session ${fmtDate(b.date)} ${b.time}` : `ordered ${fmtDate(b.createdAt)}`}</div>
+                                        <div className="text-[13px] text-text-subtle mt-0.5">{shortLabel(b)} · {b.date && b.time ? `${dayWord(b.date)} ${b.time}` : `ordered ${dayWord(b.createdAt)}`}</div>
                                         <div className="mt-2.5 flex items-center gap-2" onClick={(ev) => ev.stopPropagation()}>
                                             <AskToPay b={b} onSent={(f, at2) => markWa(b.id, f, at2)} onNote={flash} />
-                                            <PaymentPill paid={false} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
+                                            <button type="button" onClick={() => togglePaid(b)} disabled={payBusy === b.id}
+                                                className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold text-text-subtle hover:text-text-light hover:bg-adm-hover-2 disabled:opacity-50 transition-colors"><Check size={13} />Mark paid</button>
                                         </div>
                                     </div>
                                 ))}
@@ -1585,7 +1588,6 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 const paidSum: Money = { IDR: 0, USD: 0 };
                 mine.forEach((x) => { const a = amountForBooking(x); if (a && x.paymentStatus === 'paid') paidSum[a.currency] += a.amount; });
                 const toCustomer = () => { if (onCustomer) onCustomer(); else { openCustomerOf(b.id); setSelectedId(null); } };
-                const initial = (b.name || '?').trim().charAt(0).toUpperCase();
                 const len = b.durationMin ? durLabel(b.durationMin) : '';
                                 const contactLink = 'text-lilac hover:underline';
                 // the big line in the header: when it is (a session), when it's due (an order)
@@ -1598,25 +1600,25 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 const cancelled = b.status === 'cancelled';
                 const hero = b.extraFor ? (
                     <><div className="text-[22px] font-semibold tracking-[-0.01em] text-text-light">+{durLabel(b.extraMinutes || 0)}</div>
-                        <div className="text-sm text-text-subtle">Extra time · session on {fmtDate(b.createdAt)}</div></>
+                        <div className="text-sm text-text-subtle">Added {fmtDate(b.createdAt)}</div></>
                 ) : timed ? (
                     <><div className="text-[22px] font-semibold tracking-[-0.01em] text-text-light tabular-nums">{parseISO(b.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}, {b.time}{endStr ? ` – ${endStr}` : ''}</div>
-                        <div className="text-sm text-text-subtle">{[rel, len, market, b.source === 'manual' ? 'added by hand' : ''].filter(Boolean).join(' · ')}</div></>
+                        <div className="text-sm text-text-subtle">{[rel, len, market].filter(Boolean).join(' · ')}</div></>
                 ) : (
                     <><div className={`text-[22px] font-semibold tracking-[-0.01em] tabular-nums ${due ? due.cls : 'text-text-light'}`}>{due ? due.text.split(' · ')[0] : `Ordered ${fmtDate(b.createdAt)}`}</div>
-                        <div className="text-sm text-text-subtle">{[due ? due.text.split(' · ').slice(1).join(' · ') : '', due ? `ordered ${fmtDate(b.createdAt)}` : '', market, b.source === 'manual' ? 'added by hand' : ''].filter(Boolean).join(' · ')}</div></>
+                        <div className="text-sm text-text-subtle">{[due ? due.text.split(' · ').slice(1).join(' · ') : '', market].filter(Boolean).join(' · ')}</div></>
                 );
                 // where it stands, in three steps: booked, paid, then the session (or the reading sent)
                 type St = 'done' | 'now' | 'next';
                 const steps: { label: string; sub: string; st: St }[] = [
-                    { label: 'Booked', sub: fmtDate(b.createdAt), st: 'done' },
+                    { label: 'Booked', sub: dayWord(b.createdAt), st: 'done' },
                     { label: paid ? 'Paid' : 'Not paid', sub: amountLabel(b), st: paid ? 'done' : 'now' },
                     timed ? { label: over ? 'Session done' : 'Session', sub: over ? (b.status === 'done' ? 'marked done' : 'ended') : rel.toLowerCase(), st: over ? 'done' : 'next' }
                         : { label: b.status === 'done' ? 'Sent' : 'To send', sub: b.status === 'done' ? 'done' : due ? due.text.split(' · ')[0].toLowerCase() : '', st: b.status === 'done' ? 'done' : paid ? 'now' : 'next' },
                 ];
                 const bar: Record<St, string> = { done: 'bg-sage', now: paid ? 'bg-lilac' : 'bg-amber-500', next: 'bg-adm-line-2' };
                 const reply = !timed && !b.extraFor ? replyLink(b) : null;
-                const first = (b.name || '').trim().split(/\s+/)[0] || 'them';
+                const first = nameOf(b, '').split(' ')[0] || 'them';
                 const bigBtn = 'w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-[15px] font-semibold transition-colors disabled:opacity-50';
                 // the one thing to do next, as the main button
                 const next = cancelled || b.extraFor ? null : !paid ? (
@@ -1636,8 +1638,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 ) : null;
                 return (
                     <Dialog onClose={() => setSelectedId(null)} label={`Booking for ${b.name || 'someone'}`}
-                        eyebrow={`${b.extraFor ? 'Extra time' : serviceLabel(b)}${b.ref ? ` · ${b.ref}` : ''}`}
-                        title={b.name || '—'}
+                        eyebrow={b.extraFor ? 'Extra time' : timed ? (b.serviceId === 'call' ? 'Call' : serviceTitle(b)) : serviceLabel(b)}
+                        title={nameOf(b)}
                         accent={colorFor(b.serviceId)}
                         hero={hero}
                         actions={!editing && <DialogIconButton label="Edit name, contact or price" onClick={() => setEditing(true)}><Pencil size={16} /></DialogIconButton>}>
@@ -1663,30 +1665,24 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                 </Section>
                             )}
 
-                            {/* the money: how much, and whether it's in */}
-                            <Section title="Payment">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div className="min-w-0">
-                                        <div className="text-2xl font-bold tracking-[-0.01em] text-text-light tabular-nums leading-tight">{amountLabel(b) || '—'}</div>
-                                        {method && <div className="text-xs text-text-subtle truncate mt-0.5">{method}</div>}
-                                    </div>
-                                    <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
-                                </div>
-                                {b.inviteOnPay && b.status !== 'cancelled' && b.paymentStatus !== 'paid' && (
-                                    <p className="mt-2 text-xs text-text-subtle">The calendar invite{b.serviceId === 'meetup' ? '' : ' and Meet link'} go out when you mark it paid.</p>
-                                )}
-                            </Section>
-
-                            {/* where it stands, and the message to send */}
-                            <Section title="Status">
-                                <KV label="Booking"><StatusControl b={b} /></KV>
+                            {/* the facts, each once: the steps above already say booked, paid and when */}
+                            <Section title="Details">
+                                <KV label="Price">
+                                    <span className="tabular-nums font-semibold">{amountLabel(b) || '—'}</span>
+                                    {method && <span className="text-text-subtle">· {method}</span>}
+                                    {(paid || !next) && <PaymentPill paid={paid} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />}
+                                </KV>
+                                <KV label="Status"><StatusControl b={b} /></KV>
                                 {/* Indonesia is confirmed on WhatsApp, Global by email */}
                                 {b.status !== 'cancelled' && !b.extraFor && (b.market === 'ID' ? !!waNumberOf(b.contact) : !!email) && (
-                                    <KV label={b.market === 'ID' ? 'WhatsApp' : 'Email'}>
+                                    <KV label="Confirmation">
                                         {b.market === 'ID'
                                             ? <WaConfirmButton b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
                                             : <EmailConfirmButton b={b} onSent={(at) => markEmailSent(b.id, at)} />}
                                     </KV>
+                                )}
+                                {b.inviteOnPay && !cancelled && !paid && (
+                                    <p className="mt-1 text-xs text-text-subtle">The calendar invite{b.serviceId === 'meetup' ? '' : ' and Meet link'} go out when you mark it paid.</p>
                                 )}
                                 {b.status === 'cancelled' && timed && (
                                     <RestoreAt key={b.id} b={b} bookings={bookings}
@@ -1699,23 +1695,18 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                     onDone={(msg) => { flash(msg, 'ok'); load(); }} onToggle={togglePaid} payBusy={payBusy} />
                             )}
 
-                            {/* who: their page on Customers, and how to reach them */}
+                            {/* who, and how to reach them */}
                             <Section title="Customer">
-                                {real && (
-                                    <button type="button" onClick={toCustomer}
-                                        className="group w-full mb-2 flex items-center gap-3 rounded-xl border border-adm-line px-3 py-2.5 text-left hover:bg-adm-hover hover:border-adm-line-2 transition-colors">
-                                        <span className="grid place-items-center w-9 h-9 shrink-0 rounded-full bg-lilac/15 text-lilac font-bold tracking-[-0.01em]">{initial}</span>
-                                        <span className="min-w-0 flex-1">
-                                            <span className="block text-sm font-medium text-text-light truncate">{b.name || 'Customer'}</span>
-                                            <span className="block text-xs text-text-subtle tabular-nums">{live} booking{live === 1 ? '' : 's'}{moneyLabel(paidSum) ? ` · ${moneyLabel(paidSum)} paid` : ''}</span>
-                                        </span>
-                                        <ChevronRight size={16} className="shrink-0 text-text-subtle group-hover:text-lilac transition-colors" />
-                                    </button>
-                                )}
                                 {phone && <KV label="WhatsApp"><a href={`https://wa.me/${waNumber(phone)}`} target="_blank" rel="noopener noreferrer" className={`${contactLink} tabular-nums`}>{fmtPhone(phone)}</a></KV>}
                                 {email && <KV label="Email"><a href={`mailto:${email}`} className={`${contactLink} break-all`}>{email}</a></KV>}
                                 {b.dob && <KV label="Born">{fmtDate(b.dob)}</KV>}
-                                {timed && <KV label="Ordered">{fmtDate(b.createdAt)}</KV>}
+                                {real && (
+                                    <KV label="Bookings">
+                                        <button type="button" onClick={toCustomer} className={`${contactLink} inline-flex items-center gap-0.5 tabular-nums`}>
+                                            {live} in all{moneyLabel(paidSum) ? ` · ${moneyLabel(paidSum)} paid` : ''}<ChevronRight size={14} />
+                                        </button>
+                                    </KV>
+                                )}
                                 {!phone && !email && !real && <p className="text-sm text-text-subtle">No contact saved. Add it with Edit.</p>}
                             </Section>
 
@@ -1726,6 +1717,9 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                             )}
 
                             <PrivateNote key={b.id} b={b} onSaved={(u) => { replaceBooking(u); flash('Note saved.', 'ok'); }} />
+                            <p className="px-5 sm:px-6 py-3 text-[12px] text-text-subtle tabular-nums">
+                                {[b.ref && `Ref ${b.ref}`, `booked ${fmtDate(b.createdAt)}`, b.source === 'manual' ? 'added by hand' : 'on the website'].filter(Boolean).join(' · ')}
+                            </p>
                         </>)}
                     </Dialog>
                 );

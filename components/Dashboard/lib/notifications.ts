@@ -2,7 +2,7 @@
 // stored): what came in, what's due, who's coming. Each has the moment it happened, so
 // the list reads newest first and "unread" is simply anything after the last look.
 import type { Booking } from '../../../services/booking';
-import { orderClock, serviceLabel, serviceTitle, packageOf, amountLabel, paymentMethodOf, spanLabel, soonMs } from './format';
+import { orderClock, serviceLabel, serviceTitle, packageOf, amountLabel, paymentMethodOf, spanLabel, soonMs, nameOf, sessionTitle } from './format';
 
 export type NoteKind = 'new' | 'awaiting' | 'dueSoon' | 'overdue' | 'session' | 'cancelled' | 'done';
 /** one stage of a booking: Booked, Paid, then Due / Session / Sent; `at` once it's happened */
@@ -17,7 +17,7 @@ export interface Note {
     service: string;     // what they booked
     amount: string;      // '$12', 'Rp 450.000'
     title: string;       // who, and what they booked
-    status: string;      // 'Waiting for payment', 'Paid', 'Due in 3 h', 'Overdue 2 d', …
+    status: string;      // 'Waiting for payment', 'Paid', 'Due in 3 h', '2 d late', …
     detail: string;      // a few words more: how it was paid, when it's due
     steps: NoteStep[];
     bookingId: string;
@@ -91,7 +91,7 @@ export function notesFrom(bookings: Booking[], now: number): Note[] {
                 if (live && now >= c.due) {
                     reminder = true;
                     kind = 'overdue'; at = c.due; tone = 'late';
-                    status = `Overdue ${span(now - c.due)}`;
+                    status = `${span(now - c.due)} late`;
                     detail = `was due ${whenLabel(c.due, now)}`;
                     last.state = 'late';
                 } else if (live && now >= soonAt) {
@@ -135,7 +135,7 @@ export interface Todo {
     at: number;          // its deadline: when the reading is due, or when the session starts
     title: string;       // what to do
     detail: string;
-    pill: string;        // '3 h left', 'Overdue 2 d', 'in 5 h'
+    pill: string;        // '3 h left', '2 d late', 'in 5 h'
     tone: 'late' | 'soon' | 'calm';
 }
 // a paid reading or chat not sent yet, as a to do (null for anything else)
@@ -143,7 +143,7 @@ export function readingTodo(b: Booking, now: number): Todo | null {
     if (b.extraFor || b.holdOnly || b.status === 'cancelled' || b.status === 'done' || (b.date && b.time)) return null;
     const c = orderClock(b);
     if (c.kind === 'unpaid') return null;
-    const name = b.name || 'someone';
+    const name = nameOf(b, 'someone');
     const pkg = packageOf(b);
     const chat = b.serviceId === 'chat';
     const title = chat ? `Answer ${name}’s chat` : `Send ${name}’s reading`;
@@ -154,7 +154,7 @@ export function readingTodo(b: Booking, now: number): Todo | null {
     return {
         b, kind: 'reading', at: c.due, title,
         detail: [chat ? pkg || 'Chat' : serviceTitle(b) + (pkg ? ` · ${pkg}` : ''), amountLabel(b), `due ${whenLabel(c.due, now)}`].filter(Boolean).join(' · '),
-        pill: left <= 0 ? `Overdue ${spanLabel(-left)}` : `${spanLabel(left)} left`,
+        pill: left <= 0 ? `${spanLabel(-left)} late` : `${spanLabel(left)} left`,
         tone: left <= 0 ? 'late' : left < soonMs(b.serviceId) ? 'soon' : 'calm',
     };
 }
@@ -182,7 +182,7 @@ export function todosFrom(bookings: Booking[], now: number): Todo[] {
         const start = startOf(b);
         if (start > now && start - now <= DAY) out.push({
             b, kind: 'session', at: start,
-            title: `${serviceTitle(b)} with ${b.name || 'someone'}`,
+            title: sessionTitle(b),
             detail: [packageOf(b), b.paymentStatus === 'paid' ? '' : 'not paid yet'].filter(Boolean).join(' · ') || amountLabel(b),
             pill: `in ${spanLabel(start - now)}`,
             tone: start - now <= 2 * HOUR ? 'soon' : 'calm',

@@ -72,13 +72,37 @@ export const fmtUSD = (v: number, compact = false) =>
     compact ? `$${v}` : `$${new Intl.NumberFormat('en-US').format(Math.round(v))}`;
 export const fmtMoney = (v: number, c: Cur, compact = false) => (c === 'IDR' ? fmtIDR(v, compact) : fmtUSD(v, compact));
 
-// Date formatting — "07 Oct 2026". Takes a date-only ISO or a full timestamp (slices to the date),
-// and builds from the parts so it never drifts a day across time zones.
+// Date formatting: "7 Oct", or "7 Oct 2025" when it isn't this year. Takes a date-only ISO
+// or a full timestamp (slices to the date), and builds from the parts so it never drifts a
+// day across time zones.
 export const fmtDate = (iso?: string): string => {
     if (!iso) return '—';
     const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
     if (!y || !m || !d) return '—';
-    return `${String(d).padStart(2, '0')} ${new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short' })} ${y}`;
+    const mon = new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short' });
+    return y === new Date().getFullYear() ? `${d} ${mon}` : `${d} ${mon} ${y}`;
+};
+
+/** a day said the short way: "today", "tomorrow", "yesterday", "Fri 13 Nov" (Jakarta days) */
+export const dayWord = (iso?: string): string => {
+    if (!iso) return '';
+    const jkt = (ms: number) => new Date(ms).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+    const today = jkt(Date.now());
+    const day = iso.length > 10 ? jkt(Date.parse(iso)) : iso.slice(0, 10);
+    if (day === today) return 'today';
+    if (day === jkt(Date.now() + 86_400_000)) return 'tomorrow';
+    if (day === jkt(Date.now() - 86_400_000)) return 'yesterday';
+    const [y, m, d] = day.split('-').map(Number);
+    const wd = new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'short' });
+    return `${wd} ${fmtDate(day)}`;
+};
+
+/** a name written the way people expect: "sasa chat" → "Sasa Chat" (one typed in capitals
+    or mixed case is left as it is) */
+export const nameOf = (b: { name?: string }, fallback = '—') => {
+    const n = (b.name || '').trim().replace(/\s+/g, ' ');
+    if (!n) return fallback;
+    return n === n.toLowerCase() ? n.replace(/(^|[\s'-])(\p{L})/gu, (_m, a: string, c: string) => a + c.toUpperCase()) : n;
 };
 
 // ---- one way to describe a booking, on every page ----
@@ -95,6 +119,18 @@ const nameParts = (b: Booking) => (b.serviceName || '').split(/\s+[·—]\s+/).m
 
 /** the service on its own: "Chat", "Call / Video", "3-Card Spread" */
 export const serviceTitle = (b: Booking) => SERVICE_NAME[b.serviceId] || nameParts(b)[0] || b.serviceId || '—';
+
+/** what was bought, short: a session by its length ("Call · 30 min", "Meetup · 1 h"),
+    anything else as serviceLabel ("Chat · 1 question", "3-Card Spread") */
+export const shortLabel = (b: Booking) => {
+    if (!(b.date && b.time && b.durationMin > 0) || b.extraFor) return serviceLabel(b);
+    const h = Math.floor(b.durationMin / 60), m = b.durationMin % 60;
+    const len = [h ? `${h} h` : '', m ? `${m} min` : ''].filter(Boolean).join(' ');
+    return `${b.serviceId === 'call' ? 'Call' : serviceTitle(b)} · ${len}`;
+};
+
+/** a session in a few words: "Call with Tari", "Meetup with Rina", "Live Session with Mia" */
+export const sessionTitle = (b: Booking) => `${b.serviceId === 'call' ? 'Call' : serviceTitle(b)} with ${nameOf(b, 'someone')}`;
 
 /** a package's name in English for the dashboard (bookings keep the name they were made
     with, which for Indonesia is Indonesian): "3 Pertanyaan" → "3 questions" */
