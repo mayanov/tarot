@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Repeat, CalendarDays, ChevronRight } from 'lucide-react';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen, fmtPhone } from './lib/format';
+import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen, fmtPhone, nameOf } from './lib/format';
 import { StatusPill, PaymentPill } from './lib/status';
 import { extractPhone, normPhone, extractEmail, contactTokens, groupBookings, moneyLabel, type Money } from './lib/customers';
 import { firstNameKey } from './lib/calendarEntry';
@@ -207,9 +207,9 @@ const CustomersView: React.FC = () => {
             </div>
 
             {/* list */}
-            <div className="rounded-2xl bg-surface-1 border border-adm-line overflow-hidden">
+            <div className="rounded-2xl bg-surface-1 overflow-hidden">
                 {/* one line per person: email, first booking and their history are in their details */}
-                <div className="hidden lg:grid grid-cols-12 gap-3 px-5 py-3 text-[0.7rem] uppercase tracking-wider text-text-subtle border-b border-adm-line">
+                <div className="hidden lg:grid grid-cols-12 gap-3 px-5 py-3 text-[13px] font-semibold text-text-subtle border-b border-adm-line">
                     <div className="col-span-4">Customer</div>
                     <div className="col-span-3">Contact</div>
                     <div className="col-span-1 text-center">Bookings</div>
@@ -226,7 +226,7 @@ const CustomersView: React.FC = () => {
                             {/* narrow screens: name and what they paid, then one grey line with the rest */}
                             <div className="lg:hidden">
                                 <div className="flex items-baseline justify-between gap-3">
-                                    <span className="font-medium text-text-light truncate">{c.name}</span>
+                                    <b className="text-[15px] text-text-light truncate">{nameOf(c)}</b>
                                     <span className="text-sm text-text-light tabular-nums whitespace-nowrap">{spentLabel(c)}</span>
                                 </div>
                                 <div className="mt-0.5 flex items-baseline justify-between gap-3 text-xs text-text-subtle">
@@ -235,21 +235,21 @@ const CustomersView: React.FC = () => {
                                 </div>
                             </div>
                             <div className="hidden lg:block lg:col-span-4 min-w-0">
-                                <div className="font-medium text-text-light truncate">{c.name}</div>
+                                <b className="block text-[15px] text-text-light truncate">{nameOf(c)}</b>
                             </div>
                             {/* their WhatsApp; for someone with only an email (abroad), the email */}
-                            <div className="hidden lg:block lg:col-span-3 text-sm text-text-subtle tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : c.email || '—'}</div>
+                            <div className="hidden lg:block lg:col-span-3 text-[14px] text-text-subtle tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : c.email || '—'}</div>
                             <div className="hidden lg:block lg:col-span-1 lg:text-center text-sm tabular-nums">
                                 <span className={`inline-flex items-center gap-1 ${count > 1 ? 'text-lilac font-semibold' : 'text-text-light'}`} title={count > 1 ? 'Returning client' : undefined}>
                                     {count > 1 && <Repeat size={11} />}{count}
                                 </span>
                             </div>
-                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-sm text-text-light tabular-nums">
+                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-[15px] font-semibold text-text-light tabular-nums">
                                 {spentLabel(c)}
                                 {/* what they still owe, only when they do */}
                                 {owedLabel(c) && <div className="text-xs text-coral-deep">{owedLabel(c)} unpaid</div>}
                             </div>
-                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-xs text-text-subtle">{fmtDate(c.lastSeen)}</div>
+                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-[14px] text-text-subtle tabular-nums">{fmtDate(c.lastSeen)}</div>
                         </button>
                     );
                 })}
@@ -273,7 +273,7 @@ const CustomersView: React.FC = () => {
                 return (
                     <Dialog size="lg" onClose={() => setSelected(null)} label={`Customer ${selected.name}`}
                         eyebrow={<>Customer <span className="font-normal normal-case tracking-normal" title="Client id">· {selected.clientId}</span></>}
-                        title={<span className="inline-flex items-center gap-3"><span className="grid place-items-center w-10 h-10 shrink-0 rounded-full bg-lilac/15 text-lilac font-bold tracking-[-0.01em] text-base">{initials}</span><span>{selected.name}<MarketTag c={selected} /></span></span>}
+                        title={<span className="inline-flex items-center gap-3"><span className="grid place-items-center w-10 h-10 shrink-0 rounded-full bg-lilac/15 text-lilac font-bold tracking-[-0.01em] text-base">{initials}</span><span>{nameOf(selected)}<MarketTag c={selected} /></span></span>}
                         subtitle={`Client since ${fmtDate(selected.firstSeen)}`}>
                         {/* how to reach them */}
                         <Section title="Contact" aside={selected.phone && (

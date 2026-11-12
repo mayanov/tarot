@@ -10,7 +10,7 @@ import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooki
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton, { waNumberOf, paymentRequestText, type WaField } from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
-import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, fmtMoney, dayWord, nameOf, sessionTitle, shortLabel, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone, soonMs } from './lib/format';
+import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, fmtMoney, dayWord, nameOf, sessionTitle, shortLabel, detailOf, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone, soonMs } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
 import { sameCustomer, normPhone as waNumber, moneyLabel, type Money } from './lib/customers';
 import { openCustomerOf } from './lib/nav';
@@ -1732,7 +1732,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 // Cancelled with the order date. One line per order: contact, payment method and
                 // the question are in the details a click away.
                 const showDue = orderView === 'active';
-                const COLS = 'xl:grid xl:grid-cols-[9.5rem_minmax(0,1.1fr)_minmax(0,1.4fr)_7rem_6rem_7.5rem_7.5rem] xl:items-center xl:gap-4';
+                // the same columns as Payments: one fact per column
+                const COLS = 'lg:grid-cols-[4.5rem_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.9fr)_7.5rem_6rem_7.5rem_9rem]';
                 return (
                     <Card className="overflow-hidden">
                         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
@@ -1767,8 +1768,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                         )}
 
                         {!showDue && list.length > 0 && (
-                            <div className={`hidden ${COLS} px-4 py-2 text-[0.65rem] uppercase tracking-[0.14em] text-text-subtle border-b border-adm-line`}>
-                                <div>{showDue ? 'Due' : 'Ordered'}</div><div>Customer</div><div>Service</div><div className="text-right">Amount</div><div>Payment</div><div>Status</div><div>Confirmation</div>
+                            <div className={`hidden lg:grid ${COLS} gap-x-4 px-5 py-3 text-[13px] font-semibold text-text-subtle border-b border-adm-line`}>
+                                <span>Ordered</span><span>Customer</span><span>Service</span><span>Details</span><span className="text-right">Amount</span><span>Payment</span><span>Status</span><span className="text-right">Confirmation</span>
                             </div>
                         )}
 
@@ -1781,33 +1782,37 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
                         <div className="divide-y divide-adm-line">
                             {!showDue && list.map((b) => {
+                                const service = SERVICE_NAME[b.serviceId] || serviceTitle(b);
+                                // a cancelled session says when it was; otherwise the package or length
+                                const detail = orderView === 'cancelled' && b.date && b.time ? `${fmtDate(b.date)}, ${b.time}` : detailOf(b);
+                                const why = orderView === 'cancelled' && b.cancelReason === 'unpaid' ? 'not paid within 1 hour' : '';
+                                const confirm = orderView !== 'cancelled' && (b.market === 'ID'
+                                    ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
+                                    : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />);
                                 return (
                                     <div key={b.id} onClick={() => setSelectedId(b.id)}
-                                        className={`${COLS} px-4 py-3 cursor-pointer hover:bg-adm-hover transition-colors grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5`}>
-                                        {showDue ? <div className="col-span-2 xl:col-span-1 xl:[&>*]:mt-0"><ClockNote b={b} now={now} /></div> : <div className="tabular-nums col-span-2 xl:col-span-1">
-                                            <div className="text-xs text-text-subtle">{fmtDate(b.createdAt)}</div>
-                                            {orderView === 'cancelled' && b.date && b.time && <div className="text-xs text-text-light">Session {fmtDate(b.date)} · {b.time}</div>}
-                                            {orderView === 'cancelled' && b.cancelReason === 'unpaid' && <div className="text-[0.7rem] text-mauve">Not paid within 1 hour</div>}
-                                        </div>}
-                                        <div className="min-w-0">
-                                            <div className="text-sm font-medium text-text-light truncate">
-                                                {b.name || '—'}
-                                                <span className="ml-1.5 text-[0.65rem] font-normal text-text-subtle">{b.market === 'ID' ? 'ID' : 'Global'}</span>
-                                            </div>
-                                        </div>
-                                        <div className="min-w-0 col-span-2 xl:col-span-1 order-1 xl:order-none">
-                                            <div className="text-sm text-text-light truncate">{serviceLabel(b)}</div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-sm font-semibold text-text-light tabular-nums whitespace-nowrap">{amountLabel(b)}</div>
-                                        </div>
-                                        <div className="flex flex-wrap items-center gap-1 col-span-2 order-2 xl:order-none xl:contents">
-                                            <div><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} /></div>
-                                            <div><StatusControl b={b} /></div>
-                                            <div>{b.market === 'ID'
-                                                ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
-                                                : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />}</div>
-                                        </div>
+                                        className={`grid grid-cols-[minmax(0,1fr)_auto] ${COLS} gap-x-4 gap-y-1 items-center px-4 lg:px-5 py-3.5 cursor-pointer hover:bg-adm-hover transition-colors`}>
+                                        <span className="hidden lg:block text-[14px] text-text-subtle tabular-nums">{fmtDate(b.createdAt)}</span>
+                                        <b className="min-w-0 truncate text-[15px] text-text-light">{nameOf(b)}</b>
+                                        <b className="lg:hidden text-[15px] text-right tabular-nums text-text-light whitespace-nowrap">{amountLabel(b)}</b>
+                                        <span className="hidden lg:flex min-w-0 items-center gap-2 text-[14px] text-text-light">
+                                            <span aria-hidden className="w-2.5 h-2.5 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
+                                            <span className="truncate">{service}</span>
+                                        </span>
+                                        <span className="hidden lg:block min-w-0 text-[14px] text-text-subtle">
+                                            <span className="block truncate">{detail || '—'}</span>
+                                            {why && <span className="block text-[12px] due-soon-text">{why}</span>}
+                                        </span>
+                                        <span className="lg:hidden col-span-2 flex items-center gap-2 text-[13px] text-text-subtle min-w-0">
+                                            <span aria-hidden className="w-2 h-2 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
+                                            <span className="truncate">{[service, detail, fmtDate(b.createdAt), why].filter(Boolean).join(' · ')}</span>
+                                        </span>
+                                        <b className="hidden lg:block text-[15px] text-right tabular-nums text-text-light whitespace-nowrap">{amountLabel(b)}</b>
+                                        <span className="col-span-2 lg:contents flex flex-wrap items-center gap-2 mt-1.5 lg:mt-0" onClick={(ev) => ev.stopPropagation()}>
+                                            <span><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} /></span>
+                                            <span><StatusControl b={b} /></span>
+                                            <span className="lg:flex lg:justify-end">{confirm}</span>
+                                        </span>
                                     </div>
                                 );
                             })}

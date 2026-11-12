@@ -124,9 +124,17 @@ export const serviceTitle = (b: Booking) => SERVICE_NAME[b.serviceId] || namePar
     anything else as serviceLabel ("Chat · 1 question", "3-Card Spread") */
 export const shortLabel = (b: Booking) => {
     if (!(b.date && b.time && b.durationMin > 0) || b.extraFor) return serviceLabel(b);
-    const h = Math.floor(b.durationMin / 60), m = b.durationMin % 60;
-    const len = [h ? `${h} h` : '', m ? `${m} min` : ''].filter(Boolean).join(' ');
-    return `${b.serviceId === 'call' ? 'Call' : serviceTitle(b)} · ${len}`;
+    return `${b.serviceId === 'call' ? 'Call' : serviceTitle(b)} · ${detailOf(b)}`;
+};
+
+/** the part after the service, for a table's own column: a session's length ("30 min",
+    "1 h"), an order's package ("1 question"), or '' */
+export const detailOf = (b: Booking) => {
+    if (b.date && b.time && b.durationMin > 0 && !b.extraFor) {
+        const h = Math.floor(b.durationMin / 60), m = b.durationMin % 60;
+        return [h ? `${h} h` : '', m ? `${m} min` : ''].filter(Boolean).join(' ');
+    }
+    return packageOf(b);
 };
 
 /** a session in a few words: "Call with Tari", "Meetup with Rina", "Live Session with Mia" */

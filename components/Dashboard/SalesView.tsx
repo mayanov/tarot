@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, CalendarDays, SlidersHorizontal, RefreshCcw } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, shortLabel, nameOf } from './lib/format';
+import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, nameOf, detailOf, SERVICE_NAME } from './lib/format';
 import BookingsView, { AskToPay } from './BookingsView';
 import WaConfirmButton from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
@@ -176,26 +176,38 @@ const SalesView: React.FC = () => {
             </div>
         );
     };
+    // one column per fact on a computer; on a phone, name and amount, then the rest under it
+    const COLS = 'sm:grid-cols-[4.5rem_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.8fr)_7.5rem_6rem_14.5rem]';
     const row = (b: Booking) => {
         const a = amountOf(b);
         const paid = b.paymentStatus === 'paid';
+        const service = SERVICE_NAME[b.serviceId] || serviceTitle(b);
+        const detail = detailOf(b);
         return (
             <div key={b.id} onClick={() => setOpenId(b.id)}
-                className={`grid grid-cols-[0.75rem_minmax(0,1fr)_auto] sm:grid-cols-[4.5rem_0.75rem_minmax(0,1fr)_8.5rem_15rem] gap-x-3 sm:gap-x-4 gap-y-2 items-center px-4 sm:px-5 py-3.5 border-b border-adm-line last:border-0 cursor-pointer transition-colors ${paid ? 'hover:bg-adm-hover' : 'bg-amber-400/[0.07] hover:bg-amber-400/[0.12]'}`}>
+                className={`grid grid-cols-[minmax(0,1fr)_auto] ${COLS} gap-x-4 gap-y-1 items-center px-4 sm:px-5 py-3.5 border-b border-adm-line last:border-0 cursor-pointer transition-colors ${paid ? 'hover:bg-adm-hover' : 'bg-amber-400/[0.07] hover:bg-amber-400/[0.12]'}`}>
                 <span className="hidden sm:block text-[14px] text-text-subtle tabular-nums">{dayOf(b.createdAt)}</span>
-                <span aria-hidden className="w-2.5 h-2.5 rounded-full" style={{ background: colorFor(b.serviceId) }} />
-                <span className="min-w-0">
-                    <b className="text-[15.5px] text-text-light">{nameOf(b)}</b>{' '}
-                    <span className="text-[14px] text-text-subtle">{shortLabel(b)}<span className="sm:hidden"> · {dayOf(b.createdAt)}</span></span>
+                <b className="min-w-0 truncate text-[15px] text-text-light">{nameOf(b)}</b>
+                {/* (on a phone the amount sits beside the name) */}
+                <b className="sm:hidden text-[15px] text-right tabular-nums text-text-light whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</b>
+                <span className="hidden sm:flex min-w-0 items-center gap-2 text-[14px] text-text-light">
+                    <span aria-hidden className="w-2.5 h-2.5 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
+                    <span className="truncate">{service}</span>
                 </span>
-                <b className="text-[15.5px] text-right tabular-nums text-text-light whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</b>
-                <span className="col-start-2 col-span-2 sm:col-start-auto sm:col-span-1 flex flex-wrap items-center sm:justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                    {paid ? <>
-                        <PaymentPill paid onToggle={() => togglePaid(b)} busy={savingId === b.id} />
-                        {b.market === 'ID'
-                            ? <WaConfirmButton compact b={b} onSent={markWa(b.id)} />
-                            : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />}
-                    </> : <>
+                <span className="hidden sm:block min-w-0 truncate text-[14px] text-text-subtle">{detail || '—'}</span>
+                <span className="sm:hidden col-span-2 flex items-center gap-2 text-[13px] text-text-subtle min-w-0">
+                    <span aria-hidden className="w-2 h-2 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
+                    <span className="truncate">{[service, detail, dayOf(b.createdAt)].filter(Boolean).join(' · ')}</span>
+                </span>
+                <b className="hidden sm:block text-[15px] text-right tabular-nums text-text-light whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</b>
+                <span className="hidden sm:block" onClick={(e) => e.stopPropagation()}>
+                    <PaymentPill paid={paid} onToggle={() => togglePaid(b)} busy={savingId === b.id} />
+                </span>
+                <span className="col-span-2 sm:col-span-1 mt-1.5 sm:mt-0 flex flex-wrap sm:flex-nowrap items-center sm:justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                    {paid ? (b.market === 'ID'
+                        ? <WaConfirmButton compact b={b} onSent={markWa(b.id)} />
+                        : <EmailConfirmButton hideIdle b={b} onSent={(at) => setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paidEmailSentAt: at } : x)))} />
+                    ) : <>
                         <AskToPay b={b} onSent={markWa(b.id)} onNote={() => {}} />
                         <button type="button" onClick={() => togglePaid(b)} disabled={savingId === b.id}
                             className="rounded-[10px] border border-adm-line-2 bg-surface-1 px-3 py-1.5 text-[13px] font-semibold text-text-light hover:bg-adm-hover disabled:opacity-50 whitespace-nowrap">Mark paid</button>
@@ -294,8 +306,8 @@ const SalesView: React.FC = () => {
 
             {/* one list: not paid first, then month by month */}
             <div className="rounded-2xl bg-surface-1 overflow-hidden">
-                <div className="hidden sm:grid grid-cols-[4.5rem_0.75rem_minmax(0,1fr)_8.5rem_15rem] gap-x-4 px-5 py-3 text-[13px] font-semibold text-text-subtle border-b border-adm-line">
-                    <span>Date</span><span /><span>Who and what</span><span className="text-right">Amount</span><span className="text-right">Payment</span>
+                <div className={`hidden sm:grid ${COLS} gap-x-4 px-5 py-3 text-[13px] font-semibold text-text-subtle border-b border-adm-line`}>
+                    <span>Date</span><span>Customer</span><span>Service</span><span>Details</span><span className="text-right">Amount</span><span>Status</span><span className="text-right">Action</span>
                 </div>
                 {loading && filtered.length === 0 && <InlineLoader />}
                 {!loading && filtered.length === 0 && <p className="text-center text-sm text-text-subtle py-12">No orders found{q.trim() ? ` for “${q.trim()}”` : ''}.</p>}
