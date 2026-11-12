@@ -77,7 +77,9 @@ export const fmtMoney = (v: number, c: Cur, compact = false) => (c === 'IDR' ? f
 // day across time zones.
 export const fmtDate = (iso?: string): string => {
     if (!iso) return '—';
-    const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+    // a full timestamp is read as the day in Jakarta (an evening order in UTC is the next day there)
+    const day = iso.length > 10 && Number.isFinite(Date.parse(iso)) ? new Date(Date.parse(iso)).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) : iso.slice(0, 10);
+    const [y, m, d] = day.split('-').map(Number);
     if (!y || !m || !d) return '—';
     const mon = new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short' });
     return y === new Date().getFullYear() ? `${d} ${mon}` : `${d} ${mon} ${y}`;

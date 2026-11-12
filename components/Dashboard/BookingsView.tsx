@@ -1574,7 +1574,6 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
             {/* selected booking (session or order): the details, in one popup */}
             {selectedBooking && (() => {
                 const b = selectedBooking;
-                const phone = phoneOf(b.contact);
                 const email = emailOf(b.contact);
                 const method = paymentMethodOf(b);
                 const timed = !!(b.date && b.time);
@@ -1584,12 +1583,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 // Customers lists them: something paid, confirmed or done)
                 const mine = sameCustomer(b, bookings.filter((x) => !x.extraFor));
                 const real = mine.some((x) => x.status !== 'cancelled' && (x.paymentStatus === 'paid' || x.status === 'confirmed' || x.status === 'done'));
-                const live = mine.filter((x) => x.status !== 'cancelled').length;
-                const paidSum: Money = { IDR: 0, USD: 0 };
-                mine.forEach((x) => { const a = amountForBooking(x); if (a && x.paymentStatus === 'paid') paidSum[a.currency] += a.amount; });
                 const toCustomer = () => { if (onCustomer) onCustomer(); else { openCustomerOf(b.id); setSelectedId(null); } };
                 const len = b.durationMin ? durLabel(b.durationMin) : '';
-                                const contactLink = 'text-lilac hover:underline';
                 // the big line in the header: when it is (a session), when it's due (an order)
                 const startMs = timed ? Date.parse(`${b.date}T${b.time}:00+07:00`) : 0;
                 const dayDiff = timed ? Math.round((Date.parse(`${b.date}T00:00:00+07:00`) - Date.parse(`${toISO(new Date())}T00:00:00+07:00`)) / 86_400_000) : 0;
@@ -1614,7 +1609,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                     { label: 'Booked', sub: dayWord(b.createdAt), st: 'done' },
                     { label: paid ? 'Paid' : 'Not paid', sub: amountLabel(b), st: paid ? 'done' : 'now' },
                     timed ? { label: over ? 'Session done' : 'Session', sub: over ? (b.status === 'done' ? 'marked done' : 'ended') : rel.toLowerCase(), st: over ? 'done' : 'next' }
-                        : { label: b.status === 'done' ? 'Sent' : 'To send', sub: b.status === 'done' ? 'done' : due ? due.text.split(' · ')[0].toLowerCase() : '', st: b.status === 'done' ? 'done' : paid ? 'now' : 'next' },
+                        : { label: b.status === 'done' ? 'Sent' : 'To send', sub: b.status === 'done' ? 'done' : replyLink(b)?.kind === 'email' ? 'by email' : 'on WhatsApp', st: b.status === 'done' ? 'done' : paid ? 'now' : 'next' },
                 ];
                 const bar: Record<St, string> = { done: 'bg-sage', now: paid ? 'bg-lilac' : 'bg-amber-500', next: 'bg-adm-line-2' };
                 const reply = !timed && !b.extraFor ? replyLink(b) : null;
@@ -1639,7 +1634,12 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 return (
                     <Dialog onClose={() => setSelectedId(null)} label={`Booking for ${b.name || 'someone'}`}
                         eyebrow={b.extraFor ? 'Extra time' : timed ? (b.serviceId === 'call' ? 'Call' : serviceTitle(b)) : serviceLabel(b)}
-                        title={nameOf(b)}
+                        title={real ? (
+                            <button type="button" onClick={toCustomer} title={`Open ${nameOf(b)} on Customers`}
+                                className="group inline-flex items-center gap-1 text-left hover:text-lilac transition-colors">
+                                {nameOf(b)}<ChevronRight size={22} className="text-text-subtle group-hover:text-lilac transition-colors" />
+                            </button>
+                        ) : nameOf(b)}
                         accent={colorFor(b.serviceId)}
                         hero={hero}
                         actions={!editing && <DialogIconButton label="Edit name, contact or price" onClick={() => setEditing(true)}><Pencil size={16} /></DialogIconButton>}>
@@ -1665,16 +1665,22 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                 </Section>
                             )}
 
-                            {/* the facts, each once: the steps above already say booked, paid and when */}
-                            <Section title="Details">
+                            {/* what they asked: for a reading, the work itself */}
+                            {b.question && (
+                                <Section title="Their question">
+                                    <blockquote className="border-l-2 border-lilac/60 pl-3.5 font-serif italic text-[0.95rem] leading-relaxed text-text-light">“{b.question}”</blockquote>
+                                </Section>
+                            )}
+
+                            {/* the money, and (once paid) the message that confirms it */}
+                            <Section title="Payment">
                                 <KV label="Price">
                                     <span className="tabular-nums font-semibold">{amountLabel(b) || '—'}</span>
                                     {method && <span className="text-text-subtle">· {method}</span>}
                                     {(paid || !next) && <PaymentPill paid={paid} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />}
                                 </KV>
-                                <KV label="Status"><StatusControl b={b} /></KV>
                                 {/* Indonesia is confirmed on WhatsApp, Global by email */}
-                                {b.status !== 'cancelled' && !b.extraFor && (b.market === 'ID' ? !!waNumberOf(b.contact) : !!email) && (
+                                {paid && !cancelled && !b.extraFor && (b.market === 'ID' ? !!waNumberOf(b.contact) : !!email) && (
                                     <KV label="Confirmation">
                                         {b.market === 'ID'
                                             ? <WaConfirmButton b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
@@ -1684,42 +1690,29 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                 {b.inviteOnPay && !cancelled && !paid && (
                                     <p className="mt-1 text-xs text-text-subtle">The calendar invite{b.serviceId === 'meetup' ? '' : ' and Meet link'} go out when you mark it paid.</p>
                                 )}
-                                {b.status === 'cancelled' && timed && (
-                                    <RestoreAt key={b.id} b={b} bookings={bookings}
-                                        onDone={(msg) => { setSelectedId(null); flash(msg, 'ok'); load(); }} />
-                                )}
                             </Section>
 
-                            {timed && b.status !== 'cancelled' && EXTRA[b.serviceId] && (
+                            {timed && !cancelled && EXTRA[b.serviceId] && (
                                 <ExtraTime key={b.id} b={b} extras={bookings.filter((x) => x.extraFor && x.extraFor === (b.ref || b.id))}
                                     onDone={(msg) => { flash(msg, 'ok'); load(); }} onToggle={togglePaid} payBusy={payBusy} />
                             )}
 
-                            {/* who, and how to reach them */}
-                            <Section title="Customer">
-                                {phone && <KV label="WhatsApp"><a href={`https://wa.me/${waNumber(phone)}`} target="_blank" rel="noopener noreferrer" className={`${contactLink} tabular-nums`}>{fmtPhone(phone)}</a></KV>}
-                                {email && <KV label="Email"><a href={`mailto:${email}`} className={`${contactLink} break-all`}>{email}</a></KV>}
-                                {b.dob && <KV label="Born">{fmtDate(b.dob)}</KV>}
-                                {real && (
-                                    <KV label="Bookings">
-                                        <button type="button" onClick={toCustomer} className={`${contactLink} inline-flex items-center gap-0.5 tabular-nums`}>
-                                            {live} in all{moneyLabel(paidSum) ? ` · ${moneyLabel(paidSum)} paid` : ''}<ChevronRight size={14} />
-                                        </button>
-                                    </KV>
-                                )}
-                                {!phone && !email && !real && <p className="text-sm text-text-subtle">No contact saved. Add it with Edit.</p>}
-                            </Section>
-
-                            {b.question && (
-                                <Section title="Their question">
-                                    <blockquote className="border-l-2 border-lilac/60 pl-3.5 font-serif italic text-[0.95rem] leading-relaxed text-text-light">“{b.question}”</blockquote>
+                            {cancelled && timed && (
+                                <Section title="Bring it back">
+                                    <RestoreAt key={b.id} b={b} bookings={bookings}
+                                        onDone={(msg) => { setSelectedId(null); flash(msg, 'ok'); load(); }} />
                                 </Section>
                             )}
 
                             <PrivateNote key={b.id} b={b} onSaved={(u) => { replaceBooking(u); flash('Note saved.', 'ok'); }} />
-                            <p className="px-5 sm:px-6 py-3 text-[12px] text-text-subtle tabular-nums">
-                                {[b.ref && `Ref ${b.ref}`, `booked ${fmtDate(b.createdAt)}`, b.source === 'manual' ? 'added by hand' : 'on the website'].filter(Boolean).join(' · ')}
-                            </p>
+
+                            {/* the booking's own record, and its status (to cancel or reopen it) */}
+                            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 sm:px-6 py-3">
+                                <p className="text-[12px] text-text-subtle tabular-nums">
+                                    {[b.ref && `Ref ${b.ref}`, `booked ${fmtDate(b.createdAt)}`, b.source === 'manual' ? 'added by hand' : 'on the website'].filter(Boolean).join(' · ')}
+                                </p>
+                                <StatusControl b={b} />
+                            </div>
                         </>)}
                     </Dialog>
                 );
