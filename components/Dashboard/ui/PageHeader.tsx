@@ -23,13 +23,12 @@ export const TitleWash: React.FC<{ tone: Tone }> = ({ tone }) => (
     </span>
 );
 
-const PageHeader: React.FC<Props> = ({ title, subtitle, note, tone, onRefresh, refreshing, children }) => {
+// (tone is kept for callers; the plum menu already says where a page belongs)
+const PageHeader: React.FC<Props> = ({ title, subtitle, note, onRefresh, refreshing, children }) => {
     const [showNote, setShowNote] = useState(false);
     return (
-        <div className="relative isolate pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            {tone && <TitleWash tone={tone} />}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div className="min-w-0">
-                <h1 className="text-2xl font-serif font-bold text-text-light mb-1.5">{title}</h1>
                 {subtitle && (
                     <p className="text-text-subtle text-sm flex items-center gap-1.5 flex-wrap">
                         <span>{subtitle}</span>
@@ -41,7 +40,8 @@ const PageHeader: React.FC<Props> = ({ title, subtitle, note, tone, onRefresh, r
                         )}
                     </p>
                 )}
-                {note && showNote && <p className="mt-1.5 max-w-2xl text-[12.5px] leading-relaxed text-text-subtle">{note}</p>}
+                <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">{title}</h1>
+                {note && showNote && <p className="mt-1 max-w-2xl text-[12.5px] leading-relaxed text-text-subtle">{note}</p>}
             </div>
             {(children || onRefresh) && (
                 <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 whitespace-nowrap">

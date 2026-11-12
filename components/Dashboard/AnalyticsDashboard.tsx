@@ -22,7 +22,6 @@ import { getAllBookings, BOOKINGS_CHANGED, type Booking } from '../../services/b
 import SalesView from './SalesView';
 import { LoaderCard } from './ui/InlineLoader';
 import Segmented from './ui/Segmented';
-import { TitleWash } from './ui/PageHeader';
 import { TONE, type Tone } from './lib/sections';
 
 // Same base as services/booking.ts — empty in prod (relative /api) so calls hit the
@@ -558,47 +557,44 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                 ) : activeView === 'users' ? (
                     /* USER MANAGEMENT VIEW (Full Page) */
                     <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
-                        <div className="relative isolate pb-4 border-b border-adm-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <TitleWash tone="admin" />
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                             <div>
-                                <h1 className="text-2xl font-serif font-bold text-text-light mb-1.5">Manage users</h1>
                                 <p className="text-text-subtle text-sm">Who can sign in to this dashboard</p>
+                                <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">Manage users</h1>
                             </div>
                             <button
                                 onClick={() => setShowAddUserModal(true)}
-                                className="px-4 py-2 bg-lilac text-white font-bold rounded-xl hover:bg-lilac-dark hover:scale-105 transition-all text-sm flex items-center gap-2 shadow-lg shadow-lilac/20"
+                                className="inline-flex items-center gap-2 rounded-xl bg-lilac text-white px-5 py-3 text-[15px] font-semibold hover:bg-lilac/90 transition-colors"
                             >
-                                <Plus size={18} />
-                                <span>Add Access</span>
+                                <Plus size={17} />
+                                <span>Add an admin</span>
                             </button>
                         </div>
 
                         <div className="grid grid-cols-1 gap-8">
                             {/* LIST SECTION */}
                             <div className="space-y-4">
-                                <div className="bg-surface-1 border border-adm-line rounded-2xl overflow-hidden shadow-lg">
-                                    <div className="p-4 border-b border-adm-line flex justify-between items-center bg-adm-hover">
-                                        <h3 className="text-sm font-bold text-text-light uppercase tracking-wider flex items-center gap-2">
-                                            <Users size={16} className="text-lilac" /> Current Admins
-                                        </h3>
-                                        <span className="text-xs text-text-subtle font-mono">{userList.length} users</span>
+                                <div className="bg-surface-1 rounded-2xl overflow-hidden">
+                                    <div className="px-5 py-3 border-b border-adm-line flex justify-between items-center">
+                                        <h3 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-text-subtle">Admins</h3>
+                                        <span className="text-[13px] text-text-subtle tabular-nums">{userList.length} {userList.length === 1 ? 'person' : 'people'}</span>
                                     </div>
 
-                                    <div className="divide-y divide-black/5">
+                                    <div className="divide-y divide-adm-line">
                                         {isLoadingUsers ? (
                                             <div className="p-8 flex justify-center">
                                                 <RefreshCcw className="animate-spin text-lilac" size={24} />
                                             </div>
                                         ) : userList.length > 0 ? (
                                             userList.map((u) => (
-                                                <div key={u} className="flex justify-between items-center p-4 hover:bg-adm-hover transition-colors group">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-lilac/20 to-teal-accent/20 flex items-center justify-center text-xs font-bold text-text-light border border-adm-line-2">
+                                                <div key={u} className="flex justify-between items-center px-5 py-3.5 hover:bg-adm-hover transition-colors group">
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="w-9 h-9 shrink-0 rounded-full bg-lilac/12 flex items-center justify-center text-sm font-bold text-lilac">
                                                             {u.charAt(0).toUpperCase()}
                                                         </div>
-                                                        <div>
-                                                            <p className="text-sm font-medium text-text-light">{u}</p>
-                                                            {u === currentUserEmail && <span className="text-[10px] text-teal-accent uppercase font-bold tracking-wider">It's You</span>}
+                                                        <div className="min-w-0">
+                                                            <p className="text-[15px] font-semibold text-text-light truncate">{u}</p>
+                                                            {u === currentUserEmail && <span className="text-[12.5px] text-text-subtle">you</span>}
                                                         </div>
                                                     </div>
 
@@ -623,7 +619,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                                 </div>
                                             ))
                                         ) : (
-                                            <p className="p-8 text-text-subtle text-sm italic text-center">No users found.</p>
+                                            <p className="p-8 text-text-subtle text-sm text-center">No admins yet.</p>
                                         )}
                                     </div>
                                 </div>
@@ -701,11 +697,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                         )}
 
                         {/* Header Area */}
-                        <div className="relative isolate flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 pb-4 border-b border-adm-line">
-                            <TitleWash tone="site" />
+                        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6">
                             <div>
                                 <div className="flex items-center gap-3">
-                                    <h1 className="text-2xl font-serif font-bold text-text-light">
+                                    <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">
                                         Site visits
                                     </h1>
                                     {isConnected && (
@@ -727,16 +722,16 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                             </div>
 
                             {/* Enhanced Controls Toolbar */}
-                            <div className="w-full xl:w-auto flex flex-wrap items-center xl:justify-end gap-2 sm:gap-3 bg-surface-1 p-1.5 rounded-xl border border-adm-line-2 shadow-lg">
+                            <div className="w-full xl:w-auto flex flex-wrap items-center xl:justify-end gap-2 sm:gap-3">
                                 {/* Quick Filters */}
-                                <div className="flex bg-bg-dark/50 rounded-lg p-1">
+                                <div className="flex flex-wrap gap-1.5">
                                     {(['7D', '30D', 'THIS_MONTH'] as DateRangePreset[]).map((preset) => (
                                         <button
                                             key={preset}
                                             onClick={() => applyPreset(preset)}
-                                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${activePreset === preset
-                                                ? 'bg-lilac text-white shadow-md'
-                                                : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'
+                                            className={`px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-colors whitespace-nowrap ${activePreset === preset
+                                                ? 'bg-text-light text-bg-deep'
+                                                : 'bg-adm-hover-2 text-text-light hover:bg-adm-hover-3'
                                                 }`}
                                         >
                                             {preset === '7D' ? 'Last 7 Days' : preset === '30D' ? 'Last 30 Days' : 'This Month'}
@@ -836,7 +831,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                         {/* ERROR STATE */}
                         {apiError && !data ? (
-                            <div className="flex flex-col items-center justify-center p-12 border border-adm-line-2 rounded-xl bg-surface-1">
+                            <div className="flex flex-col items-center justify-center p-12 rounded-2xl bg-surface-1">
                                 <Lock className="w-12 h-12 text-red-400 mb-4" />
                                 <h3 className="text-xl font-bold mb-2">Access Denied / Error</h3>
                                 <p className="text-text-subtle text-center max-w-md">{apiError}</p>
@@ -890,9 +885,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                                     {aTab === 'overview' && (<>
                                     {/* 1. Visual Traffic Trend */}
-                                    <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl relative min-h-[400px]">
+                                    <div className="bg-surface-1 p-5 rounded-2xl relative min-h-[400px]">
                                         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-                                            <h3 className="text-xl font-serif flex items-center gap-2">
+                                            <h3 className="text-[17px] font-semibold text-text-light flex items-center gap-2">
                                                 <Calendar size={20} className="text-lilac" />
                                                 Visual Traffic Trend
                                             </h3>
@@ -974,9 +969,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                                     {aTab === 'bookings' && (<>
                                     {/* 2. Service Engagement Section */}
-                                    <div className="bg-surface-1 rounded-2xl border border-adm-line shadow-xl overflow-hidden relative min-h-[300px]">
+                                    <div className="bg-surface-1 rounded-2xl overflow-hidden relative min-h-[300px]">
                                         <div className="p-5 border-b border-adm-line flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                            <h3 className="text-xl font-serif flex items-center gap-2">
+                                            <h3 className="text-[17px] font-semibold text-text-light flex items-center gap-2">
                                                 <BarChart2 size={20} className="text-gold-accent" />
                                                 Booking Funnel
                                             </h3>
@@ -1002,9 +997,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                         const steps = (f?.steps || []).filter((s) => !(serviceTab === 'Global' && s.step === 'schedule'));
                                         const opened = steps[0]?.count || 0;
                                         return (
-                                            <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative">
+                                            <div className="bg-surface-1 p-5 rounded-2xl flex flex-col relative">
                                                 <div className="flex items-start justify-between gap-4 mb-6">
-                                                    <h3 className="text-xl font-serif flex items-center gap-2">
+                                                    <h3 className="text-[17px] font-semibold text-text-light flex items-center gap-2">
                                                         <BarChart2 size={20} className="text-gold-accent" />
                                                         Booking form steps
                                                     </h3>
@@ -1062,9 +1057,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                     })()}
 
                                     {/* WhatsApp clicks: in all (and how many people), then per place on the site */}
-                                    <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative">
+                                    <div className="bg-surface-1 p-5 rounded-2xl flex flex-col relative">
                                         <div className="flex items-start justify-between gap-4 mb-6">
-                                            <h3 className="text-xl font-serif flex items-center gap-2">
+                                            <h3 className="text-[17px] font-semibold text-text-light flex items-center gap-2">
                                                 <span className="text-teal-accent inline-flex"><FaWhatsapp size={20} /></span>
                                                 WhatsApp clicks
                                             </h3>
@@ -1121,9 +1116,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                                             </div>
                                         );
                                         const Card = ({ icon, title, sub, children }: { icon: React.ReactNode; title: string; sub?: string; children: React.ReactNode }) => (
-                                            <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative">
+                                            <div className="bg-surface-1 p-5 rounded-2xl flex flex-col relative">
                                                 <div className="flex items-start justify-between gap-4 mb-6">
-                                                    <h3 className="text-xl font-serif flex items-center gap-2">{icon}{title}</h3>
+                                                    <h3 className="text-[17px] font-semibold text-text-light flex items-center gap-2">{icon}{title}</h3>
                                                     {sub && <span className="text-xs text-text-subtle mt-1.5 whitespace-nowrap">{sub}</span>}
                                                 </div>
                                                 {isLoading ? (
@@ -1231,8 +1226,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                                     {/* 3. Geography Breakdown: with the visits, on Overview */}
                                     {aTab === 'overview' && (
-                                    <div className="bg-surface-1 p-5 rounded-2xl border border-adm-line shadow-xl flex flex-col relative min-h-[400px]">
-                                        <h3 className="text-xl font-serif mb-6 flex items-center gap-2">
+                                    <div className="bg-surface-1 p-5 rounded-2xl flex flex-col relative min-h-[400px]">
+                                        <h3 className="text-[17px] font-semibold text-text-light mb-6 flex items-center gap-2">
                                             <Globe size={20} className="text-teal-accent" />
                                             Geography
                                         </h3>
@@ -1318,7 +1313,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 };
 
 const SummaryCard = ({ icon, label, value, trend, isNegative, loading }: any) => (
-    <div className="bg-surface-1 p-4 rounded-xl border border-adm-line flex flex-col gap-2 hover:border-lilac/30 transition-all group min-h-[140px] relative overflow-hidden">
+    <div className="bg-surface-1 p-4 rounded-2xl flex flex-col gap-2 group min-h-[140px] relative overflow-hidden">
         {loading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-surface-1 z-10">
                 <div className="flex flex-col gap-3 w-full px-5">
@@ -1340,8 +1335,8 @@ const SummaryCard = ({ icon, label, value, trend, isNegative, loading }: any) =>
                     )}
                 </div>
                 <div>
-                    <h4 className="text-text-subtle text-xs uppercase tracking-wider font-bold mb-1">{label}</h4>
-                    <p className="text-2xl font-bold font-serif text-text-light">{value}</p>
+                    <h4 className="text-text-subtle text-sm mb-0.5">{label}</h4>
+                    <p className="text-[28px] font-bold tracking-[-0.02em] tabular-nums text-text-light">{value}</p>
                 </div>
             </>
         )}

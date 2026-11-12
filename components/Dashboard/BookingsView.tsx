@@ -579,15 +579,15 @@ const dayLabel = (iso: string, todayISO: string) => {
 // The Schedule's colours (index.css): the colour is the service, the style is the status
 // (solid confirmed, striped pending, faded done, dashed: on her calendar, not booked yet).
 // a Live Session is a call too, so it shares the call's colour
-type SvcKey = 'call' | 'meetup' | 'other';
-const svcKey = (serviceId?: string): SvcKey => (serviceId === 'call' || serviceId === 'live' ? 'call' : serviceId === 'meetup' ? 'meetup' : 'other');
+type SvcKey = 'call' | 'meetup' | 'live' | 'other';
+const svcKey = (serviceId?: string): SvcKey => (serviceId === 'call' || serviceId === 'live' || serviceId === 'meetup' ? serviceId : 'other');
 const blockClass = (b: Booking) => `svc-${svcKey(b.serviceId)} blk blk-${b.status === 'pending' ? 'pending' : b.status === 'done' ? 'done' : 'confirmed'}`;
 const STATUS_WORD: Partial<Record<Booking['status'], string>> = { pending: 'Pending', done: 'Done ✓' };
 
 // What the colours and styles mean, under the grid.
 const ScheduleKey: React.FC = () => (
     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[0.7rem] text-text-subtle">
-        {([['call', 'Call & Live'], ['meetup', 'Meetup'], ['other', 'Readings & other']] as const).map(([k, label]) => (
+        {([['call', 'Call'], ['meetup', 'Meetup'], ['live', 'Live'], ['other', 'Readings & other']] as const).map(([k, label]) => (
             <span key={k} className={`svc-${k} inline-flex items-center gap-1.5`}><span className="svc-dot w-2.5 h-2.5 rounded-sm" />{label}</span>
         ))}
         <span className="text-text-subtle/40">|</span>
@@ -596,7 +596,7 @@ const ScheduleKey: React.FC = () => (
         <span className="svc-call inline-flex items-center gap-1.5"><span className="blk blk-done w-4 h-3 rounded-sm" />Done</span>
         <span className="svc-call inline-flex items-center gap-1.5"><span className="blk-entry w-4 h-3 rounded-sm" />Not booked yet</span>
         <span className="inline-flex items-center gap-1.5"><span className="w-4 h-3 rounded-sm blk-personal" />Personal</span>
-        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-coral-deep" />Unpaid</span>
+        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" />Not paid</span>
     </div>
 );
 
@@ -769,7 +769,7 @@ const ExtraTime: React.FC<{
                         <span className="text-sm text-text-light">How much longer?</span>
                         <span className="flex items-center gap-2">
                             <button type="button" onClick={() => change(-x.step)} disabled={minutes <= x.step} aria-label={`${x.step} minutes less`} className={stepBtn}><span className="text-lg leading-none">−</span></button>
-                            <span className="min-w-[6.5rem] text-center font-serif font-bold text-lg text-text-light tabular-nums">+{durLabel(minutes)}</span>
+                            <span className="min-w-[6.5rem] text-center font-bold tracking-[-0.01em] text-lg text-text-light tabular-nums">+{durLabel(minutes)}</span>
                             <button type="button" onClick={() => change(x.step)} disabled={minutes >= 480} aria-label={`${x.step} minutes more`} className={stepBtn}><Plus size={16} /></button>
                         </span>
                     </div>
@@ -1267,7 +1267,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                 <button className="px-3 h-9 rounded-lg bg-adm-hover text-text-light text-sm font-medium hover:bg-adm-hover-2 transition-colors" onClick={() => setWeekStart(startOfWeek(new Date()))}>Today</button>
                                 <button aria-label="Next week" className={navBtn} onClick={() => setWeekStart(addDays(weekStart, 7))}><ChevronRight size={16} /></button>
                             </div>
-                            <h2 className="text-text-light font-serif font-semibold text-sm">{weekLabel}</h2>
+                            <h2 className="text-text-light font-semibold text-sm">{weekLabel}</h2>
                         </div>
 
                         {/* on a phone: the week as a strip of days, and the day picked as a calendar */}
@@ -1282,7 +1282,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                         <button key={iso} onClick={() => setPickDay(iso)} aria-pressed={on} aria-label={`${WEEKDAYS[i]} ${d.getDate()}${n ? `, ${n} session${n > 1 ? 's' : ''}` : ''}`}
                                             className={`flex flex-col items-center gap-0.5 py-1.5 rounded-xl transition-colors ${on ? 'bg-lilac text-white' : isToday ? 'bg-lilac/10 text-lilac' : 'text-text-light hover:bg-adm-hover'}`}>
                                             <span className={`text-[10px] uppercase tracking-wider ${on ? 'text-white/80' : 'text-text-subtle'}`}>{WEEKDAYS[i].slice(0, 2)}</span>
-                                            <span className="text-[15px] font-serif font-bold leading-none">{d.getDate()}</span>
+                                            <span className="text-[15px] font-bold tracking-[-0.01em] leading-none">{d.getDate()}</span>
                                             <span className={`h-1 w-1 rounded-full ${n ? (on ? 'bg-white' : 'bg-lilac') : 'bg-transparent'}`} />
                                         </button>
                                     );
@@ -1303,7 +1303,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                         return (
                                             <div key={i} className={`py-2 text-center border-l border-adm-line ${isToday ? 'bg-lilac/10' : ''}`}>
                                                 <div className="text-[0.65rem] uppercase tracking-wider text-text-subtle">{WEEKDAYS[i]}</div>
-                                                <div className={`text-lg font-serif font-bold ${isToday ? 'text-lilac' : 'text-text-light'}`}>{d.getDate()}</div>
+                                                <div className={`text-lg font-bold tracking-[-0.01em] ${isToday ? 'text-lilac' : 'text-text-light'}`}>{d.getDate()}</div>
                                             </div>
                                         );
                                     })}
@@ -1377,7 +1377,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                                             className={`absolute left-1 right-1 rounded-md border px-1.5 py-1 text-left overflow-hidden transition-shadow cursor-grab active:cursor-grabbing touch-none ${blockClass(b)} text-text-light ${selectedId === b.id ? 'ring-2 ring-black/60' : ''} ${drag?.id === b.id ? 'opacity-30' : ''}`}
                                                             style={{ top, height }}
                                                         >
-                                                            {b.paymentStatus !== 'paid' && <span title="Unpaid" className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-coral-deep" />}
+                                                            {b.paymentStatus !== 'paid' && <span title="Not paid" className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-500" />}
                                                             {height < 34 ? (
                                                                 // a 30-minute session: one line, the time and who
                                                                 <div className="text-[10px] font-semibold leading-tight truncate pr-2">{b.status === 'done' && '✓ '}<span className="tabular-nums opacity-80">{b.time}</span> {b.name}</div>
@@ -1667,7 +1667,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                             <Section title="Payment">
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="min-w-0">
-                                        <div className="text-2xl font-serif font-bold text-text-light tabular-nums leading-tight">{amountLabel(b) || '—'}</div>
+                                        <div className="text-2xl font-bold tracking-[-0.01em] text-text-light tabular-nums leading-tight">{amountLabel(b) || '—'}</div>
                                         {method && <div className="text-xs text-text-subtle truncate mt-0.5">{method}</div>}
                                     </div>
                                     <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
@@ -1704,7 +1704,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                 {real && (
                                     <button type="button" onClick={toCustomer}
                                         className="group w-full mb-2 flex items-center gap-3 rounded-xl border border-adm-line px-3 py-2.5 text-left hover:bg-adm-hover hover:border-adm-line-2 transition-colors">
-                                        <span className="grid place-items-center w-9 h-9 shrink-0 rounded-full bg-lilac/15 text-lilac font-serif font-bold">{initial}</span>
+                                        <span className="grid place-items-center w-9 h-9 shrink-0 rounded-full bg-lilac/15 text-lilac font-bold tracking-[-0.01em]">{initial}</span>
                                         <span className="min-w-0 flex-1">
                                             <span className="block text-sm font-medium text-text-light truncate">{b.name || 'Customer'}</span>
                                             <span className="block text-xs text-text-subtle tabular-nums">{live} booking{live === 1 ? '' : 's'}{moneyLabel(paidSum) ? ` · ${moneyLabel(paidSum)} paid` : ''}</span>
@@ -1749,7 +1749,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
                         {/* To do: one card per order, like Today and the bell; Done and Cancelled stay a table */}
                         {showDue && list.length > 0 && (
-                            <ul className="p-3 grid gap-2 xl:grid-cols-2 bg-bg-deep/60">
+                            <ul className="px-4 sm:px-5 divide-y divide-adm-line">
                                 {list.map((b) => {
                                     const t = orderTodo(b, now);
                                     return (
@@ -1762,7 +1762,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                                     setTicking((s) => { const n = new Set(s); n.delete(b.id); return n; });
                                                 }}
                                                 // paid is a label up by the pill (an unpaid one's pill says Not paid yet); changing it is in the details
-                                                badge={b.paymentStatus === 'paid' ? <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap bg-sage/15 text-sage">Paid</span> : undefined}
+                                                badge={b.paymentStatus === 'paid' ? <span className="text-sage font-semibold">paid</span> : undefined}
                                                 footer={b.market === 'ID'
                                                     ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
                                                     : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />} />

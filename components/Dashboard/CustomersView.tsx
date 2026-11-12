@@ -264,7 +264,7 @@ const CustomersView: React.FC = () => {
                 const Stat: React.FC<{ label: string; children: React.ReactNode; sub?: React.ReactNode }> = ({ label, children, sub }) => (
                     <div className="bg-surface-1 px-3 py-2.5 min-w-0">
                         <div className="text-[11px] text-text-subtle">{label}</div>
-                        <div className="text-base sm:text-lg font-serif font-bold text-text-light tabular-nums leading-snug truncate">{children}</div>
+                        <div className="text-base sm:text-lg font-bold tracking-[-0.01em] text-text-light tabular-nums leading-snug truncate">{children}</div>
                         {sub && <div className="text-[11px] leading-snug tabular-nums mt-0.5">{sub}</div>}
                     </div>
                 );
@@ -273,7 +273,7 @@ const CustomersView: React.FC = () => {
                 return (
                     <Dialog size="lg" onClose={() => setSelected(null)} label={`Customer ${selected.name}`}
                         eyebrow={<>Customer <span className="font-normal normal-case tracking-normal" title="Client id">· {selected.clientId}</span></>}
-                        title={<span className="inline-flex items-center gap-3"><span className="grid place-items-center w-10 h-10 shrink-0 rounded-full bg-lilac/15 text-lilac font-serif font-bold text-base">{initials}</span><span>{selected.name}<MarketTag c={selected} /></span></span>}
+                        title={<span className="inline-flex items-center gap-3"><span className="grid place-items-center w-10 h-10 shrink-0 rounded-full bg-lilac/15 text-lilac font-bold tracking-[-0.01em] text-base">{initials}</span><span>{selected.name}<MarketTag c={selected} /></span></span>}
                         subtitle={`Client since ${fmtDate(selected.firstSeen)}`}>
                         {/* how to reach them */}
                         <Section title="Contact" aside={selected.phone && (

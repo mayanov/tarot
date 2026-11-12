@@ -690,12 +690,15 @@ html[data-print='offset'] .letterpress-lg { filter: url(#offset-lg); }
 .admin-shell[data-theme="dark"] .due-late { background: rgb(248 113 113 / 0.16); color: #fca5a5; }
 
 /* Schedule: the colour is the service, the style is the status (BookingsView) */
-.admin-shell .svc-call, .admin-shell .svc-live { --svc: 37 99 235; }
-.admin-shell .svc-meetup { --svc: 217 119 6; }
-.admin-shell .svc-other { --svc: 219 39 119; }
-.admin-shell[data-theme="dark"] .svc-call, .admin-shell[data-theme="dark"] .svc-live { --svc: 96 165 250; }
-.admin-shell[data-theme="dark"] .svc-meetup { --svc: 251 191 36; }
-.admin-shell[data-theme="dark"] .svc-other { --svc: 244 114 182; }
+/* the same colours as everywhere else (lib/serviceColor): call blue, meetup green, live amber */
+.admin-shell .svc-call { --svc: 62 124 201; }
+.admin-shell .svc-live { --svc: 224 169 59; }
+.admin-shell .svc-meetup { --svc: 46 158 106; }
+.admin-shell .svc-other { --svc: 124 92 196; }
+.admin-shell[data-theme="dark"] .svc-call { --svc: 110 160 230; }
+.admin-shell[data-theme="dark"] .svc-live { --svc: 240 196 100; }
+.admin-shell[data-theme="dark"] .svc-meetup { --svc: 90 200 140; }
+.admin-shell[data-theme="dark"] .svc-other { --svc: 165 135 228; }
 .admin-shell .svc-dot { background: rgb(var(--svc)); }
 .admin-shell .blk { border: 1px solid rgb(var(--svc) / 0.45); border-left: 3px solid rgb(var(--svc)); }
 .admin-shell .blk-confirmed { background: rgb(var(--svc) / 0.2); }

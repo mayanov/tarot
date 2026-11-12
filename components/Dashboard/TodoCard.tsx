@@ -3,68 +3,66 @@ import { Check, Mail } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import type { Todo } from './lib/notifications';
 import { replyLink } from './lib/reply';
+import { colorFor } from './lib/serviceColor';
 
 // One thing to do, as a card: a reading or chat to send (ticked off on its circle, with a
 // button to where it's answered), or a session coming up (its day and time). Used by the
 // bell's To do and Today's Readings to send, so both read the same.
-const PILL: Record<Todo['tone'], string> = {
-    late: 'bg-red-500/12 due-late-text',
-    soon: 'bg-amber-400/15 due-soon-text',
-    calm: 'bg-adm-hover text-text-subtle',
-};
-const EDGE: Record<Todo['tone'], string> = { late: 'bg-red-400', soon: 'bg-amber-400', calm: 'bg-transparent' };
+// how close it is, as a coloured word (no pill)
+const TONE: Record<Todo['tone'], string> = { late: 'due-late-text font-semibold', soon: 'due-soon-text font-semibold', calm: 'text-text-subtle' };
 const clock = (t: number) => new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 const dayWord = (t: number, now: number) => {
     const k = (x: number) => new Date(x).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
     return k(t) === k(now) ? 'Today' : 'Tmrw';
 };
 
+// one row: a tick (a reading) or its time (a session), a dot in the service's colour, what
+// to do in bold, a line under it (what it is · how close, coloured when close or late), and
+// its buttons under that. Rows sit in a list split by hairlines, like Today.
 const TodoCard: React.FC<{
     t: Todo; now: number; done?: boolean; fresh?: boolean;
     onOpen: () => void; onTick: () => void;
     footer?: React.ReactNode; // more buttons under it (Orders: the confirmation)
-    badge?: React.ReactNode;  // a label on the right, before the pill (Orders: Paid)
+    badge?: React.ReactNode;  // a label after the line (Orders: Paid)
 }> = ({ t, now, done, fresh, onOpen, onTick, footer, badge }) => {
-    const reply = t.kind === 'reading' ? replyLink(t.b) : null;
+    // the reading is sent once it's paid; before that there's nothing to reply with
+    const unpaid = t.b.paymentStatus !== 'paid';
+    const reply = t.kind === 'reading' && !unpaid ? replyLink(t.b) : null;
     return (
         <div role="button" tabIndex={0} onClick={onOpen} onKeyDown={(e) => { if (e.key === 'Enter' && e.target === e.currentTarget) onOpen(); }}
-            className={`group relative flex items-start gap-3 pl-3.5 pr-3 py-3 rounded-xl bg-surface-1 border border-adm-line shadow-[0_1px_2px_rgba(0,0,0,0.04)] cursor-pointer transition-all hover:border-adm-line-2 hover:shadow-md ${done ? 'opacity-50' : ''}`}>
-            <span aria-hidden className={`absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full ${EDGE[t.tone]}`} />
+            className={`group flex items-start gap-3 px-2 -mx-2 py-3 rounded-lg cursor-pointer transition-colors hover:bg-adm-hover ${done ? 'opacity-50' : ''}`}>
             {t.kind === 'reading' ? (
                 <button type="button" onClick={(e) => { e.stopPropagation(); if (!done) onTick(); }} aria-label={`Mark ${t.b.name || 'it'} done`} title="Mark done (sent)"
-                    className={`mt-0.5 shrink-0 h-[22px] w-[22px] rounded-full border-2 flex items-center justify-center transition-colors ${done ? 'bg-sage border-sage text-white' : 'border-adm-line-2 text-transparent hover:border-sage hover:text-sage'}`}>
+                    className={`mt-0.5 shrink-0 h-[22px] w-[22px] rounded-full border-2 flex items-center justify-center transition-colors ${done ? 'bg-sage border-sage text-white' : 'border-adm-line-3 text-transparent hover:border-sage hover:text-sage'}`}>
                     <Check size={13} strokeWidth={3} />
                 </button>
             ) : (
-                <span className="shrink-0 w-[46px] -my-0.5 rounded-lg bg-lilac/10 text-lilac text-center py-1">
-                    <span className="block text-[9.5px] font-semibold uppercase tracking-wider leading-none">{dayWord(t.at, now)}</span>
-                    <span className="block text-[13px] font-semibold leading-tight mt-0.5">{clock(t.at)}</span>
+                <span className="shrink-0 w-[42px] text-right leading-tight">
+                    <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-text-subtle">{dayWord(t.at, now)}</span>
+                    <span className="block text-[14px] font-bold tabular-nums text-text-light">{clock(t.at)}</span>
                 </span>
             )}
+            <span aria-hidden className="mt-[7px] shrink-0 w-2.5 h-2.5 rounded-full" style={{ background: colorFor(t.b.serviceId) }} />
             <span className="min-w-0 flex-1">
-                <span className="flex items-start justify-between gap-2">
-                    <span className={`text-[13.5px] leading-snug font-semibold text-text-light ${done ? 'line-through' : ''}`}>
-                        {fresh && !done && <span aria-label="new" className="inline-block align-middle mr-1.5 -mt-0.5 h-2 w-2 rounded-full bg-lilac" />}{t.title}
-                    </span>
-                    <span className="shrink-0 mt-px flex items-center gap-1.5">
-                        {badge && !done && badge}
-                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${PILL[t.tone]}`}>{done ? 'Done' : t.pill}</span>
-                    </span>
+                <span className={`block text-[15px] leading-snug font-semibold text-text-light ${done ? 'line-through' : ''}`}>
+                    {fresh && !done && <span aria-label="new" className="inline-block align-middle mr-1.5 -mt-0.5 h-2 w-2 rounded-full bg-lilac" />}{t.title}
                 </span>
-                {/* with buttons of its own (Orders): all on the second row, so the card is two rows */}
-                <span className={`flex gap-2 mt-1 ${footer ? 'items-center' : 'items-end justify-between'}`}>
-                    <span className={`text-[12.5px] text-text-subtle leading-snug ${footer ? 'min-w-0 flex-1 truncate' : ''}`}>{t.detail}</span>
-                    {footer && !done && <span className="shrink-0" onClick={(e) => e.stopPropagation()}>{footer}</span>}
-                    {reply && !done && (
-                        <a href={reply.href} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                            title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${t.b.name || 'their'} WhatsApp chat`}
-                            aria-label={reply.kind === 'email' ? 'Email' : 'WhatsApp'}
-                            className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-adm-line-2 text-[11.5px] font-medium text-text-light hover:bg-adm-hover-2 transition-colors">
-                            {reply.kind === 'email' ? <Mail size={12} className="text-lilac" /> : <FaWhatsapp size={12} className="text-[#25D366]" />}
-                            <span className={footer ? 'hidden sm:inline' : ''}>{reply.kind === 'email' ? 'Email' : 'WhatsApp'}</span>
-                        </a>
-                    )}
+                <span className="block text-[13px] leading-snug text-text-subtle mt-0.5">
+                    {t.detail} · <span className={unpaid && t.kind === 'reading' ? 'due-soon-text font-semibold' : TONE[t.tone]}>{done ? 'Done' : t.pill}</span>{badge && !done && <> · {badge}</>}
                 </span>
+                {!done && (footer || reply) && (
+                    <span className="mt-2 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        {reply && (
+                            <a href={reply.href} target="_blank" rel="noopener noreferrer"
+                                title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${t.b.name || 'their'} WhatsApp chat`}
+                                className={`inline-flex items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-[12.5px] font-semibold transition-colors ${t.tone === 'late' ? 'bg-text-light text-bg-deep hover:opacity-90' : 'border border-adm-line-2 bg-surface-1 text-text-light hover:bg-adm-hover'}`}>
+                                {reply.kind === 'email' ? <Mail size={13} /> : <FaWhatsapp size={13} />}
+                                {reply.kind === 'email' ? 'Send by email' : 'Reply on WhatsApp'}
+                            </a>
+                        )}
+                        {footer}
+                    </span>
+                )}
             </span>
         </div>
     );

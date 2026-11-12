@@ -15,9 +15,9 @@ interface Props<T extends string> {
 }
 
 function Segmented<T extends string>({ value, options, onChange, size = 'md', className = '' }: Props<T>) {
-    const pad = size === 'sm' ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-sm';
+    const pad = size === 'sm' ? 'px-3 py-1 text-[12.5px]' : 'px-3.5 py-1.5 text-[13.5px]';
     return (
-        <div role="tablist" className={`inline-flex items-center rounded-lg bg-adm-hover p-0.5 ${className}`}>
+        <div role="tablist" className={`inline-flex flex-wrap items-center gap-1.5 ${className}`}>
             {options.map((o) => {
                 const on = o.id === value;
                 return (
@@ -27,12 +27,12 @@ function Segmented<T extends string>({ value, options, onChange, size = 'md', cl
                         role="tab"
                         aria-selected={on}
                         onClick={() => onChange(o.id)}
-                        className={`inline-flex items-center gap-1.5 rounded-md font-medium whitespace-nowrap transition-colors ${pad} ${on
-                            ? 'bg-surface-1 text-text-light shadow-sm ring-1 ring-adm-line'
-                            : 'text-text-subtle hover:text-text-light'}`}
+                        className={`inline-flex items-center gap-1.5 rounded-full font-semibold whitespace-nowrap transition-colors ${pad} ${on
+                            ? 'bg-text-light text-bg-deep'
+                            : 'bg-adm-hover-2 text-text-light hover:bg-adm-hover-3'}`}
                     >
                         {o.label}
-                        {o.count !== undefined && <span className={`tabular-nums text-[0.7rem] ${on ? 'text-lilac' : 'opacity-70'}`}>{o.count}</span>}
+                        {o.count !== undefined && <span className="tabular-nums opacity-70">{o.count}</span>}
                     </button>
                 );
             })}

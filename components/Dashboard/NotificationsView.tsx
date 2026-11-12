@@ -128,7 +128,7 @@ const NotificationsView: React.FC<{
     return (
         <div className="flex flex-col h-full min-h-0">
             <div className="shrink-0 flex items-center gap-1 pl-4 pr-2 h-14 border-b border-adm-line bg-surface-1">
-                <h2 className="font-serif font-bold text-lg text-text-light">Notifications</h2>
+                <h2 className="font-bold tracking-[-0.01em] text-lg text-text-light">Notifications</h2>
                 {unread > 0 && <span className="ml-1.5 px-1.5 py-px rounded-full bg-coral-deep/12 text-coral-deep text-[11px] font-semibold">{unread} new</span>}
                 <span className="flex-1" />
                 {unread > 0 && (
@@ -152,7 +152,7 @@ const NotificationsView: React.FC<{
                             {left > 0 && <span className="text-[11px] text-text-subtle">{left} left</span>}
                         </div>
                         {err && <p className="mb-2 px-1 text-[12px] due-late-text">{err}</p>}
-                        {todos.length ? <ul className="space-y-2">{todos.map(card)}</ul> : (
+                        {todos.length ? <ul className="divide-y divide-adm-line">{todos.map(card)}</ul> : (
                             <div className="flex items-center gap-3 px-3.5 py-3.5 rounded-xl border border-dashed border-adm-line-2 text-text-subtle">
                                 <PartyPopper size={18} className="text-sage shrink-0" />
                                 <span className="text-[13px]">All caught up. Nothing to send, and no session in the next day.</span>
