@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, CalendarDays, SlidersHorizontal, RefreshCcw } from 'lucide-react';
+import { ChevronDown, Check, RefreshCcw } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, nameOf, detailOf, SERVICE_NAME } from './lib/format';
@@ -25,10 +25,9 @@ const SalesView: React.FC = () => {
     const [sourceFilter, setSourceFilter] = useState<'all' | 'manual' | 'booking'>('all');
     const [dateFrom, setDateFrom] = useState<string>('');
     const [dateTo, setDateTo] = useState<string>('');
-    const [dateOpen, setDateOpen] = useState(false);
-    const dateRef = useRef<HTMLDivElement>(null);
-    const [moreOpen, setMoreOpen] = useState(false);
-    const moreRef = useRef<HTMLDivElement>(null);
+    // the one filter menu that's open (where from, service or date), if any
+    const [menu, setMenu] = useState<'where' | 'service' | 'date' | null>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
     // the booking whose details are open (the same popup as Orders and Schedule)
     const [openId, setOpenId] = useState<string | null>(null);
     const [savingId, setSavingId] = useState<string | null>(null);
@@ -36,25 +35,15 @@ const SalesView: React.FC = () => {
     // are still never added together: each total has a line per currency
     const [market, setMarket] = useState<Market | 'all'>('all');
 
-    // close the date popover on outside click / Escape
+    // close the open filter menu on a click outside it or Escape
     useEffect(() => {
-        if (!dateOpen) return;
-        const onDown = (e: MouseEvent) => { if (dateRef.current && !dateRef.current.contains(e.target as Node)) setDateOpen(false); };
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDateOpen(false); };
+        if (!menu) return;
+        const onDown = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(null); };
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(null); };
         document.addEventListener('mousedown', onDown);
         document.addEventListener('keydown', onKey);
         return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-    }, [dateOpen]);
-
-    // close the More filters popover on outside click / Escape
-    useEffect(() => {
-        if (!moreOpen) return;
-        const onDown = (e: MouseEvent) => { if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false); };
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMoreOpen(false); };
-        document.addEventListener('mousedown', onDown);
-        document.addEventListener('keydown', onKey);
-        return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-    }, [moreOpen]);
+    }, [menu]);
 
     const load = async () => {
         setLoading(true);
@@ -131,7 +120,7 @@ const SalesView: React.FC = () => {
     const dateLabel = dateFrom && dateTo ? `${shortDate(dateFrom)} – ${shortDate(dateTo)}`
         : dateFrom ? `From ${shortDate(dateFrom)}`
             : dateTo ? `Until ${shortDate(dateTo)}`
-                : 'Booking date';
+                : 'Any date';
     const dateActive = Boolean(dateFrom || dateTo);
 
     const togglePaid = async (b: Booking) => {
@@ -239,8 +228,7 @@ const SalesView: React.FC = () => {
                 {figure('Booked in all', { IDR: totals.paid.IDR + totals.unpaid.IDR, USD: totals.paid.USD + totals.unpaid.USD }, `${orders.length} ${orders.length === 1 ? 'order' : 'orders'}`, 'pl-3 sm:pl-6 border-l border-adm-line')}
             </div>
 
-            {/* two questions, kept apart: which orders (tabs, left) and where they're from (a small switch, right),
-                then the rarer filters beside it */}
+            {/* which orders (tabs, left), then the filters (right) */}
             <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-adm-line">
                 <div role="tablist" aria-label="Which orders" className="flex gap-6">
                     {([['all', 'All', null], ['unpaid', 'Not paid', unpaidAll]] as const).map(([id, label, n]) => {
@@ -253,68 +241,69 @@ const SalesView: React.FC = () => {
                         );
                     })}
                 </div>
-            <div className="flex flex-wrap items-center gap-2 pb-2">
-                <div role="group" aria-label="Where they're from" className="inline-flex items-center gap-0.5 rounded-full bg-adm-hover-2 p-[3px]">
-                    {([['all', 'Anywhere'], ['ID', 'Indonesia'], ['Global', 'Abroad']] as const).map(([id, label]) => (
-                        <button key={id} type="button" aria-pressed={market === id} onClick={() => { setMarket(id); setServiceFilter('all'); }}
-                            className={`rounded-full px-3 py-1 text-[13px] whitespace-nowrap transition-colors ${market === id ? 'bg-surface-1 font-semibold text-text-light shadow-sm' : 'font-medium text-text-subtle hover:text-text-light'}`}>{label}</button>
-                    ))}
-                </div>
-                <Select value={serviceFilter} active={serviceFilter !== 'all'} onChange={(e) => setServiceFilter(e.target.value)} className="max-w-[14rem]">
-                    <option value="all">All services</option>
-                    {serviceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-                </Select>
-                {/* booking-date range — collapsed to a single button, opens a range panel */}
-                <div className="relative" ref={dateRef}>
-                    <button type="button" onClick={() => setDateOpen((o) => !o)}
-                        className={`inline-flex items-center gap-2 pl-3 pr-8 py-2 rounded-lg border bg-bg-dark text-sm focus:border-lilac focus:outline-none cursor-pointer relative ${dateActive ? 'border-lilac text-text-light' : 'border-adm-line-2 text-text-subtle hover:text-text-light'}`}>
-                        <CalendarDays size={15} />
-                        {dateLabel}
-                        <ChevronDown size={15} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle pointer-events-none" />
-                    </button>
-                    {dateOpen && (
-                        <div className="absolute z-20 mt-2 left-0 sm:left-auto sm:right-0 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-3 space-y-3">
-                            <div>
-                                <label className="block text-xs text-text-subtle mb-1">From</label>
-                                <input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)}
-                                    className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer" />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-text-subtle mb-1">To</label>
-                                <input type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)}
-                                    className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer" />
-                            </div>
-                            {dateActive && (
-                                <button onClick={() => { setDateFrom(''); setDateTo(''); }}
-                                    className="w-full text-center text-xs text-text-subtle hover:text-text-light transition-colors py-1">
-                                    Clear dates
-                                </button>
-                            )}
+            {/* the filters, all alike: a word and a little arrow, grey until one is picked; each opens a short menu */}
+            <div ref={menuRef} className="flex flex-wrap items-center gap-x-5 gap-y-1 pb-1.5">
+                {(() => {
+                    const WHERE = { all: 'Anywhere', ID: 'Indonesia', Global: 'Abroad' } as const;
+                    const SOURCE = { all: 'Any way', booking: 'Booked on the site', manual: 'Added by hand' } as const;
+                    const trigger = (id: 'where' | 'service' | 'date', label: string, on: boolean) => (
+                        <button type="button" aria-expanded={menu === id} onClick={() => setMenu(menu === id ? null : id)}
+                            className={`inline-flex items-center gap-1 py-2 text-[14px] whitespace-nowrap transition-colors ${on ? 'font-semibold text-text-light' : 'font-medium text-text-subtle hover:text-text-light'}`}>
+                            {label}<ChevronDown size={14} className={`transition-transform ${menu === id ? 'rotate-180' : ''}`} />
+                        </button>
+                    );
+                    // (on a phone the first two open to the right of their word, the date one to its left, so none runs off the screen)
+                    const pop = (edge: 'start' | 'end') => `absolute z-20 top-full mt-1 ${edge === 'start' ? 'left-0 sm:left-auto sm:right-0' : 'right-0'} w-56 rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-1.5`;
+                    const option = (on: boolean, label: string, pick: () => void) => (
+                        <button key={label} type="button" onClick={() => { pick(); setMenu(null); }}
+                            className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-left text-[14px] hover:bg-adm-hover ${on ? 'font-semibold text-text-light' : 'text-text-light'}`}>
+                            {label}{on && <Check size={14} className="text-lilac shrink-0" />}
+                        </button>
+                    );
+                    const head = (t: string) => <div className="px-2.5 pt-2 pb-1 text-[12px] text-text-subtle">{t}</div>;
+                    return <>
+                        <div className="relative">
+                            {trigger('where', market === 'all' && sourceFilter === 'all' ? 'Anywhere'
+                                : [market !== 'all' ? WHERE[market] : '', sourceFilter !== 'all' ? SOURCE[sourceFilter] : ''].filter(Boolean).join(' · '),
+                                market !== 'all' || sourceFilter !== 'all')}
+                            {menu === 'where' && <div className={pop('start')}>
+                                {head('Where they live')}
+                                {(Object.keys(WHERE) as (keyof typeof WHERE)[]).map((id) => option(market === id, WHERE[id], () => { setMarket(id); setServiceFilter('all'); }))}
+                                <div className="my-1 border-t border-adm-line" />
+                                {head('How the order came in')}
+                                {(Object.keys(SOURCE) as (keyof typeof SOURCE)[]).map((id) => option(sourceFilter === id, SOURCE[id], () => setSourceFilter(id)))}
+                            </div>}
                         </div>
-                    )}
-                </div>
-                {/* rarely needed: where the order came from */}
-                <div className="relative" ref={moreRef}>
-                    <button type="button" onClick={() => setMoreOpen((o) => !o)} title="More filters" aria-label="More filters"
-                        className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border bg-bg-dark text-sm focus:border-lilac focus:outline-none ${sourceFilter !== 'all' ? 'border-lilac text-text-light' : 'border-adm-line-2 text-text-subtle hover:text-text-light'}`}>
-                        <SlidersHorizontal size={15} />
-                        <span className="hidden sm:inline">{sourceFilter === 'all' ? 'More' : sourceFilter === 'manual' ? 'Added by hand' : 'From the site'}</span>
-                    </button>
-                    {moreOpen && (
-                        <div className="absolute z-20 mt-2 right-0 w-56 max-w-[calc(100vw-2rem)] rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-3">
-                            <div className="text-xs text-text-subtle mb-1.5">Where the order came from</div>
-                            {([['all', 'Anywhere'], ['booking', 'Booked on the site'], ['manual', 'Added by hand']] as const).map(([id, label]) => (
-                                <button key={id} type="button" onClick={() => { setSourceFilter(id); setMoreOpen(false); }}
-                                    className={`w-full text-left px-2 py-1.5 rounded-md text-sm hover:bg-adm-hover ${sourceFilter === id ? 'text-lilac font-semibold' : 'text-text-light'}`}>{label}</button>
-                            ))}
+                        <div className="relative">
+                            {trigger('service', serviceFilter === 'all' ? 'All services' : serviceFilter, serviceFilter !== 'all')}
+                            {menu === 'service' && <div className={`${pop('start')} max-h-80 overflow-y-auto`}>
+                                {option(serviceFilter === 'all', 'All services', () => setServiceFilter('all'))}
+                                {serviceOptions.map((x) => option(serviceFilter === x, x, () => setServiceFilter(x)))}
+                            </div>}
                         </div>
-                    )}
-                </div>
-                {activeFilters > 0 && (
-                    <Button variant="ghost" onClick={() => { setMarket('all'); setPayFilter('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }}>
-                        Clear
-                    </Button>
-                )}
+                        <div className="relative">
+                            {trigger('date', dateLabel, dateActive)}
+                            {menu === 'date' && <div className={`${pop('end')} p-3 space-y-3`}>
+                                <div>
+                                    <label className="block text-xs text-text-subtle mb-1">Booked from</label>
+                                    <input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)}
+                                        className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-text-subtle mb-1">Until</label>
+                                    <input type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)}
+                                        className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer" />
+                                </div>
+                                {dateActive && <button type="button" onClick={() => { setDateFrom(''); setDateTo(''); setMenu(null); }}
+                                    className="w-full text-center text-xs text-text-subtle hover:text-text-light transition-colors py-1">Any date</button>}
+                            </div>}
+                        </div>
+                        {(market !== 'all' || sourceFilter !== 'all' || serviceFilter !== 'all' || dateActive) && (
+                            <button type="button" onClick={() => { setMarket('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }}
+                                className="py-2 text-[14px] font-medium text-lilac hover:underline">Clear</button>
+                        )}
+                    </>;
+                })()}
             </div>
             </div>
 
