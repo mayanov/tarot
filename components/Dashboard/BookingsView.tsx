@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, ChevronLeft, ChevronRight, Plus, ArrowRight, Pencil, Mail, StickyNote, Check, RefreshCcw, CalendarDays } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight, Plus, ArrowRight, Pencil, Mail, StickyNote, Check, RefreshCcw, CalendarDays, AlertCircle, Send, Wallet } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import Dialog, { DialogIconButton, Section, KV } from './ui/Dialog';
 import PageHeader from './ui/PageHeader';
@@ -1437,18 +1437,24 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                     if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Reading'} marked sent. It's under Orders → Done.`, 'ok');
                     setTicking((s) => { const n = new Set(s); n.delete(b.id); return n; });
                 };
+                const payTick = async (b: Booking) => {
+                    setTicking((s) => new Set(s).add(b.id));
+                    await new Promise((r) => setTimeout(r, 450));
+                    await togglePaid(b);
+                    setTicking((s) => { const n = new Set(s); n.delete(b.id); return n; });
+                };
                 const dot = (id?: string, dashed = false) => dashed
                     ? <span aria-hidden className="mt-[7px] w-2.5 h-2.5 shrink-0 rounded-full border-2 border-dashed" style={{ borderColor: colorFor(id) }} />
                     : <span aria-hidden className="mt-[7px] w-2.5 h-2.5 shrink-0 rounded-full" style={{ background: colorFor(id) }} />;
 
                 // 1. TO DO: only what's waiting on her. Readings and chats to answer, then orders
                 // not paid yet. One bold line saying what to do, one grey line saying how close it is.
-                type Job = { key: string; b: Booking; rank: number; title: string; when: React.ReactNode; actions: React.ReactNode; tickable?: boolean };
+                type Job = { key: string; b: Booking; rank: number; title: string; when: React.ReactNode; actions: React.ReactNode; done: string; onTick: () => void };
                 const jobs: Job[] = [
                     ...todos.map((t): Job => {
                         const reply = replyLink(t.b);
                         return {
-                            key: t.b.id, b: t.b, tickable: true,
+                            key: t.b.id, b: t.b, done: 'Mark sent', onTick: () => tick(t.b),
                             rank: t.tone === 'late' ? 0 : t.tone === 'soon' ? 1 : 2,
                             title: t.title,
                             when: <span className={t.tone === 'late' ? 'due-late-text font-semibold' : t.tone === 'soon' ? 'due-soon-text font-semibold' : ''}>{t.pill}</span>,
@@ -1459,14 +1465,10 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                         };
                     }),
                     ...unpaid.map((b): Job => ({
-                        key: `pay-${b.id}`, b, rank: 3,
+                        key: `pay-${b.id}`, b, rank: 3, done: 'Mark paid', onTick: () => payTick(b),
                         title: `Ask ${(nameOf(b) || 'them').split(/\s+/)[0]} to pay`,
                         when: <>{[shortLabel(b), amountLabel(b)].filter(Boolean).join(' · ')}{b.date && b.time ? ` · ${dayWord(b.date)} ${b.time}` : ''}</>,
-                        actions: <>
-                            <AskToPay b={b} onSent={(f, at2) => markWa(b.id, f, at2)} onNote={flash} />
-                            <button type="button" onClick={() => togglePaid(b)} disabled={payBusy === b.id}
-                                className="h-9 px-2 text-[13px] font-semibold text-text-subtle hover:text-text-light disabled:opacity-50 whitespace-nowrap transition-colors">Mark paid</button>
-                        </>,
+                        actions: <AskToPay b={b} onSent={(f, at2) => markWa(b.id, f, at2)} onNote={flash} />,
                     })),
                 ].sort((x, y) => x.rank - y.rank);
                 const lateCount = todos.filter((t) => t.tone === 'late').length;
@@ -1475,14 +1477,13 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 // the time and who. Asking to pay lives in To do, so these rows have no buttons.
                 type Slot = { key: string; at: number; day: string; b?: Booking; e?: CalEvent };
                 const slots: Slot[] = [
-                    ...calendarSessions.filter((b) => !b.extraFor && (b.date === todayISO || b.date === tomorrowISO))
+                    ...calendarSessions.filter((b) => !b.extraFor && b.date === todayISO)
                         .map((b): Slot => ({ key: b.id, at: at(b.date, b.time), day: b.date, b })),
-                    ...soonEntries.filter((e) => e.time && !isHelperEntry(e) && isSessionTitle(e.title) && (e.date === todayISO || e.date === tomorrowISO))
+                    ...soonEntries.filter((e) => e.time && !isHelperEntry(e) && isSessionTitle(e.title) && e.date === todayISO)
                         .map((e): Slot => ({ key: e.id, at: at(e.date, e.time!), day: e.date, e })),
                 ].sort((x, y) => x.at - y.at);
                 const isOver = (s: Slot) => !!s.b && (s.b.status === 'done' || s.at + (s.b.durationMin || 60) * 60_000 < now);
                 const todaySlots = slots.filter((s) => s.day === todayISO);
-                const tomorrowSlots = slots.filter((s) => s.day === tomorrowISO);
                 const sessionsLeft = todaySlots.filter((s) => s.b && !isOver(s)).length;
 
                 // ---- the calendar: today as an hour grid, sessions placed at their time ----
@@ -1516,10 +1517,10 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 };
 
                 // ---- the to-do list, grouped by how urgent ----
-                const groups: { id: string; label: string; tone: string; items: Job[] }[] = [
-                    { id: 'late', label: 'Late', tone: 'due-late-text', items: jobs.filter((j) => j.rank === 0) },
-                    { id: 'soon', label: 'To send', tone: 'text-text-subtle', items: jobs.filter((j) => j.rank === 1 || j.rank === 2) },
-                    { id: 'pay', label: 'Waiting for payment', tone: 'text-text-subtle', items: jobs.filter((j) => j.rank === 3) },
+                const groups: { id: string; label: string; hint: string; icon: React.ReactNode; chip: string; items: Job[] }[] = [
+                    { id: 'late', label: 'Late', hint: 'Past the time you promised', icon: <AlertCircle size={15} />, chip: 'bg-red-500/10 due-late-text', items: jobs.filter((j) => j.rank === 0) },
+                    { id: 'soon', label: 'To send', hint: 'Readings and chats, soonest first', icon: <Send size={14} />, chip: 'bg-lilac/10 text-lilac', items: jobs.filter((j) => j.rank === 1 || j.rank === 2) },
+                    { id: 'pay', label: 'Waiting for payment', hint: 'Tick when the money is in', icon: <Wallet size={15} />, chip: 'bg-amber-400/15 due-soon-text', items: jobs.filter((j) => j.rank === 3) },
                 ].filter((g) => g.items.length);
 
                 return (
@@ -1528,7 +1529,6 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                         <p className="text-[15px] text-text-subtle">
                             {jobs.length ? <><b className="text-text-light">{jobs.length} {jobs.length === 1 ? 'thing' : 'things'} to do</b>{lateCount > 0 && <>, <span className="due-late-text font-semibold">{lateCount} late</span></>}</> : <b className="text-text-light">Nothing to do</b>}
                             {' · '}{sessionsLeft ? `${sessionsLeft} ${sessionsLeft === 1 ? 'session' : 'sessions'} left today` : 'no more sessions today'}
-                            {tomorrowSlots.length > 0 && ` · ${tomorrowSlots.length} tomorrow`}
                         </p>
 
                         <div className="grid gap-6 lg:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-start">
@@ -1551,33 +1551,33 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                     {todaySlots.map((s) => block(s, true))}
                                     {todaySlots.length === 0 && <p className="absolute left-14 right-0 top-6 text-sm text-text-subtle">No sessions today.</p>}
                                 </div>
-                                <div className="mt-6 pt-4 border-t border-adm-line">
-                                    <h3 className="text-[13px] font-semibold text-text-subtle">Tomorrow · {parseISO(tomorrowISO).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</h3>
-                                    {tomorrowSlots.length === 0 ? <p className="mt-2 text-sm text-text-subtle">Nothing booked.</p>
-                                        : <div className="mt-2 space-y-2">{tomorrowSlots.map((s) => block(s, false))}</div>}
-                                </div>
                             </section>
 
                             {/* RIGHT: what's waiting on her, most urgent first */}
                             <section aria-label="To do" className="order-1 lg:order-2 min-w-0">
                                 <h2 className="text-[15px] font-semibold text-text-light">To do</h2>
                                 {jobs.length === 0 && <p className="mt-3 text-sm text-text-subtle">Nothing waiting on you: every reading is sent and every order is paid.</p>}
+                                <div className="mt-3 space-y-4">
                                 {groups.map((g) => (
-                                    <div key={g.id} className="mt-4">
-                                        <h3 className={`text-[12.5px] font-semibold ${g.tone}`}>{g.label} · {g.items.length}</h3>
-                                        <ul className="mt-1">
+                                    <div key={g.id} className="rounded-2xl bg-surface-1 overflow-hidden">
+                                        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+                                            <span className={`grid place-items-center w-8 h-8 shrink-0 rounded-full ${g.chip}`}>{g.icon}</span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="flex items-center gap-2 text-[15px] font-semibold text-text-light">{g.label}
+                                                    <span className="rounded-full bg-adm-hover-2 px-2 py-px text-[12px] font-semibold tabular-nums text-text-subtle">{g.items.length}</span></span>
+                                                <span className="block text-[12.5px] text-text-subtle">{g.hint}</span>
+                                            </span>
+                                        </div>
+                                        <ul className="px-4 pb-1">
                                             {g.items.map((j) => {
                                                 const done = ticking.has(j.b.id);
                                                 return (
                                                     <li key={j.key} onClick={() => setSelectedId(j.b.id)}
-                                                        className={`group flex flex-wrap sm:flex-nowrap items-center gap-x-3 gap-y-2 py-3 border-b border-adm-line last:border-0 cursor-pointer ${done ? 'opacity-50' : ''}`}>
-                                                        {/* a reading or chat is ticked off; an order to be paid has its service's dot */}
-                                                        {j.tickable
-                                                            ? <button type="button" onClick={(ev) => { ev.stopPropagation(); if (!done) tick(j.b); }} aria-label={`Mark ${j.b.name || 'it'} sent`} title="Mark sent"
-                                                                className={`grid place-items-center w-6 h-6 shrink-0 rounded-full border-2 transition-colors ${done ? 'bg-sage border-sage text-white' : 'border-adm-line-3 text-transparent hover:border-sage hover:text-sage'}`}>
-                                                                <Check size={13} strokeWidth={3} />
-                                                            </button>
-                                                            : <span className="grid place-items-center w-6 h-6 shrink-0"><span aria-hidden className="w-2.5 h-2.5 rounded-full" style={{ background: colorFor(j.b.serviceId) }} /></span>}
+                                                        className={`group flex flex-wrap sm:flex-nowrap items-center gap-x-3 gap-y-2 py-3 border-t border-adm-line cursor-pointer ${done ? 'opacity-50' : ''}`}>
+                                                        <button type="button" onClick={(ev) => { ev.stopPropagation(); if (!done) j.onTick(); }} aria-label={`${j.done}: ${j.b.name || 'this booking'}`} title={j.done}
+                                                            className={`grid place-items-center w-6 h-6 shrink-0 rounded-full border-2 transition-colors ${done ? 'bg-sage border-sage text-white' : 'border-adm-line-3 text-transparent hover:border-sage hover:text-sage'}`}>
+                                                            <Check size={13} strokeWidth={3} />
+                                                        </button>
                                                         <span className="min-w-0 flex-1">
                                                             <span className={`block text-[15px] font-semibold leading-snug text-text-light group-hover:underline ${done ? 'line-through' : ''}`}>{j.title}</span>
                                                             <span className="block text-[13px] leading-snug text-text-subtle">{j.when}</span>
@@ -1589,6 +1589,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                         </ul>
                                     </div>
                                 ))}
+                                </div>
                             </section>
                         </div>
                     </div>
