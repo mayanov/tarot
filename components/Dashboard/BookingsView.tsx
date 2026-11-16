@@ -1652,12 +1652,19 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
                                 {/* done today: still there, but quiet, under what's left */}
                                 {doneJobs.length > 0 && (
-                                    <div className="mt-5 px-4">
-                                        <h3 className="text-[12.5px] font-semibold text-text-subtle">Done today · {doneJobs.length}</h3>
-                                        <ul className="mt-1">
+                                    <div className="mt-4 rounded-2xl bg-surface-1 overflow-hidden">
+                                        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+                                            <span className="grid place-items-center w-8 h-8 shrink-0 rounded-full bg-sage/15 text-sage"><Check size={15} strokeWidth={2.5} /></span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="flex items-center gap-2 text-[15px] font-semibold text-text-light">Done today
+                                                    <span className="rounded-full bg-adm-hover-2 px-2 py-px text-[12px] font-semibold tabular-nums text-text-subtle">{doneJobs.length}</span></span>
+                                                <span className="block text-[12.5px] text-text-subtle">Sent and paid today, newest first</span>
+                                            </span>
+                                        </div>
+                                        <ul className="px-4 pb-1">
                                             {doneJobs.map((d) => (
                                                 <li key={d.b.id} onClick={() => setSelectedId(d.b.id)}
-                                                    className="group flex items-center gap-3 py-2.5 border-t border-adm-line first:border-0 cursor-pointer">
+                                                    className="group flex items-center gap-3 py-3 border-t border-adm-line cursor-pointer">
                                                     <span aria-hidden className="grid place-items-center w-6 h-6 shrink-0 rounded-full bg-sage/20 text-sage"><Check size={13} strokeWidth={3} /></span>
                                                     <span className="min-w-0 flex-1">
                                                         <span className="block text-[14px] leading-snug text-text-subtle line-through decoration-text-subtle/50 group-hover:underline">{d.title}</span>
