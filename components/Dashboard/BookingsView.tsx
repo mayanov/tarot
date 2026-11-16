@@ -1489,10 +1489,23 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 ].sort((x, y) => x.rank - y.rank);
                 const lateCount = todos.filter((t) => t.tone === 'late').length;
                 const onToday = (iso?: string | null) => !!iso && dayOf(Date.parse(iso)) === todayISO;
-                const doneToday = bookings.filter((b) => b.status !== 'cancelled' && (
-                    (!(b.date && b.time) && b.status === 'done' && onToday(b.doneAt))
-                    || (b.paymentStatus === 'paid' && onToday(b.paidAt) && Date.parse(b.paidAt!) - (Date.parse(b.createdAt || '') || 0) > 15 * 60_000)
-                )).length;
+                // what's been done today: readings and chats sent, and orders she marked paid (not ones
+                // paid at checkout, which never waited on her). A reading paid and sent today shows once, as sent.
+                const sentToday = (b: Booking) => !(b.date && b.time) && b.status === 'done' && onToday(b.doneAt);
+                const paidToday = (b: Booking) => b.paymentStatus === 'paid' && onToday(b.paidAt) && Date.parse(b.paidAt!) - (Date.parse(b.createdAt || '') || 0) > 15 * 60_000;
+                const doneJobs = bookings.filter((b) => b.status !== 'cancelled' && !pendingTick[b.id] && (sentToday(b) || paidToday(b)))
+                    .map((b) => {
+                        const sent = sentToday(b);
+                        const t = Date.parse((sent ? b.doneAt : b.paidAt)!);
+                        const name = nameOf(b, 'someone');
+                        return {
+                            b, t,
+                            title: sent ? (b.serviceId === 'chat' ? `Answered ${name}’s chat` : `Sent ${name}’s reading`) : `${name.split(/\s+/)[0]} paid`,
+                            when: `${sent ? 'Sent' : 'Paid'} ${clock(t)} · ${[shortLabel(b), sent ? '' : amountLabel(b)].filter(Boolean).join(' · ')}`,
+                        };
+                    })
+                    .sort((x, y) => y.t - x.t);
+                const doneToday = doneJobs.length;
                 const pendingCount = jobs.filter((j) => pendingTick[j.b.id]).length;
                 const doneCount = doneToday + pendingCount;
                 const totalCount = doneToday + jobs.length;
@@ -1636,6 +1649,25 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                     </div>
                                 ))}
                                 </div>
+
+                                {/* done today: still there, but quiet, under what's left */}
+                                {doneJobs.length > 0 && (
+                                    <div className="mt-5 px-4">
+                                        <h3 className="text-[12.5px] font-semibold text-text-subtle">Done today · {doneJobs.length}</h3>
+                                        <ul className="mt-1">
+                                            {doneJobs.map((d) => (
+                                                <li key={d.b.id} onClick={() => setSelectedId(d.b.id)}
+                                                    className="group flex items-center gap-3 py-2.5 border-t border-adm-line first:border-0 cursor-pointer">
+                                                    <span aria-hidden className="grid place-items-center w-6 h-6 shrink-0 rounded-full bg-sage/20 text-sage"><Check size={13} strokeWidth={3} /></span>
+                                                    <span className="min-w-0 flex-1">
+                                                        <span className="block text-[14px] leading-snug text-text-subtle line-through decoration-text-subtle/50 group-hover:underline">{d.title}</span>
+                                                        <span className="block text-[12.5px] leading-snug text-text-subtle/70">{d.when}</span>
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                             </section>
                         </div>
                     </div>
