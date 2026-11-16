@@ -1430,143 +1430,128 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 const at = (iso: string, hhmm: string) => Date.parse(`${iso}T${hhmm}:00+07:00`);
                 const dayOf = (t: number) => new Date(t).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
                 const clock = (t: number) => new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
-                // what's on: readings to send, sessions today and tomorrow, and sessions in
-                // her own calendar not booked yet
-                type Row = { key: string; at: number; day: string; todo?: Todo; b?: Booking; e?: CalEvent };
                 const todos = readingsDue.map((b) => readingTodo(b, now)).filter((t): t is Todo => !!t);
-                const rows: Row[] = [
-                    ...todos.map((t): Row => ({ key: t.b.id, at: Number.isFinite(t.at) ? t.at : now, day: '', todo: t, b: t.b })),
-                    ...calendarSessions.filter((b) => !b.extraFor && (b.date === todayISO || b.date === tomorrowISO))
-                        .map((b): Row => ({ key: b.id, at: at(b.date, b.time), day: '', b })),
-                    ...soonEntries.filter((e) => e.time && !isHelperEntry(e) && isSessionTitle(e.title) && (e.date === todayISO || e.date === tomorrowISO))
-                        .map((e): Row => ({ key: e.id, at: at(e.date, e.time!), day: '', e })),
-                ].map((r) => ({ ...r, day: dayOf(r.at) < todayISO ? todayISO : dayOf(r.at) }))
-                    .sort((x, y) => x.at - y.at);
-                const days = [...new Set(rows.map((r) => r.day))].sort();
-                const dayName = (iso: string) => iso === todayISO ? 'Today' : iso === tomorrowISO ? 'Tomorrow'
-                    : parseISO(iso).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
-                // the three numbers at the top
-                const late = todos.filter((t) => t.tone === 'late').length;
-                const soonSessions = calendarSessions.filter((b) => !b.extraFor && b.status !== 'done'
-                    && ((b.date === todayISO && at(b.date, b.time) + (b.durationMin || 60) * 60_000 > now) || b.date === tomorrowISO));
-                const sessionsToday = soonSessions.filter((b) => b.date === todayISO).length;
-                const owed: Money = { IDR: 0, USD: 0 };
-                unpaid.forEach((b) => { const a = amountForBooking(b); if (a) owed[a.currency] += a.amount; });
-                const owedShort = [owed.IDR && fmtMoney(owed.IDR, 'IDR'), owed.USD && fmtMoney(owed.USD, 'USD')].filter(Boolean) as string[];
-                const ask = 'inline-flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold whitespace-nowrap transition-colors';
                 const tick = async (b: Booking) => {
                     setTicking((s) => new Set(s).add(b.id));
                     await new Promise((r) => setTimeout(r, 450)); // let the tick show first
                     if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Reading'} marked sent. It's under Orders → Done.`, 'ok');
                     setTicking((s) => { const n = new Set(s); n.delete(b.id); return n; });
                 };
-                const line = (r: Row) => {
-                    const b = r.b, t = r.todo, e = r.e;
-                    const before = r.at < at(r.day, '00:00');
-                    const done = !!b && ticking.has(b.id);
-                    let time: React.ReactNode, title: string, meta: React.ReactNode, action: React.ReactNode = null;
-                    if (t && b) {
-                        const reply = replyLink(b);
-                        const tone = t.tone === 'late' ? 'due-late-text font-semibold' : t.tone === 'soon' ? 'due-soon-text font-semibold' : '';
-                        time = !Number.isFinite(t.at) ? <span className="font-medium">waiting</span> : t.tone === 'late' && before ? 'Late' : clock(r.at);
-                        title = t.title;
-                        // (a reading to send is always paid, so the line doesn't say it)
-                        meta = <>{[serviceLabel(b), amountLabel(b)].filter(Boolean).join(' · ')} · <span className={tone}>{t.pill}</span></>;
-                        action = <>
-                            {reply && <a href={reply.href} target="_blank" rel="noopener noreferrer" title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${b.name || 'their'} WhatsApp chat`}
-                                className={SOFT_BTN}>
+                const dot = (id?: string, dashed = false) => dashed
+                    ? <span aria-hidden className="mt-[7px] w-2.5 h-2.5 shrink-0 rounded-full border-2 border-dashed" style={{ borderColor: colorFor(id) }} />
+                    : <span aria-hidden className="mt-[7px] w-2.5 h-2.5 shrink-0 rounded-full" style={{ background: colorFor(id) }} />;
+
+                // 1. TO DO: only what's waiting on her. Readings and chats to answer, then orders
+                // not paid yet. One bold line saying what to do, one grey line saying how close it is.
+                type Job = { key: string; b: Booking; rank: number; title: string; when: React.ReactNode; actions: React.ReactNode; tickable?: boolean };
+                const jobs: Job[] = [
+                    ...todos.map((t): Job => {
+                        const reply = replyLink(t.b);
+                        return {
+                            key: t.b.id, b: t.b, tickable: true,
+                            rank: t.tone === 'late' ? 0 : t.tone === 'soon' ? 1 : 2,
+                            title: t.title,
+                            when: <span className={t.tone === 'late' ? 'due-late-text font-semibold' : t.tone === 'soon' ? 'due-soon-text font-semibold' : ''}>{t.pill}</span>,
+                            actions: reply && <a href={reply.href} target="_blank" rel="noopener noreferrer" className={SOFT_BTN}
+                                title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${t.b.name || 'their'} WhatsApp chat`}>
                                 {reply.kind === 'email' ? <Mail size={14} /> : <FaWhatsapp size={14} />}{reply.kind === 'email' ? 'Send by email' : 'Reply on WhatsApp'}
-                            </a>}
-                            <button type="button" onClick={() => !done && tick(b)} aria-label={`Mark ${b.name || 'it'} sent`} title="Mark sent"
-                                className={`grid place-items-center w-9 h-9 rounded-full border-2 transition-colors ${done ? 'bg-sage border-sage text-white' : 'border-adm-line-2 text-text-subtle hover:border-sage hover:text-sage'}`}>
-                                <Check size={15} strokeWidth={3} />
-                            </button>
-                        </>;
-                    } else if (b) {
-                        const end = r.at + (b.durationMin || 60) * 60_000;
-                        const over = b.status === 'done' || end < now;
-                        time = clock(r.at);
-                        title = sessionTitle(b);
-                        // how long, how much, then one word for where it stands
-                        meta = <>{[b.durationMin ? durLabel(b.durationMin) : '', amountLabel(b)].filter(Boolean).join(' · ')} · {b.paymentStatus !== 'paid'
-                            ? <span className="due-soon-text font-semibold">not paid</span> : over ? 'done' : 'paid'}</>;
-                        if (b.paymentStatus !== 'paid') action = <AskToPay b={b} onSent={(f, at2) => markWa(b.id, f, at2)} onNote={flash} />;
-                    } else if (e) {
-                        time = clock(r.at);
-                        title = e.title;
-                        meta = 'Only in your calendar, not booked here';
-                        action = <button type="button" onClick={() => setFromEntry(e)} className={`${ask} border border-dashed border-adm-line-3 text-text-light hover:bg-adm-hover`}><Plus size={14} />Make it a booking</button>;
-                    } else return null;
-                    const late = t?.tone === 'late';
-                    return (
-                        <li key={r.key} onClick={() => b && setSelectedId(b.id)}
-                            className={`grid grid-cols-[3.25rem_0.75rem_minmax(0,1fr)] sm:grid-cols-[4rem_0.75rem_minmax(0,1fr)_auto] gap-x-3 sm:gap-x-4 gap-y-2 items-center py-3.5 border-b border-adm-line last:border-0 ${b ? 'cursor-pointer hover:bg-adm-hover -mx-3 px-3 rounded-lg' : '-mx-3 px-3'} ${done ? 'opacity-50' : ''}`}>
-                            <span className={`text-right text-[14px] leading-tight font-bold tabular-nums ${late ? 'due-late-text' : 'text-text-light'}`}>{time}</span>
-                            {e ? <span aria-hidden className="w-3 h-3 rounded-full border-2 border-dashed" style={{ borderColor: colorFor(serviceFromTitle(e.title)) }} />
-                                : <span aria-hidden className="w-3 h-3 rounded-full" style={{ background: colorFor(b?.serviceId) }} />}
-                            <span className="min-w-0">
-                                <span className={`block text-[16px] font-semibold text-text-light leading-snug ${done ? 'line-through' : ''}`}>{title}</span>
-                                <span className="block text-[13.5px] text-text-subtle leading-snug mt-0.5">{meta}</span>
-                            </span>
-                            {action && <span onClick={(ev) => ev.stopPropagation()} className="col-start-3 sm:col-start-auto flex items-center gap-2 sm:justify-end">{action}</span>}
-                        </li>
-                    );
-                };
-                const used = [...new Set(rows.map((r) => r.b?.serviceId || (r.e ? serviceFromTitle(r.e.title) : '')).concat(unpaid.map((b) => b.serviceId)))].filter(Boolean);
+                            </a>,
+                        };
+                    }),
+                    ...unpaid.map((b): Job => ({
+                        key: `pay-${b.id}`, b, rank: 3,
+                        title: `Ask ${(nameOf(b) || 'them').split(/\s+/)[0]} to pay`,
+                        when: <>{[shortLabel(b), amountLabel(b)].filter(Boolean).join(' · ')}{b.date && b.time ? ` · ${dayWord(b.date)} ${b.time}` : ''}</>,
+                        actions: <>
+                            <AskToPay b={b} onSent={(f, at2) => markWa(b.id, f, at2)} onNote={flash} />
+                            <button type="button" onClick={() => togglePaid(b)} disabled={payBusy === b.id}
+                                className="h-9 px-2 text-[13px] font-semibold text-text-subtle hover:text-text-light disabled:opacity-50 whitespace-nowrap transition-colors">Mark paid</button>
+                        </>,
+                    })),
+                ].sort((x, y) => x.rank - y.rank);
+                const lateCount = todos.filter((t) => t.tone === 'late').length;
+
+                // 2. COMING UP: sessions today and tomorrow (and ones only in her calendar), just
+                // the time and who. Asking to pay lives in To do, so these rows have no buttons.
+                type Slot = { key: string; at: number; day: string; b?: Booking; e?: CalEvent };
+                const slots: Slot[] = [
+                    ...calendarSessions.filter((b) => !b.extraFor && (b.date === todayISO || b.date === tomorrowISO))
+                        .map((b): Slot => ({ key: b.id, at: at(b.date, b.time), day: b.date, b })),
+                    ...soonEntries.filter((e) => e.time && !isHelperEntry(e) && isSessionTitle(e.title) && (e.date === todayISO || e.date === tomorrowISO))
+                        .map((e): Slot => ({ key: e.id, at: at(e.date, e.time!), day: e.date, e })),
+                ].sort((x, y) => x.at - y.at);
+                const isOver = (s: Slot) => !!s.b && (s.b.status === 'done' || s.at + (s.b.durationMin || 60) * 60_000 < now);
+                const earlier = slots.filter((s) => s.day === todayISO && isOver(s));
+                const ahead = slots.filter((s) => !earlier.includes(s));
+
+                const heading = (text: string, n?: React.ReactNode) => (
+                    <h2 className="flex items-baseline gap-2 pb-2 border-b border-adm-line text-[15px] font-semibold text-text-light">
+                        {text}{n !== undefined && <span className="text-[14px] font-medium text-text-subtle">{n}</span>}
+                    </h2>
+                );
                 return (
-                    <div className="space-y-7">
-                        {/* the day in three numbers */}
-                        <div className="grid grid-cols-3 border-y border-adm-line">
-                            <div className="py-4 pr-3">
-                                <div className="text-[28px] sm:text-[36px] font-bold tracking-[-0.02em] leading-none tabular-nums text-text-light">{todos.length}</div>
-                                <div className="mt-1.5 text-[13px] sm:text-sm text-text-subtle">{todos.length === 1 ? 'reading' : 'readings'} to send{late > 0 && <>, <span className="due-late-text font-semibold">{late} late</span></>}</div>
-                            </div>
-                            <div className="py-4 px-3 sm:px-6 border-l border-adm-line">
-                                <div className="text-[28px] sm:text-[36px] font-bold tracking-[-0.02em] leading-none tabular-nums text-text-light">{soonSessions.length}</div>
-                                <div className="mt-1.5 text-[13px] sm:text-sm text-text-subtle">{soonSessions.length === 1 ? 'session' : 'sessions'}{sessionsToday ? `, ${sessionsToday} today` : ' today and tomorrow'}</div>
-                            </div>
-                            <div className="py-4 pl-3 sm:pl-6 border-l border-adm-line min-w-0">
-                                <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[20px] sm:text-[36px] font-bold tracking-[-0.02em] leading-none tabular-nums text-text-light">
-                                    {owedShort.length ? <><span className="whitespace-nowrap">{owedShort[0]}</span>{owedShort[1] && <span className="whitespace-nowrap text-[15px] sm:text-[22px] text-text-subtle">+ {owedShort[1]}</span>}</> : '0'}
-                                </div>
-                                <div className="mt-1.5 text-[13px] sm:text-sm text-text-subtle">waiting for payment</div>
-                            </div>
-                        </div>
+                    <div className="max-w-3xl space-y-10">
+                        <section aria-label="To do">
+                            {heading('To do', jobs.length ? <>{jobs.length}{lateCount > 0 && <> · <span className="due-late-text font-semibold">{lateCount} late</span></>}</> : undefined)}
+                            {jobs.length === 0 && <p className="py-5 text-sm text-text-subtle">Nothing waiting on you: every reading is sent and every order is paid.</p>}
+                            <ul>
+                                {jobs.map((j) => {
+                                    const done = ticking.has(j.b.id);
+                                    return (
+                                        <li key={j.key} onClick={() => setSelectedId(j.b.id)}
+                                            className={`group flex flex-wrap sm:flex-nowrap items-start gap-x-3 gap-y-2 py-4 border-b border-adm-line last:border-0 cursor-pointer ${done ? 'opacity-50' : ''}`}>
+                                            {dot(j.b.serviceId)}
+                                            <span className="min-w-0 flex-1">
+                                                <span className={`block text-[16px] font-semibold leading-snug text-text-light group-hover:underline ${done ? 'line-through' : ''}`}>{j.title}</span>
+                                                <span className="block mt-0.5 text-[13.5px] leading-snug text-text-subtle">{j.when}</span>
+                                            </span>
+                                            <span onClick={(ev) => ev.stopPropagation()} className="w-full sm:w-auto pl-[22px] sm:pl-0 flex items-center gap-2 shrink-0">
+                                                {j.actions}
+                                                {j.tickable && <button type="button" onClick={() => !done && tick(j.b)} aria-label={`Mark ${j.b.name || 'it'} sent`} title="Mark sent"
+                                                    className={`grid place-items-center w-9 h-9 rounded-full border-2 transition-colors ${done ? 'bg-sage border-sage text-white' : 'border-adm-line-2 text-text-subtle hover:border-sage hover:text-sage'}`}>
+                                                    <Check size={15} strokeWidth={3} />
+                                                </button>}
+                                            </span>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </section>
 
-                        <div className="grid gap-8 lg:gap-12 lg:grid-cols-[minmax(0,1fr)_300px] items-start">
-                            <section aria-label="The day in order of time">
-                                {rows.length === 0 && <p className="py-6 text-sm text-text-subtle">Nothing waiting: every reading is sent and there are no sessions today or tomorrow.</p>}
-                                {days.map((d) => (
-                                    <div key={d} className="mb-5 last:mb-0">
-                                        <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-text-subtle mb-1">{dayName(d)}</h2>
-                                        <ul>{rows.filter((r) => r.day === d).map(line)}</ul>
+                        <section aria-label="Coming up">
+                            {heading('Coming up')}
+                            {ahead.length === 0 && <p className="py-5 text-sm text-text-subtle">No sessions today or tomorrow.</p>}
+                            {[todayISO, tomorrowISO].map((d) => {
+                                const list = ahead.filter((s) => s.day === d);
+                                if (!list.length) return null;
+                                return (
+                                    <div key={d} className="pt-4">
+                                        <div className="text-[13px] font-medium text-text-subtle">{d === todayISO ? 'Today' : 'Tomorrow'}</div>
+                                        <ul>
+                                            {list.map((s) => (
+                                                <li key={s.key} onClick={() => s.b && setSelectedId(s.b.id)}
+                                                    className={`group flex items-start gap-3 py-2.5 ${s.b ? 'cursor-pointer' : ''}`}>
+                                                    <span className="w-12 shrink-0 pt-px text-[15px] font-semibold tabular-nums text-text-light">{clock(s.at)}</span>
+                                                    {dot(s.b?.serviceId || (s.e ? serviceFromTitle(s.e.title) : ''), !!s.e)}
+                                                    <span className="min-w-0 flex-1">
+                                                        <span className={`block text-[15px] font-medium leading-snug ${s.e ? 'text-text-subtle' : 'text-text-light group-hover:underline'}`}>{s.b ? sessionTitle(s.b) : s.e!.title}</span>
+                                                        <span className="block text-[13px] leading-snug text-text-subtle">
+                                                            {s.b ? <>{s.b.durationMin ? durLabel(s.b.durationMin) : ''}{s.b.paymentStatus !== 'paid' && <> · <span className="due-soon-text font-semibold">not paid</span></>}</>
+                                                                : <>Only in your calendar · <button type="button" onClick={() => setFromEntry(s.e!)} className="font-semibold text-lilac hover:underline">make it a booking</button></>}
+                                                        </span>
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
-                                ))}
-                            </section>
-
-                            <aside aria-label="Not paid yet">
-                                <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-text-subtle mb-1">Not paid yet</h2>
-                                {unpaid.length === 0 ? <p className="py-4 text-sm text-text-subtle border-t border-adm-line">Everything is paid.</p> : unpaid.map((b) => (
-                                    <div key={b.id} onClick={() => setSelectedId(b.id)} className="py-4 border-t border-adm-line cursor-pointer group">
-                                        <div className="flex items-baseline justify-between gap-3 text-[15px]">
-                                            <span className="flex items-center gap-2 min-w-0"><span aria-hidden className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colorFor(b.serviceId) }} /><b className="truncate text-text-light group-hover:underline">{nameOf(b)}</b></span>
-                                            <b className="tabular-nums text-text-light whitespace-nowrap">{amountLabel(b)}</b>
-                                        </div>
-                                        <div className="text-[13px] text-text-subtle mt-0.5">{shortLabel(b)} · {b.date && b.time ? `${dayWord(b.date)} ${b.time}` : `ordered ${dayWord(b.createdAt)}`}</div>
-                                        <div className="mt-2.5 flex items-center gap-2" onClick={(ev) => ev.stopPropagation()}>
-                                            <AskToPay b={b} onSent={(f, at2) => markWa(b.id, f, at2)} onNote={flash} />
-                                            <button type="button" onClick={() => togglePaid(b)} disabled={payBusy === b.id}
-                                                className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold text-text-subtle hover:text-text-light hover:bg-adm-hover-2 disabled:opacity-50 transition-colors"><Check size={13} />Mark paid</button>
-                                        </div>
-                                    </div>
-                                ))}
-                                {used.length > 0 && (
-                                    <div className="mt-5 flex flex-wrap gap-x-4 gap-y-1.5 text-[12.5px] text-text-subtle">
-                                        {used.map((id) => <span key={id} className="inline-flex items-center gap-1.5"><span aria-hidden className="w-2 h-2 rounded-full" style={{ background: colorFor(id) }} />{SERVICE_NAME[id] || id}</span>)}
-                                    </div>
-                                )}
-                            </aside>
-                        </div>
+                                );
+                            })}
+                            {earlier.length > 0 && (
+                                <p className="pt-3 text-[13px] text-text-subtle">
+                                    Done earlier: {earlier.map((s, i) => <React.Fragment key={s.key}>{i > 0 && ', '}<button type="button" onClick={() => s.b && setSelectedId(s.b.id)} className="hover:underline">{s.b ? sessionTitle(s.b) : s.e!.title} {clock(s.at)}</button></React.Fragment>)}
+                                </p>
+                            )}
+                        </section>
                     </div>
                 );
             })()}
