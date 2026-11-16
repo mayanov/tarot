@@ -3,7 +3,7 @@ import { ShoppingBag, ChevronLeft, ChevronRight, Plus, ArrowRight, Pencil, Mail,
 import { FaWhatsapp } from 'react-icons/fa';
 import Dialog, { DialogIconButton, Section, KV } from './ui/Dialog';
 import PageHeader from './ui/PageHeader';
-import Button, { IconButton } from './ui/Button';
+import Button, { IconButton, SOFT_BTN } from './ui/Button';
 import Card from './ui/Card';
 import Segmented from './ui/Segmented';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, updateBookingDetails, BOOKINGS_CHANGED, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
@@ -939,8 +939,8 @@ export const AskToPay: React.FC<{ b: Booking; onSent: (field: WaField, at: strin
     return (
         <a href={href} target="_blank" rel="noopener noreferrer" title={`Opens a Gmail draft to ${email} with the total`}
             className={big ? 'w-full inline-flex items-center justify-center gap-2 rounded-xl bg-lilac text-white px-4 py-3 text-[15px] font-semibold hover:bg-lilac/90 transition-colors'
-                : 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-adm-line-2 text-xs font-medium text-text-light hover:bg-adm-hover-2 whitespace-nowrap transition-colors'}>
-            <Mail size={big ? 16 : 13} className={big ? '' : 'text-lilac'} />{big ? `Ask ${(b.name || '').trim().split(/\s+/)[0] || 'them'} to pay by email` : 'Ask to pay'}
+                : SOFT_BTN}>
+            <Mail size={big ? 16 : 14} />{big ? `Ask ${(b.name || '').trim().split(/\s+/)[0] || 'them'} to pay by email` : 'Ask to pay'}
         </a>
     );
 };
@@ -1474,7 +1474,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                         meta = <>{[serviceLabel(b), amountLabel(b)].filter(Boolean).join(' · ')} · <span className={tone}>{t.pill}</span></>;
                         action = <>
                             {reply && <a href={reply.href} target="_blank" rel="noopener noreferrer" title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${b.name || 'their'} WhatsApp chat`}
-                                className={`${ask} ${t.tone === 'late' ? 'bg-text-light text-bg-deep hover:opacity-90' : 'border border-adm-line-2 bg-surface-1 text-text-light hover:bg-adm-hover'}`}>
+                                className={SOFT_BTN}>
                                 {reply.kind === 'email' ? <Mail size={14} /> : <FaWhatsapp size={14} />}{reply.kind === 'email' ? 'Send by email' : 'Reply on WhatsApp'}
                             </a>}
                             <button type="button" onClick={() => !done && tick(b)} aria-label={`Mark ${b.name || 'it'} sent`} title="Mark sent"

@@ -4,6 +4,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 import type { Todo } from './lib/notifications';
 import { replyLink } from './lib/reply';
 import { colorFor } from './lib/serviceColor';
+import { SOFT_BTN } from './ui/Button';
 
 // One thing to do, as a card: a reading or chat to send (ticked off on its circle, with a
 // button to where it's answered), or a session coming up (its day and time). Used by the
@@ -55,7 +56,7 @@ const TodoCard: React.FC<{
                         {reply && (
                             <a href={reply.href} target="_blank" rel="noopener noreferrer"
                                 title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${t.b.name || 'their'} WhatsApp chat`}
-                                className={`inline-flex items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-[12.5px] font-semibold transition-colors ${t.tone === 'late' ? 'bg-text-light text-bg-deep hover:opacity-90' : 'border border-adm-line-2 bg-surface-1 text-text-light hover:bg-adm-hover'}`}>
+                                className={SOFT_BTN}>
                                 {reply.kind === 'email' ? <Mail size={13} /> : <FaWhatsapp size={13} />}
                                 {reply.kind === 'email' ? 'Send by email' : 'Reply on WhatsApp'}
                             </a>

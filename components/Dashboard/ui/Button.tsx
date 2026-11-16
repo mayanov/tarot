@@ -30,6 +30,10 @@ const Button: React.FC<Props> = ({ variant = 'primary', size = 'md', className =
     </button>
 );
 
+// The one button a row gets (Reply on WhatsApp, Send by email, Ask to pay, Mark paid): a soft
+// accent fill, no border, so a list of them reads calm next to the page's one main button.
+export const SOFT_BTN = 'inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-[10px] bg-lilac/10 text-lilac text-[13px] font-semibold whitespace-nowrap hover:bg-lilac/20 transition-colors disabled:opacity-50';
+
 // Circular icon-only button (the refresh control pattern).
 export const IconButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ className = '', children, ...rest }) => (
     <button

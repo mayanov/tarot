@@ -7,7 +7,7 @@ import BookingsView, { AskToPay } from './BookingsView';
 import WaConfirmButton from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
 import { PaymentPill } from './lib/status';
-import Button, { IconButton } from './ui/Button';
+import Button, { IconButton, SOFT_BTN } from './ui/Button';
 import { colorFor } from './lib/serviceColor';
 import { SearchInput, Select } from './ui/Field';
 
@@ -164,7 +164,6 @@ const SalesView: React.FC = () => {
     const unpaidRows = filtered.filter((b) => b.paymentStatus !== 'paid');
     const paidRows = filtered.filter((b) => b.paymentStatus === 'paid');
     const markWa = (id: string) => (f: string, at: string) => setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, [f]: at } : x)));
-    const chip = (on: boolean) => `inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13.5px] font-semibold transition-colors ${on ? 'bg-text-light text-bg-deep' : 'bg-adm-hover-2 text-text-light hover:bg-adm-hover-3'}`;
     const unpaidAll = orders.filter((b) => b.paymentStatus !== 'paid').length;
     const figure = (label: React.ReactNode, money: Record<Cur, number>, foot: string, cls = '') => {
         const [main, ...rest] = curs.filter((c) => money[c] || curs.length === 1);
@@ -210,7 +209,7 @@ const SalesView: React.FC = () => {
                     ) : <>
                         <AskToPay b={b} onSent={markWa(b.id)} onNote={() => {}} />
                         <button type="button" onClick={() => togglePaid(b)} disabled={savingId === b.id}
-                            className="rounded-[10px] border border-adm-line-2 bg-surface-1 px-3 py-1.5 text-[13px] font-semibold text-text-light hover:bg-adm-hover disabled:opacity-50 whitespace-nowrap">Mark paid</button>
+                            className={SOFT_BTN}>Mark paid</button>
                     </>}
                 </span>
             </div>
@@ -240,13 +239,27 @@ const SalesView: React.FC = () => {
                 {figure('Booked in all', { IDR: totals.paid.IDR + totals.unpaid.IDR, USD: totals.paid.USD + totals.unpaid.USD }, `${orders.length} ${orders.length === 1 ? 'order' : 'orders'}`, 'pl-3 sm:pl-6 border-l border-adm-line')}
             </div>
 
-            {/* the usual filters one tap away; the rest in the menus beside them */}
-            <div className="flex flex-wrap items-center gap-2">
-                <button type="button" className={chip(payFilter === 'all')} onClick={() => setPayFilter('all')}>All <span className="opacity-70 tabular-nums">{orders.length}</span></button>
-                <button type="button" className={chip(payFilter === 'unpaid')} onClick={() => setPayFilter(payFilter === 'unpaid' ? 'all' : 'unpaid')}>Not paid <span className="opacity-70 tabular-nums">{unpaidAll}</span></button>
-                <button type="button" className={chip(market === 'ID')} onClick={() => { setMarket(market === 'ID' ? 'all' : 'ID'); setServiceFilter('all'); }}>Indonesia</button>
-                <button type="button" className={chip(market === 'Global')} onClick={() => { setMarket(market === 'Global' ? 'all' : 'Global'); setServiceFilter('all'); }}>Abroad</button>
-                <span className="w-px h-6 bg-adm-line-2 mx-1 hidden sm:block" aria-hidden />
+            {/* two questions, kept apart: which orders (tabs, left) and where they're from (a small switch, right),
+                then the rarer filters beside it */}
+            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-adm-line">
+                <div role="tablist" aria-label="Which orders" className="flex gap-6">
+                    {([['all', 'All', null], ['unpaid', 'Not paid', unpaidAll]] as const).map(([id, label, n]) => {
+                        const on = payFilter === id;
+                        return (
+                            <button key={id} type="button" role="tab" aria-selected={on} onClick={() => setPayFilter(id)}
+                                className={`-mb-px border-b-2 py-2.5 text-[15px] whitespace-nowrap transition-colors ${on ? 'border-text-light font-semibold text-text-light' : 'border-transparent font-medium text-text-subtle hover:text-text-light'}`}>
+                                {label}{n !== null && n > 0 && <span className="ml-1.5 due-soon-text font-semibold tabular-nums">{n}</span>}
+                            </button>
+                        );
+                    })}
+                </div>
+            <div className="flex flex-wrap items-center gap-2 pb-2">
+                <div role="group" aria-label="Where they're from" className="inline-flex items-center gap-0.5 rounded-full bg-adm-hover-2 p-[3px]">
+                    {([['all', 'Anywhere'], ['ID', 'Indonesia'], ['Global', 'Abroad']] as const).map(([id, label]) => (
+                        <button key={id} type="button" aria-pressed={market === id} onClick={() => { setMarket(id); setServiceFilter('all'); }}
+                            className={`rounded-full px-3 py-1 text-[13px] whitespace-nowrap transition-colors ${market === id ? 'bg-surface-1 font-semibold text-text-light shadow-sm' : 'font-medium text-text-subtle hover:text-text-light'}`}>{label}</button>
+                    ))}
+                </div>
                 <Select value={serviceFilter} active={serviceFilter !== 'all'} onChange={(e) => setServiceFilter(e.target.value)} className="max-w-[14rem]">
                     <option value="all">All services</option>
                     {serviceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -302,6 +315,7 @@ const SalesView: React.FC = () => {
                         Clear
                     </Button>
                 )}
+            </div>
             </div>
 
             {/* one list: not paid first, then month by month */}

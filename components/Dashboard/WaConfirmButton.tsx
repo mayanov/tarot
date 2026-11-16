@@ -3,6 +3,7 @@ import { ChevronDown, CircleCheck, Wallet } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import type { Booking } from '../../services/booking';
 import { amountForBooking, fmtMoney } from './lib/format';
+import { SOFT_BTN } from './ui/Button';
 
 // "Send confirmation" for a booking: opens Mayanov's own WhatsApp (app or web) on the
 // customer's chat with the confirmation already typed, to send with one tap. An
@@ -250,8 +251,8 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: strin
       <span className="inline-flex items-center gap-1.5">
         <button type="button" disabled={busy || paid} onClick={(e) => { e.stopPropagation(); send('pay'); }}
           title={asked ? `${asked} · click to ask again (opens WhatsApp with the total, BCA and QRIS)` : 'Opens WhatsApp with the total, BCA and QRIS'}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-colors disabled:opacity-50 ${asked ? 'text-text-subtle hover:text-text-light hover:bg-adm-hover-2' : 'border border-adm-line-2 text-text-light font-medium hover:bg-adm-hover-2'}`}>
-          <span className={asked ? '' : 'text-[#1fae55]'}><FaWhatsapp size={13} /></span>
+          className={asked ? 'inline-flex items-center gap-1.5 h-9 px-2.5 rounded-[10px] text-[13px] whitespace-nowrap text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors disabled:opacity-50' : SOFT_BTN}>
+          <FaWhatsapp size={14} />
           {asked || 'Ask to pay'}
         </button>
         {qrRetry}

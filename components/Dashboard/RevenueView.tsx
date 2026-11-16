@@ -375,10 +375,27 @@ const RevenueView: React.FC = () => {
         </div>
     );
     const Empty = ({ text }: { text: string }) => <p className="text-sm text-text-subtle py-10 text-center">{text}</p>;
-    // a thin bar showing a share
-    const ShareBar = ({ share, color }: { share: number; color: string }) => (
-        <span className="block h-1.5 rounded-full bg-adm-hover overflow-hidden"><span className="block h-full rounded-full" style={{ width: `${Math.max(2, Math.round(share * 100))}%`, background: color }} /></span>
-    );
+    // a ring split into each service's share (a small gap between slices), the total in the middle
+    const Donut = ({ slices, center, label }: { slices: { share: number; color: string }[]; center: string; label: string }) => {
+        const size = 148, r = 58, sw = 20, c = 2 * Math.PI * r;
+        const gap = slices.length > 1 ? 3 : 0;
+        let at = 0;
+        return (
+            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={label} className="shrink-0">
+                <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={sw} className="stroke-adm-hover" />
+                <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
+                    {slices.map((s, i) => {
+                        const len = Math.max(0, s.share * c - gap);
+                        const el = <circle key={i} cx={size / 2} cy={size / 2} r={r} fill="none" stroke={s.color} strokeWidth={sw} strokeDasharray={`${len} ${c}`} strokeDashoffset={-at} />;
+                        at += s.share * c;
+                        return el;
+                    })}
+                </g>
+                <text x={size / 2} y={size / 2 + 1} textAnchor="middle" className="fill-text-light" style={{ fontSize: 15, fontWeight: 700 }}>{center}</text>
+                <text x={size / 2} y={size / 2 + 18} textAnchor="middle" className="fill-text-subtle" style={{ fontSize: 11 }}>came in</text>
+            </svg>
+        );
+    };
     // a currency's heading inside a card that shows both
     const CurHead = ({ c }: { c: Currency }) => <h3 className="text-[11px] font-semibold text-text-subtle mb-2">{curName(c)}</h3>;
     const Seg = <T extends string>(p: { value: T; options: { id: T; label: string }[]; onChange: (v: NoInfer<T>) => void }) => <Segmented size="sm" {...p} />;
@@ -494,17 +511,27 @@ const RevenueView: React.FC = () => {
                             {reports.filter((r) => r.earners.length).map((r) => (
                                 <div key={r.currency}>
                                     <CurHead c={r.currency} />
-                                    <ul className="space-y-3">
-                                        {r.earners.map((x) => (
-                                            <li key={x.id}>
-                                                <div className="flex items-baseline justify-between gap-3 text-[13px]">
-                                                    <span className="flex items-center gap-2 min-w-0"><span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: colorFor(x.id) }} /><span className="truncate text-text-light font-medium">{SERVICE_LABEL[x.id] || x.id}</span><span className="text-text-subtle text-[12px] whitespace-nowrap">{x.count} {x.count === 1 ? 'booking' : 'bookings'}</span></span>
-                                                    <span className="whitespace-nowrap tabular-nums"><span className="text-text-light font-semibold">{fmtMoney(x.amount, r.currency)}</span><span className="text-text-subtle text-[12px] ml-2">{Math.round(x.share * 100)}%</span></span>
-                                                </div>
-                                                <div className="mt-1.5"><ShareBar share={x.share} color={colorFor(x.id)} /></div>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    {/* a donut of each service's share, the total in the middle, and a legend beside it */}
+                                    <div className="flex items-center gap-6 sm:gap-8">
+                                        <Donut slices={r.earners.map((x) => ({ share: x.share, color: colorFor(x.id) }))}
+                                            label={r.earners.map((x) => `${SERVICE_LABEL[x.id] || x.id} ${Math.round(x.share * 100)} percent`).join(', ')}
+                                            center={fmtMoney(r.total, r.currency, true)} />
+                                        <ul className="min-w-0 flex-1 space-y-3">
+                                            {r.earners.map((x) => (
+                                                <li key={x.id} className="min-w-0">
+                                                    <div className="flex items-center gap-2 text-[13px] min-w-0">
+                                                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colorFor(x.id) }} />
+                                                        <span className="truncate text-text-light font-medium">{SERVICE_LABEL[x.id] || x.id}</span>
+                                                        <span className="text-text-subtle text-[12px] whitespace-nowrap">· {Math.round(x.share * 100)}%</span>
+                                                    </div>
+                                                    <div className="pl-[18px] whitespace-nowrap tabular-nums">
+                                                        <span className="text-text-light font-bold text-[15px]">{fmtMoney(x.amount, r.currency)}</span>
+                                                        <span className="text-text-subtle text-[12px] ml-2">{x.count} {x.count === 1 ? 'booking' : 'bookings'}</span>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 </div>
                             ))}
                         </div>
