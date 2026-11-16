@@ -534,11 +534,12 @@ export async function eventStatus(eventId) {
 
 // Push a booking's new time to its existing calendar event (used on admin reschedule).
 // `notify: false` changes it without Google emailing the guests (extra time added to a
-// session that's happening anyway).
+// session that's happening anyway). Returns false when Google refused or couldn't be
+// reached, so the booking can remember its calendar entry still shows the old time.
 export async function updateEvent(eventId, booking, { notify = true } = {}) {
   const sendUpdates = notify ? 'all' : 'none';
   const c = getClient();
-  if (!c || !eventId || !booking?.date || !booking?.time) return;
+  if (!c || !eventId || !booking?.date || !booking?.time) return true;
   try {
     // An entry Mayanov made herself and linked to a booking keeps her title, notes and
     // guests: only its time moves (exactly the session, no rest tail).
@@ -552,8 +553,8 @@ export async function updateEvent(eventId, booking, { notify = true } = {}) {
           end: { dateTime: rfc3339(booking.date, toHHMM(toMin(booking.time) + dur)), timeZone: TZ },
         }),
       });
-      if (!r.ok) console.error('[gcal] linked move failed', r.status, await r.text());
-      return;
+      if (!r.ok) { console.error('[gcal] linked move failed', r.status, await r.text()); return false; }
+      return true;
     }
     // Kept as it was made: an invite stays an invite (and the move emails the customer;
     // their guest entry and Meet link stay as they are), an event without guests stays one.
@@ -564,10 +565,12 @@ export async function updateEvent(eventId, booking, { notify = true } = {}) {
       headers: { Authorization: `Bearer ${await accessToken()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(scheduledBody(booking, invite)),
     });
-    if (!r.ok) console.error('[gcal] updateEvent failed', r.status, await r.text());
-    else if (invite) await placeRest(await r.json());
+    if (!r.ok) { console.error('[gcal] updateEvent failed', r.status, await r.text()); return false; }
+    if (invite) await placeRest(await r.json());
+    return true;
   } catch (e) {
     console.error('[gcal] updateEvent error:', e.message);
+    return false;
   }
 }
 

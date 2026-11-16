@@ -192,7 +192,15 @@ export async function rescheduleBooking(id, { date, time, durationMin }, opts = 
   }
 
   if (!opts.skipCalendar && updated.gcalEventId) {
-    try { await gcal.updateEvent(updated.gcalEventId, updated, { notify: !opts.quiet }); } catch (e) { console.error('[bookings] calendar update failed:', e.message); }
+    // If Google won't move its entry, the booking keeps the time chosen here and remembers
+    // its calendar entry is behind (gcalStale): the calendar read-back then tries the move
+    // again instead of taking the old time from Google and moving the booking back.
+    let pushed = false;
+    try { pushed = await gcal.updateEvent(updated.gcalEventId, updated, { notify: !opts.quiet }); } catch (e) { console.error('[bookings] calendar update failed:', e.message); }
+    if (!pushed || booking.gcalStale) {
+      updated.gcalStale = pushed ? null : true;
+      try { await patch(newId, { gcalStale: updated.gcalStale }); } catch (e) { console.error('[bookings] saving calendar state failed:', e.message); }
+    }
     // Meetup travel blocks move with the session: drop the old ones, recreate at the new time.
     try {
       if (booking.gcalTransportIds?.length) await gcal.deleteEvents(booking.gcalTransportIds);
@@ -333,6 +341,11 @@ export async function reconcileWithCalendar() {
     if (info.status === 'deleted') {
       // Deleting a timed session cancels it; async reminders are managed in admin.
       if (b.date && b.time) { await updateStatus(b.id, 'cancelled'); changed++; }
+    } else if (info.status === 'exists' && info.scheduled && b.date && b.time && b.gcalStale) {
+      // moved here but Google didn't take it: the booking's time wins, try the calendar again
+      try {
+        if (await gcal.updateEvent(b.gcalEventId, b)) { await patch(b.id, { gcalStale: null }); console.log('[bookings] calendar caught up:', b.id); }
+      } catch (e) { console.error('[bookings] calendar retry failed:', e.message); }
     } else if (info.status === 'exists' && info.scheduled && b.date && b.time) {
       const movedTime = info.date !== b.date || info.time !== b.time;
       const dur = b.gcalLinked ? info.durTotal : info.durationMin;

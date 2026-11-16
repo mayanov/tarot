@@ -1120,8 +1120,10 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
             (async () => {
                 try {
                     const token = localStorage.getItem('authToken') || undefined;
-                    await rescheduleBooking(d.id, newDate, newTime, undefined, token);
-                    flash('Booking moved.', 'ok');
+                    const moved = await rescheduleBooking(d.id, newDate, newTime, undefined, token);
+                    flash(moved.gcalStale
+                        ? `Moved to ${newTime}. Google Calendar didn't take the change yet, so it may still show the old time. It will try again.`
+                        : 'Booking moved.', moved.gcalStale ? 'err' : 'ok');
                 } catch (err) {
                     flash(err instanceof Error && err.message === 'SLOT_TAKEN' ? 'That slot is taken — reverted.' : 'Move failed — reverted.', 'err');
                 } finally { load(); }
