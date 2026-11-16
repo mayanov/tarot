@@ -60,6 +60,7 @@ export interface Booking extends BookingInput {
   paymentMethod?: string; // how it was paid online: 'PayPal', 'Midtrans · qris', …
   paidEmailSentAt?: string; // when the customer was emailed that their payment came through
   inviteOnPay?: boolean; // its calendar invite goes out once it's marked paid
+  doneAt?: string | null; // when it was marked done (a reading sent, a session held)
   paidAt?: string; // when it was first marked paid (an order's delivery clock starts there)
   cancelReason?: 'unpaid' | 'closed' | 'failed' | null; // 'unpaid': not paid within the hour
   extraFor?: string; // extra time on a session (its ref): a record of its own, with its own price

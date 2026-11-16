@@ -466,7 +466,9 @@ export async function updateStatus(id, status) {
     const snap = await ref.get();
     if (!snap.exists) return null;
     const prev = snap.data();
-    await ref.update({ status });
+    // when it was marked done (Today counts what's been done today); un-done clears it
+    const doneAt = status === 'done' && prev.status !== 'done' ? new Date().toISOString() : status !== 'done' ? null : prev.doneAt ?? null;
+    await ref.update({ status, doneAt });
     // Cancelling frees the slot — remove the Google Calendar event(s) too.
     // (an entry she made herself and linked stays on her calendar: she removes it if she wants)
     if (status === 'cancelled') {
@@ -476,13 +478,14 @@ export async function updateStatus(id, status) {
       await ref.update({ gcalEventId: prev.gcalLinked ? prev.gcalEventId : null, gcalTransportIds: null });
     }
     if (status !== 'cancelled' && (status === 'done') !== (prev.status === 'done')) await gcal.syncReading(prev.gcalEventId, { ...prev, status });
-    return { ...prev, status };
+    return { ...prev, status, doneAt };
   }
   const all = readAll();
   const b = all.find((x) => x.id === id);
   if (!b) return null;
   const wasDone = b.status === 'done';
   b.status = status;
+  b.doneAt = status === 'done' && !wasDone ? new Date().toISOString() : status !== 'done' ? null : b.doneAt ?? null;
   // an order's calendar entry: done switches its alert off, un-done puts it back
   if (status !== 'cancelled' && (status === 'done') !== wasDone) await gcal.syncReading(b.gcalEventId, b);
   if (status === 'cancelled') {

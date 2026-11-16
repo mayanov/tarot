@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, ChevronLeft, ChevronRight, Plus, ArrowRight, Pencil, Mail, StickyNote, Check, RefreshCcw, CalendarDays, AlertCircle, Send, Wallet } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight, Plus, ArrowRight, Pencil, Mail, StickyNote, Check, RefreshCcw, CalendarDays, Send, Wallet } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import Dialog, { DialogIconButton, Section, KV } from './ui/Dialog';
 import PageHeader from './ui/PageHeader';
@@ -965,7 +965,11 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
     const [error, setError] = useState('');
     const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
     const [selectedId, setSelectedId] = useState<string | null>(openId || null);
-    const [ticking, setTicking] = useState<Set<string>>(new Set()); // readings being ticked off on Today
+    const [ticking, setTicking] = useState<Set<string>>(new Set()); // readings being ticked off on Orders
+    // Today: a ticked to-do waits a few seconds (with Undo) before it's saved, because marking
+    // a session paid also confirms it and sends the invite, which can't be taken back
+    const [pendingTick, setPendingTick] = useState<Record<string, 'sent' | 'paid'>>({});
+    const tickTimers = useRef<Record<string, number>>({});
     const detailOnly = tab === 'detail';
     useEffect(() => { if (detailOnly && !selectedId) onClosed?.(); }, [selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
     const [editing, setEditing] = useState(false);
@@ -1050,7 +1054,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
             // a cancelled session can't come back onto a time that's been booked since
             if (res.status === 409) { flash('That time has been booked since. Pick another time in its details to bring it back.', 'err'); setSelectedId(id); return false; }
             if (!res.ok) { flash('Could not change the status.', 'err'); return false; }
-            setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status, ...(status !== 'cancelled' ? { cancelReason: null } : {}) } : b)));
+            setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status, doneAt: status === 'done' ? (b.status === 'done' ? b.doneAt : new Date().toISOString()) : null, ...(status !== 'cancelled' ? { cancelReason: null } : {}) } : b)));
             return true;
         } catch { flash('Could not change the status.', 'err'); return false; }
     };
@@ -1431,17 +1435,28 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 const dayOf = (t: number) => new Date(t).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
                 const clock = (t: number) => new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
                 const todos = readingsDue.map((b) => readingTodo(b, now)).filter((t): t is Todo => !!t);
-                const tick = async (b: Booking) => {
-                    setTicking((s) => new Set(s).add(b.id));
-                    await new Promise((r) => setTimeout(r, 450)); // let the tick show first
-                    if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Reading'} marked sent. It's under Orders → Done.`, 'ok');
-                    setTicking((s) => { const n = new Set(s); n.delete(b.id); return n; });
+                const UNDO_MS = 5000;
+                const dropPending = (id: string) => setPendingTick((p) => { const n = { ...p }; delete n[id]; return n; });
+                const startTick = (b: Booking, kind: 'sent' | 'paid') => {
+                    setPendingTick((p) => ({ ...p, [b.id]: kind }));
+                    tickTimers.current[b.id] = window.setTimeout(async () => {
+                        delete tickTimers.current[b.id];
+                        if (kind === 'sent') await changeStatus(b.id, 'done'); else await togglePaid(b);
+                        dropPending(b.id);
+                    }, UNDO_MS);
                 };
-                const payTick = async (b: Booking) => {
-                    setTicking((s) => new Set(s).add(b.id));
-                    await new Promise((r) => setTimeout(r, 450));
-                    await togglePaid(b);
-                    setTicking((s) => { const n = new Set(s); n.delete(b.id); return n; });
+                const undoTick = (id: string) => {
+                    window.clearTimeout(tickTimers.current[id]);
+                    delete tickTimers.current[id];
+                    dropPending(id);
+                };
+                // a deadline said as a time: "Due by 14:56 · 2 h left", "Was due Sat 14 Nov 14:56 · 2 d late"
+                const dueText = (t: Todo) => {
+                    if (!Number.isFinite(t.at)) return t.pill;
+                    const d = dayOf(t.at);
+                    const day = d === todayISO ? '' : `${d === tomorrowISO ? 'tomorrow' : parseISO(d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} `;
+                    const left = t.at - now;
+                    return left <= 0 ? `Was due ${day}${clock(t.at)} · ${spanLabel(-left)} late` : `Due by ${day}${clock(t.at)} · ${spanLabel(left)} left`;
                 };
                 const dot = (id?: string, dashed = false) => dashed
                     ? <span aria-hidden className="mt-[7px] w-2.5 h-2.5 shrink-0 rounded-full border-2 border-dashed" style={{ borderColor: colorFor(id) }} />
@@ -1449,15 +1464,15 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
                 // 1. TO DO: only what's waiting on her. Readings and chats to answer, then orders
                 // not paid yet. One bold line saying what to do, one grey line saying how close it is.
-                type Job = { key: string; b: Booking; rank: number; title: string; when: React.ReactNode; actions: React.ReactNode; done: string; onTick: () => void };
+                type Job = { key: string; b: Booking; rank: number; title: string; when: React.ReactNode; actions: React.ReactNode; done: 'sent' | 'paid' };
                 const jobs: Job[] = [
                     ...todos.map((t): Job => {
                         const reply = replyLink(t.b);
                         return {
-                            key: t.b.id, b: t.b, done: 'Mark sent', onTick: () => tick(t.b),
+                            key: t.b.id, b: t.b, done: 'sent',
                             rank: t.tone === 'late' ? 0 : t.tone === 'soon' ? 1 : 2,
                             title: t.title,
-                            when: <span className={t.tone === 'late' ? 'due-late-text font-semibold' : t.tone === 'soon' ? 'due-soon-text font-semibold' : ''}>{t.pill}</span>,
+                            when: <span className={t.tone === 'late' ? 'due-late-text font-semibold' : t.tone === 'soon' ? 'due-soon-text font-semibold' : ''}>{dueText(t)}</span>,
                             actions: reply && <a href={reply.href} target="_blank" rel="noopener noreferrer" className={SOFT_BTN}
                                 title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${t.b.name || 'their'} WhatsApp chat`}>
                                 {reply.kind === 'email' ? <Mail size={14} /> : <FaWhatsapp size={14} />}{reply.kind === 'email' ? 'Send by email' : 'Reply on WhatsApp'}
@@ -1465,13 +1480,21 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                         };
                     }),
                     ...unpaid.map((b): Job => ({
-                        key: `pay-${b.id}`, b, rank: 3, done: 'Mark paid', onTick: () => payTick(b),
+                        key: `pay-${b.id}`, b, rank: 3, done: 'paid',
                         title: `Ask ${(nameOf(b) || 'them').split(/\s+/)[0]} to pay`,
                         when: <>{[shortLabel(b), amountLabel(b)].filter(Boolean).join(' · ')}{b.date && b.time ? ` · ${dayWord(b.date)} ${b.time}` : ''}</>,
                         actions: <AskToPay b={b} onSent={(f, at2) => markWa(b.id, f, at2)} onNote={flash} />,
                     })),
                 ].sort((x, y) => x.rank - y.rank);
                 const lateCount = todos.filter((t) => t.tone === 'late').length;
+                const onToday = (iso?: string | null) => !!iso && dayOf(Date.parse(iso)) === todayISO;
+                const doneToday = bookings.filter((b) => b.status !== 'cancelled' && (
+                    (!(b.date && b.time) && b.status === 'done' && onToday(b.doneAt))
+                    || (b.paymentStatus === 'paid' && onToday(b.paidAt) && Date.parse(b.paidAt!) - (Date.parse(b.createdAt || '') || 0) > 15 * 60_000)
+                )).length;
+                const pendingCount = jobs.filter((j) => pendingTick[j.b.id]).length;
+                const doneCount = doneToday + pendingCount;
+                const totalCount = doneToday + jobs.length;
 
                 // 2. COMING UP: sessions today and tomorrow (and ones only in her calendar), just
                 // the time and who. Asking to pay lives in To do, so these rows have no buttons.
@@ -1518,8 +1541,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
                 // ---- the to-do list, grouped by how urgent ----
                 const groups: { id: string; label: string; hint: string; icon: React.ReactNode; chip: string; items: Job[] }[] = [
-                    { id: 'late', label: 'Late', hint: 'Past the time you promised', icon: <AlertCircle size={15} />, chip: 'bg-red-500/10 due-late-text', items: jobs.filter((j) => j.rank === 0) },
-                    { id: 'soon', label: 'To send', hint: 'Readings and chats, soonest first', icon: <Send size={14} />, chip: 'bg-lilac/10 text-lilac', items: jobs.filter((j) => j.rank === 1 || j.rank === 2) },
+                    { id: 'send', label: 'To send', hint: lateCount ? `Readings and chats · ${lateCount} late, at the top` : 'Readings and chats, soonest first', icon: <Send size={14} />, chip: 'bg-lilac/10 text-lilac', items: jobs.filter((j) => j.rank <= 2) },
                     { id: 'pay', label: 'Waiting for payment', hint: 'Tick when the money is in', icon: <Wallet size={15} />, chip: 'bg-amber-400/15 due-soon-text', items: jobs.filter((j) => j.rank === 3) },
                 ].filter((g) => g.items.length);
 
@@ -1558,8 +1580,22 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
                             {/* RIGHT: what's waiting on her, most urgent first */}
                             <section aria-label="To do" className="order-1 lg:order-2 min-w-0">
-                                <h2 className="text-[15px] font-semibold text-text-light">To do</h2>
-                                {jobs.length === 0 && <p className="mt-3 text-sm text-text-subtle">Nothing waiting on you: every reading is sent and every order is paid.</p>}
+                                <div className="flex items-baseline justify-between gap-3">
+                                    <h2 className="text-[15px] font-semibold text-text-light">To do</h2>
+                                    {totalCount > 0 && jobs.length > 0 && <span className="text-[13px] text-text-subtle tabular-nums"><b className="text-text-light">{doneCount} of {totalCount}</b> done today</span>}
+                                </div>
+                                {totalCount > 0 && jobs.length > 0 && (
+                                    <div className="mt-2 h-1.5 rounded-full bg-adm-hover-2 overflow-hidden" aria-hidden>
+                                        <div className="h-full rounded-full bg-sage transition-[width] duration-500" style={{ width: `${(doneCount / totalCount) * 100}%` }} />
+                                    </div>
+                                )}
+                                {jobs.length === 0 && (
+                                    <div className="mt-3 rounded-2xl bg-surface-1 px-5 py-8 text-center">
+                                        <span className="mx-auto grid place-items-center w-11 h-11 rounded-full bg-sage/15 text-sage"><Check size={22} strokeWidth={3} /></span>
+                                        <p className="mt-3 text-[16px] font-semibold text-text-light">All done for today</p>
+                                        <p className="mt-1 text-[13.5px] text-text-subtle">{doneToday ? `You finished ${doneToday} ${doneToday === 1 ? 'thing' : 'things'} today. ` : ''}Every reading is sent and every order is paid.</p>
+                                    </div>
+                                )}
                                 <div className="mt-3 space-y-4">
                                 {groups.map((g) => (
                                     <div key={g.id} className="rounded-2xl bg-surface-1 overflow-hidden">
@@ -1573,19 +1609,25 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                         </div>
                                         <ul className="px-4 pb-1">
                                             {g.items.map((j) => {
-                                                const done = ticking.has(j.b.id);
+                                                const done = !!pendingTick[j.b.id];
+                                                const late = j.rank === 0;
                                                 return (
                                                     <li key={j.key} onClick={() => setSelectedId(j.b.id)}
-                                                        className={`group flex flex-wrap sm:flex-nowrap items-center gap-x-3 gap-y-2 py-3 border-t border-adm-line cursor-pointer ${done ? 'opacity-50' : ''}`}>
-                                                        <button type="button" onClick={(ev) => { ev.stopPropagation(); if (!done) j.onTick(); }} aria-label={`${j.done}: ${j.b.name || 'this booking'}`} title={j.done}
+                                                        className={`group flex flex-wrap sm:flex-nowrap items-center gap-x-3 gap-y-2 py-3 border-t border-adm-line cursor-pointer ${late && !done ? 'bg-red-500/[0.04] -mx-4 px-4' : ''}`}>
+                                                        <button type="button" onClick={(ev) => { ev.stopPropagation(); if (done) undoTick(j.b.id); else startTick(j.b, j.done); }}
+                                                            aria-label={done ? `Undo: ${j.b.name || 'this booking'}` : `Mark ${j.done}: ${j.b.name || 'this booking'}`} title={done ? 'Undo' : `Mark ${j.done}`}
                                                             className={`grid place-items-center w-6 h-6 shrink-0 rounded-full border-2 transition-colors ${done ? 'bg-sage border-sage text-white' : 'border-adm-line-3 text-transparent hover:border-sage hover:text-sage'}`}>
                                                             <Check size={13} strokeWidth={3} />
                                                         </button>
                                                         <span className="min-w-0 flex-1">
-                                                            <span className={`block text-[15px] font-semibold leading-snug text-text-light group-hover:underline ${done ? 'line-through' : ''}`}>{j.title}</span>
-                                                            <span className="block text-[13px] leading-snug text-text-subtle">{j.when}</span>
+                                                            <span className={`block text-[15px] font-semibold leading-snug group-hover:underline ${done ? 'line-through text-text-subtle' : 'text-text-light'}`}>{j.title}</span>
+                                                            <span className={`block text-[13px] leading-snug text-text-subtle ${done ? 'opacity-60' : ''}`}>{j.when}</span>
                                                         </span>
-                                                        <span onClick={(ev) => ev.stopPropagation()} className="w-full sm:w-auto pl-9 sm:pl-0 flex items-center gap-1 shrink-0">{j.actions}</span>
+                                                        <span onClick={(ev) => ev.stopPropagation()} className="w-full sm:w-auto pl-9 sm:pl-0 flex items-center gap-1 shrink-0">
+                                                            {done
+                                                                ? <span role="status" className="text-[13px] text-text-subtle">Marked {j.done} · <button type="button" onClick={() => undoTick(j.b.id)} className="font-semibold text-lilac hover:underline">Undo</button></span>
+                                                                : j.actions}
+                                                        </span>
                                                     </li>
                                                 );
                                             })}
