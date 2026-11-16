@@ -62,6 +62,9 @@ const NAV_GROUPS: { label: string; tone: Tone; items: { id: View; name: string; 
     ] },
 ];
 
+// each group's dot, light enough to read on the plum menu
+const NAV_DOT: Record<Tone, string> = { work: '#B79AE6', money: '#6FD39A', people: '#F1A866', site: '#7FB6EA', admin: '#B5ABC9' };
+
 // the phone's bottom bar: the pages used every day
 const TAB_BAR: View[] = ['today', 'schedule', 'orders', 'sales'];
 
@@ -482,10 +485,15 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     </button>
                 </div>
 
-                {/* the pages, a little space between the groups; the one open is a white tab */}
-                <nav className="flex-1 px-3 pb-3 overflow-y-auto space-y-4">
-                    {NAV_GROUPS.map((group) => (
-                        <div key={group.label} role="group" aria-label={group.label} className="space-y-0.5">
+                {/* the pages in their groups: each group named, with its own colour dot and a
+                    hairline between groups; the page that's open is a white tab */}
+                <nav className="flex-1 px-3 pb-3 overflow-y-auto">
+                    {NAV_GROUPS.map((group, gi) => (
+                        <div key={group.label} role="group" aria-label={group.label} className={`space-y-0.5 ${gi ? 'mt-3 pt-3 border-t border-white/10' : ''}`}>
+                            <p className="px-3 pt-1 pb-1.5 flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-white/50">
+                                <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: NAV_DOT[group.tone] }} />
+                                {group.label}
+                            </p>
                             {group.items.map((item) => {
                                 const active = activeView === item.id;
                                 const Icon = item.icon;

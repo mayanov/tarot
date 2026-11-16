@@ -1523,7 +1523,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                             </div>
                             <div className="py-4 px-3 sm:px-6 border-l border-adm-line">
                                 <div className="text-[28px] sm:text-[36px] font-bold tracking-[-0.02em] leading-none tabular-nums text-text-light">{soonSessions.length}</div>
-                                <div className="mt-1.5 text-[13px] sm:text-sm text-text-subtle">{soonSessions.length === 1 ? 'session' : 'sessions'} {sessionsToday ? `, ${sessionsToday} today` : 'today and tomorrow'}</div>
+                                <div className="mt-1.5 text-[13px] sm:text-sm text-text-subtle">{soonSessions.length === 1 ? 'session' : 'sessions'}{sessionsToday ? `, ${sessionsToday} today` : ' today and tomorrow'}</div>
                             </div>
                             <div className="py-4 pl-3 sm:pl-6 border-l border-adm-line min-w-0">
                                 <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[20px] sm:text-[36px] font-bold tracking-[-0.02em] leading-none tabular-nums text-text-light">
