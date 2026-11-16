@@ -142,7 +142,7 @@ export type WaField = (typeof KIND)[Kind]['field'];
  *  button itself shows the latest one sent. The menu is fixed to the screen, so a table
  *  that clips its rows doesn't cut it off. */
 // direct 'pay': no menu, the button itself sends Ask to pay (Today's Not paid yet)
-const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: string) => void; onNote?: (text: string, kind: 'ok' | 'err') => void; compact?: boolean; direct?: 'pay'; big?: boolean }> = ({ b, onSent, onNote, direct, big }) => {
+const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: string) => void; onNote?: (text: string, kind: 'ok' | 'err') => void; compact?: boolean; direct?: 'pay'; big?: boolean; short?: boolean }> = ({ b, onSent, onNote, direct, big, short }) => {
   const [busy, setBusy] = useState(false);
   const [menu, setMenu] = useState<{ top: number; left: number; up: boolean } | null>(null);
   const [qrFailed, setQrFailed] = useState(false);
@@ -253,7 +253,7 @@ const WaConfirmButton: React.FC<{ b: Booking; onSent: (field: WaField, at: strin
           title={asked ? `${asked} · click to ask again (opens WhatsApp with the total, BCA and QRIS)` : 'Opens WhatsApp with the total, BCA and QRIS'}
           className={asked ? 'inline-flex items-center gap-1.5 h-9 px-2.5 rounded-[10px] text-[13px] whitespace-nowrap text-text-subtle hover:text-text-light hover:bg-adm-hover-2 transition-colors disabled:opacity-50' : SOFT_BTN}>
           <FaWhatsapp size={14} />
-          {asked || 'Ask to pay'}
+          {asked || (short ? 'WhatsApp' : 'Ask to pay')}
         </button>
         {qrRetry}
       </span>

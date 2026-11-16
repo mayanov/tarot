@@ -930,8 +930,9 @@ const serviceAfterName = (b: Booking) => {
 // Ask an unpaid customer to pay, in one click: on WhatsApp when there's a number (the
 // total, BCA and QRIS), else a Gmail draft to their address with the same message
 const BUSINESS_GMAIL = 'tarotreadingbymayanov@gmail.com';
-export const AskToPay: React.FC<{ b: Booking; onSent: (field: WaField, at: string) => void; onNote: (text: string, kind: 'ok' | 'err') => void; big?: boolean }> = ({ b, onSent, onNote, big }) => {
-    if (waNumberOf(b.contact)) return <WaConfirmButton direct="pay" big={big} b={b} onSent={onSent} onNote={onNote} />;
+export const AskToPay: React.FC<{ b: Booking; onSent: (field: WaField, at: string) => void; onNote: (text: string, kind: 'ok' | 'err') => void; big?: boolean; short?: boolean }> = ({ b, onSent, onNote, big, short }) => {
+    // short: just the channel (Today's row already says "Ask Lee to pay")
+    if (waNumberOf(b.contact)) return <WaConfirmButton direct="pay" big={big} short={short} b={b} onSent={onSent} onNote={onNote} />;
     const email = emailOf(b.contact);
     if (!email) return null;
     const href = `https://mail.google.com/mail/?authuser=${encodeURIComponent(BUSINESS_GMAIL)}&view=cm&fs=1&to=${encodeURIComponent(email)}`
@@ -940,7 +941,7 @@ export const AskToPay: React.FC<{ b: Booking; onSent: (field: WaField, at: strin
         <a href={href} target="_blank" rel="noopener noreferrer" title={`Opens a Gmail draft to ${email} with the total`}
             className={big ? 'w-full inline-flex items-center justify-center gap-2 rounded-xl bg-lilac text-white px-4 py-3 text-[15px] font-semibold hover:bg-lilac/90 transition-colors'
                 : SOFT_BTN}>
-            <Mail size={big ? 16 : 14} />{big ? `Ask ${(b.name || '').trim().split(/\s+/)[0] || 'them'} to pay by email` : 'Ask to pay'}
+            <Mail size={big ? 16 : 14} />{big ? `Ask ${(b.name || '').trim().split(/\s+/)[0] || 'them'} to pay by email` : short ? 'Email' : 'Ask to pay'}
         </a>
     );
 };
@@ -1475,7 +1476,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                             when: <span className={t.tone === 'late' ? 'due-late-text font-semibold' : t.tone === 'soon' ? 'due-soon-text font-semibold' : ''}>{dueText(t)}</span>,
                             actions: reply && <a href={reply.href} target="_blank" rel="noopener noreferrer" className={SOFT_BTN}
                                 title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${t.b.name || 'their'} WhatsApp chat`}>
-                                {reply.kind === 'email' ? <Mail size={14} /> : <FaWhatsapp size={14} />}{reply.kind === 'email' ? 'Send by email' : 'Reply on WhatsApp'}
+                                {reply.kind === 'email' ? <Mail size={14} /> : <FaWhatsapp size={14} />}{reply.kind === 'email' ? 'Email' : 'WhatsApp'}
                             </a>,
                         };
                     }),
@@ -1483,7 +1484,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                         key: `pay-${b.id}`, b, rank: 3, done: 'paid',
                         title: `Ask ${(nameOf(b) || 'them').split(/\s+/)[0]} to pay`,
                         when: <>{[shortLabel(b), amountLabel(b)].filter(Boolean).join(' · ')}{b.date && b.time ? ` · ${dayWord(b.date)} ${b.time}` : ''}</>,
-                        actions: <AskToPay b={b} onSent={(f, at2) => markWa(b.id, f, at2)} onNote={flash} />,
+                        actions: <AskToPay short b={b} onSent={(f, at2) => markWa(b.id, f, at2)} onNote={flash} />,
                     })),
                 ].sort((x, y) => x.rank - y.rank);
                 const lateCount = todos.filter((t) => t.tone === 'late').length;
