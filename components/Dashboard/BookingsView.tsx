@@ -1533,10 +1533,12 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
                         <div className="grid gap-6 lg:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-start">
                             {/* LEFT: the calendar */}
-                            <section aria-label="Your day" className="order-2 lg:order-1 min-w-0 rounded-2xl bg-surface-1 p-4 sm:p-5">
-                                <h2 className="flex items-center gap-2 text-[15px] font-semibold text-text-light"><CalendarDays size={16} className="text-text-subtle" />Today
+                            <section aria-label="Your day" className="order-2 lg:order-1 min-w-0">
+                                {/* the heading sits above the panel, like To do's */}
+                                <h2 className="flex items-baseline gap-2 text-[15px] font-semibold text-text-light">Today
                                     <span className="font-normal text-text-subtle">{parseISO(todayISO).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</span></h2>
-                                <div className="relative mt-4" style={{ height: (endH - startH) * HOUR }}>
+                                <div className="mt-3 rounded-2xl bg-surface-1 p-4 sm:p-5">
+                                <div className="relative" style={{ height: (endH - startH) * HOUR }}>
                                     {Array.from({ length: endH - startH + 1 }, (_, i) => (
                                         <div key={i} className="absolute left-0 right-0 flex items-start" style={{ top: i * HOUR }}>
                                             <span className="w-12 -mt-2 text-right pr-2 text-[11.5px] tabular-nums text-text-subtle">{String(startH + i).padStart(2, '0')}:00</span>
@@ -1550,6 +1552,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                     )}
                                     {todaySlots.map((s) => block(s, true))}
                                     {todaySlots.length === 0 && <p className="absolute left-14 right-0 top-6 text-sm text-text-subtle">No sessions today.</p>}
+                                </div>
                                 </div>
                             </section>
 
