@@ -1499,13 +1499,18 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                         const t = Date.parse((sent ? b.doneAt : b.paidAt)!);
                         const name = nameOf(b, 'someone');
                         return {
-                            b, t,
+                            b, t, sent,
                             title: sent ? (b.serviceId === 'chat' ? `Answered ${name}’s chat` : `Sent ${name}’s reading`) : `${name.split(/\s+/)[0]} paid`,
                             when: `${sent ? 'Sent' : 'Paid'} ${clock(t)} · ${[shortLabel(b), sent ? '' : amountLabel(b)].filter(Boolean).join(' · ')}`,
                         };
                     })
                     .sort((x, y) => y.t - x.t);
                 const doneToday = doneJobs.length;
+                // un-done: a reading goes back to To send, an order back to Waiting for payment
+                const reopen = async (b: Booking, sent: boolean) => {
+                    if (sent) { if (await changeStatus(b.id, 'confirmed')) flash(`${b.name || 'It'}'s back in To send.`, 'ok'); }
+                    else { await togglePaid(b); flash(`${b.name || 'It'}'s back in Waiting for payment.`, 'ok'); }
+                };
                 const pendingCount = jobs.filter((j) => pendingTick[j.b.id]).length;
                 const doneCount = doneToday + pendingCount;
                 const totalCount = doneToday + jobs.length;
@@ -1665,11 +1670,15 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                             {doneJobs.map((d) => (
                                                 <li key={d.b.id} onClick={() => setSelectedId(d.b.id)}
                                                     className="group flex items-center gap-3 py-3 border-t border-adm-line cursor-pointer">
-                                                    <span aria-hidden className="grid place-items-center w-6 h-6 shrink-0 rounded-full bg-sage/20 text-sage"><Check size={13} strokeWidth={3} /></span>
+                                                    <button type="button" onClick={(ev) => { ev.stopPropagation(); reopen(d.b, d.sent); }}
+                                                        aria-label={`Not done yet: ${d.b.name || 'this booking'}`} title={d.sent ? 'Not sent yet: put it back' : 'Not paid yet: put it back'}
+                                                        className="grid place-items-center w-6 h-6 shrink-0 rounded-full bg-sage/20 text-sage hover:bg-adm-hover-2 hover:text-text-subtle transition-colors"><Check size={13} strokeWidth={3} /></button>
                                                     <span className="min-w-0 flex-1">
                                                         <span className="block text-[14px] leading-snug text-text-subtle line-through decoration-text-subtle/50 group-hover:underline">{d.title}</span>
                                                         <span className="block text-[12.5px] leading-snug text-text-subtle/70">{d.when}</span>
                                                     </span>
+                                                    <button type="button" onClick={(ev) => { ev.stopPropagation(); reopen(d.b, d.sent); }} disabled={payBusy === d.b.id}
+                                                        className="shrink-0 h-8 px-2 rounded-lg text-[13px] text-text-subtle hover:text-lilac hover:bg-lilac/10 transition-colors disabled:opacity-50">Undo</button>
                                                 </li>
                                             ))}
                                         </ul>
