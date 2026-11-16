@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, ChevronLeft, ChevronRight, Plus, ArrowRight, Pencil, Mail, StickyNote, Check, RefreshCcw } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight, Plus, ArrowRight, Pencil, Mail, StickyNote, Check, RefreshCcw, CalendarDays } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import Dialog, { DialogIconButton, Section, KV } from './ui/Dialog';
 import PageHeader from './ui/PageHeader';
@@ -1490,8 +1490,10 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                     </h2>
                 );
                 return (
-                    <div className="max-w-3xl space-y-10">
-                        <section aria-label="To do">
+                    // the page split in two: the list of things to do (a checklist, on the page) and the
+                    // sessions coming up (a little calendar, on its own panel), so they never read alike
+                    <div className="grid gap-8 lg:gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)] items-start">
+                        <section aria-label="To do" className="min-w-0">
                             {heading('To do', jobs.length ? <>{jobs.length}{lateCount > 0 && <> · <span className="due-late-text font-semibold">{lateCount} late</span></>}</> : undefined)}
                             {jobs.length === 0 && <p className="py-5 text-sm text-text-subtle">Nothing waiting on you: every reading is sent and every order is paid.</p>}
                             <ul>
@@ -1518,36 +1520,45 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                             </ul>
                         </section>
 
-                        <section aria-label="Coming up">
-                            {heading('Coming up')}
-                            {ahead.length === 0 && <p className="py-5 text-sm text-text-subtle">No sessions today or tomorrow.</p>}
+                        <section aria-label="Coming up" className="min-w-0 rounded-2xl bg-surface-1 p-5 sm:p-6 lg:sticky lg:top-6">
+                            <h2 className="flex items-center gap-2 text-[15px] font-semibold text-text-light"><CalendarDays size={16} className="text-text-subtle" />Coming up</h2>
+                            {ahead.length === 0 && <p className="pt-4 text-sm text-text-subtle">No sessions today or tomorrow.</p>}
                             {[todayISO, tomorrowISO].map((d) => {
                                 const list = ahead.filter((s) => s.day === d);
                                 if (!list.length) return null;
                                 return (
-                                    <div key={d} className="pt-4">
-                                        <div className="text-[13px] font-medium text-text-subtle">{d === todayISO ? 'Today' : 'Tomorrow'}</div>
-                                        <ul>
-                                            {list.map((s) => (
-                                                <li key={s.key} onClick={() => s.b && setSelectedId(s.b.id)}
-                                                    className={`group flex items-start gap-3 py-2.5 ${s.b ? 'cursor-pointer' : ''}`}>
-                                                    <span className="w-12 shrink-0 pt-px text-[15px] font-semibold tabular-nums text-text-light">{clock(s.at)}</span>
-                                                    {dot(s.b?.serviceId || (s.e ? serviceFromTitle(s.e.title) : ''), !!s.e)}
-                                                    <span className="min-w-0 flex-1">
-                                                        <span className={`block text-[15px] font-medium leading-snug ${s.e ? 'text-text-subtle' : 'text-text-light group-hover:underline'}`}>{s.b ? sessionTitle(s.b) : s.e!.title}</span>
-                                                        <span className="block text-[13px] leading-snug text-text-subtle">
-                                                            {s.b ? <>{s.b.durationMin ? durLabel(s.b.durationMin) : ''}{s.b.paymentStatus !== 'paid' && <> · <span className="due-soon-text font-semibold">not paid</span></>}</>
-                                                                : <>Only in your calendar · <button type="button" onClick={() => setFromEntry(s.e!)} className="font-semibold text-lilac hover:underline">make it a booking</button></>}
+                                    <div key={d} className="pt-5">
+                                        <div className="mb-2 text-[12.5px] font-semibold text-text-subtle">{d === todayISO ? 'Today' : 'Tomorrow'} · {parseISO(d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+                                        <ul className="space-y-2">
+                                            {list.map((s) => {
+                                                const svc = s.b?.serviceId || (s.e ? serviceFromTitle(s.e.title) : '');
+                                                const c = colorFor(svc);
+                                                const end = s.b?.durationMin ? clock(s.at + s.b.durationMin * 60_000) : '';
+                                                return (
+                                                    <li key={s.key} className="flex gap-3">
+                                                        <span className="w-11 shrink-0 pt-2 text-right tabular-nums leading-tight">
+                                                            <span className="block text-[14px] font-semibold text-text-light">{clock(s.at)}</span>
+                                                            {end && <span className="block text-[12px] text-text-subtle">{end}</span>}
                                                         </span>
-                                                    </span>
-                                                </li>
-                                            ))}
+                                                        {/* the session as a block of its colour, like in a calendar; one only in her calendar is a dashed outline */}
+                                                        <div onClick={() => s.b && setSelectedId(s.b.id)}
+                                                            className={`min-w-0 flex-1 rounded-xl px-3.5 py-2.5 ${s.b ? 'cursor-pointer hover:brightness-95' : 'border border-dashed'}`}
+                                                            style={s.b ? { background: `color-mix(in srgb, ${c} 14%, transparent)` } : { borderColor: c }}>
+                                                            <div className={`text-[14.5px] font-semibold leading-snug ${s.e ? 'text-text-subtle' : 'text-text-light'}`}>{s.b ? sessionTitle(s.b) : s.e!.title}</div>
+                                                            <div className="text-[12.5px] leading-snug text-text-subtle">
+                                                                {s.b ? <>{s.b.durationMin ? durLabel(s.b.durationMin) : ''}{s.b.paymentStatus !== 'paid' && <> · <span className="due-soon-text font-semibold">not paid</span></>}</>
+                                                                    : <>Only in your calendar · <button type="button" onClick={() => setFromEntry(s.e!)} className="font-semibold text-lilac hover:underline">make it a booking</button></>}
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                );
+                                            })}
                                         </ul>
                                     </div>
                                 );
                             })}
                             {earlier.length > 0 && (
-                                <p className="pt-3 text-[13px] text-text-subtle">
+                                <p className="mt-5 pt-4 border-t border-adm-line text-[13px] text-text-subtle">
                                     Done earlier: {earlier.map((s, i) => <React.Fragment key={s.key}>{i > 0 && ', '}<button type="button" onClick={() => s.b && setSelectedId(s.b.id)} className="hover:underline">{s.b ? sessionTitle(s.b) : s.e!.title} {clock(s.at)}</button></React.Fragment>)}
                                 </p>
                             )}
