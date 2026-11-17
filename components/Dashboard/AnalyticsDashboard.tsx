@@ -72,7 +72,7 @@ const NAV_GROUPS: { label: string; tone: Tone; items: { id: View; name: string; 
         { id: 'orders', name: 'Orders', hint: 'Readings and chats to send', icon: Inbox },
     ] },
     { label: 'Money', tone: 'money', items: [
-        { id: 'sales', name: 'Payments', hint: 'Mark payments as they come in', icon: Receipt },
+        { id: 'sales', name: 'Sales', hint: 'Mark payments as they come in', icon: Receipt },
         { id: 'revenue', name: 'Money report', hint: 'How much came in, and is it growing?', icon: Wallet },
     ] },
     { label: 'People', tone: 'people', items: [
@@ -774,7 +774,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                             </div>
                         </div>
 
-                        {/* the views and filters, as on Payments */}
+                        {/* the views and filters, as on Sales */}
                         <FilterBar tabs={<ViewTabs label="What to show" value={aTab} onChange={setATab}
                             options={[{ id: 'overview', label: 'Overview' }, { id: 'bookings', label: 'Bookings' }, { id: 'website', label: 'Website' }]} />}>
                             {/* the booking and website numbers are per market */}

@@ -32,6 +32,7 @@ const SalesView: React.FC = () => {
     const [q, setQ] = useState('');
     const [payFilter, setPayFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
     const [serviceFilter, setServiceFilter] = useState<string>('all');
+    const [subFilter, setSubFilter] = useState<string>('all');
     const [sourceFilter, setSourceFilter] = useState<'all' | 'manual' | 'booking'>('all');
     const [dateFrom, setDateFrom] = useState<string>('');
     const [dateTo, setDateTo] = useState<string>('');
@@ -84,12 +85,21 @@ const SalesView: React.FC = () => {
         return t;
     }, [orders]);
 
-    // Distinct services present in the data, for the Service dropdown.
+    // The services in the data, as the table's Service column names them (3-Card and
+    // 5-Card are both Email), each with the sub-services it has, for the two menus.
     const serviceOptions = useMemo(() => {
-        const set = new Set<string>();
-        orders.forEach((b) => { const s = serviceTitle(b); if (s) set.add(s); });
-        return Array.from(set).sort((a, b) => a.localeCompare(b));
+        const map = new Map<string, Set<string>>();
+        orders.forEach((b) => {
+            const s = serviceGroup(b);
+            if (!map.has(s)) map.set(s, new Set());
+            const sub = subServiceOf(b);
+            if (sub) map.get(s)!.add(sub);
+        });
+        const byName = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true });
+        return Array.from(map, ([name, subs]) => ({ name, subs: Array.from(subs).sort(byName) })).sort((a, b) => byName(a.name, b.name));
     }, [orders]);
+    // the sub-service menu lists the picked service's, or every service's under its name
+    const subOptions = serviceOptions.filter((s) => s.subs.length && (serviceFilter === 'all' || s.name === serviceFilter));
 
     const filtered = useMemo(() => {
         const needle = q.trim().toLowerCase();
@@ -97,7 +107,8 @@ const SalesView: React.FC = () => {
         const toTs = dateTo ? new Date(dateTo + 'T23:59:59').getTime() : null;
         return orders.filter((b) => {
             if (payFilter !== 'all' && (b.paymentStatus || 'unpaid') !== payFilter) return false;
-            if (serviceFilter !== 'all' && serviceTitle(b) !== serviceFilter) return false;
+            if (serviceFilter !== 'all' && serviceGroup(b) !== serviceFilter) return false;
+            if (subFilter !== 'all' && subServiceOf(b) !== subFilter) return false;
             if (sourceFilter !== 'all' && (b.source === 'manual' ? 'manual' : 'booking') !== sourceFilter) return false;
             if (fromTs || toTs) {
                 const ts = b.createdAt ? new Date(b.createdAt).getTime() : NaN;
@@ -107,8 +118,8 @@ const SalesView: React.FC = () => {
             }
             return !needle || matchesSearch(needle, b.name, b.serviceName, serviceLabel(b), b.contact, b.ref, b.adminNote);
         }).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-    }, [orders, q, payFilter, serviceFilter, sourceFilter, dateFrom, dateTo]);
-    const activeFilters = (market !== 'all' ? 1 : 0) + (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0)
+    }, [orders, q, payFilter, serviceFilter, subFilter, sourceFilter, dateFrom, dateTo]);
+    const activeFilters = (market !== 'all' ? 1 : 0) + (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0) + (subFilter !== 'all' ? 1 : 0)
         + (sourceFilter !== 'all' ? 1 : 0)
         + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
 
@@ -208,7 +219,7 @@ const SalesView: React.FC = () => {
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <div className="text-sm text-text-subtle">Every order, newest first</div>
-                    <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">Payments</h1>
+                    <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">Sales</h1>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                     <div className="flex-1 sm:w-72"><SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, ref or note" /></div>
@@ -242,7 +253,7 @@ const SalesView: React.FC = () => {
                         : [market !== 'all' ? WHERE[market] : '', sourceFilter !== 'all' ? SOURCE[sourceFilter] : ''].filter(Boolean).join(' · ')}>
                     <MenuHead>Where they live</MenuHead>
                     {(Object.keys(WHERE) as (keyof typeof WHERE)[]).map((id) => (
-                        <MenuOption key={id} on={market === id} onPick={() => { setMarket(id); setServiceFilter('all'); }}>{WHERE[id]}</MenuOption>
+                        <MenuOption key={id} on={market === id} onPick={() => { setMarket(id); setServiceFilter('all'); setSubFilter('all'); }}>{WHERE[id]}</MenuOption>
                     ))}
                     <MenuDivider />
                     <MenuHead>How the order came in</MenuHead>
@@ -251,9 +262,24 @@ const SalesView: React.FC = () => {
                     ))}
                 </FilterMenu>
                 <FilterMenu active={serviceFilter !== 'all'} label={serviceFilter === 'all' ? 'All services' : serviceFilter}>
-                    <MenuOption on={serviceFilter === 'all'} onPick={() => setServiceFilter('all')}>All services</MenuOption>
-                    {serviceOptions.map((x) => <MenuOption key={x} on={serviceFilter === x} onPick={() => setServiceFilter(x)}>{x}</MenuOption>)}
+                    <MenuOption on={serviceFilter === 'all'} onPick={() => { setServiceFilter('all'); setSubFilter('all'); }}>All services</MenuOption>
+                    {serviceOptions.map(({ name }) => (
+                        <MenuOption key={name} on={serviceFilter === name} onPick={() => { setServiceFilter(name); setSubFilter('all'); }}>{name}</MenuOption>
+                    ))}
                 </FilterMenu>
+                {subOptions.length > 0 && (
+                    <FilterMenu active={subFilter !== 'all'} label={subFilter === 'all' ? 'All sub-services' : subFilter}>
+                        <MenuOption on={subFilter === 'all'} onPick={() => setSubFilter('all')}>All sub-services</MenuOption>
+                        {subOptions.map(({ name, subs }) => (
+                            <React.Fragment key={name}>
+                                {serviceFilter === 'all' && <MenuHead>{name}</MenuHead>}
+                                {subs.map((x) => (
+                                    <MenuOption key={x} on={subFilter === x} onPick={() => { setSubFilter(x); if (serviceFilter === 'all') setServiceFilter(name); }}>{x}</MenuOption>
+                                ))}
+                            </React.Fragment>
+                        ))}
+                    </FilterMenu>
+                )}
                 <FilterMenu active={dateActive} label={dateLabel} align="end">
                     <div className="p-1.5 space-y-3">
                         <MenuDate label="Booked from" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)} />
@@ -261,8 +287,8 @@ const SalesView: React.FC = () => {
                         {dateActive && <AnyDate onClear={() => { setDateFrom(''); setDateTo(''); }} />}
                     </div>
                 </FilterMenu>
-                <ClearFilters show={payFilter !== 'all' || market !== 'all' || sourceFilter !== 'all' || serviceFilter !== 'all' || dateActive}
-                    onClear={() => { setPayFilter('all'); setMarket('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }} />
+                <ClearFilters show={payFilter !== 'all' || market !== 'all' || sourceFilter !== 'all' || serviceFilter !== 'all' || subFilter !== 'all' || dateActive}
+                    onClear={() => { setPayFilter('all'); setMarket('all'); setServiceFilter('all'); setSubFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }} />
             </FilterBar>
 
             {/* one list: not paid first, then month by month */}

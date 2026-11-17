@@ -411,7 +411,7 @@ const RevenueView: React.FC = () => {
                 title="Money report"
                 tone="money"
                 subtitle="How much came in, and is it growing?"
-                note="Bookings marked paid (cancelled left out), counted on the day they were ordered. Rupiah and dollars are kept apart, never added together. Marking payments is under Payments; who your customers are is under Customers."
+                note="Bookings marked paid (cancelled left out), counted on the day they were ordered. Rupiah and dollars are kept apart, never added together. Marking payments is under Sales; who your customers are is under Customers."
                 onRefresh={load}
                 refreshing={loading}
             />
@@ -421,7 +421,7 @@ const RevenueView: React.FC = () => {
             {initialLoading && <LoaderCard />}
 
             {!initialLoading && (<>
-            {/* the range, as the filters on Payments: a word and an arrow with a short menu,
+            {/* the range, as the filters on Sales: a word and an arrow with a short menu,
                 on a line that stays under the top bar while scrolling */}
             <div className="sticky top-14 lg:top-0 z-20 -mx-4 md:-mx-8 px-4 md:px-8 bg-bg-deep/85 backdrop-blur-md">
                 <FilterBar tabs={<span className="py-2.5 text-[13px] text-text-subtle">{rangeLabel(startISO, endISO)}{prevStart && <> · compared with {rangeLabel(prevStart, prevEnd)}</>}</span>}>

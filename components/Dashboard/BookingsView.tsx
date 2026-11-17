@@ -1849,7 +1849,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 // the same columns as Payments: one fact per column
                 const COLS = 'lg:grid-cols-[4.5rem_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.9fr)_7.5rem_6rem_7.5rem_9rem]';
                 return (<>
-                    {/* which orders, as on Payments: underlined tabs, with the order they're in on the right */}
+                    {/* which orders, as on Sales: underlined tabs, with the order they're in on the right */}
                     <FilterBar tabs={<ViewTabs label="Which orders" value={orderView} onChange={setOrderView}
                         options={[{ id: 'active', label: 'To do', count: activeOrders.length, tone: 'due' }, { id: 'done', label: 'Done', count: doneOrders.length }, { id: 'cancelled', label: 'Cancelled', count: cancelledBookings.length }]} />}>
                         <span className="py-2 text-[13px] text-text-subtle">{orderView === 'active' ? 'Most urgent first' : orderView === 'cancelled' ? 'Sessions & readings · newest first' : 'Newest first'}</span>

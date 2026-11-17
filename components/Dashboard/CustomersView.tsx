@@ -198,7 +198,7 @@ const CustomersView: React.FC = () => {
 
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
 
-            {/* the filters, as on Payments: where they live, and the order they're listed in */}
+            {/* the filters, as on Sales: where they live, and the order they're listed in */}
             <FilterBar>
                 <FilterMenu active={market !== 'all'} label={WHERE[market]}>
                     <MenuHead>Where they live</MenuHead>

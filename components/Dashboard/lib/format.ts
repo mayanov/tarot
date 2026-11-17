@@ -126,8 +126,8 @@ export const serviceTitle = (b: Booking) => SERVICE_NAME[b.serviceId] || namePar
 // readings are one service with two kinds; everything else is its own service, with
 // its package or length as the sub-service.
 const EMAIL_READINGS = new Set(['3card', '5card']);
-/** the service a table's Service column shows: "Email reading", "Chat", "Call" */
-export const serviceGroup = (b: Booking) => (EMAIL_READINGS.has(b.serviceId) ? 'Email reading' : serviceTitle(b));
+/** the service a table's Service column shows: "Email", "Chat", "Call" */
+export const serviceGroup = (b: Booking) => (EMAIL_READINGS.has(b.serviceId) ? 'Email' : serviceTitle(b));
 /** what was picked within it, for the Sub-service column: "3-Card Spread", "1 question",
     "30 min", or '' */
 export const subServiceOf = (b: Booking) => (EMAIL_READINGS.has(b.serviceId)
