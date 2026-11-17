@@ -3,11 +3,10 @@ import Segmented from './ui/Segmented';
 import { FilterBar, FilterMenu, MenuOption, MenuDate, useCloseMenu } from './ui/Filters';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { colorFor } from './lib/serviceColor';
-import { CalendarDays, ArrowUp, ArrowDown, Repeat, UserPlus } from 'lucide-react';
+import { CalendarDays, Repeat, UserPlus } from 'lucide-react';
 import { BarChart, Bar, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
-import { Tooltip as Hint } from './ui/Tooltip';
 import StatStrip from './ui/StatStrip';
 import { Cur as Currency, amountForBooking, fmtMoney } from './lib/format';
 import { groupBookings } from './lib/customers';
@@ -84,7 +83,7 @@ const RevenueView: React.FC = () => {
     const [preset, setPreset] = useState<Preset>('30d');
     // by day or by week: picked from the range's length unless chosen on the chart
     const [granPick, setGranPick] = useState<Gran | null>(null);
-    // the range chart: the running total against the range before, or bars by day / week
+    // the range chart: the running total, or bars by day / week
     const [mode, setMode] = useState<'total' | 'bars'>('total');
     const [customStart, setCustomStart] = useState('');
     const [customEnd, setCustomEnd] = useState('');
@@ -126,23 +125,20 @@ const RevenueView: React.FC = () => {
         .map((b) => ({ b, day: (b.createdAt || '').slice(0, 10), amt: amountForBooking(b) }))
         .filter((r) => r.amt && r.day), [bookings]);
 
-    // The range (real dates, so the chip can say them) and the one before it to compare with
-    // (the same days a month or a year back for month and year, otherwise as many days before).
+    // The range, in real dates (so the chip can say them).
     const firstDay = useMemo(() => paidRows.map((r) => r.day).sort()[0] || toISO(new Date()), [paidRows]);
-    const { startISO, endISO, prevStart, prevEnd } = useMemo(() => {
+    const { startISO, endISO } = useMemo(() => {
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const end = toISO(today);
         const y = today.getFullYear(), m = today.getMonth();
-        const back = (a: string, b: string) => { const n = daysBetween(a, b) + 1; return { prevStart: toISO(addDays(parseISO(a), -n)), prevEnd: toISO(addDays(parseISO(a), -1)) }; };
-        const monthBack = (iso: string, k: number) => { const d = parseISO(iso); const t = new Date(d.getFullYear(), d.getMonth() - k, 1); const last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate(); return toISO(new Date(t.getFullYear(), t.getMonth(), Math.min(d.getDate(), last))); };
         switch (preset) {
-            case '7d': { const s0 = toISO(addDays(today, -6)); return { startISO: s0, endISO: end, ...back(s0, end) }; }
-            case '30d': { const s0 = toISO(addDays(today, -29)); return { startISO: s0, endISO: end, ...back(s0, end) }; }
-            case 'thisMonth': { const s0 = toISO(new Date(y, m, 1)); return { startISO: s0, endISO: end, prevStart: monthBack(s0, 1), prevEnd: monthBack(end, 1) }; }
-            case 'lastMonth': { const s0 = toISO(new Date(y, m - 1, 1)), e0 = toISO(new Date(y, m, 0)); return { startISO: s0, endISO: e0, prevStart: toISO(new Date(y, m - 2, 1)), prevEnd: toISO(new Date(y, m - 1, 0)) }; }
-            case 'year': { const s0 = toISO(new Date(y, 0, 1)); return { startISO: s0, endISO: end, prevStart: toISO(new Date(y - 1, 0, 1)), prevEnd: monthBack(end, 12) }; }
-            case 'custom': { const s0 = customStart || firstDay, e0 = customEnd || end; return { startISO: s0, endISO: e0, ...back(s0, e0) }; }
-            default: return { startISO: firstDay, endISO: end, prevStart: '', prevEnd: '' };
+            case '7d': return { startISO: toISO(addDays(today, -6)), endISO: end };
+            case '30d': return { startISO: toISO(addDays(today, -29)), endISO: end };
+            case 'thisMonth': return { startISO: toISO(new Date(y, m, 1)), endISO: end };
+            case 'lastMonth': return { startISO: toISO(new Date(y, m - 1, 1)), endISO: toISO(new Date(y, m, 0)) };
+            case 'year': return { startISO: toISO(new Date(y, 0, 1)), endISO: end };
+            case 'custom': return { startISO: customStart || firstDay, endISO: customEnd || end };
+            default: return { startISO: firstDay, endISO: end };
         }
     }, [preset, customStart, customEnd, firstDay]);
     const gran: Gran = granPick || (daysBetween(startISO, endISO) > 62 ? 'week' : 'day');
@@ -175,9 +171,6 @@ const RevenueView: React.FC = () => {
         const rangeRows = allRows.filter((r) => inRange(r.day));
         const total = rangeRows.reduce((sum, r) => sum + r.amount, 0);
         const avg = rangeRows.length ? total / rangeRows.length : 0;
-        const prevRows = prevStart ? allRows.filter((r) => r.day >= prevStart && r.day <= prevEnd) : [];
-        const prevTotal = prevRows.reduce((sum, r) => sum + r.amount, 0);
-        const prev = prevStart ? { total: prevTotal, count: prevRows.length, avg: prevRows.length ? prevTotal / prevRows.length : 0 } : null;
 
         // each service's money, bookings and share in the range (Most booked counts the bookings)
         const bySvc = new Map<string, { amount: number; count: number }>();
@@ -186,8 +179,8 @@ const RevenueView: React.FC = () => {
 
         // daily / weekly stacked series across the range (continuous buckets)
         let series: StackRow[] = [];
-        // the running total, day by day, with the range before laid over it (same day number)
-        const running: { label: string; now?: number; before?: number }[] = [];
+        // the running total, day by day
+        const running: { label: string; now: number }[] = [];
         if (endISO >= startISO) {
             const buckets: Bucket[] = [];
             const step = gran === 'week' ? 7 : 1;
@@ -199,16 +192,13 @@ const RevenueView: React.FC = () => {
             if (rangeRows.length) series = buildStacked(rangeRows, buckets, bucketOf, services);
 
             const perDay = (rows: Row[]) => { const m = new Map<string, number>(); rows.forEach((r) => m.set(r.day, (m.get(r.day) || 0) + r.amount)); return m; };
-            const nowDays = perDay(rangeRows), prevDays = perDay(prevRows);
-            const n = daysBetween(startISO, endISO) + 1;
-            const pn = prevStart ? daysBetween(prevStart, prevEnd) + 1 : 0;
-            let c1 = 0, c2 = 0;
-            for (let i = 0; i < Math.min(Math.max(n, pn), 800); i++) {
+            const nowDays = perDay(rangeRows);
+            const n = Math.min(daysBetween(startISO, endISO) + 1, 800);
+            let c1 = 0;
+            for (let i = 0; i < n; i++) {
                 const day = toISO(addDays(parseISO(startISO), i));
-                const row: { label: string; now?: number; before?: number } = { label: dayLabel(day) };
-                if (i < n) { c1 += nowDays.get(day) || 0; row.now = c1; }
-                if (i < pn) { c2 += prevDays.get(toISO(addDays(parseISO(prevStart), i))) || 0; row.before = c2; }
-                if (i < n) running.push(row);
+                c1 += nowDays.get(day) || 0;
+                running.push({ label: dayLabel(day), now: c1 });
             }
         }
 
@@ -245,12 +235,12 @@ const RevenueView: React.FC = () => {
 
         const best = series.reduce((m, x) => ((x.total as number) > m.value ? { label: x.label, value: x.total as number } : m), { label: '—', value: 0 });
         return {
-            currency, services, count: rangeRows.length, total, avg, prev, series, running, monthlySeries, monthSvc, thisMonth, lastMonth, yearTotal, best,
+            currency, services, count: rangeRows.length, total, avg, series, running, monthlySeries, monthSvc, thisMonth, lastMonth, yearTotal, best,
             earners, fresh: { amount: fresh.amount, people: fresh.who.size }, back: { amount: back.amount, people: back.who.size }, top,
         };
     };
     const reports = useMemo(() => (['IDR', 'USD'] as Currency[]).map(report),
-        [paidRows, bookings, people, startISO, endISO, prevStart, prevEnd, gran]); // eslint-disable-line react-hooks/exhaustive-deps
+        [paidRows, bookings, people, startISO, endISO, gran]); // eslint-disable-line react-hooks/exhaustive-deps
     type Report = ReturnType<typeof report>;
 
     const StackTooltip = ({ active, payload, label, currency }: any) => {
@@ -277,13 +267,12 @@ const RevenueView: React.FC = () => {
         return (
             <div className="rounded-xl bg-surface-1 border border-adm-line-2 shadow-lg px-3 py-2 text-xs space-y-0.5">
                 <div className="font-semibold text-text-light mb-1">By {label}</div>
-                {v('now') !== undefined && <div className="flex justify-between gap-4"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#2E9E6A]" />This period</span><span className="tabular-nums text-text-light font-semibold">{fmtMoney(v('now'), currency)}</span></div>}
-                {v('before') !== undefined && <div className="flex justify-between gap-4 text-text-subtle"><span className="flex items-center gap-1.5"><span className="w-2 h-0.5 bg-[#9A93A8]" />Period before</span><span className="tabular-nums">{fmtMoney(v('before'), currency)}</span></div>}
+                {v('now') !== undefined && <div className="flex justify-between gap-4"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#2E9E6A]" />Came in</span><span className="tabular-nums text-text-light font-semibold">{fmtMoney(v('now'), currency)}</span></div>}
             </div>
         );
     };
     const axis = { tick: { fontSize: 11, fill: 'var(--adm-axis)' }, axisLine: false, tickLine: false } as const;
-    // the running total: how the money built up through the range, the range before dashed behind
+    // the running total: how the money built up through the range
     const RunningChart = ({ data, currency }: { data: Report['running']; currency: Currency }) => (
         <ResponsiveContainer width="100%" height={240}>
             <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -297,7 +286,6 @@ const RevenueView: React.FC = () => {
                 <XAxis dataKey="label" {...axis} interval="preserveStartEnd" minTickGap={28} />
                 <YAxis {...axis} tickFormatter={(v) => axisMoney(v, currency)} width={44} tickCount={4} />
                 <Tooltip content={<RunTooltip currency={currency} />} cursor={{ stroke: 'rgba(128,128,128,0.35)', strokeDasharray: '3 3' }} />
-                <Area type="monotone" dataKey="before" stroke="#9A93A8" strokeWidth={1.5} strokeDasharray="4 4" fill="none" dot={false} activeDot={false} isAnimationActive={false} />
                 <Area type="monotone" dataKey="now" stroke="#2E9E6A" strokeWidth={2.25} fill={`url(#run-${currency})`} dot={false} activeDot={{ r: 4 }} />
             </AreaChart>
         </ResponsiveContainer>
@@ -336,27 +324,6 @@ const RevenueView: React.FC = () => {
         </div>
     );
 
-    // up or down against the range before, with that range in its tooltip ("from 0" when
-    // there was nothing then, so there's no percentage to give)
-    const prevWords = prevStart ? rangeLabel(prevStart, prevEnd) : '';
-    const Delta: React.FC<{ now: number; before?: number }> = ({ now, before }) => {
-        if (before === undefined || (now === 0 && before === 0)) return null;
-        const pct = before === 0 ? null : Math.round(((now - before) / before) * 100);
-        const up = pct === null || pct > 0;
-        const tip = before === 0
-            ? <>Nothing in the same stretch before ({prevWords}), so no percentage: up from 0.</>
-            : pct === 0 ? <>The same as {prevWords}.</>
-            : <>{up ? 'Up' : 'Down'} {Math.abs(pct!)}% on {prevWords}, the same stretch before this range.</>;
-        return (
-            <Hint text={tip}>
-                {pct === 0 ? <span className="text-[11px] text-text-subtle">same</span> : (
-                    <span className={`inline-flex items-center text-[11px] font-semibold tabular-nums ${up ? 'text-sage' : 'text-coral-deep'}`}>
-                        {up ? <ArrowUp size={11} strokeWidth={2.5} /> : <ArrowDown size={11} strokeWidth={2.5} />}{pct === null ? 'from 0' : `${Math.abs(pct)}%`}
-                    </span>
-                )}
-            </Hint>
-        );
-    };
     const curName = (c: Currency) => (c === 'IDR' ? 'Rupiah' : 'Dollars');
     // a card: what it shows, then the answer (the figure) before the chart or list
     const Card: React.FC<{ title: string; currency?: Currency; figure?: string; note?: React.ReactNode; extra?: React.ReactNode; children: React.ReactNode }> = ({ title, currency, figure, note, extra, children }) => (
@@ -431,7 +398,7 @@ const RevenueView: React.FC = () => {
             {/* the range, as the filters on Sales: a word and an arrow with a short menu,
                 on a line that stays under the top bar while scrolling */}
             <div className="sticky top-14 lg:top-0 z-20 -mx-4 md:-mx-8 px-4 md:px-8 bg-bg-deep/85 backdrop-blur-md">
-                <FilterBar tabs={<span className="py-2.5 text-[13px] text-text-subtle">{rangeLabel(startISO, endISO)}{prevStart && <> · compared with {rangeLabel(prevStart, prevEnd)}</>}</span>}>
+                <FilterBar tabs={<span className="py-2.5 text-[13px] text-text-subtle">{rangeLabel(startISO, endISO)}</span>}>
                     <FilterMenu active={preset !== '30d'} label={PRESETS.find((x) => x.id === preset)!.label} align="end" menuClassName="w-64"
                         icon={<CalendarDays size={15} className="mr-0.5" />}>
                         {PRESETS.map((x) => (
@@ -445,31 +412,26 @@ const RevenueView: React.FC = () => {
                 </FilterBar>
             </div>
 
-            {/* a line per currency, with the change against the range before beside it */}
+            {/* a line per currency */}
             <StatStrip layout="four" stats={[
-                { label: 'Total revenue', lines: reports.map((r) => ({ key: r.currency, value: fmtMoney(r.total, r.currency), note: <Delta now={r.total} before={r.prev?.total} /> })) },
-                { label: 'Paid bookings', lines: reports.map((r) => ({ key: r.currency, value: String(r.count), note: <span className="inline-flex items-baseline gap-2">{r.currency === 'IDR' ? 'in Rp' : 'in $'}<Delta now={r.count} before={r.prev?.count} /></span> })) },
-                { label: 'Avg order', lines: reports.map((r) => ({ key: r.currency, value: fmtMoney(r.avg, r.currency), note: <Delta now={r.avg} before={r.prev ? (r.prev.count ? r.prev.avg : 0) : undefined} /> })) },
+                { label: 'Total revenue', lines: reports.map((r) => ({ key: r.currency, value: fmtMoney(r.total, r.currency), })) },
+                { label: 'Paid bookings', lines: reports.map((r) => ({ key: r.currency, value: String(r.count), note: r.currency === 'IDR' ? 'in Rp' : 'in $' })) },
+                { label: 'Avg order', lines: reports.map((r) => ({ key: r.currency, value: fmtMoney(r.avg, r.currency), })) },
                 { label: `Best ${gran}`, lines: reports.map((r) => ({ key: r.currency, value: fmtMoney(r.best.value, r.currency), note: r.best.value > 0 ? r.best.label : undefined })) },
             ]} />
 
-            {/* how the money built up through the range (the range before dashed behind), or bars */}
+            {/* how the money built up through the range, or bars */}
             <div className="grid gap-4 xl:grid-cols-2">
                 {reports.map((r) => (
                     <Card key={r.currency} title="Money over time" currency={r.currency} figure={fmtMoney(r.total, r.currency)}
-                        note={r.prev ? <><Delta now={r.total} before={r.prev.total} />{r.prev.total > 0 && <span>vs {fmtMoney(r.prev.total, r.currency)} before</span>}</> : <span>in this range</span>}
+                        note={<span>in this range</span>}
                         extra={<>
                             {mode === 'bars' && <Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGranPick} />}
                             <Seg value={mode} options={[{ id: 'total', label: 'Running total' }, { id: 'bars', label: 'Bars' }]} onChange={setMode} />
                         </>}>
-                        {r.total === 0 && !r.prev?.total ? <Empty text={`No ${curName(r.currency).toLowerCase()} came in in this range.`} />
-                            : mode === 'total' ? <>
-                                <div className="flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-text-subtle">
-                                    <span className="inline-flex items-center gap-1.5"><span className="w-3 h-0.5 rounded bg-[#2E9E6A]" />This period</span>
-                                    {r.prev && <span className="inline-flex items-center gap-1.5"><span className="w-3 border-t border-dashed border-[#9A93A8]" />{rangeLabel(prevStart, prevEnd)}</span>}
-                                </div>
-                                <RunningChart data={r.running} currency={r.currency} />
-                            </> : <>
+                        {r.total === 0 ? <Empty text={`No ${curName(r.currency).toLowerCase()} came in in this range.`} />
+                            : mode === 'total' ? <RunningChart data={r.running} currency={r.currency} />
+                            : <>
                                 <Legend items={r.earners} currency={r.currency} />
                                 <Bars data={r.series} currency={r.currency} services={r.services} />
                             </>}
