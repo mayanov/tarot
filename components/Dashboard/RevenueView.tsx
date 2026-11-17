@@ -33,7 +33,7 @@ const CustomDates: React.FC<{ draft: { start: string; end: string }; setDraft: R
 };
 
 const SERVICE_LABEL: Record<string, string> = {
-    chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'New Year Reading (PDF)',
+    chat: 'Chat', call: 'Call', meetup: 'Meetup', special: 'New Year Reading (PDF)',
     '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
     payl: 'Pay as you like',
 };

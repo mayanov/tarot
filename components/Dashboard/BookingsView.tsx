@@ -10,7 +10,7 @@ import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooki
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton, { waNumberOf, paymentRequestText, type WaField } from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
-import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, fmtMoney, dayWord, nameOf, sessionTitle, shortLabel, detailOf, serviceTitle, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone, soonMs } from './lib/format';
+import { amountForBooking, refInWords, packageEn, SERVICE_NAME, fmtDate, fmtMoney, dayWord, nameOf, sessionTitle, shortLabel, detailOf, serviceTitle, serviceGroup, subServiceOf, packageOf, serviceLabel, amountLabel, paymentMethodOf, phoneOf, emailOf, orderClock, spanLabel, fmtPhone, soonMs } from './lib/format';
 import { StatusSelect, PaymentPill } from './lib/status';
 import { sameCustomer, normPhone as waNumber, moneyLabel, type Money } from './lib/customers';
 import { openCustomerOf } from './lib/nav';
@@ -1883,7 +1883,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
                         {!showDue && list.length > 0 && (
                             <div className={`hidden lg:grid ${COLS} gap-x-4 px-5 py-3 text-[13px] font-semibold text-text-subtle border-b border-adm-line`}>
-                                <span>Ordered</span><span>Customer</span><span>Service</span><span>Details</span><span className="text-right">Amount</span><span>Payment</span><span>Status</span><span className="text-right">Confirmation</span>
+                                <span>Ordered</span><span>Customer</span><span>Service</span><span>Sub-service</span><span className="text-right">Amount</span><span>Payment</span><span>Status</span><span className="text-right">Confirmation</span>
                             </div>
                         )}
 
@@ -1896,10 +1896,12 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
                         <div className="divide-y divide-adm-line">
                             {!showDue && list.map((b) => {
-                                const service = SERVICE_NAME[b.serviceId] || serviceTitle(b);
-                                // a cancelled session says when it was; otherwise the package or length
-                                const detail = orderView === 'cancelled' && b.date && b.time ? `${fmtDate(b.date)}, ${b.time}` : detailOf(b);
-                                const why = orderView === 'cancelled' && b.cancelReason === 'unpaid' ? 'not paid within 1 hour' : '';
+                                const service = serviceGroup(b);
+                                const detail = subServiceOf(b);
+                                // a cancelled session also says when it was, and why it was cancelled
+                                const why = orderView === 'cancelled'
+                                    ? [b.date && b.time ? `${fmtDate(b.date)}, ${b.time}` : '', b.cancelReason === 'unpaid' ? 'not paid within 1 hour' : ''].filter(Boolean).join(' · ')
+                                    : '';
                                 const confirm = orderView !== 'cancelled' && (b.market === 'ID'
                                     ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
                                     : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />);

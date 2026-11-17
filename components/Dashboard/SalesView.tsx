@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, nameOf, detailOf, SERVICE_NAME } from './lib/format';
+import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, nameOf, serviceGroup, subServiceOf } from './lib/format';
 import BookingsView, { AskToPay } from './BookingsView';
 import WaConfirmButton from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
@@ -166,8 +166,8 @@ const SalesView: React.FC = () => {
     const row = (b: Booking) => {
         const a = amountOf(b);
         const paid = b.paymentStatus === 'paid';
-        const service = SERVICE_NAME[b.serviceId] || serviceTitle(b);
-        const detail = detailOf(b);
+        const service = serviceGroup(b);
+        const detail = subServiceOf(b);
         return (
             <div key={b.id} onClick={() => setOpenId(b.id)}
                 className={`grid grid-cols-[minmax(0,1fr)_auto] ${COLS} gap-x-4 gap-y-1 items-center px-4 sm:px-5 py-3.5 border-b border-adm-line last:border-0 cursor-pointer transition-colors ${paid ? 'hover:bg-adm-hover' : 'bg-amber-400/[0.07] hover:bg-amber-400/[0.12]'}`}>
@@ -268,7 +268,7 @@ const SalesView: React.FC = () => {
             {/* one list: not paid first, then month by month */}
             <div className="rounded-2xl bg-surface-1 overflow-hidden">
                 <div className={`hidden sm:grid ${COLS} gap-x-4 px-5 py-3 text-[13px] font-semibold text-text-subtle border-b border-adm-line`}>
-                    <span>Date</span><span>Customer</span><span>Service</span><span>Details</span><span className="text-right">Amount</span><span>Status</span><span className="text-right">Action</span>
+                    <span>Date</span><span>Customer</span><span>Service</span><span>Sub-service</span><span className="text-right">Amount</span><span>Status</span><span className="text-right">Action</span>
                 </div>
                 {loading && filtered.length === 0 && <InlineLoader />}
                 {!loading && filtered.length === 0 && <p className="text-center text-sm text-text-subtle py-12">No orders found{q.trim() ? ` for “${q.trim()}”` : ''}.</p>}

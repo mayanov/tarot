@@ -111,7 +111,7 @@ export const nameOf = (b: { name?: string }, fallback = '—') => {
 
 // Short admin names per service (the same ones the Revenue charts use).
 export const SERVICE_NAME: Record<string, string> = {
-    chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'Special Edition',
+    chat: 'Chat', call: 'Call', meetup: 'Meetup', special: 'Special Edition',
     '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
     payl: 'Pay as you like',
 };
@@ -119,8 +119,20 @@ export const SERVICE_NAME: Record<string, string> = {
 const isPricePart = (s: string) => /^(Rp|\$)\s?[\d.,]/i.test(s.trim());
 const nameParts = (b: Booking) => (b.serviceName || '').split(/\s+[·—]\s+/).map((p) => p.trim()).filter(Boolean);
 
-/** the service on its own: "Chat", "Call / Video", "3-Card Spread" */
+/** the service on its own: "Chat", "Call", "3-Card Spread" */
 export const serviceTitle = (b: Booking) => SERVICE_NAME[b.serviceId] || nameParts(b)[0] || b.serviceId || '—';
+
+// For tables, a booking as a service and what was picked within it. The written email
+// readings are one service with two kinds; everything else is its own service, with
+// its package or length as the sub-service.
+const EMAIL_READINGS = new Set(['3card', '5card']);
+/** the service a table's Service column shows: "Email reading", "Chat", "Call" */
+export const serviceGroup = (b: Booking) => (EMAIL_READINGS.has(b.serviceId) ? 'Email reading' : serviceTitle(b));
+/** what was picked within it, for the Sub-service column: "3-Card Spread", "1 question",
+    "30 min", or '' */
+export const subServiceOf = (b: Booking) => (EMAIL_READINGS.has(b.serviceId)
+    ? [serviceTitle(b), detailOf(b)].filter(Boolean).join(' · ')
+    : detailOf(b));
 
 /** what was bought, short: a session by its length ("Call · 30 min", "Meetup · 1 h"),
     anything else as serviceLabel ("Chat · 1 question", "3-Card Spread") */
