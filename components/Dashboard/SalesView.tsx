@@ -242,10 +242,12 @@ const SalesView: React.FC = () => {
 
             {/* the money at a glance for what the filters pick: paid, unpaid and total, rupiah
                 and dollars side by side. A row shows just its orders in the list below
-                (the same as the payment filter); picked again, it shows all of them. */}
-            <div className="rounded-2xl bg-lilac/[0.08] border border-lilac/15 px-4 sm:px-6 py-2">
-                <div className={`grid ${SUM_COLS} gap-x-4 py-2 text-[12.5px] text-text-subtle border-b border-lilac/15`}>
-                    <span className="min-w-0 truncate text-text-light font-medium" title={scopeWords}>{scopeWords}</span>
+                (the same as the payment filter); picked again, it shows all of them. Solid
+                plum with light type (the deep accent: plum in light mode, violet in dark), so it
+                stands apart from the list. */}
+            <div className="rounded-2xl bg-lilac-dark text-[#E9E3F5] px-4 sm:px-6 py-2">
+                <div className={`grid ${SUM_COLS} gap-x-4 py-2 text-[12.5px] text-white/60 border-b border-white/15`}>
+                    <span className="min-w-0 truncate text-white font-medium" title={scopeWords}>{scopeWords}</span>
                     {curs.map((c) => <span key={c} className="text-right">{c === 'IDR' ? 'Rupiah' : 'Dollars'}</span>)}
                     <span className="text-right">Orders</span>
                 </div>
@@ -256,15 +258,15 @@ const SalesView: React.FC = () => {
                         <button key={r.id} type="button" aria-pressed={on}
                             onClick={() => setPayFilter(r.id === 'all' || on ? 'all' : (r.id as 'paid' | 'unpaid'))}
                             title={r.id === 'all' ? 'Show every order' : on ? 'Show every order' : `Show only ${r.label.toLowerCase()} orders`}
-                            className={`text-left grid ${SUM_COLS} gap-x-4 items-baseline -mx-2 px-2 py-2.5 rounded-lg tabular-nums transition-colors ${on ? 'bg-lilac/15' : 'hover:bg-lilac/10'} ${r.id === 'all' ? 'border-t border-lilac/15 rounded-t-none' : ''}`}
+                            className={`text-left grid ${SUM_COLS} gap-x-4 items-baseline -mx-2 px-2 py-2.5 rounded-lg tabular-nums transition-colors ${on ? 'bg-white/15' : 'hover:bg-white/10'} ${r.id === 'all' ? 'border-t border-white/15 rounded-t-none' : ''}`}
                             style={{ width: 'calc(100% + 1rem)' }}>
-                            <span className={`text-[14px] ${due ? 'due-soon-text font-semibold' : r.id === 'all' ? 'font-semibold text-text-light' : 'text-text-light'}`}>{r.label}</span>
+                            <span className={`text-[14px] ${due ? 'text-amber-300 font-semibold' : r.id === 'all' ? 'font-semibold text-white' : 'text-white/85'}`}>{r.label}</span>
                             {curs.map((c) => (
-                                <span key={c} className={`text-right text-[15px] sm:text-[20px] font-semibold tracking-[-0.01em] whitespace-nowrap ${r.money[c] ? 'text-text-light' : 'text-text-subtle'}`}>
+                                <span key={c} className={`text-right text-[15px] sm:text-[20px] font-semibold tracking-[-0.01em] whitespace-nowrap ${r.money[c] ? 'text-white' : 'text-white/45'}`}>
                                     {fmtMoney(r.money[c], c)}
                                 </span>
                             ))}
-                            <span className={`text-right text-[14px] ${r.count ? 'text-text-light' : 'text-text-subtle'}`}>{r.count}</span>
+                            <span className={`text-right text-[14px] ${r.count ? 'text-white' : 'text-white/45'}`}>{r.count}</span>
                         </button>
                     );
                 })}
