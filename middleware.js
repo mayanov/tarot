@@ -8,11 +8,11 @@
 // used rather than browser Basic auth because the admin API already uses the
 // Authorization header for its own login.
 // The daily cron is left open — it has its own CRON_SECRET check — and so are
-// Midtrans's and Xendit's payment notifications, which are checked by their
-// signature / verification token.
+// the payment gateways' notifications: Midtrans's and Xendit's are checked by their
+// signature / verification token, and Mayar's only prompts the server to ask Mayar.
 
 export const config = {
-  matcher: '/((?!api/cron/|api/midtrans/notify|api/xendit/notify).*)',
+  matcher: '/((?!api/cron/|api/midtrans/notify|api/xendit/notify|api/mayar/notify).*)',
 };
 
 const COOKIE = 'site_pass';

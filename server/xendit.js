@@ -7,9 +7,11 @@
 // key is test mode, xnd_production_… is real money) and XENDIT_CALLBACK_TOKEN
 // (Settings → Webhooks → "Webhook verification token"). The dashboard's "Invoices paid"
 // webhook URL should point at /api/xendit/notify.
-// When both Xendit and Midtrans have keys, Xendit is used, unless ID_PAYMENTS=midtrans.
+// When both Xendit and Midtrans have keys, Xendit is used, unless ID_PAYMENTS=midtrans;
+// Mayar (server/mayar.js), when it has its key, goes ahead of both.
 
 import crypto from 'node:crypto';
+import * as mayar from './mayar.js';
 
 const API = 'https://api.xendit.co';
 
@@ -19,7 +21,7 @@ const PAY_WINDOW_MIN = 55;
 
 export const configured = () => Boolean(process.env.XENDIT_SECRET_KEY && process.env.XENDIT_CALLBACK_TOKEN);
 /** whether the Indonesian form pays with Xendit (rather than Midtrans) */
-export const active = () => configured() && process.env.ID_PAYMENTS !== 'midtrans';
+export const active = () => configured() && (process.env.ID_PAYMENTS ? process.env.ID_PAYMENTS === 'xendit' : !mayar.configured());
 export const testMode = () => !String(process.env.XENDIT_SECRET_KEY || '').startsWith('xnd_production_');
 
 const auth = () => `Basic ${Buffer.from(`${String(process.env.XENDIT_SECRET_KEY || '').trim()}:`).toString('base64')}`;

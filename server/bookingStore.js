@@ -565,6 +565,12 @@ export const findByMidtransOrder = (orderId) => findBy('midtransOrderId', orderI
 export const findByXenditOrder = (orderId) => findBy('xenditOrderId', orderId);
 /** notes the Xendit invoice opened for a hold */
 export const setXenditInvoice = (id, invoiceId) => patch(id, { xenditInvoiceId: invoiceId });
+/** the booking a Mayar payment request belongs to (its hold), by our order id, or null */
+export const findByMayarOrder = (orderId) => findBy('mayarOrderId', orderId);
+/** the hold a Mayar payment request (or its transaction) was opened for, or null */
+export const findByMayarInvoice = async (id) => (await findBy('mayarInvoiceId', id)) || findBy('mayarTxId', id);
+/** notes the Mayar payment request opened for a hold */
+export const setMayarInvoice = (id, invoiceId, txId) => patch(id, { mayarInvoiceId: invoiceId, ...(txId ? { mayarTxId: txId } : {}) });
 /** a booking waiting for its online payment, moved on to a new try (a new order id, the
  *  details as given now); its hour to pay doesn't start again */
 export const updateHold = (id, fields) => patch(id, fields);
@@ -602,7 +608,7 @@ export async function confirmPaidHold(booking, payment) {
   if (!booking.holdOnly) return booking;
   const fields = { status: 'confirmed', paymentStatus: 'paid', holdOnly: false, holdUntil: null, cancelReason: null, ...payment };
   // the other caller is confirming it right now: same result, without a second invite/message
-  if (!(await claimOnce(`confirm_${booking.id}_${booking.midtransOrderId || booking.xenditOrderId || booking.paypalOrderId || ''}`))) return { ...booking, ...fields };
+  if (!(await claimOnce(`confirm_${booking.id}_${booking.midtransOrderId || booking.xenditOrderId || booking.mayarOrderId || booking.paypalOrderId || ''}`))) return { ...booking, ...fields };
   await patch(booking.id, fields);
   const confirmed = { ...booking, ...fields };
   try {

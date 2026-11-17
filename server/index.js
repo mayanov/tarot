@@ -14,6 +14,7 @@ import * as gcal from './googleCalendar.js';
 import * as paypal from './paypal.js';
 import * as midtrans from './midtrans.js';
 import * as xendit from './xendit.js';
+import * as mayar from './mayar.js';
 import * as mailer from './mailer.js';
 import * as notices from './notices.js';
 import crypto from 'node:crypto';
@@ -766,7 +767,7 @@ async function settleMidtrans(orderId) {
 }
 
 app.get('/api/midtrans/config', (req, res) => {
-    if (!midtrans.configured() || xendit.active()) return res.json({ enabled: false });
+    if (!midtrans.configured() || invoiceGateway()) return res.json({ enabled: false });
     res.json({ enabled: true, ...midtrans.publicConfig() });
 });
 
@@ -812,7 +813,7 @@ async function holdForPayment(req, res, provider, extra) {
 }
 
 app.post('/api/midtrans/checkout', async (req, res) => {
-    if (!midtrans.configured() || xendit.active()) return res.status(503).json({ error: 'Midtrans not configured' });
+    if (!midtrans.configured() || invoiceGateway()) return res.status(503).json({ error: 'Midtrans not configured' });
     const held = await holdForPayment(req, res, 'Midtrans', (orderId) => ({ midtransOrderId: orderId }));
     if (!held) return;
     const { q, orderId, hold } = held;
@@ -878,24 +879,47 @@ app.post('/api/midtrans/notify', async (req, res) => {
     }
 });
 
-// Public: Xendit for the Indonesian bookings (server/xendit.js), the alternative to
-// Midtrans with the same steps: checkout holds the slot and opens an invoice on
-// Xendit's page; the booking turns real once Xendit confirms it (its webhook or the
-// visitor's own check); an expired invoice frees the slot.
-async function settleXendit(orderId) {
-    const booking = await bookingStore.findByXenditOrder(orderId);
+// Public: the Indonesian bookings paid on a gateway's own page — Mayar (server/mayar.js)
+// or Xendit (server/xendit.js) — the alternative to Midtrans with the same steps:
+// checkout holds the slot and opens a payment on the gateway's page; the booking turns
+// real once the gateway confirms it (its webhook or the visitor's own check); a closed
+// or expired payment frees the slot. Each has its own /api/<gateway>/… routes.
+const GATEWAYS = {
+    mayar: {
+        mod: mayar, label: 'Mayar',
+        findByOrder: bookingStore.findByMayarOrder,
+        invoiceOf: (b) => b.mayarInvoiceId,
+        orderFields: (orderId) => ({ mayarOrderId: orderId }),
+        saveInvoice: (id, inv) => bookingStore.setMayarInvoice(id, inv.invoiceId, inv.transactionId),
+        paidFields: (st) => ({ mayarPaymentId: st.transactionId }),
+    },
+    xendit: {
+        mod: xendit, label: 'Xendit',
+        findByOrder: bookingStore.findByXenditOrder,
+        invoiceOf: (b) => b.xenditInvoiceId,
+        orderFields: (orderId) => ({ xenditOrderId: orderId }),
+        saveInvoice: (id, inv) => bookingStore.setXenditInvoice(id, inv.invoiceId),
+        paidFields: (st) => ({ xenditPaymentId: st.transactionId }),
+    },
+};
+/** the gateway the Indonesian form pays with right now (instead of Midtrans), or null */
+const invoiceGateway = () => (mayar.active() ? 'mayar' : xendit.active() ? 'xendit' : null);
+
+async function settleInvoice(gw, orderId) {
+    const booking = await gw.findByOrder(orderId);
     if (!booking) return { state: 'failed' };
     if (!booking.holdOnly) return { state: booking.status === 'cancelled' ? 'failed' : 'paid', booking };
     if (booking.status === 'cancelled' && booking.cancelReason !== 'unpaid') return { state: 'failed' };
-    const st = await xendit.getStatus(booking.xenditInvoiceId);
+    if (!gw.invoiceOf(booking)) return { state: 'pending' }; // its payment is still being opened
+    const st = await gw.mod.getStatus(gw.invoiceOf(booking));
     if (st.state === 'paid') {
         if (st.amount !== booking.amountDue) {
-            console.error('Xendit amount mismatch:', orderId, st.amount, booking.amountDue);
+            console.error(`${gw.label} amount mismatch:`, orderId, st.amount, booking.amountDue);
             return { state: 'pending' };
         }
         const paid = await bookingStore.confirmPaidHold(booking, {
-            paymentMethod: `Xendit · ${st.method}`,
-            xenditPaymentId: st.transactionId,
+            paymentMethod: st.method ? `${gw.label} · ${st.method}` : gw.label,
+            ...gw.paidFields(st),
             paidAt: new Date().toISOString(),
         });
         await notices.notifyNewBooking(paid, st.amount); // (once, whichever check lands first)
@@ -908,63 +932,72 @@ async function settleXendit(orderId) {
     return { state: 'pending' };
 }
 
+// which gateway (if any) the Indonesian form uses; kept at Xendit's address, which the
+// form has always asked
 app.get('/api/xendit/config', (req, res) => {
-    res.json(xendit.active() ? { enabled: true, test: xendit.testMode() } : { enabled: false });
+    const name = invoiceGateway();
+    res.json(name ? { enabled: true, provider: name, test: GATEWAYS[name].mod.testMode() } : { enabled: false });
 });
 
-app.post('/api/xendit/checkout', async (req, res) => {
-    if (!xendit.active()) return res.status(503).json({ error: 'Xendit not configured' });
-    // filled in once the invoice exists; the order id is enough to find the hold until then
-    const held = await holdForPayment(req, res, 'Xendit', (orderId) => ({ xenditOrderId: orderId }));
-    if (!held) return;
-    const { q, orderId, hold } = held;
-    // after paying, Xendit's page comes back to the site, which closes that tab
-    // (the form, still open in the first tab, has seen the payment by then)
-    const site = /^https?:\/\/[\w.-]+(:\d+)?$/.test(String(req.get('origin') || '')) ? req.get('origin') : '';
-    try {
-        const { invoiceId, invoiceUrl } = await xendit.createInvoice({
-            orderId,
-            amount: q.amount,
-            item: { name: q.name },
-            customer: { name: String(req.body.name), email: String(req.body.email || '').trim() },
-            returnUrl: site ? `${site}/?bayar=${encodeURIComponent(orderId)}` : '',
-        });
-        await bookingStore.setXenditInvoice(hold.id, invoiceId);
-        res.status(201).json({ orderId, invoiceUrl });
-    } catch (e) {
-        console.error('Xendit checkout failed:', e.message);
-        await bookingStore.releaseHold(hold).catch(() => {});
-        res.status(502).json({ error: 'Could not start the payment' });
-    }
-});
+for (const [name, gw] of Object.entries(GATEWAYS)) {
+    app.post(`/api/${name}/checkout`, async (req, res) => {
+        if (invoiceGateway() !== name) return res.status(503).json({ error: `${gw.label} not configured` });
+        // filled in once the payment exists; the order id is enough to find the hold until then
+        const held = await holdForPayment(req, res, gw.label, gw.orderFields);
+        if (!held) return;
+        const { q, orderId, hold } = held;
+        // after paying, the gateway's page comes back to the site, which closes that tab
+        // (the form, still open in the first tab, has seen the payment by then)
+        const site = /^https?:\/\/[\w.-]+(:\d+)?$/.test(String(req.get('origin') || '')) ? req.get('origin') : '';
+        try {
+            const inv = await gw.mod.createInvoice({
+                orderId,
+                amount: q.amount,
+                item: { name: q.name },
+                customer: {
+                    name: String(req.body.name),
+                    email: String(req.body.email || '').trim(),
+                    phone: String(req.body.phone || '').trim(),
+                },
+                returnUrl: site ? `${site}/?bayar=${encodeURIComponent(orderId)}` : '',
+            });
+            await gw.saveInvoice(hold.id, inv);
+            res.status(201).json({ orderId, invoiceUrl: inv.invoiceUrl });
+        } catch (e) {
+            console.error(`${gw.label} checkout failed:`, e.message);
+            await bookingStore.releaseHold(hold).catch(() => {});
+            res.status(502).json({ error: 'Could not start the payment' });
+        }
+    });
 
-app.get('/api/xendit/status/:orderId', async (req, res) => {
-    if (!xendit.configured()) return res.status(503).json({ error: 'Xendit not configured' });
-    try {
-        const { state, booking } = await settleXendit(String(req.params.orderId).slice(0, 64));
-        res.json({ state, ...(booking ? { ref: booking.ref } : {}) });
-    } catch (e) {
-        console.error('Xendit status failed:', e.message);
-        res.json({ state: 'pending' });
-    }
-});
+    app.get(`/api/${name}/status/:orderId`, async (req, res) => {
+        if (!gw.mod.configured()) return res.status(503).json({ error: `${gw.label} not configured` });
+        try {
+            const { state, booking } = await settleInvoice(gw, String(req.params.orderId).slice(0, 64));
+            res.json({ state, ...(booking ? { ref: booking.ref } : {}) });
+        } catch (e) {
+            console.error(`${gw.label} status failed:`, e.message);
+            res.json({ state: 'pending' });
+        }
+    });
 
-// the visitor went back or closed the form before paying: expire the invoice, then
-// free the slot (unless it was paid just now — then it's confirmed)
-app.post('/api/xendit/release/:orderId', async (req, res) => {
-    if (!xendit.configured()) return res.status(503).json({ error: 'Xendit not configured' });
-    const orderId = String(req.params.orderId).slice(0, 64);
-    try {
-        const settled = await settleXendit(orderId);
-        if (settled.state !== 'pending') return res.json({ state: settled.state });
-        const booking = await bookingStore.findByXenditOrder(orderId);
-        if (booking?.xenditInvoiceId && await xendit.expire(booking.xenditInvoiceId)) await bookingStore.releaseHold(booking);
-        res.json({ state: 'failed' });
-    } catch (e) {
-        console.error('Xendit release failed:', orderId, e.message);
-        res.json({ state: 'pending' }); // the hold runs out on its own
-    }
-});
+    // the visitor went back or closed the form before paying: close that payment, then
+    // free the slot (unless it was paid just now — then it's confirmed)
+    app.post(`/api/${name}/release/:orderId`, async (req, res) => {
+        if (!gw.mod.configured()) return res.status(503).json({ error: `${gw.label} not configured` });
+        const orderId = String(req.params.orderId).slice(0, 64);
+        try {
+            const settled = await settleInvoice(gw, orderId);
+            if (settled.state !== 'pending') return res.json({ state: settled.state });
+            const booking = await gw.findByOrder(orderId);
+            if (gw.invoiceOf(booking || {}) && await gw.mod.expire(gw.invoiceOf(booking))) await bookingStore.releaseHold(booking);
+            res.json({ state: 'failed' });
+        } catch (e) {
+            console.error(`${gw.label} release failed:`, orderId, e.message);
+            res.json({ state: 'pending' }); // the hold runs out on its own
+        }
+    });
+}
 
 // Xendit's "Invoices paid" webhook (set in its dashboard), proven by the verification
 // token in its header; it retries on anything but a 2xx, so a failure answers 500
@@ -973,10 +1006,27 @@ app.post('/api/xendit/notify', async (req, res) => {
     const orderId = String(req.body?.external_id || '');
     if (!orderId.startsWith('MYV-')) return res.json({ ok: true }); // not one of ours (e.g. the dashboard's test)
     try {
-        await settleXendit(orderId);
+        await settleInvoice(GATEWAYS.xendit, orderId);
         res.json({ ok: true });
     } catch (e) {
         console.error('Xendit notification failed:', orderId, e.message);
+        res.status(500).json({ error: 'Retry' });
+    }
+});
+
+// Mayar's webhook (Integrasi → Webhook in its dashboard). Mayar doesn't sign it, so it
+// is only a nudge: it names the payment, and whether it's paid is asked of Mayar itself
+// (a forged call can't mark anything paid). Ids that aren't ours are ignored.
+app.post('/api/mayar/notify', async (req, res) => {
+    if (!mayar.configured()) return res.status(403).json({ error: 'Invalid' });
+    try {
+        for (const id of mayar.idsIn(req.body)) {
+            const booking = await bookingStore.findByMayarInvoice(id);
+            if (booking?.mayarOrderId) { await settleInvoice(GATEWAYS.mayar, booking.mayarOrderId); break; }
+        }
+        res.json({ ok: true });
+    } catch (e) {
+        console.error('Mayar notification failed:', e.message);
         res.status(500).json({ error: 'Retry' });
     }
 });
