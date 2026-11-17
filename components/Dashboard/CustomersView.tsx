@@ -189,17 +189,14 @@ const CustomersView: React.FC = () => {
             <PageHeader
                 title="Customers"
                 tone="people"
-                subtitle={`Who books, and who comes back · ${inMarket.length} ${inMarket.length === 1 ? 'client' : 'clients'}${market === 'ID' ? ' in Indonesia' : market === 'Global' ? ' abroad' : ''} · ${repeatCount} came back${inMarket.length ? ` (${Math.round((repeatCount / inMarket.length) * 100)}%)` : ''}`}
                 onRefresh={load}
                 refreshing={loading}
-            >
-                <div className="w-full sm:w-72"><SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, email or note" /></div>
-            </PageHeader>
+            />
 
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
 
-            {/* the filters, as on Sales: where they live, and the order they're listed in */}
-            <FilterBar>
+            {/* as on Sales: search on the left; where they live and the order they're listed in on the right */}
+            <FilterBar tabs={<div className="w-full sm:w-72 pb-1.5"><SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, email or note" /></div>}>
                 <FilterMenu active={market !== 'all'} label={WHERE[market]}>
                     <MenuHead>Where they live</MenuHead>
                     {(Object.keys(WHERE) as ('all' | Market)[]).map((id) => (

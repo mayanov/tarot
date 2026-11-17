@@ -162,25 +162,18 @@ const SalesView: React.FC = () => {
     const paidRows = filtered.filter((b) => b.paymentStatus === 'paid');
     const markWa = (id: string) => (f: string, at: string) => setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, [f]: at } : x)));
     const unpaidAll = orders.filter((b) => b.paymentStatus !== 'paid').length;
-    const ordersWord = (n: number) => `${n} ${n === 1 ? 'order' : 'orders'}`;
-    const figure = (label: React.ReactNode, money: Record<Cur, number>, foot: string, cls = '') => {
-        // one currency per line, rupiah over dollars, so every column's lines up with the
-        // next (never added together; with a market picked, just its own). The symbol says
-        // which is which; a zero stays grey so the amounts that matter stand out
-        return (
-            <div className={`py-4 min-w-0 ${cls}`}>
-                <div className="text-[13px] sm:text-sm text-text-subtle">{label}</div>
-                <div className="mt-1.5 space-y-0.5">
-                    {curs.map((c) => (
-                        <div key={c} className={`text-[16px] sm:text-[22px] font-semibold tracking-[-0.01em] leading-snug tabular-nums whitespace-nowrap ${money[c] ? 'text-text-light' : 'text-text-subtle'}`}>
-                            {fmtMoney(money[c], c)}
-                        </div>
-                    ))}
-                </div>
-                <div className="mt-2 text-[12.5px] sm:text-[13px] text-text-subtle tabular-nums">{foot}</div>
-            </div>
-        );
-    };
+    // The money at a glance, as a small table: what's paid, what's unpaid and both together
+    // down the side, rupiah and dollars side by side across (never added together; with a
+    // market picked, just its own), then how many orders. Amounts sit right-aligned in
+    // their columns so they read straight down; a zero stays grey.
+    const summary = [
+        { id: 'paid', label: 'Paid', money: totals.paid, count: totals.paidCount },
+        { id: 'unpaid', label: 'Unpaid', money: totals.unpaid, count: totals.unpaidCount },
+        { id: 'all', label: 'Total', money: { IDR: totals.paid.IDR + totals.unpaid.IDR, USD: totals.paid.USD + totals.unpaid.USD } as Record<Cur, number>, count: orders.length },
+    ];
+    const SUM_COLS = curs.length > 1
+        ? 'grid-cols-[minmax(4.5rem,1fr)_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.7fr)]'
+        : 'grid-cols-[minmax(4.5rem,1fr)_minmax(0,1.4fr)_minmax(0,0.7fr)]';
     // one column per fact on a computer; on a phone, name and amount, then the rest under it
     const COLS = 'sm:grid-cols-[4.5rem_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.8fr)_7.5rem_6rem_14.5rem]';
     const row = (b: Booking) => {
@@ -227,26 +220,41 @@ const SalesView: React.FC = () => {
         <div className="space-y-6 pt-20 lg:pt-8 p-4 md:px-8">
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <div className="text-sm text-text-subtle">Every order, newest first</div>
                     <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">Sales</h1>
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <div className="flex-1 sm:w-72"><SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, ref or note" /></div>
+                <div className="flex items-center gap-2">
                     <IconButton onClick={load} title="Refresh" aria-label="Refresh"><RefreshCcw size={16} className={loading ? 'animate-spin' : ''} /></IconButton>
                 </div>
             </div>
 
             {error && <div className="text-sm due-late-text bg-red-500/10 border border-red-500/25 rounded-xl px-3 py-2.5">{error}</div>}
 
-            {/* what's paid, what's unpaid, and both together (rupiah and dollars apart) */}
-            <div className="grid grid-cols-3 border-y border-adm-line">
-                {figure('Paid', totals.paid, ordersWord(totals.paidCount), 'pr-3')}
-                {figure(totals.unpaidCount ? <span className="due-soon-text font-semibold">Unpaid</span> : 'Unpaid', totals.unpaid, ordersWord(totals.unpaidCount), 'px-3 sm:px-6 border-l border-adm-line')}
-                {figure('Booked in all', { IDR: totals.paid.IDR + totals.unpaid.IDR, USD: totals.paid.USD + totals.unpaid.USD }, ordersWord(orders.length), 'pl-3 sm:pl-6 border-l border-adm-line')}
+            {/* the money at a glance: paid, unpaid and total, rupiah and dollars side by side */}
+            <div className="rounded-2xl bg-surface-1 px-4 sm:px-6 py-2 max-w-3xl">
+                <div className={`grid ${SUM_COLS} gap-x-4 py-2 text-[12.5px] text-text-subtle border-b border-adm-line`}>
+                    <span />
+                    {curs.map((c) => <span key={c} className="text-right">{c === 'IDR' ? 'Rupiah' : 'Dollars'}</span>)}
+                    <span className="text-right">Orders</span>
+                </div>
+                {summary.map((r) => {
+                    const due = r.id === 'unpaid' && r.count > 0;
+                    return (
+                        <div key={r.id} className={`grid ${SUM_COLS} gap-x-4 items-baseline py-2.5 tabular-nums ${r.id === 'all' ? 'border-t border-adm-line' : ''}`}>
+                            <span className={`text-[14px] ${due ? 'due-soon-text font-semibold' : r.id === 'all' ? 'font-semibold text-text-light' : 'text-text-light'}`}>{r.label}</span>
+                            {curs.map((c) => (
+                                <span key={c} className={`text-right text-[15px] sm:text-[20px] font-semibold tracking-[-0.01em] whitespace-nowrap ${r.money[c] ? 'text-text-light' : 'text-text-subtle'}`}>
+                                    {fmtMoney(r.money[c], c)}
+                                </span>
+                            ))}
+                            <span className={`text-right text-[14px] ${r.count ? 'text-text-light' : 'text-text-subtle'}`}>{r.count}</span>
+                        </div>
+                    );
+                })}
             </div>
 
             {/* which orders (tabs, left), then the filters (right) */}
-            <FilterBar>
+            {/* search on the left of the filters' line, the filters on the right */}
+            <FilterBar tabs={<div className="w-full sm:w-72 pb-1.5"><SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, ref or note" /></div>}>
                 {/* paid or not is a filter like the rest, not a tab */}
                 <FilterMenu active={payFilter !== 'all'} label={PAY[payFilter]}>
                     <MenuHead>Payment</MenuHead>

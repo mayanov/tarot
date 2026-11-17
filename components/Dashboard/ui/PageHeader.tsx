@@ -3,11 +3,10 @@ import { RefreshCcw, Info } from 'lucide-react';
 import { IconButton } from './Button';
 import { TONE, type Tone } from '../lib/sections';
 
-// Standard page header: serif title over a soft wash in its menu group's colour, a one-line
-// purpose, an optional ⓘ with the finer print, refresh + extra actions, and the hairline.
+// Standard page header: the title alone (no line above it), an optional ⓘ beside it with
+// the finer print, and refresh + extra actions on the right.
 interface Props {
     title: string;
-    subtitle?: React.ReactNode; // what the page is for, in one line
     note?: React.ReactNode;     // the finer print, behind the ⓘ
     tone?: Tone;
     onRefresh?: () => void;
@@ -24,23 +23,20 @@ export const TitleWash: React.FC<{ tone: Tone }> = ({ tone }) => (
 );
 
 // (tone is kept for callers; the plum menu already says where a page belongs)
-const PageHeader: React.FC<Props> = ({ title, subtitle, note, onRefresh, refreshing, children }) => {
+const PageHeader: React.FC<Props> = ({ title, note, onRefresh, refreshing, children }) => {
     const [showNote, setShowNote] = useState(false);
     return (
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div className="min-w-0">
-                {subtitle && (
-                    <p className="text-text-subtle text-sm flex items-center gap-1.5 flex-wrap">
-                        <span>{subtitle}</span>
-                        {note && (
-                            <button type="button" onClick={() => setShowNote((v) => !v)} aria-expanded={showNote} aria-label="More about this page" title="More about this page"
-                                className={`p-0.5 -m-0.5 rounded-full transition-colors ${showNote ? 'text-text-light' : 'text-text-subtle/70 hover:text-text-light'}`}>
-                                <Info size={14} />
-                            </button>
-                        )}
-                    </p>
-                )}
-                <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">{title}</h1>
+                <div className="flex items-center gap-2.5">
+                    <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">{title}</h1>
+                    {note && (
+                        <button type="button" onClick={() => setShowNote((v) => !v)} aria-expanded={showNote} aria-label="More about this page" title="More about this page"
+                            className={`p-1 rounded-full transition-colors ${showNote ? 'text-text-light' : 'text-text-subtle hover:text-text-light'}`}>
+                            <Info size={16} />
+                        </button>
+                    )}
+                </div>
                 {note && showNote && <p className="mt-1 max-w-2xl text-[12.5px] leading-relaxed text-text-subtle">{note}</p>}
             </div>
             {(children || onRefresh) && (

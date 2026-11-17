@@ -592,7 +592,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                     <div className="space-y-5 pt-20 lg:pt-8 p-4 md:px-8">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                             <div>
-                                <p className="text-text-subtle text-sm">Who can sign in to this dashboard</p>
                                 <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">Manage users</h1>
                             </div>
                             <button

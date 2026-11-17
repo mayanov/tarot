@@ -1218,7 +1218,6 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
             {!detailOnly && tab === 'today' && (
                 <div className="flex items-end justify-between gap-4">
                     <div>
-                        <div className="text-sm text-text-subtle">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Jakarta' })}</div>
                         <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">Today</h1>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -1232,7 +1231,6 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
             {!detailOnly && tab !== 'today' && <PageHeader
                 title={tab === 'calendar' ? 'Schedule' : 'Orders'}
                 tone="work"
-                subtitle={tab === 'calendar' ? 'Every session with a time' : 'Readings and chats to send'}
                 note={tab === 'calendar' ? 'Click a session for its details, drag it to move it. Grey is your own calendar: click a session there to make it a booking.'
                     : 'Readings and chats have no fixed time; each has until when it’s due. Click one for its details, tick its circle once it’s sent.'}
                 onRefresh={load}
