@@ -20,8 +20,8 @@ import Dialog, { FIELD, FIELD_LABEL } from './ui/Dialog';
 import { notesFrom, lastSeen, markSeen, readingTodo } from './lib/notifications';
 import { getAllBookings, BOOKINGS_CHANGED, type Booking } from '../../services/booking';
 import SalesView from './SalesView';
+import { FilterBar, ViewTabs, FilterMenu, MenuHead, MenuOption, useCloseMenu } from './ui/Filters';
 import { LoaderCard } from './ui/InlineLoader';
-import Segmented from './ui/Segmented';
 import { TONE, type Tone } from './lib/sections';
 
 // Same base as services/booking.ts — empty in prod (relative /api) so calls hit the
@@ -29,6 +29,31 @@ import { TONE, type Tone } from './lib/sections';
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) || '';
 
 type DateRangePreset = '7D' | '30D' | 'THIS_MONTH' | 'CUSTOM';
+
+// a custom range, picked on a calendar inside the date menu; "Apply range" closes it
+const RangePicker: React.FC<{ startDate: string; endDate: string; onChange: (from: string, to: string) => void; onDone: () => void }> = ({ startDate, endDate, onChange, onDone }) => {
+    const close = useCloseMenu();
+    return (
+        <div className="mt-1 pt-1 border-t border-adm-line date-picker-popup">
+            <div className="rdp-custom-wrapper text-text-light">
+                <DayPicker
+                    mode="range"
+                    selected={{ from: startDate ? parseISO(startDate) : undefined, to: endDate ? parseISO(endDate) : undefined }}
+                    onSelect={(range) => {
+                        // (range.to stays empty until a second day is picked)
+                        if (range?.from) onChange(format(range.from, 'yyyy-MM-dd'), range.to ? format(range.to, 'yyyy-MM-dd') : '');
+                        else onChange('', '');
+                    }}
+                    defaultMonth={startDate ? parseISO(startDate) : new Date()}
+                />
+            </div>
+            <div className="px-1.5 pb-1">
+                <button type="button" disabled={!startDate || !endDate} onClick={() => { onDone(); close(); }}
+                    className="w-full rounded-lg bg-lilac text-white text-[13px] font-semibold py-1.5 disabled:opacity-40 transition-opacity">Apply range</button>
+            </div>
+        </div>
+    );
+};
 
 interface AnalyticsDashboardProps {
     onLogout?: () => void;
@@ -731,94 +756,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
 
                             {/* Enhanced Controls Toolbar */}
                             <div className="w-full xl:w-auto flex flex-wrap items-center xl:justify-end gap-2 sm:gap-3">
-                                {/* Quick Filters */}
-                                <div className="flex flex-wrap gap-1.5">
-                                    {(['7D', '30D', 'THIS_MONTH'] as DateRangePreset[]).map((preset) => (
-                                        <button
-                                            key={preset}
-                                            onClick={() => applyPreset(preset)}
-                                            className={`px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-colors whitespace-nowrap ${activePreset === preset
-                                                ? 'bg-text-light text-bg-deep'
-                                                : 'bg-adm-hover-2 text-text-light hover:bg-adm-hover-3'
-                                                }`}
-                                        >
-                                            {preset === '7D' ? 'Last 7 Days' : preset === '30D' ? 'Last 30 Days' : 'This Month'}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className="w-[1px] bg-adm-hover-2 hidden sm:block my-1" />
-
-                                {/* Custom Range Trigger */}
-                                <div className="flex items-center gap-2 relative">
-                                    <button
-                                        onClick={() => applyPreset('CUSTOM')}
-                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all border ${activePreset === 'CUSTOM'
-                                            ? 'bg-surface-2 border-lilac text-lilac'
-                                            : 'bg-transparent border-transparent text-text-subtle hover:bg-adm-hover'
-                                            }`}
-                                    >
-                                        <Calendar size={14} />
-                                        <span className="whitespace-nowrap">Custom Range</span>
-                                        <ChevronDown size={12} className={`transition-transformDuration-300 ${showCustomPicker ? 'rotate-180' : ''}`} />
-                                    </button>
-
-                                    {/* Popover Date Inputs */}
-                                    {showCustomPicker && (
-                                        <div className="absolute top-full left-0 sm:left-auto sm:right-0 mt-3 p-3 bg-surface-1 border border-adm-line-2 rounded-xl shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200 min-w-max date-picker-popup">
-                                            <div className="rdp-custom-wrapper">
-                                                <DayPicker
-                                                    mode="range"
-                                                    selected={{
-                                                        from: startDate ? parseISO(startDate) : undefined,
-                                                        to: endDate ? parseISO(endDate) : undefined
-                                                    }}
-                                                    onSelect={(range) => {
-                                                        if (range?.from) {
-                                                            setStartDate(format(range.from, 'yyyy-MM-dd'));
-                                                            // Note: range.to might be undefined if only one day selected so far
-                                                            setEndDate(range?.to ? format(range.to, 'yyyy-MM-dd') : '');
-                                                        } else {
-                                                            setStartDate('');
-                                                            setEndDate('');
-                                                        }
-                                                    }}
-                                                    defaultMonth={startDate ? parseISO(startDate) : new Date()}
-                                                />
-                                            </div>
-                                            <div className="pt-2 border-t border-adm-line flex justify-between items-center px-2">
-                                                <button
-                                                    onClick={() => setShowCustomPicker(false)}
-                                                    className="text-xs text-text-subtle hover:text-text-light transition-colors"
-                                                >
-                                                    Cancel
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        if (startDate && endDate) setShowCustomPicker(false);
-                                                    }}
-                                                    disabled={!startDate || !endDate}
-                                                    className="px-3 py-1.5 bg-lilac text-white text-xs font-bold rounded hover:bg-lilac-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    Apply Range
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Site switch */}
-                                <div className="flex bg-bg-dark/50 rounded-lg p-1" title="Which website's visitors to show">
-                                    {([['live', 'Live site'], ['staging', 'Staging']] as const).map(([id, label]) => (
-                                        <button
-                                            key={id}
-                                            onClick={() => setSite(id)}
-                                            className={`px-3 py-1.5 text-xs font-semibold rounded-md whitespace-nowrap transition-all ${site === id ? 'bg-lilac text-white shadow' : 'text-text-subtle hover:text-text-light'}`}
-                                        >
-                                            {label}
-                                        </button>
-                                    ))}
-                                </div>
                                 <button
                                     onClick={handleReset}
                                     disabled={resetBusy}
@@ -837,6 +774,39 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                             </div>
                         </div>
 
+                        {/* the views and filters, as on Payments */}
+                        <FilterBar tabs={<ViewTabs label="What to show" value={aTab} onChange={setATab}
+                            options={[{ id: 'overview', label: 'Overview' }, { id: 'bookings', label: 'Bookings' }, { id: 'website', label: 'Website' }]} />}>
+                            {/* the booking and website numbers are per market */}
+                            {aTab !== 'overview' && (
+                                <FilterMenu active label={serviceTab === 'ID' ? 'Indonesia (IDR)' : 'Abroad (USD)'}>
+                                    <MenuHead>Where they live</MenuHead>
+                                    <MenuOption on={serviceTab === 'ID'} onPick={() => setServiceTab('ID')}>Indonesia (IDR)</MenuOption>
+                                    <MenuOption on={serviceTab === 'Global'} onPick={() => setServiceTab('Global')}>Abroad (USD)</MenuOption>
+                                </FilterMenu>
+                            )}
+                            <FilterMenu active={site !== 'live'} label={site === 'live' ? 'Live site' : 'Staging'}>
+                                <MenuHead>Which website's visitors</MenuHead>
+                                <MenuOption on={site === 'live'} onPick={() => setSite('live')}>Live site</MenuOption>
+                                <MenuOption on={site === 'staging'} onPick={() => setSite('staging')}>Staging</MenuOption>
+                            </FilterMenu>
+                            <FilterMenu active={activePreset !== '7D'} align="end" menuClassName={activePreset === 'CUSTOM' || showCustomPicker ? 'w-auto' : 'w-56'}
+                                icon={<Calendar size={15} className="mr-0.5" />}
+                                label={activePreset === '7D' ? 'Last 7 days' : activePreset === '30D' ? 'Last 30 days' : activePreset === 'THIS_MONTH' ? 'This month' : `${startDate} – ${endDate || '…'}`}>
+                                {(['7D', '30D', 'THIS_MONTH'] as DateRangePreset[]).map((p) => (
+                                    <MenuOption key={p} on={activePreset === p} onPick={() => applyPreset(p)}>
+                                        {p === '7D' ? 'Last 7 days' : p === '30D' ? 'Last 30 days' : 'This month'}
+                                    </MenuOption>
+                                ))}
+                                <MenuOption on={activePreset === 'CUSTOM'} keepOpen onPick={() => applyPreset('CUSTOM')}>Custom</MenuOption>
+                                {(showCustomPicker || activePreset === 'CUSTOM') && (
+                                    <RangePicker startDate={startDate} endDate={endDate}
+                                        onChange={(from, to) => { setStartDate(from); setEndDate(to); }}
+                                        onDone={() => setShowCustomPicker(false)} />
+                                )}
+                            </FilterMenu>
+                        </FilterBar>
+
                         {/* ERROR STATE */}
                         {apiError && !data ? (
                             <div className="flex flex-col items-center justify-center p-12 rounded-2xl bg-surface-1">
@@ -847,16 +817,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onLogout }) => 
                             </div>
                         ) : (
                             <>
-                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                    <Segmented value={aTab} onChange={setATab}
-                                        options={[{ id: 'overview', label: 'Overview' }, { id: 'bookings', label: 'Bookings' }, { id: 'website', label: 'Website' }]} />
-                                    {/* the booking and website numbers are per market */}
-                                    {aTab !== 'overview' && (
-                                        <Segmented size="sm" value={serviceTab} onChange={setServiceTab}
-                                            options={[{ id: 'ID', label: 'Indonesia (IDR)' }, { id: 'Global', label: 'Global (USD)' }]} />
-                                    )}
-                                </div>
-
                                 {/* Summary Cards */}
                                 {aTab === 'overview' && <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                                     <SummaryCard

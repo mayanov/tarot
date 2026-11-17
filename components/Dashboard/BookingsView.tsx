@@ -5,7 +5,7 @@ import Dialog, { DialogIconButton, Section, KV } from './ui/Dialog';
 import PageHeader from './ui/PageHeader';
 import Button, { IconButton, SOFT_BTN } from './ui/Button';
 import Card from './ui/Card';
-import Segmented from './ui/Segmented';
+import { FilterBar, ViewTabs } from './ui/Filters';
 import { getAllBookings, rescheduleBooking, getCalendarEvents, createManualBooking, updatePaymentStatus, addExtraTime, updateBookingDetails, BOOKINGS_CHANGED, Booking, CalEvent, SLOT_TIMES, CLOSING_TIME, slotNeed } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import WaConfirmButton, { waNumberOf, paymentRequestText, type WaField } from './WaConfirmButton';
@@ -1848,13 +1848,13 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 const showDue = orderView === 'active';
                 // the same columns as Payments: one fact per column
                 const COLS = 'lg:grid-cols-[4.5rem_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.9fr)_7.5rem_6rem_7.5rem_9rem]';
-                return (
+                return (<>
+                    {/* which orders, as on Payments: underlined tabs, with the order they're in on the right */}
+                    <FilterBar tabs={<ViewTabs label="Which orders" value={orderView} onChange={setOrderView}
+                        options={[{ id: 'active', label: 'To do', count: activeOrders.length, tone: 'due' }, { id: 'done', label: 'Done', count: doneOrders.length }, { id: 'cancelled', label: 'Cancelled', count: cancelledBookings.length }]} />}>
+                        <span className="py-2 text-[13px] text-text-subtle">{orderView === 'active' ? 'Most urgent first' : orderView === 'cancelled' ? 'Sessions & readings · newest first' : 'Newest first'}</span>
+                    </FilterBar>
                     <Card className="overflow-hidden">
-                        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-adm-line">
-                            <Segmented size="sm" value={orderView} onChange={setOrderView}
-                                options={[{ id: 'active', label: 'To do', count: activeOrders.length }, { id: 'done', label: 'Done', count: doneOrders.length }, { id: 'cancelled', label: 'Cancelled', count: cancelledBookings.length }]} />
-                            <span className="text-xs text-text-subtle">{orderView === 'active' ? 'Most urgent first' : orderView === 'cancelled' ? 'Sessions & readings · newest first' : 'Newest first'}</span>
-                        </div>
 
                         {/* To do: one card per order, like Today and the bell; Done and Cancelled stay a table */}
                         {showDue && list.length > 0 && (
@@ -1932,7 +1932,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                             })}
                         </div>
                     </Card>
-                );
+                </>);
             })()}
         </div>
     );

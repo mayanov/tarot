@@ -1,8 +1,12 @@
 import PageHeader from './ui/PageHeader';
-import Segmented from './ui/Segmented';
+import { SearchInput } from './ui/Field';
+import { FilterBar, FilterMenu, MenuHead, MenuOption, ClearFilters } from './ui/Filters';
+
+const WHERE = { all: 'Anywhere', ID: 'Indonesia', Global: 'Abroad' } as const;
+const SORT = { spent: 'Top spenders', bookings: 'Most bookings', recent: 'Most recent' } as const;
 import Dialog, { Section, KV } from './ui/Dialog';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Search, Repeat, CalendarDays, ChevronRight } from 'lucide-react';
+import { Repeat, CalendarDays, ChevronRight } from 'lucide-react';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen, fmtPhone, nameOf } from './lib/format';
@@ -189,22 +193,30 @@ const CustomersView: React.FC = () => {
                 onRefresh={load}
                 refreshing={loading}
             >
-                <Segmented value={market} onChange={setMarket}
-                    options={[{ id: 'all', label: 'All', count: customers.length }, { id: 'ID', label: 'Indonesia', count: countIn('ID') }, { id: 'Global', label: 'Global', count: countIn('Global') }]} />
+                <div className="w-full sm:w-72"><SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, email or note" /></div>
             </PageHeader>
 
             {error && <div className="text-sm text-coral-deep bg-coral/10 border border-coral/30 rounded-xl px-3 py-2.5">{error}</div>}
 
-            {/* toolbar */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                <div className="relative flex-1 max-w-sm">
-                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-subtle" />
-                    <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone, email or note"
-                        className="w-full rounded-lg border border-adm-line-2 bg-surface-1 pl-9 pr-4 py-2 text-sm text-text-light placeholder-text-subtle focus:border-lilac focus:outline-none" />
-                </div>
-                <Segmented size="sm" value={sort} onChange={setSort}
-                    options={[{ id: 'spent', label: 'Top spenders' }, { id: 'bookings', label: 'Most bookings' }, { id: 'recent', label: 'Recent' }]} />
-            </div>
+            {/* the filters, as on Payments: where they live, and the order they're listed in */}
+            <FilterBar>
+                <FilterMenu active={market !== 'all'} label={WHERE[market]}>
+                    <MenuHead>Where they live</MenuHead>
+                    {(Object.keys(WHERE) as ('all' | Market)[]).map((id) => (
+                        <MenuOption key={id} on={market === id} onPick={() => setMarket(id)}>
+                            <span className="flex-1">{WHERE[id]}</span>
+                            <span className="text-text-subtle font-normal tabular-nums">{id === 'all' ? customers.length : countIn(id)}</span>
+                        </MenuOption>
+                    ))}
+                </FilterMenu>
+                <FilterMenu active={sort !== 'spent'} label={SORT[sort]} align="end">
+                    <MenuHead>List them by</MenuHead>
+                    {(Object.keys(SORT) as (keyof typeof SORT)[]).map((id) => (
+                        <MenuOption key={id} on={sort === id} onPick={() => setSort(id)}>{SORT[id]}</MenuOption>
+                    ))}
+                </FilterMenu>
+                <ClearFilters show={market !== 'all' || sort !== 'spent'} onClear={() => { setMarket('all'); setSort('spent'); }} />
+            </FilterBar>
 
             {/* list */}
             <div className="rounded-2xl bg-surface-1 overflow-hidden">

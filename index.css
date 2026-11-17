@@ -267,7 +267,8 @@ html.booting .boot-hide { opacity: 0; pointer-events: none; transition: none; }
 .rdp-custom-wrapper .rdp-month_caption {
   font-family: 'Lora', serif;
   font-weight: 700;
-  color: white;
+  /* the menu's own text colour (white was lost on the light menu) */
+  color: inherit;
   padding-left: 0.5rem;
 }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, Check, RefreshCcw } from 'lucide-react';
+import { RefreshCcw } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, nameOf, detailOf, SERVICE_NAME } from './lib/format';
@@ -10,10 +10,19 @@ import { PaymentPill } from './lib/status';
 import Button, { IconButton, SOFT_BTN } from './ui/Button';
 import { colorFor } from './lib/serviceColor';
 import { SearchInput, Select } from './ui/Field';
+import { FilterBar, ViewTabs, FilterMenu, MenuHead, MenuDivider, MenuOption, MenuDate, ClearFilters, useCloseMenu } from './ui/Filters';
 
 type Market = 'ID' | 'Global';
 type Cur = 'IDR' | 'USD';
 const marketOf = (b: Booking): Market => (b.market === 'ID' ? 'ID' : 'Global');
+
+const WHERE = { all: 'Anywhere', ID: 'Indonesia', Global: 'Abroad' } as const;
+const SOURCE = { all: 'Any way', booking: 'Booked on the site', manual: 'Added by hand' } as const;
+// "Any date": clears both dates and closes the menu
+const AnyDate: React.FC<{ onClear: () => void }> = ({ onClear }) => {
+    const close = useCloseMenu();
+    return <button type="button" onClick={() => { onClear(); close(); }} className="w-full text-center text-xs text-text-subtle hover:text-text-light transition-colors py-1">Any date</button>;
+};
 
 const SalesView: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -25,25 +34,12 @@ const SalesView: React.FC = () => {
     const [sourceFilter, setSourceFilter] = useState<'all' | 'manual' | 'booking'>('all');
     const [dateFrom, setDateFrom] = useState<string>('');
     const [dateTo, setDateTo] = useState<string>('');
-    // the one filter menu that's open (where from, service or date), if any
-    const [menu, setMenu] = useState<'where' | 'service' | 'date' | null>(null);
-    const menuRef = useRef<HTMLDivElement>(null);
     // the booking whose details are open (the same popup as Orders and Schedule)
     const [openId, setOpenId] = useState<string | null>(null);
     const [savingId, setSavingId] = useState<string | null>(null);
     // every order in one list; narrowed to one market by its filter. Rupiah and dollars
     // are still never added together: each total has a line per currency
     const [market, setMarket] = useState<Market | 'all'>('all');
-
-    // close the open filter menu on a click outside it or Escape
-    useEffect(() => {
-        if (!menu) return;
-        const onDown = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(null); };
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(null); };
-        document.addEventListener('mousedown', onDown);
-        document.addEventListener('keydown', onKey);
-        return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-    }, [menu]);
 
     const load = async () => {
         setLoading(true);
@@ -229,83 +225,35 @@ const SalesView: React.FC = () => {
             </div>
 
             {/* which orders (tabs, left), then the filters (right) */}
-            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-adm-line">
-                <div role="tablist" aria-label="Which orders" className="flex gap-6">
-                    {([['all', 'All', null], ['unpaid', 'Not paid', unpaidAll]] as const).map(([id, label, n]) => {
-                        const on = payFilter === id;
-                        return (
-                            <button key={id} type="button" role="tab" aria-selected={on} onClick={() => setPayFilter(id)}
-                                className={`-mb-px border-b-2 py-2.5 text-[15px] whitespace-nowrap transition-colors ${on ? 'border-text-light font-semibold text-text-light' : 'border-transparent font-medium text-text-subtle hover:text-text-light'}`}>
-                                {label}{n !== null && n > 0 && <span className="ml-1.5 due-soon-text font-semibold tabular-nums">{n}</span>}
-                            </button>
-                        );
-                    })}
-                </div>
-            {/* the filters, all alike: a word and a little arrow, grey until one is picked; each opens a short menu */}
-            <div ref={menuRef} className="flex flex-wrap items-center gap-x-5 gap-y-1 pb-1.5">
-                {(() => {
-                    const WHERE = { all: 'Anywhere', ID: 'Indonesia', Global: 'Abroad' } as const;
-                    const SOURCE = { all: 'Any way', booking: 'Booked on the site', manual: 'Added by hand' } as const;
-                    const trigger = (id: 'where' | 'service' | 'date', label: string, on: boolean) => (
-                        <button type="button" aria-expanded={menu === id} onClick={() => setMenu(menu === id ? null : id)}
-                            className={`inline-flex items-center gap-1 py-2 text-[14px] whitespace-nowrap transition-colors ${on ? 'font-semibold text-text-light' : 'font-medium text-text-subtle hover:text-text-light'}`}>
-                            {label}<ChevronDown size={14} className={`transition-transform ${menu === id ? 'rotate-180' : ''}`} />
-                        </button>
-                    );
-                    // (on a phone the first two open to the right of their word, the date one to its left, so none runs off the screen)
-                    const pop = (edge: 'start' | 'end') => `absolute z-20 top-full mt-1 ${edge === 'start' ? 'left-0 sm:left-auto sm:right-0' : 'right-0'} w-56 rounded-xl border border-adm-line-2 bg-surface-1 shadow-lg p-1.5`;
-                    const option = (on: boolean, label: string, pick: () => void) => (
-                        <button key={label} type="button" onClick={() => { pick(); setMenu(null); }}
-                            className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-left text-[14px] hover:bg-adm-hover ${on ? 'font-semibold text-text-light' : 'text-text-light'}`}>
-                            {label}{on && <Check size={14} className="text-lilac shrink-0" />}
-                        </button>
-                    );
-                    const head = (t: string) => <div className="px-2.5 pt-2 pb-1 text-[12px] text-text-subtle">{t}</div>;
-                    return <>
-                        <div className="relative">
-                            {trigger('where', market === 'all' && sourceFilter === 'all' ? 'Anywhere'
-                                : [market !== 'all' ? WHERE[market] : '', sourceFilter !== 'all' ? SOURCE[sourceFilter] : ''].filter(Boolean).join(' · '),
-                                market !== 'all' || sourceFilter !== 'all')}
-                            {menu === 'where' && <div className={pop('start')}>
-                                {head('Where they live')}
-                                {(Object.keys(WHERE) as (keyof typeof WHERE)[]).map((id) => option(market === id, WHERE[id], () => { setMarket(id); setServiceFilter('all'); }))}
-                                <div className="my-1 border-t border-adm-line" />
-                                {head('How the order came in')}
-                                {(Object.keys(SOURCE) as (keyof typeof SOURCE)[]).map((id) => option(sourceFilter === id, SOURCE[id], () => setSourceFilter(id)))}
-                            </div>}
-                        </div>
-                        <div className="relative">
-                            {trigger('service', serviceFilter === 'all' ? 'All services' : serviceFilter, serviceFilter !== 'all')}
-                            {menu === 'service' && <div className={`${pop('start')} max-h-80 overflow-y-auto`}>
-                                {option(serviceFilter === 'all', 'All services', () => setServiceFilter('all'))}
-                                {serviceOptions.map((x) => option(serviceFilter === x, x, () => setServiceFilter(x)))}
-                            </div>}
-                        </div>
-                        <div className="relative">
-                            {trigger('date', dateLabel, dateActive)}
-                            {menu === 'date' && <div className={`${pop('end')} p-3 space-y-3`}>
-                                <div>
-                                    <label className="block text-xs text-text-subtle mb-1">Booked from</label>
-                                    <input type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)}
-                                        className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs text-text-subtle mb-1">Until</label>
-                                    <input type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)}
-                                        className="w-full px-2.5 py-2 rounded-lg border border-adm-line-2 bg-bg-dark text-sm text-text-light focus:border-lilac focus:outline-none cursor-pointer" />
-                                </div>
-                                {dateActive && <button type="button" onClick={() => { setDateFrom(''); setDateTo(''); setMenu(null); }}
-                                    className="w-full text-center text-xs text-text-subtle hover:text-text-light transition-colors py-1">Any date</button>}
-                            </div>}
-                        </div>
-                        {(market !== 'all' || sourceFilter !== 'all' || serviceFilter !== 'all' || dateActive) && (
-                            <button type="button" onClick={() => { setMarket('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }}
-                                className="py-2 text-[14px] font-medium text-lilac hover:underline">Clear</button>
-                        )}
-                    </>;
-                })()}
-            </div>
-            </div>
+            <FilterBar tabs={<ViewTabs label="Which orders" value={payFilter} onChange={setPayFilter}
+                options={[{ id: 'all', label: 'All' }, { id: 'unpaid', label: 'Not paid', count: unpaidAll, tone: 'due' }]} />}>
+                <FilterMenu active={market !== 'all' || sourceFilter !== 'all'}
+                    label={market === 'all' && sourceFilter === 'all' ? 'Anywhere'
+                        : [market !== 'all' ? WHERE[market] : '', sourceFilter !== 'all' ? SOURCE[sourceFilter] : ''].filter(Boolean).join(' · ')}>
+                    <MenuHead>Where they live</MenuHead>
+                    {(Object.keys(WHERE) as (keyof typeof WHERE)[]).map((id) => (
+                        <MenuOption key={id} on={market === id} onPick={() => { setMarket(id); setServiceFilter('all'); }}>{WHERE[id]}</MenuOption>
+                    ))}
+                    <MenuDivider />
+                    <MenuHead>How the order came in</MenuHead>
+                    {(Object.keys(SOURCE) as (keyof typeof SOURCE)[]).map((id) => (
+                        <MenuOption key={id} on={sourceFilter === id} onPick={() => setSourceFilter(id)}>{SOURCE[id]}</MenuOption>
+                    ))}
+                </FilterMenu>
+                <FilterMenu active={serviceFilter !== 'all'} label={serviceFilter === 'all' ? 'All services' : serviceFilter}>
+                    <MenuOption on={serviceFilter === 'all'} onPick={() => setServiceFilter('all')}>All services</MenuOption>
+                    {serviceOptions.map((x) => <MenuOption key={x} on={serviceFilter === x} onPick={() => setServiceFilter(x)}>{x}</MenuOption>)}
+                </FilterMenu>
+                <FilterMenu active={dateActive} label={dateLabel} align="end">
+                    <div className="p-1.5 space-y-3">
+                        <MenuDate label="Booked from" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)} />
+                        <MenuDate label="Until" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)} />
+                        {dateActive && <AnyDate onClear={() => { setDateFrom(''); setDateTo(''); }} />}
+                    </div>
+                </FilterMenu>
+                <ClearFilters show={market !== 'all' || sourceFilter !== 'all' || serviceFilter !== 'all' || dateActive}
+                    onClear={() => { setMarket('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }} />
+            </FilterBar>
 
             {/* one list: not paid first, then month by month */}
             <div className="rounded-2xl bg-surface-1 overflow-hidden">

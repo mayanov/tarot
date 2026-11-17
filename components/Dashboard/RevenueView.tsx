@@ -1,8 +1,9 @@
 import PageHeader from './ui/PageHeader';
 import Segmented from './ui/Segmented';
+import { FilterBar, FilterMenu, MenuOption, MenuDate, useCloseMenu } from './ui/Filters';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { colorFor } from './lib/serviceColor';
-import { CalendarDays, ChevronDown, Check, ArrowUp, ArrowDown, Repeat, UserPlus } from 'lucide-react';
+import { CalendarDays, ArrowUp, ArrowDown, Repeat, UserPlus } from 'lucide-react';
 import { BarChart, Bar, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
@@ -17,6 +18,19 @@ const PRESETS: { id: Preset; label: string }[] = [
     { id: 'thisMonth', label: 'This month' }, { id: 'lastMonth', label: 'Last month' },
     { id: 'year', label: 'This year' }, { id: 'all', label: 'All time' }, { id: 'custom', label: 'Custom' },
 ];
+
+// the dates of a custom range, inside the range menu: nothing changes until "Show these dates"
+const CustomDates: React.FC<{ draft: { start: string; end: string }; setDraft: React.Dispatch<React.SetStateAction<{ start: string; end: string }>>; onShow: () => void }> = ({ draft, setDraft, onShow }) => {
+    const close = useCloseMenu();
+    return (
+        <div className="mt-1 pt-2.5 px-1.5 pb-1.5 border-t border-adm-line space-y-3">
+            <MenuDate label="From" value={draft.start} max={draft.end || undefined} onChange={(e) => setDraft((d) => ({ ...d, start: e.target.value }))} />
+            <MenuDate label="To" value={draft.end} min={draft.start || undefined} onChange={(e) => setDraft((d) => ({ ...d, end: e.target.value }))} />
+            <button type="button" disabled={!draft.start || !draft.end || draft.end < draft.start} onClick={() => { onShow(); close(); }}
+                className="w-full rounded-lg bg-lilac text-white text-[13px] font-semibold py-1.5 disabled:opacity-40 transition-opacity">Show these dates</button>
+        </div>
+    );
+};
 
 const SERVICE_LABEL: Record<string, string> = {
     chat: 'Chat', call: 'Call / Video', meetup: 'Meetup', special: 'New Year Reading (PDF)',
@@ -73,22 +87,11 @@ const RevenueView: React.FC = () => {
     const [mode, setMode] = useState<'total' | 'bars'>('total');
     const [customStart, setCustomStart] = useState('');
     const [customEnd, setCustomEnd] = useState('');
-    const [menuOpen, setMenuOpenRaw] = useState(false);
     const [customOpen, setCustomOpen] = useState(false); // picking dates; the page changes only on Show
-    const setMenuOpen = (v: boolean | ((o: boolean) => boolean)) => { setMenuOpenRaw(v); setCustomOpen(false); };
     const [draft, setDraft] = useState({ start: '', end: '' }); // the custom dates while being picked
-    const menuRef = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-        if (!menuOpen) return;
-        const away = (e: MouseEvent) => { if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false); };
-        const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
-        document.addEventListener('mousedown', away);
-        document.addEventListener('keydown', esc);
-        return () => { document.removeEventListener('mousedown', away); document.removeEventListener('keydown', esc); };
-    }, [menuOpen]);
     const pickPreset = (id: Preset) => {
         if (id === 'custom') { setDraft({ start: startISO, end: endISO }); setCustomOpen(true); return; }
-        setPreset(id); setGranPick(null); setMenuOpen(false);
+        setPreset(id); setGranPick(null); setCustomOpen(false);
     };
 
     const load = async () => {
@@ -418,44 +421,21 @@ const RevenueView: React.FC = () => {
             {initialLoading && <LoaderCard />}
 
             {!initialLoading && (<>
-            {/* the range: one chip that stays under the top bar while scrolling, with a short menu */}
-            <div className="sticky top-14 lg:top-0 z-20 -mx-4 md:-mx-8 px-4 md:px-8 py-2.5 bg-bg-deep/85 backdrop-blur-md flex flex-wrap items-center gap-x-3 gap-y-1">
-                <div ref={menuRef} className="relative">
-                    <button type="button" onClick={() => setMenuOpen((o) => !o)} aria-haspopup="menu" aria-expanded={menuOpen}
-                        className={`inline-flex items-center gap-2 rounded-full bg-surface-1 border pl-3 pr-2.5 py-1.5 text-[13px] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors ${menuOpen ? 'border-lilac/50' : 'border-adm-line hover:border-adm-line-2'}`}>
-                        <CalendarDays size={15} className="text-lilac" />
-                        <span className="font-semibold text-text-light">{PRESETS.find((x) => x.id === preset)!.label}</span>
-                        <span className="text-text-subtle">· {rangeLabel(startISO, endISO)}</span>
-                        <ChevronDown size={15} className={`text-text-subtle transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    {menuOpen && (
-                        <div role="menu" className="absolute left-0 top-full mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-xl bg-surface-1 border border-adm-line-2 shadow-xl p-1.5 z-30">
-                            {PRESETS.map((x) => (
-                                <button key={x.id} type="button" role="menuitemradio" aria-checked={preset === x.id} onClick={() => pickPreset(x.id)}
-                                    className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-[13px] text-left transition-colors hover:bg-adm-hover ${preset === x.id ? 'text-lilac font-semibold' : 'text-text-light'}`}>
-                                    {x.label}
-                                    {preset === x.id && <Check size={15} />}
-                                </button>
-                            ))}
-                            {(customOpen || preset === 'custom') && (
-                                <div className="mt-1 pt-2.5 px-2 pb-1.5 border-t border-adm-line space-y-2">
-                                    <label className="flex items-center justify-between gap-2 text-[12px] text-text-subtle">From
-                                        <input type="date" value={draft.start} max={draft.end || undefined} onChange={(e) => setDraft((d) => ({ ...d, start: e.target.value }))}
-                                            className="w-[9.5rem] rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-1 text-xs text-text-light focus:border-lilac focus:outline-none" />
-                                    </label>
-                                    <label className="flex items-center justify-between gap-2 text-[12px] text-text-subtle">To
-                                        <input type="date" value={draft.end} min={draft.start || undefined} onChange={(e) => setDraft((d) => ({ ...d, end: e.target.value }))}
-                                            className="w-[9.5rem] rounded-lg border border-adm-line-2 bg-bg-dark px-2 py-1 text-xs text-text-light focus:border-lilac focus:outline-none" />
-                                    </label>
-                                    <button type="button" disabled={!draft.start || !draft.end || draft.end < draft.start}
-                                        onClick={() => { setCustomStart(draft.start); setCustomEnd(draft.end); setPreset('custom'); setGranPick(null); setMenuOpen(false); }}
-                                        className="w-full rounded-lg bg-lilac text-white text-[13px] font-semibold py-1.5 disabled:opacity-40 transition-opacity">Show these dates</button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-                {prevStart && <span className="text-[12px] text-text-subtle">Compared with {rangeLabel(prevStart, prevEnd)}</span>}
+            {/* the range, as the filters on Payments: a word and an arrow with a short menu,
+                on a line that stays under the top bar while scrolling */}
+            <div className="sticky top-14 lg:top-0 z-20 -mx-4 md:-mx-8 px-4 md:px-8 bg-bg-deep/85 backdrop-blur-md">
+                <FilterBar tabs={<span className="py-2.5 text-[13px] text-text-subtle">{rangeLabel(startISO, endISO)}{prevStart && <> · compared with {rangeLabel(prevStart, prevEnd)}</>}</span>}>
+                    <FilterMenu active={preset !== '30d'} label={PRESETS.find((x) => x.id === preset)!.label} align="end" menuClassName="w-64"
+                        icon={<CalendarDays size={15} className="mr-0.5" />}>
+                        {PRESETS.map((x) => (
+                            <MenuOption key={x.id} on={preset === x.id} keepOpen={x.id === 'custom'} onPick={() => pickPreset(x.id)}>{x.label}</MenuOption>
+                        ))}
+                        {(customOpen || preset === 'custom') && (
+                            <CustomDates draft={draft} setDraft={setDraft}
+                                onShow={() => { setCustomStart(draft.start); setCustomEnd(draft.end); setPreset('custom'); setGranPick(null); setCustomOpen(false); }} />
+                        )}
+                    </FilterMenu>
+                </FilterBar>
             </div>
 
             {/* a line per currency, with the change against the range before beside it */}
