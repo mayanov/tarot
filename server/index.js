@@ -500,7 +500,10 @@ const underAge = (dob) => {
 
 // Public: create a booking.
 app.post('/api/bookings', async (req, res) => {
-    const { serviceId, serviceName, date, time, durationMin, name, dob, contact, question, market } = req.body || {};
+    const { serviceName, date, time, durationMin, name, dob, contact, question } = req.body || {};
+    // a Live Session is the global call: saved as a call, market Global
+    const serviceId = req.body?.serviceId === 'live' ? 'call' : req.body?.serviceId;
+    const market = req.body?.serviceId === 'live' ? 'Global' : req.body?.market;
     if (!serviceId || !name || !contact) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -581,7 +584,7 @@ app.post('/api/paypal/orders', async (req, res) => {
         const open = prev?.holdOnly && prev.status === 'pending' && prev.paymentStatus !== 'paid'
             && Date.parse(prev.holdUntil || '') >= Date.now();
         if (open) {
-            const same = prev.serviceId === serviceId
+            const same = prev.serviceId === paypal.savedId(serviceId)
                 && (prev.date || '') === (reading.durationMin ? date : '') && (prev.time || '') === (reading.durationMin ? time : '');
             if (same) {
                 await bookingStore.updateHold(prev.id, { ...details, paypalOrderId: id });
@@ -595,7 +598,7 @@ app.post('/api/paypal/orders', async (req, res) => {
     {
         try {
             await bookingStore.createBooking({
-                serviceId,
+                serviceId: paypal.savedId(serviceId),
                 serviceName: reading.name,
                 date: reading.durationMin ? date : '',
                 time: reading.durationMin ? time : '',
@@ -666,7 +669,7 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
     try {
         hold = await bookingStore.findByPayPalOrder(orderId);
         if (hold && !hold.holdOnly) return res.json(hold); // a retried request, already booked
-        if ((reading.durationMin && !hold) || (hold && (hold.serviceId !== serviceId || !(await bookingStore.holdStillFree(hold))))) {
+        if ((reading.durationMin && !hold) || (hold && (![serviceId, paypal.savedId(serviceId)].includes(hold.serviceId) || !(await bookingStore.holdStillFree(hold))))) {
             return res.status(409).json({ error: 'SLOT_TAKEN' });
         }
     } catch (e) {
@@ -707,7 +710,7 @@ app.post('/api/paypal/orders/:id/capture', async (req, res) => {
         const existing = (await bookingStore.getAllBookings()).find((b) => b.paypalOrderId === orderId);
         if (existing) return res.json(existing);
         const booking = await bookingStore.createBooking({
-            serviceId,
+            serviceId: paypal.savedId(serviceId),
             serviceName: reading.name,
             date: '',
             time: '',

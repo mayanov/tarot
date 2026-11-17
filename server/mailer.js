@@ -90,7 +90,10 @@ const WHEN = {
 
 const ID_SERVICES = new Set(['chat', 'call', 'meetup', 'special']);
 /** Indonesian bookings are followed up on WhatsApp, never by email */
-export const isIndonesian = (b) => b.market === 'ID' || ID_SERVICES.has(b.serviceId);
+// (a call is Indonesian unless it's the global one, the Live Session: market Global)
+export const isIndonesian = (b) => b.market === 'ID' || (ID_SERVICES.has(b.serviceId) && !globalCall(b));
+/** the global call (sold as the Live Session): saved as 'live' before, now a call with market Global */
+export const globalCall = (b) => b.serviceId === 'live' || (b.serviceId === 'call' && b.market === 'Global');
 
 // the session's day and time, in Jakarta time as booked
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -130,7 +133,7 @@ export function paidEmail(booking, amount) {
       ? null
       : reading
       ? `I’ll sit down with the cards for your question and send your reading to this email **${reading}**.`
-      : NEXT[booking.serviceId] || 'I’ll be in touch about the next step soon.',
+      : NEXT[globalCall(booking) ? 'live' : booking.serviceId] || 'I’ll be in touch about the next step soon.',
   ].filter(Boolean);
   // the one thing left to do: reply with the question and some context
   const askTitle = 'One more step: reply to this email';

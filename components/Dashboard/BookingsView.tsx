@@ -27,7 +27,6 @@ const MANUAL_SERVICES: { id: string; name: string }[] = [
     { id: 'special', name: 'Edisi Spesial' },
     { id: '3card', name: '3-Card Spread' },
     { id: '5card', name: '5-Card Deep' },
-    { id: 'live', name: 'Live Session' },
     // any amount, typed in by hand (no packages)
     { id: 'payl', name: 'Pay as you like' },
 ];
@@ -43,6 +42,8 @@ const SERVICE_OPTIONS: Record<string, SvcOpt[]> = {
     call: [
         { label: '30-Min Call', amount: 220000, currency: 'IDR', durationMin: 30 },
         { label: '60-Min Call', amount: 360000, currency: 'IDR', durationMin: 60 },
+        // the global call (the Live Session on the English site): 30 min only, in dollars
+        { label: 'Global · 30-Min Call', amount: 45, currency: 'USD', durationMin: 30 },
         // Admin-only add-on — intentionally NOT on the public pricelist.
         { label: 'Tambahan 15 Menit', amount: 110000, currency: 'IDR', durationMin: 15 },
     ],
@@ -53,7 +54,6 @@ const SERVICE_OPTIONS: Record<string, SvcOpt[]> = {
     special: [{ label: 'New Year Reading 2026', amount: 250000, currency: 'IDR' }],
     '3card': [{ label: '3-Card Spread', amount: 12, currency: 'USD' }],
     '5card': [{ label: '5-Card Deep', amount: 20, currency: 'USD' }],
-    live: [{ label: 'Live Session (30 min)', amount: 45, currency: 'USD', durationMin: 30 }],
 };
 
 // Pull a display phone / a canonical key out of a free-text contact field
@@ -103,7 +103,7 @@ const LBL = "block text-xs font-medium text-text-subtle mb-1.5";
 // Sessions with a time of their own (they go on the calendar); readings and chats don't.
 const TIMED = new Set(['call', 'meetup', 'live']);
 const CHIP_NAME: Record<string, string> = {
-    chat: 'Chat', call: 'Call', meetup: 'Meetup', special: 'Special', '3card': '3-Card', '5card': '5-Card', live: 'Live', payl: 'Pay as you like',
+    chat: 'Chat', call: 'Call', meetup: 'Meetup', special: 'Special', '3card': '3-Card', '5card': '5-Card', live: 'Call', payl: 'Pay as you like',
 };
 const chipCls = (on: boolean) =>
     `rounded-full border px-3 py-1.5 text-sm transition-colors ${on ? 'border-lilac bg-lilac text-white' : 'border-adm-line-2 text-text-light hover:border-lilac/60'}`;
@@ -256,7 +256,9 @@ export const AddBookingModal: React.FC<{ bookings: Booking[]; fromEntry?: CalEve
             const token = localStorage.getItem('authToken') || undefined;
             const svc = MANUAL_SERVICES.find((s) => s.id === serviceId) || MANUAL_SERVICES[0];
             const detailLabel = opt?.label || '';
-            const serviceName = detailLabel && detailLabel !== svc.name ? `${svc.name} · ${detailLabel}` : svc.name;
+            // (the global call is saved as the English site names it, the Live Session)
+            const serviceName = serviceId === 'call' && currency === 'USD' ? 'Live Session'
+                : detailLabel && detailLabel !== svc.name ? `${svc.name} · ${detailLabel}` : svc.name;
             // Tip is folded into the recorded amount so the revenue report reflects
             // what the client actually paid; it's also noted for reference.
             const tipNote = tipNum > 0 ? `Tip ${fmtAmt(tipNum, currency)}` : '';
@@ -577,16 +579,16 @@ const dayLabel = (iso: string, todayISO: string) => {
 };
 // The Schedule's colours (index.css): the colour is the service, the style is the status
 // (solid confirmed, striped pending, faded done, dashed: on her calendar, not booked yet).
-// a Live Session is a call too, so it shares the call's colour
-type SvcKey = 'call' | 'meetup' | 'live' | 'other';
-const svcKey = (serviceId?: string): SvcKey => (serviceId === 'call' || serviceId === 'live' || serviceId === 'meetup' ? serviceId : 'other');
+// a Live Session is the global call: a call, in the call's colour
+type SvcKey = 'call' | 'meetup' | 'other';
+const svcKey = (serviceId?: string): SvcKey => (serviceId === 'call' || serviceId === 'live' ? 'call' : serviceId === 'meetup' ? 'meetup' : 'other');
 const blockClass = (b: Booking) => `svc-${svcKey(b.serviceId)} blk blk-${b.status === 'pending' ? 'pending' : b.status === 'done' ? 'done' : 'confirmed'}`;
 const STATUS_WORD: Partial<Record<Booking['status'], string>> = { pending: 'Pending', done: 'Done ✓' };
 
 // What the colours and styles mean, under the grid.
 const ScheduleKey: React.FC = () => (
     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[0.7rem] text-text-subtle">
-        {([['call', 'Call'], ['meetup', 'Meetup'], ['live', 'Live'], ['other', 'Readings & other']] as const).map(([k, label]) => (
+        {([['call', 'Call'], ['meetup', 'Meetup'], ['other', 'Readings & other']] as const).map(([k, label]) => (
             <span key={k} className={`svc-${k} inline-flex items-center gap-1.5`}><span className="svc-dot w-2.5 h-2.5 rounded-sm" />{label}</span>
         ))}
         <span className="text-text-subtle/40">|</span>

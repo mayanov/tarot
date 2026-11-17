@@ -34,7 +34,7 @@ const CustomDates: React.FC<{ draft: { start: string; end: string }; setDraft: R
 
 const SERVICE_LABEL: Record<string, string> = {
     chat: 'Chat', call: 'Call', meetup: 'Meetup', special: 'New Year Reading (PDF)',
-    '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
+    '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Call',
     payl: 'Pay as you like',
 };
 
@@ -164,7 +164,7 @@ const RevenueView: React.FC = () => {
     // collected, and new against returning customers
     const report = (currency: Currency) => {
         const allRows: Row[] = paidRows.filter((r) => r.amt!.currency === currency)
-            .map((r) => ({ b: r.b, day: r.day, serviceId: r.b.serviceId, amount: r.amt!.amount }));
+            .map((r) => ({ b: r.b, day: r.day, serviceId: r.b.serviceId === 'live' ? 'call' : r.b.serviceId, amount: r.amt!.amount }));
         // services present, ordered by total revenue (stack order + legend)
         const tot = new Map<string, number>();
         allRows.forEach((r) => tot.set(r.serviceId, (tot.get(r.serviceId) || 0) + r.amount));

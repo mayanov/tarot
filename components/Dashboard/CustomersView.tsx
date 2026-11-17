@@ -123,7 +123,9 @@ const CustomersView: React.FC = () => {
                 // "paid" is money that came in; an unpaid booking only counts as owed
                 const amt = amountForBooking(b);
                 if (amt) (b.paymentStatus === 'paid' ? c.paid : c.owed)[amt.currency] += amt.amount;
-                if (!c.services.includes(b.serviceId)) c.services.push(b.serviceId);
+                // (a Live Session is the global call: one Call, not two)
+                const svc = b.serviceId === 'live' ? 'call' : b.serviceId;
+                if (!c.services.includes(svc)) c.services.push(svc);
             }
             c.markets.sort(); // 'Global' before 'ID' alphabetically; shown as ID first below
             const dates = list.map((b) => (b.createdAt || '').slice(0, 10)).filter(Boolean).sort();

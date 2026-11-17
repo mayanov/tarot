@@ -39,7 +39,8 @@ export const parseAmount = (token: string | null): { amount: number; currency: C
 export const amountForBooking = (b: Booking): { amount: number; currency: Cur } | null => {
     const due = Number(b.amountDue);
     if (due > 0) return { amount: due, currency: b.market === 'ID' ? 'IDR' : 'USD' };
-    return parseAmount(priceToken(b.price) || priceToken(b.serviceName) || SERVICE_PRICE_FALLBACK[b.serviceId] || null);
+    const fallback = SERVICE_PRICE_FALLBACK[b.serviceId === 'call' && b.market === 'Global' ? 'live' : b.serviceId];
+    return parseAmount(priceToken(b.price) || priceToken(b.serviceName) || fallback || null);
 };
 
 // Search: the words anywhere in the texts (any case), and a phone number however it's
@@ -57,7 +58,7 @@ export const matchesSearch = (needle: string, ...texts: (string | undefined | nu
 
 // A booking code in words, for the dashboard: "C-42" → "Call · booking no. 42"
 // (server/bookingStore.js nextRef). Older random codes → ''.
-const REF_SERVICE: Record<string, string> = { C: 'Call', M: 'Meetup', H: 'Chat', S: 'Special Edition', T: '3-Card', F: '5-Card', L: 'Live Session', P: 'Pay as you like' };
+const REF_SERVICE: Record<string, string> = { C: 'Call', M: 'Meetup', H: 'Chat', S: 'Special Edition', T: '3-Card', F: '5-Card', L: 'Call', P: 'Pay as you like' };
 export const refInWords = (ref?: string) => {
     const m = (ref || '').match(/^([A-Z])-(\d+)$/);
     return m ? `${REF_SERVICE[m[1]] || 'Booking'} · booking no. ${m[2]}` : '';
@@ -112,7 +113,9 @@ export const nameOf = (b: { name?: string }, fallback = '—') => {
 // Short admin names per service (the same ones the Revenue charts use).
 export const SERVICE_NAME: Record<string, string> = {
     chat: 'Chat', call: 'Call', meetup: 'Meetup', special: 'Special Edition',
-    '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Live Session',
+    // the Live Session is the global call: a Call like the Indonesian one (older bookings
+    // were saved as 'live'; new ones are 'call' with market Global)
+    '3card': '3-Card Spread', '5card': '5-Card Deep', live: 'Call',
     payl: 'Pay as you like',
 };
 
@@ -126,7 +129,7 @@ export const serviceTitle = (b: Booking) => SERVICE_NAME[b.serviceId] || namePar
 // kinds of one: the written readings are Email, and Pay as you like and the Special
 // Edition's readings (the New Year PDF) are Special Edition. Everything else is its own
 // service, with its package or length as the sub-service.
-const SERVICE_GROUP: Record<string, string> = { '3card': 'Email', '5card': 'Email', payl: 'Special Edition', special: 'Special Edition' };
+const SERVICE_GROUP: Record<string, string> = { live: 'Call', '3card': 'Email', '5card': 'Email', payl: 'Special Edition', special: 'Special Edition' };
 /** the service a table's Service column shows: "Email", "Chat", "Call", "Special Edition" */
 export const serviceGroup = (b: Booking) => SERVICE_GROUP[b.serviceId] || serviceTitle(b);
 /** every service on offer as the Service column names them, each with the sub-services
@@ -136,7 +139,7 @@ export const ALL_SERVICES: { name: string; subs: string[] }[] = (() => {
     Object.keys(SERVICE_NAME).forEach((id) => {
         const g = SERVICE_GROUP[id] || SERVICE_NAME[id];
         if (!map.has(g)) map.set(g, []);
-        if (SERVICE_GROUP[id]) map.get(g)!.push(id === 'special' ? 'New Year Reading' : SERVICE_NAME[id]);
+        if (SERVICE_GROUP[id] && id !== 'live') map.get(g)!.push(id === 'special' ? 'New Year Reading' : SERVICE_NAME[id]);
     });
     return Array.from(map, ([name, subs]) => ({ name, subs }));
 })();
@@ -146,7 +149,7 @@ export const subServiceOf = (b: Booking) => {
     // the Special Edition PDF is named by its reading; bookings made on the site carry no
     // reading name (there's one: the New Year Reading), so that's what it is unless one is given
     if (b.serviceId === 'special') return detailOf(b) || 'New Year Reading';
-    return SERVICE_GROUP[b.serviceId] ? [serviceTitle(b), detailOf(b)].filter(Boolean).join(' · ') : detailOf(b);
+    return SERVICE_GROUP[b.serviceId] && b.serviceId !== 'live' ? [serviceTitle(b), detailOf(b)].filter(Boolean).join(' · ') : detailOf(b);
 };
 
 /** what was bought, short: a session by its length ("Call · 30 min", "Meetup · 1 h"),
@@ -167,7 +170,7 @@ export const detailOf = (b: Booking) => {
 };
 
 /** a session in a few words: "Call with Tari", "Meetup with Rina", "Live Session with Mia" */
-export const sessionTitle = (b: Booking) => `${b.serviceId === 'call' ? 'Call' : serviceTitle(b)} with ${nameOf(b, 'someone')}`;
+export const sessionTitle = (b: Booking) => `${serviceTitle(b)} with ${nameOf(b, 'someone')}`;
 
 /** a package's name in English for the dashboard (bookings keep the name they were made
     with, which for Indonesia is Indonesian): "3 Pertanyaan" → "3 questions" */

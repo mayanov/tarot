@@ -66,9 +66,8 @@ export const entryMinutes = (e: CalEvent) => {
 };
 
 /** the service it most likely is */
-export const serviceFromTitle = (title: string): 'call' | 'meetup' | 'live' => {
-    // (a bare "meet" is more often Google Meet, so a call)
+export const serviceFromTitle = (title: string): 'call' | 'meetup' => {
+    // (a bare "meet" is more often Google Meet, so a call; a "Live" one is the global call)
     if (/\b(meetup|meet ?up|tatap|ketemu|offline)\b/i.test(title)) return 'meetup';
-    if (/\blive\b/i.test(title)) return 'live';
     return 'call';
 };

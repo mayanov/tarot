@@ -16,8 +16,12 @@ const API = LIVE ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.co
 export const READINGS = {
     '3card': { name: '3-Card Spread', value: '12.00' },
     '5card': { name: '5-Card Deep', value: '20.00' },
-    live: { name: 'Live Session', value: '45.00', durationMin: 30 },
+    // the global call: sold as the Live Session, saved as a call (market Global), the
+    // same service as the Indonesian call, at its own price and length
+    live: { name: 'Live Session', value: '45.00', durationMin: 30, saveAs: 'call' },
 };
+/** the service a booking of this reading is saved as ('live' → 'call') */
+export const savedId = (serviceId) => READINGS[serviceId]?.saveAs || serviceId;
 const CURRENCY = 'USD';
 
 // PAYPAL_SIMULATE=1 (local development only, never on Vercel): no PayPal at all — the
