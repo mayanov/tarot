@@ -10,12 +10,13 @@ import { PaymentPill } from './lib/status';
 import Button, { IconButton, SOFT_BTN } from './ui/Button';
 import { colorFor } from './lib/serviceColor';
 import { SearchInput, Select } from './ui/Field';
-import { FilterBar, ViewTabs, FilterMenu, MenuHead, MenuDivider, MenuOption, MenuDate, ClearFilters, useCloseMenu } from './ui/Filters';
+import { FilterBar, FilterMenu, MenuHead, MenuDivider, MenuOption, MenuDate, ClearFilters, useCloseMenu } from './ui/Filters';
 
 type Market = 'ID' | 'Global';
 type Cur = 'IDR' | 'USD';
 const marketOf = (b: Booking): Market => (b.market === 'ID' ? 'ID' : 'Global');
 
+const PAY = { all: 'Paid or not', paid: 'Paid', unpaid: 'Not paid' } as const;
 const WHERE = { all: 'Anywhere', ID: 'Indonesia', Global: 'Abroad' } as const;
 const SOURCE = { all: 'Any way', booking: 'Booked on the site', manual: 'Added by hand' } as const;
 // "Any date": clears both dates and closes the menu
@@ -225,8 +226,17 @@ const SalesView: React.FC = () => {
             </div>
 
             {/* which orders (tabs, left), then the filters (right) */}
-            <FilterBar tabs={<ViewTabs label="Which orders" value={payFilter} onChange={setPayFilter}
-                options={[{ id: 'all', label: 'All' }, { id: 'unpaid', label: 'Not paid', count: unpaidAll, tone: 'due' }]} />}>
+            <FilterBar>
+                {/* paid or not is a filter like the rest, not a tab */}
+                <FilterMenu active={payFilter !== 'all'} label={PAY[payFilter]}>
+                    <MenuHead>Payment</MenuHead>
+                    {(Object.keys(PAY) as (keyof typeof PAY)[]).map((id) => (
+                        <MenuOption key={id} on={payFilter === id} onPick={() => setPayFilter(id)}>
+                            <span className="flex-1">{PAY[id]}</span>
+                            <span className="font-normal text-text-subtle tabular-nums">{id === 'all' ? orders.length : id === 'paid' ? orders.length - unpaidAll : unpaidAll}</span>
+                        </MenuOption>
+                    ))}
+                </FilterMenu>
                 <FilterMenu active={market !== 'all' || sourceFilter !== 'all'}
                     label={market === 'all' && sourceFilter === 'all' ? 'Anywhere'
                         : [market !== 'all' ? WHERE[market] : '', sourceFilter !== 'all' ? SOURCE[sourceFilter] : ''].filter(Boolean).join(' · ')}>
@@ -251,8 +261,8 @@ const SalesView: React.FC = () => {
                         {dateActive && <AnyDate onClear={() => { setDateFrom(''); setDateTo(''); }} />}
                     </div>
                 </FilterMenu>
-                <ClearFilters show={market !== 'all' || sourceFilter !== 'all' || serviceFilter !== 'all' || dateActive}
-                    onClear={() => { setMarket('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }} />
+                <ClearFilters show={payFilter !== 'all' || market !== 'all' || sourceFilter !== 'all' || serviceFilter !== 'all' || dateActive}
+                    onClear={() => { setPayFilter('all'); setMarket('all'); setServiceFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }} />
             </FilterBar>
 
             {/* one list: not paid first, then month by month */}
