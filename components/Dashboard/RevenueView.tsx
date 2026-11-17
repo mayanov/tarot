@@ -161,7 +161,7 @@ const RevenueView: React.FC = () => {
         return { of, first, name };
     }, [bookings]);
 
-    // everything for one currency: totals, the charts, what earns most, what wasn't
+    // everything for one currency: totals, the charts, each service's bookings, what wasn't
     // collected, and new against returning customers
     const report = (currency: Currency) => {
         const allRows: Row[] = paidRows.filter((r) => r.amt!.currency === currency)
@@ -179,7 +179,7 @@ const RevenueView: React.FC = () => {
         const prevTotal = prevRows.reduce((sum, r) => sum + r.amount, 0);
         const prev = prevStart ? { total: prevTotal, count: prevRows.length, avg: prevRows.length ? prevTotal / prevRows.length : 0 } : null;
 
-        // what earns most in the range: each service's money, bookings and share
+        // each service's money, bookings and share in the range (Most booked counts the bookings)
         const bySvc = new Map<string, { amount: number; count: number }>();
         rangeRows.forEach((r) => { const x = bySvc.get(r.serviceId) || { amount: 0, count: 0 }; x.amount += r.amount; x.count++; bySvc.set(r.serviceId, x); });
         const earners = [...bySvc.entries()].map(([id, x]) => ({ id, ...x, share: total ? x.amount / total : 0 })).sort((a, b) => b.amount - a.amount);
@@ -378,7 +378,7 @@ const RevenueView: React.FC = () => {
     );
     const Empty = ({ text }: { text: string }) => <p className="text-sm text-text-subtle py-10 text-center">{text}</p>;
     // a ring split into each service's share (a small gap between slices), the total in the middle
-    const Donut = ({ slices, center, label }: { slices: { share: number; color: string }[]; center: string; label: string }) => {
+    const Donut = ({ slices, center, sub = 'came in', label }: { slices: { share: number; color: string }[]; center: string; sub?: string; label: string }) => {
         const size = 148, r = 58, sw = 20, c = 2 * Math.PI * r;
         const gap = slices.length > 1 ? 3 : 0;
         let at = 0;
@@ -394,13 +394,22 @@ const RevenueView: React.FC = () => {
                     })}
                 </g>
                 <text x={size / 2} y={size / 2 + 1} textAnchor="middle" className="fill-text-light" style={{ fontSize: 15, fontWeight: 700 }}>{center}</text>
-                <text x={size / 2} y={size / 2 + 18} textAnchor="middle" className="fill-text-subtle" style={{ fontSize: 11 }}>came in</text>
+                <text x={size / 2} y={size / 2 + 18} textAnchor="middle" className="fill-text-subtle" style={{ fontSize: 11 }}>{sub}</text>
             </svg>
         );
     };
     // a currency's heading inside a card that shows both
     const CurHead = ({ c }: { c: Currency }) => <h3 className="text-[11px] font-semibold text-text-subtle mb-2">{curName(c)}</h3>;
     const Seg = <T extends string>(p: { value: T; options: { id: T; label: string }[]; onChange: (v: NoInfer<T>) => void }) => <Segmented size="sm" {...p} />;
+
+    // Most booked: each service by how many paid bookings it had in the range, both markets
+    // together (a booking counts the same whatever it was paid in)
+    const booked = (() => {
+        const by = new Map<string, number>();
+        reports.forEach((r) => r.earners.forEach((x) => by.set(x.id, (by.get(x.id) || 0) + x.count)));
+        const total = [...by.values()].reduce((a, b) => a + b, 0);
+        return { total, rows: [...by].map(([id, count]) => ({ id, count, share: total ? count / total : 0 })).sort((a, b) => b.count - a.count) };
+    })();
 
     const initialLoading = loading && bookings.length === 0;
 
@@ -482,42 +491,33 @@ const RevenueView: React.FC = () => {
             </div>
 
             <div className="grid gap-4">
-                {/* A. what earns most in the range: each currency side by side (as the cards
-                    above), a donut of the shares and the services lined up in columns beside it */}
-                <Card title="What earns most">
-                    {reports.every((r) => !r.earners.length) ? <Empty text="Nothing paid in this range." /> : (
-                        <div className="grid gap-x-10 gap-y-6 xl:grid-cols-2">
-                            {reports.filter((r) => r.earners.length).map((r) => (
-                                <div key={r.currency} className="min-w-0">
-                                    <CurHead c={r.currency} />
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
-                                        <div className="shrink-0 self-center">
-                                            <Donut slices={r.earners.map((x) => ({ share: x.share, color: colorFor(x.id) }))}
-                                                label={r.earners.map((x) => `${SERVICE_LABEL[x.id] || x.id} ${Math.round(x.share * 100)} percent`).join(', ')}
-                                                center={fmtMoney(r.total, r.currency, true)} />
-                                        </div>
-                                        <table className="min-w-0 flex-1 text-[13px]">
-                                            <tbody>
-                                                {r.earners.map((x) => (
-                                                    <tr key={x.id} className="border-b border-adm-line last:border-0">
-                                                        <td className="py-2 pr-3">
-                                                            <span className="flex items-center gap-2 min-w-0">
-                                                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colorFor(x.id) }} />
-                                                                <span className="truncate text-text-light font-medium">{SERVICE_LABEL[x.id] || x.id}</span>
-                                                            </span>
-                                                            {/* (on a phone the count sits here, not in a column of its own) */}
-                                                            <span className="sm:hidden block pl-[18px] text-text-subtle text-[12px] tabular-nums">{x.count} {x.count === 1 ? 'booking' : 'bookings'}</span>
-                                                        </td>
-                                                        <td className="py-2 pr-3 text-right text-text-subtle tabular-nums whitespace-nowrap">{Math.round(x.share * 100)}%</td>
-                                                        <td className="py-2 sm:pr-3 text-right text-text-light font-semibold tabular-nums whitespace-nowrap">{fmtMoney(x.amount, r.currency)}</td>
-                                                        <td className="hidden sm:table-cell py-2 text-right text-text-subtle text-[12px] tabular-nums whitespace-nowrap">{x.count} {x.count === 1 ? 'booking' : 'bookings'}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            ))}
+                {/* A. most booked in the range: the services by their number of bookings (not
+                    money), one donut for both markets and the services ranked beside it */}
+                <Card title="Most booked">
+                    {!booked.total ? <Empty text="Nothing paid in this range." /> : (
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-10">
+                            <div className="shrink-0 self-center">
+                                <Donut slices={booked.rows.map((x) => ({ share: x.share, color: colorFor(x.id) }))}
+                                    label={booked.rows.map((x) => `${SERVICE_LABEL[x.id] || x.id} ${x.count} ${x.count === 1 ? 'booking' : 'bookings'}`).join(', ')}
+                                    center={String(booked.total)} sub={booked.total === 1 ? 'booking' : 'bookings'} />
+                            </div>
+                            <table className="min-w-0 flex-1 max-w-xl text-[13px]">
+                                <tbody>
+                                    {booked.rows.map((x, i) => (
+                                        <tr key={x.id} className="border-b border-adm-line last:border-0">
+                                            <td className="py-2 pr-3 w-6 text-text-subtle tabular-nums">{i + 1}</td>
+                                            <td className="py-2 pr-3">
+                                                <span className="flex items-center gap-2 min-w-0">
+                                                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colorFor(x.id) }} />
+                                                    <span className="truncate text-text-light font-medium">{SERVICE_LABEL[x.id] || x.id}</span>
+                                                </span>
+                                            </td>
+                                            <td className="py-2 pr-3 text-right text-text-light font-semibold tabular-nums whitespace-nowrap">{x.count} {x.count === 1 ? 'booking' : 'bookings'}</td>
+                                            <td className="py-2 text-right text-text-subtle tabular-nums whitespace-nowrap">{Math.round(x.share * 100)}%</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </Card>
