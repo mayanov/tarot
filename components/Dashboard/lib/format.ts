@@ -122,17 +122,21 @@ const nameParts = (b: Booking) => (b.serviceName || '').split(/\s+[·—]\s+/).m
 /** the service on its own: "Chat", "Call", "3-Card Spread" */
 export const serviceTitle = (b: Booking) => SERVICE_NAME[b.serviceId] || nameParts(b)[0] || b.serviceId || '—';
 
-// For tables, a booking as a service and what was picked within it. The written email
-// readings are one service with two kinds; everything else is its own service, with
-// its package or length as the sub-service.
-const EMAIL_READINGS = new Set(['3card', '5card']);
-/** the service a table's Service column shows: "Email", "Chat", "Call" */
-export const serviceGroup = (b: Booking) => (EMAIL_READINGS.has(b.serviceId) ? 'Email' : serviceTitle(b));
-/** what was picked within it, for the Sub-service column: "3-Card Spread", "1 question",
-    "30 min", or '' */
-export const subServiceOf = (b: Booking) => (EMAIL_READINGS.has(b.serviceId)
-    ? [serviceTitle(b), detailOf(b)].filter(Boolean).join(' · ')
-    : detailOf(b));
+// For tables, a booking as a service and what was picked within it. Some services are
+// kinds of one: the written readings are Email, and Pay as you like and the Special
+// Edition's readings (the New Year PDF) are Special Edition. Everything else is its own
+// service, with its package or length as the sub-service.
+const SERVICE_GROUP: Record<string, string> = { '3card': 'Email', '5card': 'Email', payl: 'Special Edition', special: 'Special Edition' };
+/** the service a table's Service column shows: "Email", "Chat", "Call", "Special Edition" */
+export const serviceGroup = (b: Booking) => SERVICE_GROUP[b.serviceId] || serviceTitle(b);
+/** what was picked within it, for the Sub-service column: "3-Card Spread", "Pay as you like",
+    "New Year Reading", "1 question", "30 min", or '' */
+export const subServiceOf = (b: Booking) => {
+    // the Special Edition PDF is named by its reading; bookings made on the site carry no
+    // reading name (there's one: the New Year Reading), so that's what it is unless one is given
+    if (b.serviceId === 'special') return detailOf(b) || 'New Year Reading';
+    return SERVICE_GROUP[b.serviceId] ? [serviceTitle(b), detailOf(b)].filter(Boolean).join(' · ') : detailOf(b);
+};
 
 /** what was bought, short: a session by its length ("Call · 30 min", "Meetup · 1 h"),
     anything else as serviceLabel ("Chat · 1 question", "3-Card Spread") */

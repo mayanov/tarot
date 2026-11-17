@@ -245,9 +245,11 @@ const SalesView: React.FC = () => {
                 (the same as the payment filter); picked again, it shows all of them. Solid
                 plum with light type (the deep accent: plum in light mode, violet in dark), so it
                 stands apart from the list. */}
-            <div className="rounded-2xl bg-lilac-dark text-[#E9E3F5] px-4 sm:px-6 py-2">
-                <div className={`grid ${SUM_COLS} gap-x-4 py-2 text-[12.5px] text-white/60 border-b border-white/15`}>
-                    <span className="min-w-0 truncate text-white font-medium" title={scopeWords}>{scopeWords}</span>
+            <div className="rounded-2xl bg-lilac-dark text-[#E9E3F5] px-4 sm:px-6 pt-4 pb-2">
+                {/* its title (what it covers) the largest, then the amounts, then the small column names */}
+                <h2 className="text-[20px] sm:text-[24px] font-semibold tracking-[-0.01em] leading-tight text-white truncate" title={scopeWords}>{scopeWords}</h2>
+                <div className={`mt-2 grid ${SUM_COLS} gap-x-4 py-2 text-[12.5px] text-white/60 border-b border-white/15`}>
+                    <span />
                     {curs.map((c) => <span key={c} className="text-right">{c === 'IDR' ? 'Rupiah' : 'Dollars'}</span>)}
                     <span className="text-right">Orders</span>
                 </div>
@@ -262,7 +264,7 @@ const SalesView: React.FC = () => {
                             style={{ width: 'calc(100% + 1rem)' }}>
                             <span className={`text-[14px] ${due ? 'text-amber-300 font-semibold' : r.id === 'all' ? 'font-semibold text-white' : 'text-white/85'}`}>{r.label}</span>
                             {curs.map((c) => (
-                                <span key={c} className={`text-right text-[15px] sm:text-[20px] font-semibold tracking-[-0.01em] whitespace-nowrap ${r.money[c] ? 'text-white' : 'text-white/45'}`}>
+                                <span key={c} className={`text-right text-[15px] sm:text-[18px] font-semibold tracking-[-0.01em] whitespace-nowrap ${r.money[c] ? 'text-white' : 'text-white/45'}`}>
                                     {fmtMoney(r.money[c], c)}
                                 </span>
                             ))}
