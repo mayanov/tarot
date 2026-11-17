@@ -243,7 +243,7 @@ const SalesView: React.FC = () => {
             {/* the money at a glance for what the filters pick: paid, unpaid and total, rupiah
                 and dollars side by side. A row shows just its orders in the list below
                 (the same as the payment filter); picked again, it shows all of them. */}
-            <div className="rounded-2xl bg-surface-1 px-4 sm:px-6 py-2 max-w-3xl">
+            <div className="rounded-2xl bg-surface-1 px-4 sm:px-6 py-2">
                 <div className={`grid ${SUM_COLS} gap-x-4 py-2 text-[12.5px] text-text-subtle border-b border-adm-line`}>
                     <span className="min-w-0 truncate text-text-light font-medium" title={scopeWords}>{scopeWords}</span>
                     {curs.map((c) => <span key={c} className="text-right">{c === 'IDR' ? 'Rupiah' : 'Dollars'}</span>)}
