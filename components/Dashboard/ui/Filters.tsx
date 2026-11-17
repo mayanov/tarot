@@ -111,11 +111,11 @@ export const MenuDivider: React.FC = () => <div className="my-1 border-t border-
 
 /** one choice in a menu, ticked when it's the one picked; picking it closes the menu
  *  (keepOpen leaves it open, e.g. for a choice that shows more fields below) */
-export const MenuOption: React.FC<{ on: boolean; onPick: () => void; keepOpen?: boolean; children: React.ReactNode }> = ({ on, onPick, keepOpen, children }) => {
+export const MenuOption: React.FC<{ on: boolean; onPick: () => void; keepOpen?: boolean; /** a choice inside the one above it (a sub-service under its service) */ sub?: boolean; children: React.ReactNode }> = ({ on, onPick, keepOpen, sub, children }) => {
     const close = useContext(CloseMenu);
     return (
         <button type="button" role="menuitemradio" aria-checked={on} onClick={() => { onPick(); if (!keepOpen) close(); }}
-            className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-left text-[14px] text-text-light hover:bg-adm-hover ${on ? 'font-semibold' : ''}`}>
+            className={`w-full flex items-center justify-between gap-2 py-1.5 rounded-md text-left hover:bg-adm-hover ${sub ? 'pl-6 pr-2.5 text-[13.5px] text-text-subtle hover:text-text-light' : 'px-2.5 text-[14px] text-text-light'} ${on ? 'font-semibold !text-text-light' : ''}`}>
             {children}{on && <Check size={14} className="text-lilac shrink-0" />}
         </button>
     );

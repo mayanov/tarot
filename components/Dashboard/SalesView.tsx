@@ -73,7 +73,7 @@ const SalesView: React.FC = () => {
     const curs: Cur[] = market === 'ID' ? ['IDR'] : market === 'Global' ? ['USD'] : ['IDR', 'USD'];
 
     // The services in the data, as the table's Service column names them (3-Card and
-    // 5-Card are both Email), each with the sub-services it has, for the two menus.
+    // 5-Card are both Email), each with the sub-services it has, for the service menu.
     const serviceOptions = useMemo(() => {
         const map = new Map<string, Set<string>>();
         orders.forEach((b) => {
@@ -85,8 +85,6 @@ const SalesView: React.FC = () => {
         const byName = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true });
         return Array.from(map, ([name, subs]) => ({ name, subs: Array.from(subs).sort(byName) })).sort((a, b) => byName(a.name, b.name));
     }, [orders]);
-    // the sub-service menu lists the picked service's, or every service's under its name
-    const subOptions = serviceOptions.filter((s) => s.subs.length && (serviceFilter === 'all' || s.name === serviceFilter));
 
     // The orders the filters pick, all but paid-or-not: the money summary splits these into
     // paid and unpaid, so it always speaks for what the filters are set to.
@@ -121,7 +119,7 @@ const SalesView: React.FC = () => {
         });
         return t;
     }, [scoped]);
-    const activeFilters = (market !== 'all' ? 1 : 0) + (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0) + (subFilter !== 'all' ? 1 : 0)
+    const activeFilters = (market !== 'all' ? 1 : 0) + (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0)
         + (sourceFilter !== 'all' ? 1 : 0)
         + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
 
@@ -300,25 +298,20 @@ const SalesView: React.FC = () => {
                         <MenuOption key={id} on={sourceFilter === id} onPick={() => setSourceFilter(id)}>{SOURCE[id]}</MenuOption>
                     ))}
                 </FilterMenu>
-                <FilterMenu active={serviceFilter !== 'all'} label={serviceFilter === 'all' ? 'All services' : serviceFilter}>
+                {/* one menu for both: each service, with its sub-services tucked in under it */}
+                <FilterMenu active={serviceFilter !== 'all'} menuClassName="w-64"
+                    label={serviceFilter === 'all' ? 'All services' : [serviceFilter, subFilter !== 'all' ? subFilter : ''].filter(Boolean).join(' · ')}>
                     <MenuOption on={serviceFilter === 'all'} onPick={() => { setServiceFilter('all'); setSubFilter('all'); }}>All services</MenuOption>
-                    {serviceOptions.map(({ name }) => (
-                        <MenuOption key={name} on={serviceFilter === name} onPick={() => { setServiceFilter(name); setSubFilter('all'); }}>{name}</MenuOption>
+                    {serviceOptions.map(({ name, subs }) => (
+                        <React.Fragment key={name}>
+                            <MenuDivider />
+                            <MenuOption on={serviceFilter === name && subFilter === 'all'} onPick={() => { setServiceFilter(name); setSubFilter('all'); }}>{name}</MenuOption>
+                            {subs.map((x) => (
+                                <MenuOption key={x} sub on={serviceFilter === name && subFilter === x} onPick={() => { setServiceFilter(name); setSubFilter(x); }}>{x}</MenuOption>
+                            ))}
+                        </React.Fragment>
                     ))}
                 </FilterMenu>
-                {subOptions.length > 0 && (
-                    <FilterMenu active={subFilter !== 'all'} label={subFilter === 'all' ? 'All sub-services' : subFilter}>
-                        <MenuOption on={subFilter === 'all'} onPick={() => setSubFilter('all')}>All sub-services</MenuOption>
-                        {subOptions.map(({ name, subs }) => (
-                            <React.Fragment key={name}>
-                                {serviceFilter === 'all' && <MenuHead>{name}</MenuHead>}
-                                {subs.map((x) => (
-                                    <MenuOption key={x} on={subFilter === x} onPick={() => { setSubFilter(x); if (serviceFilter === 'all') setServiceFilter(name); }}>{x}</MenuOption>
-                                ))}
-                            </React.Fragment>
-                        ))}
-                    </FilterMenu>
-                )}
                 <FilterMenu active={dateActive} label={dateLabel} align="end">
                     <div className="p-1.5 space-y-3">
                         <MenuDate label="Booked from" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)} />
