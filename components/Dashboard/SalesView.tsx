@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw } from 'lucide-react';
 import { getAllBookings, updatePaymentStatus, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
-import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, nameOf, serviceGroup, subServiceOf } from './lib/format';
+import { amountForBooking as amountOf, matchesSearch, fmtMoney, serviceLabel, serviceTitle, nameOf, serviceGroup, subServiceOf, ALL_SERVICES } from './lib/format';
 import BookingsView, { AskToPay } from './BookingsView';
 import WaConfirmButton from './WaConfirmButton';
 import EmailConfirmButton from './EmailConfirmButton';
@@ -72,18 +72,32 @@ const SalesView: React.FC = () => {
     // the currencies on show: both for all markets
     const curs: Cur[] = market === 'ID' ? ['IDR'] : market === 'Global' ? ['USD'] : ['IDR', 'USD'];
 
-    // The services in the data, as the table's Service column names them (3-Card and
-    // 5-Card are both Email), each with the sub-services it has, for the service menu.
+    // Every service on offer, as the table's Service column names them (3-Card and 5-Card
+    // are both Email), each with its sub-services, and how many orders each has: the
+    // ones with none yet are still listed, greyed, so the menu always shows them all.
     const serviceOptions = useMemo(() => {
-        const map = new Map<string, Set<string>>();
+        const map = new Map<string, Map<string, number>>();
+        const count = new Map<string, number>();
+        ALL_SERVICES.forEach(({ name, subs }) => map.set(name, new Map(subs.map((x) => [x, 0]))));
         orders.forEach((b) => {
             const s = serviceGroup(b);
-            if (!map.has(s)) map.set(s, new Set());
+            if (!map.has(s)) map.set(s, new Map());
+            count.set(s, (count.get(s) || 0) + 1);
             const sub = subServiceOf(b);
-            if (sub) map.get(s)!.add(sub);
+            if (sub) map.get(s)!.set(sub, (map.get(s)!.get(sub) || 0) + 1);
         });
         const byName = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true });
-        return Array.from(map, ([name, subs]) => ({ name, subs: Array.from(subs).sort(byName) })).sort((a, b) => byName(a.name, b.name));
+        // lengths in time order ("30 min" before "1 h"), anything else by name
+        const mins = (x: string) => { const m = /^(\d+(?:[.,]\d+)?)\s*(min|h|jam|menit)\b/i.exec(x); return m ? parseFloat(m[1].replace(',', '.')) * (/^(h|jam)$/i.test(m[2]) ? 60 : 1) : null; };
+        const bySub = (a: { name: string }, b: { name: string }) => {
+            const x = mins(a.name), y = mins(b.name);
+            return x != null && y != null ? x - y : byName(a.name, b.name);
+        };
+        return Array.from(map, ([name, subs]) => ({
+            name,
+            count: count.get(name) || 0,
+            subs: Array.from(subs, ([sub, n]) => ({ name: sub, count: n })).sort(bySub),
+        })).sort((a, b) => byName(a.name, b.name));
     }, [orders]);
 
     // The orders the filters pick, all but paid-or-not: the money summary splits these into
@@ -302,12 +316,12 @@ const SalesView: React.FC = () => {
                 <FilterMenu active={serviceFilter !== 'all'} menuClassName="w-64"
                     label={serviceFilter === 'all' ? 'All services' : [serviceFilter, subFilter !== 'all' ? subFilter : ''].filter(Boolean).join(' · ')}>
                     <MenuOption on={serviceFilter === 'all'} onPick={() => { setServiceFilter('all'); setSubFilter('all'); }}>All services</MenuOption>
-                    {serviceOptions.map(({ name, subs }) => (
+                    {serviceOptions.map(({ name, count, subs }) => (
                         <React.Fragment key={name}>
                             <MenuDivider />
-                            <MenuOption on={serviceFilter === name && subFilter === 'all'} onPick={() => { setServiceFilter(name); setSubFilter('all'); }}>{name}</MenuOption>
+                            <MenuOption dim={!count} on={serviceFilter === name && subFilter === 'all'} onPick={() => { setServiceFilter(name); setSubFilter('all'); }}>{name}</MenuOption>
                             {subs.map((x) => (
-                                <MenuOption key={x} sub on={serviceFilter === name && subFilter === x} onPick={() => { setServiceFilter(name); setSubFilter(x); }}>{x}</MenuOption>
+                                <MenuOption key={x.name} sub dim={!x.count} on={serviceFilter === name && subFilter === x.name} onPick={() => { setServiceFilter(name); setSubFilter(x.name); }}>{x.name}</MenuOption>
                             ))}
                         </React.Fragment>
                     ))}

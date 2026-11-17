@@ -129,6 +129,17 @@ export const serviceTitle = (b: Booking) => SERVICE_NAME[b.serviceId] || namePar
 const SERVICE_GROUP: Record<string, string> = { '3card': 'Email', '5card': 'Email', payl: 'Special Edition', special: 'Special Edition' };
 /** the service a table's Service column shows: "Email", "Chat", "Call", "Special Edition" */
 export const serviceGroup = (b: Booking) => SERVICE_GROUP[b.serviceId] || serviceTitle(b);
+/** every service on offer as the Service column names them, each with the sub-services
+    known ahead of any order (a session's lengths only show up with its orders) */
+export const ALL_SERVICES: { name: string; subs: string[] }[] = (() => {
+    const map = new Map<string, string[]>();
+    Object.keys(SERVICE_NAME).forEach((id) => {
+        const g = SERVICE_GROUP[id] || SERVICE_NAME[id];
+        if (!map.has(g)) map.set(g, []);
+        if (SERVICE_GROUP[id]) map.get(g)!.push(id === 'special' ? 'New Year Reading' : SERVICE_NAME[id]);
+    });
+    return Array.from(map, ([name, subs]) => ({ name, subs }));
+})();
 /** what was picked within it, for the Sub-service column: "3-Card Spread", "Pay as you like",
     "New Year Reading", "1 question", "30 min", or '' */
 export const subServiceOf = (b: Booking) => {
