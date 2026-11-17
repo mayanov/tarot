@@ -482,33 +482,39 @@ const RevenueView: React.FC = () => {
             </div>
 
             <div className="grid gap-4">
-                {/* A. what earns most in the range */}
+                {/* A. what earns most in the range: each currency side by side (as the cards
+                    above), a donut of the shares and the services lined up in columns beside it */}
                 <Card title="What earns most">
                     {reports.every((r) => !r.earners.length) ? <Empty text="Nothing paid in this range." /> : (
-                        <div className="space-y-5">
+                        <div className="grid gap-x-10 gap-y-6 xl:grid-cols-2">
                             {reports.filter((r) => r.earners.length).map((r) => (
-                                <div key={r.currency}>
+                                <div key={r.currency} className="min-w-0">
                                     <CurHead c={r.currency} />
-                                    {/* a donut of each service's share, the total in the middle, and a legend beside it */}
-                                    <div className="flex items-center gap-6 sm:gap-8">
-                                        <Donut slices={r.earners.map((x) => ({ share: x.share, color: colorFor(x.id) }))}
-                                            label={r.earners.map((x) => `${SERVICE_LABEL[x.id] || x.id} ${Math.round(x.share * 100)} percent`).join(', ')}
-                                            center={fmtMoney(r.total, r.currency, true)} />
-                                        <ul className="min-w-0 flex-1 space-y-3">
-                                            {r.earners.map((x) => (
-                                                <li key={x.id} className="min-w-0">
-                                                    <div className="flex items-center gap-2 text-[13px] min-w-0">
-                                                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colorFor(x.id) }} />
-                                                        <span className="truncate text-text-light font-medium">{SERVICE_LABEL[x.id] || x.id}</span>
-                                                        <span className="text-text-subtle text-[12px] whitespace-nowrap">· {Math.round(x.share * 100)}%</span>
-                                                    </div>
-                                                    <div className="pl-[18px] whitespace-nowrap tabular-nums">
-                                                        <span className="text-text-light font-bold text-[15px]">{fmtMoney(x.amount, r.currency)}</span>
-                                                        <span className="text-text-subtle text-[12px] ml-2">{x.count} {x.count === 1 ? 'booking' : 'bookings'}</span>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
+                                        <div className="shrink-0 self-center">
+                                            <Donut slices={r.earners.map((x) => ({ share: x.share, color: colorFor(x.id) }))}
+                                                label={r.earners.map((x) => `${SERVICE_LABEL[x.id] || x.id} ${Math.round(x.share * 100)} percent`).join(', ')}
+                                                center={fmtMoney(r.total, r.currency, true)} />
+                                        </div>
+                                        <table className="min-w-0 flex-1 text-[13px]">
+                                            <tbody>
+                                                {r.earners.map((x) => (
+                                                    <tr key={x.id} className="border-b border-adm-line last:border-0">
+                                                        <td className="py-2 pr-3">
+                                                            <span className="flex items-center gap-2 min-w-0">
+                                                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colorFor(x.id) }} />
+                                                                <span className="truncate text-text-light font-medium">{SERVICE_LABEL[x.id] || x.id}</span>
+                                                            </span>
+                                                            {/* (on a phone the count sits here, not in a column of its own) */}
+                                                            <span className="sm:hidden block pl-[18px] text-text-subtle text-[12px] tabular-nums">{x.count} {x.count === 1 ? 'booking' : 'bookings'}</span>
+                                                        </td>
+                                                        <td className="py-2 pr-3 text-right text-text-subtle tabular-nums whitespace-nowrap">{Math.round(x.share * 100)}%</td>
+                                                        <td className="py-2 sm:pr-3 text-right text-text-light font-semibold tabular-nums whitespace-nowrap">{fmtMoney(x.amount, r.currency)}</td>
+                                                        <td className="hidden sm:table-cell py-2 text-right text-text-subtle text-[12px] tabular-nums whitespace-nowrap">{x.count} {x.count === 1 ? 'booking' : 'bookings'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             ))}
