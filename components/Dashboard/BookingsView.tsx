@@ -1861,53 +1861,55 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                 // one order, the same card in every lane: who and how much, what, when (a to-do:
                 // how close it's due), then its payment, status and buttons
                 const orderCard = (b: Booking, lane: 'active' | 'done' | 'cancelled') => {
+                    // Calm on purpose: the lane already says the status, and the price and the
+                    // payment and status controls are a click away in the details. A card says
+                    // who and what, one word on how it stands, and (To do only) what to do next.
                     const cancelled = lane === 'cancelled';
                     const service = serviceGroup(b);
                     const detail = subServiceOf(b);
                     const t = lane === 'active' ? orderTodo(b, now) : null;
                     const unpaid = b.paymentStatus !== 'paid';
-                    // (an unpaid one isn't due yet; its payment pill already says Not paid)
-                    const when = t && !unpaid
-                        ? <>Ordered {fmtDate(b.createdAt)} · <span className={TONE_CLS[t.tone]}>{t.pill}</span></>
-                        : cancelled
-                            ? [b.date && b.time ? `${fmtDate(b.date)}, ${b.time}` : `Ordered ${fmtDate(b.createdAt)}`, b.cancelReason === 'unpaid' ? 'not paid within 1 hour' : ''].filter(Boolean).join(' · ')
-                            : `Ordered ${fmtDate(b.createdAt)}`;
+                    // top right: To do, how close it's due (or Not paid); Done and Cancelled, the day
+                    const tag = t
+                        ? (unpaid ? <span className="due-soon-text font-semibold">Not paid</span> : <span className={TONE_CLS[t.tone]}>{t.pill}</span>)
+                        : <span className="text-text-subtle">{cancelled && b.date ? fmtDate(b.date) : fmtDate(b.createdAt)}</span>;
+                    const note = cancelled ? (b.cancelReason === 'unpaid' ? 'Not paid within 1 hour' : '')
+                        : lane === 'done' && unpaid ? 'Not paid' : '';
                     // a to-do reading that's paid: where to send it
                     const reply = t && t.kind === 'reading' && !unpaid ? replyLink(b) : null;
                     const ticked = ticking.has(b.id);
-                    const confirm = !cancelled && (b.market === 'ID'
-                        ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
-                        : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />);
                     return (
                         <li key={b.id} role="button" tabIndex={0} onClick={() => setSelectedId(b.id)}
                             onKeyDown={(e) => { if (e.key === 'Enter' && e.target === e.currentTarget) setSelectedId(b.id); }}
-                            className={`${card} p-3.5 cursor-pointer hover:border-adm-line-3 transition-all ${cancelled ? 'opacity-80' : ''} ${ticked ? 'opacity-50' : ''}`}>
+                            className={`${card} px-3.5 py-3 cursor-pointer hover:border-adm-line-3 transition-all ${cancelled ? 'opacity-75' : ''} ${ticked ? 'opacity-50' : ''}`}>
                             <div className="flex items-baseline justify-between gap-3">
                                 <span className="min-w-0 truncate text-[15px] font-semibold text-text-light">{nameOf(b)}</span>
-                                <span className="shrink-0 text-[14px] tabular-nums text-text-light">{amountLabel(b)}</span>
+                                <span className="shrink-0 text-[13px] tabular-nums whitespace-nowrap">{tag}</span>
                             </div>
                             <div className="mt-1 flex items-center gap-2 text-[13px] text-text-subtle min-w-0">
                                 <span aria-hidden className="w-2 h-2 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
                                 <span className="truncate">{[service, detail].filter(Boolean).join(' · ')}</span>
                             </div>
-                            <div className="mt-0.5 text-[13px] text-text-subtle truncate">{when}</div>
-                            <div className="mt-2.5 flex flex-wrap items-center gap-2" onClick={(ev) => ev.stopPropagation()}>
-                                <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
-                                <StatusControl b={b} />
-                                {confirm && <span className="ml-auto">{confirm}</span>}
-                            </div>
+                            {note && <div className={`mt-0.5 text-[13px] ${lane === 'done' ? 'due-soon-text' : 'text-text-subtle'}`}>{note}</div>}
                             {t && (
-                                <div className="mt-2 flex flex-wrap items-center gap-2" onClick={(ev) => ev.stopPropagation()}>
+                                <div className="mt-3 flex items-center gap-2" onClick={(ev) => ev.stopPropagation()}>
                                     {reply && (
                                         <a href={reply.href} target="_blank" rel="noopener noreferrer" className={SOFT_BTN}
                                             title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${b.name || 'their'} WhatsApp chat`}>
                                             {reply.kind === 'email' ? <Mail size={13} /> : <FaWhatsapp size={13} />}
-                                            {reply.kind === 'email' ? 'Send by email' : 'Reply on WhatsApp'}
+                                            {reply.kind === 'email' ? 'Send by email' : 'Reply'}
                                         </a>
                                     )}
-                                    <button type="button" disabled={ticked} onClick={() => tickDone(b)} className={SOFT_BTN} title="Mark done (sent)">
-                                        <Check size={13} />Mark done
-                                    </button>
+                                    {!unpaid && (
+                                        <button type="button" disabled={ticked} onClick={() => tickDone(b)} className={SOFT_BTN} title="Mark done (sent)">
+                                            <Check size={13} />Mark done
+                                        </button>
+                                    )}
+                                    <span className="ml-auto">
+                                        {b.market === 'ID'
+                                            ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
+                                            : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />}
+                                    </span>
                                 </div>
                             )}
                         </li>
