@@ -283,37 +283,37 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
             );
           })}
         </div>
+      </div>
 
-        {/* quiet nav — faint chevrons at the margins */}
+      {/* the arrows flank the Google button, so they're found in the same place on
+          every screen instead of drifting out to the window's edges */}
+      <div className="flex items-center justify-center gap-1 sm:gap-5 mt-12 md:mt-16 px-2">
         <button
           type="button"
           onClick={() => go(-1)}
           aria-label={isIndonesian ? 'Sebelumnya' : 'Previous'}
-          className="absolute left-2 md:left-6 lg:left-10 xl:left-4 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/70 hover:text-moon transition-colors duration-500"
+          className="shrink-0 p-2 text-ink/70 hover:text-moon transition-colors duration-500"
         >
           <PencilArrow dir="left" weight="medium" className="w-5 h-5 md:w-6 md:h-6" />
         </button>
-        <button
-          type="button"
-          onClick={() => go(1)}
-          aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
-          className="absolute right-2 md:right-6 lg:right-10 xl:right-4 top-1/2 -translate-y-1/2 z-10 p-2 text-ink/70 hover:text-moon transition-colors duration-500"
-        >
-          <PencilArrow weight="medium" className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
-      </div>
-
-      <div className="text-center mt-12 md:mt-16 px-4">
         <a
           href="https://share.google/4LrmhpcgHNXX9bTzr"
           target="_blank"
           rel="noopener noreferrer"
-          className={`${btnSecondaryLight} inline-flex gap-2 px-7 py-3 text-[1.05rem]`}
+          className={`${btnSecondaryLight} inline-flex gap-2 whitespace-nowrap px-5 sm:px-7 py-3 text-[0.95rem] sm:text-[1.05rem]`}
         >
           <ButtonInk kind="secondary" tone="light">
             <span>{isIndonesian ? 'Lihat semua review di Google' : 'Read all reviews on Google'}</span>
           </ButtonInk>
         </a>
+        <button
+          type="button"
+          onClick={() => go(1)}
+          aria-label={isIndonesian ? 'Berikutnya' : 'Next'}
+          className="shrink-0 p-2 text-ink/70 hover:text-moon transition-colors duration-500"
+        >
+          <PencilArrow weight="medium" className="w-5 h-5 md:w-6 md:h-6" />
+        </button>
       </div>
     </div>
   );
