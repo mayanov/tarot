@@ -978,6 +978,8 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
     // a booking saved on the server: its new copy replaces the old one here
     const replaceBooking = (u: Booking) => setBookings((prev) => prev.map((x) => (x.id === u.id ? { ...x, ...u } : x)));
     const [orderView, setOrderView] = useState<'active' | 'done' | 'cancelled'>('active');
+    // Orders' Done and Cancelled lanes: the latest few, or all of them
+    const [laneAll, setLaneAll] = useState<Record<string, boolean>>({});
     const [notice, setNotice] = useState<{ text: string; kind: 'ok' | 'err' } | null>(null);
     const [calEvents, setCalEvents] = useState<CalEvent[]>([]);
     const [showAdd, setShowAdd] = useState(false);
@@ -1839,99 +1841,98 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
             {/* ---------------- ORDERS (no fixed time) — one aligned list ---------------- */}
             {!initialLoading && tab === 'orders' && (() => {
-                const list = orderView === 'active' ? activeOrders : orderView === 'done' ? doneOrders : cancelledBookings;
-                // To do leads with when it's due (the order date is in the details); Done and
-                // Cancelled with the order date. One line per order: contact, payment method and
-                // the question are in the details a click away.
-                const showDue = orderView === 'active';
-                // the same columns as Payments: one fact per column
-                const COLS = 'lg:grid-cols-[4.5rem_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.9fr)_7.5rem_6rem_7.5rem_9rem]';
+                // A board in three lanes, To do | Done | Cancelled, each order a small card. To do
+                // leads with the most urgent; Done and Cancelled with the newest, showing the
+                // latest few until "Show all". On a phone the lanes are tabs, one at a time.
+                const LANE_MAX = 8;
+                const lanes = [
+                    { id: 'active' as const, label: 'To do', list: activeOrders, empty: 'Nothing waiting. All orders are answered.' },
+                    { id: 'done' as const, label: 'Done', list: doneOrders, empty: 'No finished orders yet.' },
+                    { id: 'cancelled' as const, label: 'Cancelled', list: cancelledBookings, empty: 'Nothing cancelled.' },
+                ];
+                const card = 'rounded-xl bg-surface-1 border border-adm-line';
+                // a finished or cancelled order: who, what, how much, and its payment and status
+                const orderCard = (b: Booking, cancelled: boolean) => {
+                    const service = serviceGroup(b);
+                    const detail = subServiceOf(b);
+                    const when = cancelled
+                        ? [b.date && b.time ? `${fmtDate(b.date)}, ${b.time}` : `Ordered ${fmtDate(b.createdAt)}`, b.cancelReason === 'unpaid' ? 'not paid within 1 hour' : ''].filter(Boolean).join(' · ')
+                        : `Ordered ${fmtDate(b.createdAt)}`;
+                    const confirm = !cancelled && (b.market === 'ID'
+                        ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
+                        : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />);
+                    return (
+                        <li key={b.id} role="button" tabIndex={0} onClick={() => setSelectedId(b.id)}
+                            onKeyDown={(e) => { if (e.key === 'Enter' && e.target === e.currentTarget) setSelectedId(b.id); }}
+                            className={`${card} p-3.5 cursor-pointer hover:border-adm-line-3 transition-colors ${cancelled ? 'opacity-80' : ''}`}>
+                            <div className="flex items-baseline justify-between gap-3">
+                                <span className="min-w-0 truncate text-[15px] font-semibold text-text-light">{nameOf(b)}</span>
+                                <span className="shrink-0 text-[14px] tabular-nums text-text-light">{amountLabel(b)}</span>
+                            </div>
+                            <div className="mt-1 flex items-center gap-2 text-[13px] text-text-subtle min-w-0">
+                                <span aria-hidden className="w-2 h-2 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
+                                <span className="truncate">{[service, detail].filter(Boolean).join(' · ')}</span>
+                            </div>
+                            <div className="mt-0.5 text-[13px] text-text-subtle truncate">{when}</div>
+                            <div className="mt-2.5 flex flex-wrap items-center gap-2" onClick={(ev) => ev.stopPropagation()}>
+                                <PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} />
+                                <StatusControl b={b} />
+                                {confirm && <span className="ml-auto">{confirm}</span>}
+                            </div>
+                        </li>
+                    );
+                };
                 return (<>
-                    {/* which orders, as on Sales: underlined tabs, with the order they're in on the right */}
-                    <FilterBar tabs={<ViewTabs label="Which orders" value={orderView} onChange={setOrderView}
-                        options={[{ id: 'active', label: 'To do', count: activeOrders.length, tone: 'due' }, { id: 'done', label: 'Done', count: doneOrders.length }, { id: 'cancelled', label: 'Cancelled', count: cancelledBookings.length }]} />}>
-                        <span className="py-2 text-[13px] text-text-subtle">{orderView === 'active' ? 'Most urgent first' : orderView === 'cancelled' ? 'Sessions & readings · newest first' : 'Newest first'}</span>
-                    </FilterBar>
-                    <Card className="overflow-hidden">
-
-                        {/* To do: one card per order, like Today and the bell; Done and Cancelled stay a table */}
-                        {showDue && list.length > 0 && (
-                            <ul className="px-4 sm:px-5 divide-y divide-adm-line">
-                                {list.map((b) => {
-                                    const t = orderTodo(b, now);
-                                    return (
-                                        <li key={b.id}>
-                                            <TodoCard t={t} now={now} done={ticking.has(b.id)} onOpen={() => setSelectedId(b.id)}
-                                                onTick={async () => {
-                                                    setTicking((s) => new Set(s).add(b.id));
-                                                    await new Promise((r) => setTimeout(r, 450));
-                                                    if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Order'} marked done. It's under Done.`, 'ok');
-                                                    setTicking((s) => { const n = new Set(s); n.delete(b.id); return n; });
-                                                }}
-                                                // paid is a label up by the pill (an unpaid one's pill says Not paid yet); changing it is in the details
-                                                badge={b.paymentStatus === 'paid' ? <span className="text-sage font-semibold">paid</span> : undefined}
-                                                footer={b.market === 'ID'
-                                                    ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
-                                                    : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />} />
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        )}
-
-                        {!showDue && list.length > 0 && (
-                            <div className={`hidden lg:grid ${COLS} gap-x-4 px-5 py-3 text-[13px] font-semibold text-text-subtle border-b border-adm-line`}>
-                                <span>Ordered</span><span>Customer</span><span>Service</span><span>Sub-service</span><span className="text-right">Amount</span><span>Payment</span><span>Status</span><span className="text-right">Confirmation</span>
-                            </div>
-                        )}
-
-                        {!error && !loading && list.length === 0 && (
-                            <div className="text-center py-16 text-text-subtle">
-                                <ShoppingBag size={32} className="mx-auto mb-3 opacity-40" />
-                                <p className="text-sm">{orderView === 'active' ? 'Nothing waiting. All orders are answered.' : orderView === 'cancelled' ? 'Nothing cancelled.' : 'No finished orders yet.'}</p>
-                            </div>
-                        )}
-
-                        <div className="divide-y divide-adm-line">
-                            {!showDue && list.map((b) => {
-                                const service = serviceGroup(b);
-                                const detail = subServiceOf(b);
-                                // a cancelled session also says when it was, and why it was cancelled
-                                const why = orderView === 'cancelled'
-                                    ? [b.date && b.time ? `${fmtDate(b.date)}, ${b.time}` : '', b.cancelReason === 'unpaid' ? 'not paid within 1 hour' : ''].filter(Boolean).join(' · ')
-                                    : '';
-                                const confirm = orderView !== 'cancelled' && (b.market === 'ID'
-                                    ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
-                                    : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />);
-                                return (
-                                    <div key={b.id} onClick={() => setSelectedId(b.id)}
-                                        className={`grid grid-cols-[minmax(0,1fr)_auto] ${COLS} gap-x-4 gap-y-1 items-center px-4 lg:px-5 py-3.5 cursor-pointer hover:bg-adm-hover transition-colors`}>
-                                        <span className="hidden lg:block text-[14px] text-text-light tabular-nums">{fmtDate(b.createdAt)}</span>
-                                        <span className="min-w-0 truncate text-[14px] text-text-light">{nameOf(b)}</span>
-                                        <span className="lg:hidden text-[14px] text-right tabular-nums text-text-light whitespace-nowrap">{amountLabel(b)}</span>
-                                        <span className="hidden lg:flex min-w-0 items-center gap-2 text-[14px] text-text-light">
-                                            <span aria-hidden className="w-2.5 h-2.5 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
-                                            <span className="truncate">{service}</span>
-                                        </span>
-                                        <span className="hidden lg:block min-w-0 text-[14px] text-text-light">
-                                            <span className="block truncate">{detail || '—'}</span>
-                                            {why && <span className="block truncate">{why}</span>}
-                                        </span>
-                                        <span className="lg:hidden col-span-2 flex items-center gap-2 text-[13px] text-text-subtle min-w-0">
-                                            <span aria-hidden className="w-2 h-2 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
-                                            <span className="truncate">{[service, detail, fmtDate(b.createdAt), why].filter(Boolean).join(' · ')}</span>
-                                        </span>
-                                        <span className="hidden lg:block text-[14px] text-right tabular-nums text-text-light whitespace-nowrap">{amountLabel(b)}</span>
-                                        <span className="col-span-2 lg:contents flex flex-wrap items-center gap-2 mt-1.5 lg:mt-0" onClick={(ev) => ev.stopPropagation()}>
-                                            <span><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} /></span>
-                                            <span><StatusControl b={b} /></span>
-                                            <span className="lg:flex lg:justify-end">{confirm}</span>
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </Card>
+                    {/* on a phone, which lane to show */}
+                    <div className="lg:hidden">
+                        <FilterBar tabs={<ViewTabs label="Which orders" value={orderView} onChange={setOrderView}
+                            options={lanes.map((l) => ({ id: l.id, label: l.label, count: l.list.length, tone: l.id === 'active' ? 'due' as const : undefined }))} />} />
+                    </div>
+                    <div className="grid lg:grid-cols-3 gap-4 items-start">
+                        {lanes.map((lane) => {
+                            const all = laneAll[lane.id] || lane.id === 'active';
+                            const shown = all ? lane.list : lane.list.slice(0, LANE_MAX);
+                            return (
+                                <section key={lane.id} aria-label={lane.label}
+                                    className={`${orderView === lane.id ? 'flex' : 'hidden lg:flex'} flex-col rounded-2xl bg-adm-hover p-2.5 sm:p-3 min-w-0`}>
+                                    <h2 className="hidden lg:flex items-baseline gap-2 px-1.5 pt-0.5 pb-2.5 text-[15px] font-semibold text-text-light">
+                                        {lane.label}
+                                        <span className={`text-[14px] tabular-nums ${lane.id === 'active' && lane.list.length ? 'due-soon-text' : 'text-text-subtle font-medium'}`}>{lane.list.length}</span>
+                                    </h2>
+                                    {lane.list.length === 0 ? (
+                                        <div className="px-3 py-10 text-center text-[13px] text-text-subtle">
+                                            <ShoppingBag size={24} className="mx-auto mb-2 opacity-40" />{lane.empty}
+                                        </div>
+                                    ) : (
+                                        <ul className="space-y-2">
+                                            {lane.id === 'active' ? shown.map((b) => (
+                                                <li key={b.id} className={`${card} px-3.5`}>
+                                                    <TodoCard t={orderTodo(b, now)} now={now} done={ticking.has(b.id)} onOpen={() => setSelectedId(b.id)}
+                                                        onTick={async () => {
+                                                            setTicking((x) => new Set(x).add(b.id));
+                                                            await new Promise((r) => setTimeout(r, 450));
+                                                            if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Order'} marked done. It's under Done.`, 'ok');
+                                                            setTicking((x) => { const n = new Set(x); n.delete(b.id); return n; });
+                                                        }}
+                                                        // paid is a label up by the pill (an unpaid one's pill says Not paid yet); changing it is in the details
+                                                        badge={b.paymentStatus === 'paid' ? <span className="text-sage font-semibold">paid</span> : undefined}
+                                                        footer={b.market === 'ID'
+                                                            ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
+                                                            : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />} />
+                                                </li>
+                                            )) : shown.map((b) => orderCard(b, lane.id === 'cancelled'))}
+                                        </ul>
+                                    )}
+                                    {lane.list.length > LANE_MAX && lane.id !== 'active' && (
+                                        <button type="button" onClick={() => setLaneAll((x) => ({ ...x, [lane.id]: !x[lane.id] }))}
+                                            className="mt-2 py-2 text-[14px] font-medium text-lilac hover:underline">
+                                            {all ? 'Show fewer' : `Show all ${lane.list.length}`}
+                                        </button>
+                                    )}
+                                </section>
+                            );
+                        })}
+                    </div>
                 </>);
             })()}
         </div>
