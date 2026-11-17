@@ -243,8 +243,8 @@ const SalesView: React.FC = () => {
             {/* the money at a glance for what the filters pick: paid, unpaid and total, rupiah
                 and dollars side by side. A row shows just its orders in the list below
                 (the same as the payment filter); picked again, it shows all of them. */}
-            <div className="rounded-2xl bg-surface-1 px-4 sm:px-6 py-2">
-                <div className={`grid ${SUM_COLS} gap-x-4 py-2 text-[12.5px] text-text-subtle border-b border-adm-line`}>
+            <div className="rounded-2xl bg-lilac/[0.08] border border-lilac/15 px-4 sm:px-6 py-2">
+                <div className={`grid ${SUM_COLS} gap-x-4 py-2 text-[12.5px] text-text-subtle border-b border-lilac/15`}>
                     <span className="min-w-0 truncate text-text-light font-medium" title={scopeWords}>{scopeWords}</span>
                     {curs.map((c) => <span key={c} className="text-right">{c === 'IDR' ? 'Rupiah' : 'Dollars'}</span>)}
                     <span className="text-right">Orders</span>
@@ -256,7 +256,7 @@ const SalesView: React.FC = () => {
                         <button key={r.id} type="button" aria-pressed={on}
                             onClick={() => setPayFilter(r.id === 'all' || on ? 'all' : (r.id as 'paid' | 'unpaid'))}
                             title={r.id === 'all' ? 'Show every order' : on ? 'Show every order' : `Show only ${r.label.toLowerCase()} orders`}
-                            className={`text-left grid ${SUM_COLS} gap-x-4 items-baseline -mx-2 px-2 py-2.5 rounded-lg tabular-nums transition-colors ${on ? 'bg-adm-hover-2' : 'hover:bg-adm-hover'} ${r.id === 'all' ? 'border-t border-adm-line rounded-t-none' : ''}`}
+                            className={`text-left grid ${SUM_COLS} gap-x-4 items-baseline -mx-2 px-2 py-2.5 rounded-lg tabular-nums transition-colors ${on ? 'bg-lilac/15' : 'hover:bg-lilac/10'} ${r.id === 'all' ? 'border-t border-lilac/15 rounded-t-none' : ''}`}
                             style={{ width: 'calc(100% + 1rem)' }}>
                             <span className={`text-[14px] ${due ? 'due-soon-text font-semibold' : r.id === 'all' ? 'font-semibold text-text-light' : 'text-text-light'}`}>{r.label}</span>
                             {curs.map((c) => (
