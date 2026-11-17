@@ -168,14 +168,14 @@ const Interlude: React.FC<InterludeProps> = ({ isIndonesian = false }) => {
         <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(to bottom, rgba(222,214,246,0.7), rgba(222,214,246,0.3) ${EDGE * 0.6}px, transparent ${EDGE * 1.1}px, transparent calc(100% - ${EDGE * 1.1}px), rgba(222,214,246,0.3) calc(100% - ${EDGE * 0.6}px), rgba(222,214,246,0.7))` }} />
       </div>
 
-      <div className="relative z-10 mx-auto px-8 max-w-6xl grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-24 gap-y-14 lg:gap-y-10">
+      <div className="relative z-10 mx-auto px-8 max-w-6xl xl:max-w-7xl 2xl:max-w-[88rem] grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-x-20 xl:gap-x-24 gap-y-14 lg:gap-y-10">
         {/* the question, and the reassurance */}
         <FadeIn dir="left" className="lg:self-end">
           <h2 className="letterpress-lg pb-[0.14em] -mb-[0.14em] [text-wrap:balance] font-elegant italic font-bold text-cream text-[2.5rem] sm:text-[3.2rem] md:text-[3.8rem] lg:text-[4.2rem] leading-[1.02] tracking-[-0.02em]">
             {isIndonesian ? 'Bingung mau tanya apa?' : 'Not sure what to ask?'}
           </h2>
           {/* pressed with the heading's own impression, so the two read as one voice */}
-          <p className="letterpress-lg mt-6 md:mt-7 max-w-[36rem] lg:max-w-[34ch] font-elegant text-cream text-lg md:text-[1.35rem] leading-[1.5]">
+          <p className="letterpress-lg mt-6 md:mt-7 max-w-[36rem] lg:max-w-[44ch] font-elegant text-cream text-lg md:text-[1.35rem] leading-[1.5]">
             {isIndonesian
               ? 'Kamu nggak perlu datang dengan pertanyaan yang sempurna. Ini beberapa yang sering dibawa ke meja, atau cukup cerita, kita cari pertanyaannya bareng.'
               : 'You don’t need the perfect question. Here are a few that often come to the table, or just tell me what’s going on and we’ll find it together.'}
