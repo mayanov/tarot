@@ -66,7 +66,7 @@ const PortraitCard: React.FC<{ isIndonesian: boolean }> = ({ isIndonesian }) => 
       ref={figRef}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
-      className="relative mx-auto w-[min(76vw,20.5rem)] sm:w-[22rem] lg:w-[92%] lg:max-w-[28rem] lg:mr-0 lg:order-2"
+      className="relative mx-auto w-[min(76vw,20.5rem)] sm:w-[22rem] lg:w-[24rem] xl:w-[28rem] lg:order-2"
     >
       <div className="relative" style={{ opacity: dealt ? 1 : 0, transition: `opacity 600ms ${EASE}` }}>
         {/* the card, lying on the page (it tips as a whole, shadow and all) */}
@@ -173,7 +173,7 @@ const About: React.FC<AboutProps> = ({ isIndonesian = false }) => {
         <TornPaper edge="top" />
       </div>
       {/* portrait and text side by side on desktop (portrait first on phones) */}
-      <div className="relative mx-auto px-8 pt-14 md:pt-20 pb-14 md:pb-20 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)] lg:gap-16 xl:gap-24 lg:items-start">
+      <div className="relative mx-auto px-8 2xl:px-24 min-[1800px]:px-48 pt-14 md:pt-20 pb-14 md:pb-20 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-14 xl:gap-20 lg:items-start">
         <PortraitCard isIndonesian={isIndonesian} />
 
         <FadeIn dir="left" className="w-full pt-12 md:pt-14 lg:pt-0">
