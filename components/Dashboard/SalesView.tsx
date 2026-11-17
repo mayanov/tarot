@@ -162,21 +162,22 @@ const SalesView: React.FC = () => {
     const paidRows = filtered.filter((b) => b.paymentStatus === 'paid');
     const markWa = (id: string) => (f: string, at: string) => setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, [f]: at } : x)));
     const unpaidAll = orders.filter((b) => b.paymentStatus !== 'paid').length;
+    const ordersWord = (n: number) => `${n} ${n === 1 ? 'order' : 'orders'}`;
     const figure = (label: React.ReactNode, money: Record<Cur, number>, foot: string, cls = '') => {
-        // rupiah and dollars side by side (stacked on a phone), the same size, each with its currency's name
-        // under it (never added together); with a market picked, just its own
+        // one currency per line, rupiah over dollars, so every column's lines up with the
+        // next (never added together; with a market picked, just its own). The symbol says
+        // which is which; a zero stays grey so the amounts that matter stand out
         return (
             <div className={`py-4 min-w-0 ${cls}`}>
                 <div className="text-[13px] sm:text-sm text-text-subtle">{label}</div>
-                <div className="mt-1 flex flex-col sm:flex-row sm:flex-wrap gap-x-5 lg:gap-x-7 gap-y-1.5">
-                    {curs.map((c, i) => (
-                        <div key={c} className={`min-w-0 ${i ? 'lg:pl-7 lg:border-l lg:border-adm-line' : ''}`}>
-                            <div className="text-[16px] sm:text-[24px] font-bold tracking-[-0.02em] leading-tight tabular-nums text-text-light whitespace-nowrap">{fmtMoney(money[c], c)}</div>
-                            {curs.length > 1 && <div className="text-[12px] text-text-subtle">{c === 'IDR' ? 'Rupiah' : 'Dollars'}</div>}
+                <div className="mt-1.5 space-y-0.5">
+                    {curs.map((c) => (
+                        <div key={c} className={`text-[16px] sm:text-[22px] font-semibold tracking-[-0.01em] leading-snug tabular-nums whitespace-nowrap ${money[c] ? 'text-text-light' : 'text-text-subtle'}`}>
+                            {fmtMoney(money[c], c)}
                         </div>
                     ))}
                 </div>
-                <div className="mt-1.5 text-[12.5px] sm:text-[14px] font-semibold text-text-subtle tabular-nums">{foot}</div>
+                <div className="mt-2 text-[12.5px] sm:text-[13px] text-text-subtle tabular-nums">{foot}</div>
             </div>
         );
     };
@@ -239,9 +240,9 @@ const SalesView: React.FC = () => {
 
             {/* what's paid, what's unpaid, and both together (rupiah and dollars apart) */}
             <div className="grid grid-cols-3 border-y border-adm-line">
-                {figure('Paid', totals.paid, `${totals.paidCount} paid`, 'pr-3')}
-                {figure(<span className="due-soon-text font-semibold">Unpaid</span>, totals.unpaid, `${totals.unpaidCount} not paid`, 'px-3 sm:px-6 border-l border-adm-line')}
-                {figure('Booked in all', { IDR: totals.paid.IDR + totals.unpaid.IDR, USD: totals.paid.USD + totals.unpaid.USD }, `${orders.length} ${orders.length === 1 ? 'order' : 'orders'}`, 'pl-3 sm:pl-6 border-l border-adm-line')}
+                {figure('Paid', totals.paid, ordersWord(totals.paidCount), 'pr-3')}
+                {figure(totals.unpaidCount ? <span className="due-soon-text font-semibold">Unpaid</span> : 'Unpaid', totals.unpaid, ordersWord(totals.unpaidCount), 'px-3 sm:px-6 border-l border-adm-line')}
+                {figure('Booked in all', { IDR: totals.paid.IDR + totals.unpaid.IDR, USD: totals.paid.USD + totals.unpaid.USD }, ordersWord(orders.length), 'pl-3 sm:pl-6 border-l border-adm-line')}
             </div>
 
             {/* which orders (tabs, left), then the filters (right) */}
