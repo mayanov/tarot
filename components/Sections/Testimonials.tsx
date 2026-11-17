@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import PencilArrow from '../UI/PencilArrow';
 import FadeIn from '../UI/FadeIn';
 import WatercolorWash from '../UI/WatercolorWash';
@@ -225,6 +225,32 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
 
   const go = (dir: number) => setIndex((i) => (i + dir + reviews.length) % reviews.length);
 
+  // Changing review: the old one fades out, then — in the instant nothing is showing
+  // — the block takes the new one's height (no animation, so it never lags behind
+  // the words; a short review isn't left floating in a long one's space), and the
+  // new one fades in.
+  const FADE_MS = 260;
+  const [shown, setShown] = useState(index);
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    if (index === shown) return;
+    setVisible(false);
+    const t = window.setTimeout(() => { setShown(index); setVisible(true); }, FADE_MS);
+    return () => clearTimeout(t);
+  }, [index]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const quoteRefs = useRef<(HTMLElement | null)[]>([]);
+  const [quoteH, setQuoteH] = useState<number>();
+  useLayoutEffect(() => {
+    const el = quoteRefs.current[shown];
+    if (!el) return;
+    const measure = () => setQuoteH(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [shown, reviews]);
+
   return (
     <div id="testimonials" className="relative overflow-hidden isolate text-ink scroll-mt-28">
       {/* intro — a warm, human framing (no star-rating stat) */}
@@ -236,8 +262,8 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         </div>
       </FadeIn>
 
-      {/* one quote at a time — a slow, breathing rotation (pause on hover); all
-          reviews are stacked so the block height fits the longest (no jump) */}
+      {/* one quote at a time — a slow, breathing rotation (pause on hover); the
+          reviews are stacked, and the block fits the one on show */}
       <div
         className="relative mx-auto px-8 mt-10 md:mt-14"
         onMouseEnter={() => setPaused(true)}
@@ -250,12 +276,16 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
         {/* a large, faint opening quote mark */}
         <div aria-hidden className="pointer-events-none text-center font-elegant text-moon/60 text-[5rem] md:text-[7rem] leading-[0.28] select-none"><span className="print-ink mix-blend-multiply inline-block py-[0.5em] -my-[0.5em]">&ldquo;</span></div>
 
-        <div className="relative grid max-w-3xl lg:max-w-4xl xl:max-w-[72rem] 2xl:max-w-[80rem] mx-auto mt-5 md:mt-7">
+        <div
+          className="relative grid items-start max-w-3xl lg:max-w-4xl xl:max-w-[72rem] 2xl:max-w-[80rem] mx-auto mt-5 md:mt-7"
+          style={{ height: quoteH }}
+        >
           {reviews.map((r, i) => {
-            const active = i === index;
+            const active = i === shown && visible;
             return (
               <blockquote
                 key={i}
+                ref={(el) => { quoteRefs.current[i] = el; }}
                 aria-hidden={!active}
                 style={{
                   gridArea: '1 / 1',
@@ -264,9 +294,9 @@ const Testimonials: React.FC<TestimonialsProps> = ({ isIndonesian = false }) => 
                   // once faded out a quote isn't drawn at all: twenty blurred copies
                   // stacked under the shown one were each kept as a layer on phones
                   visibility: active ? 'visible' : 'hidden',
-                  // gentle simultaneous crossfade with a soft defocus, so the brief
-                  // overlap reads as a dreamy blur rather than sharp double text.
-                  transition: `opacity 700ms cubic-bezier(0.16,1,0.3,1), filter 700ms cubic-bezier(0.16,1,0.3,1), visibility 0s linear ${active ? 0 : 700}ms`,
+                  // a quick fade with a soft defocus; the next one only comes in once
+                  // this one has gone, so the words never overlap
+                  transition: `opacity ${FADE_MS}ms ease-out, filter ${FADE_MS}ms ease-out, visibility 0s linear ${active ? 0 : FADE_MS}ms`,
                 }}
                 className={`flex flex-col items-center text-center ${active ? '' : 'pointer-events-none'}`}
               >
