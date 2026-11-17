@@ -72,19 +72,6 @@ const SalesView: React.FC = () => {
     // the currencies on show: both for all markets
     const curs: Cur[] = market === 'ID' ? ['IDR'] : market === 'Global' ? ['USD'] : ['IDR', 'USD'];
 
-    // Collected vs still owed, per currency.
-    const totals = useMemo(() => {
-        const t = { paidCount: 0, unpaidCount: 0, paid: { IDR: 0, USD: 0 } as Record<Cur, number>, unpaid: { IDR: 0, USD: 0 } as Record<Cur, number> };
-        orders.forEach((b) => {
-            const paid = b.paymentStatus === 'paid';
-            paid ? t.paidCount++ : t.unpaidCount++;
-            const a = amountOf(b);
-            if (!a) return;
-            (paid ? t.paid : t.unpaid)[a.currency as Cur] += a.amount;
-        });
-        return t;
-    }, [orders]);
-
     // The services in the data, as the table's Service column names them (3-Card and
     // 5-Card are both Email), each with the sub-services it has, for the two menus.
     const serviceOptions = useMemo(() => {
@@ -101,12 +88,13 @@ const SalesView: React.FC = () => {
     // the sub-service menu lists the picked service's, or every service's under its name
     const subOptions = serviceOptions.filter((s) => s.subs.length && (serviceFilter === 'all' || s.name === serviceFilter));
 
-    const filtered = useMemo(() => {
+    // The orders the filters pick, all but paid-or-not: the money summary splits these into
+    // paid and unpaid, so it always speaks for what the filters are set to.
+    const scoped = useMemo(() => {
         const needle = q.trim().toLowerCase();
         const fromTs = dateFrom ? new Date(dateFrom + 'T00:00:00').getTime() : null;
         const toTs = dateTo ? new Date(dateTo + 'T23:59:59').getTime() : null;
         return orders.filter((b) => {
-            if (payFilter !== 'all' && (b.paymentStatus || 'unpaid') !== payFilter) return false;
             if (serviceFilter !== 'all' && serviceGroup(b) !== serviceFilter) return false;
             if (subFilter !== 'all' && subServiceOf(b) !== subFilter) return false;
             if (sourceFilter !== 'all' && (b.source === 'manual' ? 'manual' : 'booking') !== sourceFilter) return false;
@@ -118,7 +106,21 @@ const SalesView: React.FC = () => {
             }
             return !needle || matchesSearch(needle, b.name, b.serviceName, serviceLabel(b), b.contact, b.ref, b.adminNote);
         }).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-    }, [orders, q, payFilter, serviceFilter, subFilter, sourceFilter, dateFrom, dateTo]);
+    }, [orders, q, serviceFilter, subFilter, sourceFilter, dateFrom, dateTo]);
+    const filtered = useMemo(() => (payFilter === 'all' ? scoped : scoped.filter((b) => (b.paymentStatus || 'unpaid') === payFilter)), [scoped, payFilter]);
+
+    // Paid vs still owed, per currency, for the orders the filters pick.
+    const totals = useMemo(() => {
+        const t = { paidCount: 0, unpaidCount: 0, paid: { IDR: 0, USD: 0 } as Record<Cur, number>, unpaid: { IDR: 0, USD: 0 } as Record<Cur, number> };
+        scoped.forEach((b) => {
+            const paid = b.paymentStatus === 'paid';
+            paid ? t.paidCount++ : t.unpaidCount++;
+            const a = amountOf(b);
+            if (!a) return;
+            (paid ? t.paid : t.unpaid)[a.currency as Cur] += a.amount;
+        });
+        return t;
+    }, [scoped]);
     const activeFilters = (market !== 'all' ? 1 : 0) + (payFilter !== 'all' ? 1 : 0) + (serviceFilter !== 'all' ? 1 : 0) + (subFilter !== 'all' ? 1 : 0)
         + (sourceFilter !== 'all' ? 1 : 0)
         + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
@@ -161,7 +163,7 @@ const SalesView: React.FC = () => {
     const unpaidRows = filtered.filter((b) => b.paymentStatus !== 'paid');
     const paidRows = filtered.filter((b) => b.paymentStatus === 'paid');
     const markWa = (id: string) => (f: string, at: string) => setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, [f]: at } : x)));
-    const unpaidAll = orders.filter((b) => b.paymentStatus !== 'paid').length;
+    const unpaidAll = totals.unpaidCount;
     // The money at a glance, as a small table: what's paid, what's unpaid and both together
     // down the side, rupiah and dollars side by side across (never added together; with a
     // market picked, just its own), then how many orders. Amounts sit right-aligned in
@@ -169,8 +171,17 @@ const SalesView: React.FC = () => {
     const summary = [
         { id: 'paid', label: 'Paid', money: totals.paid, count: totals.paidCount },
         { id: 'unpaid', label: 'Unpaid', money: totals.unpaid, count: totals.unpaidCount },
-        { id: 'all', label: 'Total', money: { IDR: totals.paid.IDR + totals.unpaid.IDR, USD: totals.paid.USD + totals.unpaid.USD } as Record<Cur, number>, count: orders.length },
+        { id: 'all', label: 'Total', money: { IDR: totals.paid.IDR + totals.unpaid.IDR, USD: totals.paid.USD + totals.unpaid.USD } as Record<Cur, number>, count: scoped.length },
     ];
+    // what the summary covers, in words: "All time", or "01 Nov – 30 Nov · Email · 3-Card Spread"
+    const scopeWords = [
+        dateActive ? dateLabel : 'All time',
+        market !== 'all' ? WHERE[market] : '',
+        sourceFilter !== 'all' ? SOURCE[sourceFilter] : '',
+        serviceFilter !== 'all' ? serviceFilter : '',
+        subFilter !== 'all' ? subFilter : '',
+        q.trim() ? `“${q.trim()}”` : '',
+    ].filter(Boolean).join(' · ');
     const SUM_COLS = curs.length > 1
         ? 'grid-cols-[minmax(4.5rem,1fr)_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.7fr)]'
         : 'grid-cols-[minmax(4.5rem,1fr)_minmax(0,1.4fr)_minmax(0,0.7fr)]';
@@ -229,17 +240,24 @@ const SalesView: React.FC = () => {
 
             {error && <div className="text-sm due-late-text bg-red-500/10 border border-red-500/25 rounded-xl px-3 py-2.5">{error}</div>}
 
-            {/* the money at a glance: paid, unpaid and total, rupiah and dollars side by side */}
+            {/* the money at a glance for what the filters pick: paid, unpaid and total, rupiah
+                and dollars side by side. A row shows just its orders in the list below
+                (the same as the payment filter); picked again, it shows all of them. */}
             <div className="rounded-2xl bg-surface-1 px-4 sm:px-6 py-2 max-w-3xl">
                 <div className={`grid ${SUM_COLS} gap-x-4 py-2 text-[12.5px] text-text-subtle border-b border-adm-line`}>
-                    <span />
+                    <span className="min-w-0 truncate text-text-light font-medium" title={scopeWords}>{scopeWords}</span>
                     {curs.map((c) => <span key={c} className="text-right">{c === 'IDR' ? 'Rupiah' : 'Dollars'}</span>)}
                     <span className="text-right">Orders</span>
                 </div>
                 {summary.map((r) => {
                     const due = r.id === 'unpaid' && r.count > 0;
+                    const on = r.id !== 'all' && payFilter === r.id;
                     return (
-                        <div key={r.id} className={`grid ${SUM_COLS} gap-x-4 items-baseline py-2.5 tabular-nums ${r.id === 'all' ? 'border-t border-adm-line' : ''}`}>
+                        <button key={r.id} type="button" aria-pressed={on}
+                            onClick={() => setPayFilter(r.id === 'all' || on ? 'all' : (r.id as 'paid' | 'unpaid'))}
+                            title={r.id === 'all' ? 'Show every order' : on ? 'Show every order' : `Show only ${r.label.toLowerCase()} orders`}
+                            className={`text-left grid ${SUM_COLS} gap-x-4 items-baseline -mx-2 px-2 py-2.5 rounded-lg tabular-nums transition-colors ${on ? 'bg-adm-hover-2' : 'hover:bg-adm-hover'} ${r.id === 'all' ? 'border-t border-adm-line rounded-t-none' : ''}`}
+                            style={{ width: 'calc(100% + 1rem)' }}>
                             <span className={`text-[14px] ${due ? 'due-soon-text font-semibold' : r.id === 'all' ? 'font-semibold text-text-light' : 'text-text-light'}`}>{r.label}</span>
                             {curs.map((c) => (
                                 <span key={c} className={`text-right text-[15px] sm:text-[20px] font-semibold tracking-[-0.01em] whitespace-nowrap ${r.money[c] ? 'text-text-light' : 'text-text-subtle'}`}>
@@ -247,7 +265,7 @@ const SalesView: React.FC = () => {
                                 </span>
                             ))}
                             <span className={`text-right text-[14px] ${r.count ? 'text-text-light' : 'text-text-subtle'}`}>{r.count}</span>
-                        </div>
+                        </button>
                     );
                 })}
             </div>
@@ -261,7 +279,7 @@ const SalesView: React.FC = () => {
                     {(Object.keys(PAY) as (keyof typeof PAY)[]).map((id) => (
                         <MenuOption key={id} on={payFilter === id} onPick={() => setPayFilter(id)}>
                             <span className="flex-1">{PAY[id]}</span>
-                            <span className="font-normal text-text-subtle tabular-nums">{id === 'all' ? orders.length : id === 'paid' ? orders.length - unpaidAll : unpaidAll}</span>
+                            <span className="font-normal text-text-subtle tabular-nums">{id === 'all' ? scoped.length : id === 'paid' ? totals.paidCount : unpaidAll}</span>
                         </MenuOption>
                     ))}
                 </FilterMenu>
