@@ -7,6 +7,7 @@ import { CalendarDays, ArrowUp, ArrowDown, Repeat, UserPlus } from 'lucide-react
 import { BarChart, Bar, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
+import { Tooltip as Hint } from './ui/Tooltip';
 import StatStrip from './ui/StatStrip';
 import { Cur as Currency, amountForBooking, fmtMoney } from './lib/format';
 import { groupBookings } from './lib/customers';
@@ -227,16 +228,6 @@ const RevenueView: React.FC = () => {
         const monthSvc = new Map<string, number>();
         allRows.filter((r) => r.day.slice(0, 7) >= months[0].key).forEach((r) => monthSvc.set(r.serviceId, (monthSvc.get(r.serviceId) || 0) + r.amount));
 
-        // money not collected in the range: still waiting, and let go for not paying in time
-        const open = { count: 0, amount: 0 }, lost = { count: 0, amount: 0 };
-        for (const b of bookings) {
-            if (b.extraFor || b.holdOnly || b.paymentStatus === 'paid' || !inRange((b.createdAt || '').slice(0, 10))) continue;
-            const a = amountForBooking(b);
-            if (!a || a.currency !== currency) continue;
-            if (b.status === 'cancelled') { if (b.cancelReason === 'unpaid') { lost.count++; lost.amount += a.amount; } }
-            else { open.count++; open.amount += a.amount; }
-        }
-        const asked = rangeRows.length + open.count + lost.count;
 
         // new and returning: a booking is someone's first, or they came back (paid before it)
         const fresh = { amount: 0, who: new Set<number>() }, back = { amount: 0, who: new Set<number>() };
@@ -255,7 +246,7 @@ const RevenueView: React.FC = () => {
         const best = series.reduce((m, x) => ((x.total as number) > m.value ? { label: x.label, value: x.total as number } : m), { label: '—', value: 0 });
         return {
             currency, services, count: rangeRows.length, total, avg, prev, series, running, monthlySeries, monthSvc, thisMonth, lastMonth, yearTotal, best,
-            earners, open, lost, asked, fresh: { amount: fresh.amount, people: fresh.who.size }, back: { amount: back.amount, people: back.who.size }, top,
+            earners, fresh: { amount: fresh.amount, people: fresh.who.size }, back: { amount: back.amount, people: back.who.size }, top,
         };
     };
     const reports = useMemo(() => (['IDR', 'USD'] as Currency[]).map(report),
@@ -345,17 +336,25 @@ const RevenueView: React.FC = () => {
         </div>
     );
 
-    // up or down against the range before ('new' when there was nothing then)
+    // up or down against the range before, with that range in its tooltip ("from 0" when
+    // there was nothing then, so there's no percentage to give)
+    const prevWords = prevStart ? rangeLabel(prevStart, prevEnd) : '';
     const Delta: React.FC<{ now: number; before?: number }> = ({ now, before }) => {
         if (before === undefined || (now === 0 && before === 0)) return null;
-        if (before === 0) return <span className="text-[11px] font-semibold text-sage">new</span>;
-        const pct = Math.round(((now - before) / before) * 100);
-        if (pct === 0) return <span className="text-[11px] text-text-subtle">same</span>;
-        const up = pct > 0;
+        const pct = before === 0 ? null : Math.round(((now - before) / before) * 100);
+        const up = pct === null || pct > 0;
+        const tip = before === 0
+            ? <>Nothing in the same stretch before ({prevWords}), so no percentage: up from 0.</>
+            : pct === 0 ? <>The same as {prevWords}.</>
+            : <>{up ? 'Up' : 'Down'} {Math.abs(pct!)}% on {prevWords}, the same stretch before this range.</>;
         return (
-            <span className={`inline-flex items-center text-[11px] font-semibold tabular-nums ${up ? 'text-sage' : 'text-coral-deep'}`}>
-                {up ? <ArrowUp size={11} strokeWidth={2.5} /> : <ArrowDown size={11} strokeWidth={2.5} />}{Math.abs(pct)}%
-            </span>
+            <Hint text={tip}>
+                {pct === 0 ? <span className="text-[11px] text-text-subtle">same</span> : (
+                    <span className={`inline-flex items-center text-[11px] font-semibold tabular-nums ${up ? 'text-sage' : 'text-coral-deep'}`}>
+                        {up ? <ArrowUp size={11} strokeWidth={2.5} /> : <ArrowDown size={11} strokeWidth={2.5} />}{pct === null ? 'from 0' : `${Math.abs(pct)}%`}
+                    </span>
+                )}
+            </Hint>
         );
     };
     const curName = (c: Currency) => (c === 'IDR' ? 'Rupiah' : 'Dollars');
@@ -482,7 +481,7 @@ const RevenueView: React.FC = () => {
                 ))}
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4">
                 {/* A. what earns most in the range */}
                 <Card title="What earns most">
                     {reports.every((r) => !r.earners.length) ? <Empty text="Nothing paid in this range." /> : (
@@ -517,31 +516,6 @@ const RevenueView: React.FC = () => {
                     )}
                 </Card>
 
-                {/* B. money not collected in the range */}
-                <Card title="Money not collected">
-                    {reports.every((r) => !r.open.count && !r.lost.count) ? <Empty text="Everything ordered in this range was paid." /> : (
-                        <div className="space-y-5">
-                            {reports.filter((r) => r.open.count || r.lost.count).map((r) => (
-                                <div key={r.currency}>
-                                    <CurHead c={r.currency} />
-                                    <div className="grid grid-cols-2 gap-px rounded-xl overflow-hidden border border-adm-line bg-adm-line">
-                                        <div className="bg-surface-1 px-3 py-2.5">
-                                            <div className="text-[12px] text-text-subtle">Still waiting</div>
-                                            <div className="mt-0.5 font-bold tracking-[-0.01em] text-lg text-text-light tabular-nums">{fmtMoney(r.open.amount, r.currency)}</div>
-                                            <div className="text-[11px] text-text-subtle">{r.open.count} unpaid {r.open.count === 1 ? 'order' : 'orders'}</div>
-                                        </div>
-                                        <div className="bg-surface-1 px-3 py-2.5">
-                                            <div className="text-[12px] text-text-subtle">Lost, not paid in time</div>
-                                            <div className={`mt-0.5 font-bold tracking-[-0.01em] text-lg tabular-nums ${r.lost.amount ? 'due-late-text' : 'text-text-light'}`}>{fmtMoney(r.lost.amount, r.currency)}</div>
-                                            <div className="text-[11px] text-text-subtle">{r.lost.count} cancelled</div>
-                                        </div>
-                                    </div>
-                                    <p className="mt-2 text-[12px] text-text-subtle">{r.count} of {r.asked} orders paid ({r.asked ? Math.round((r.count / r.asked) * 100) : 0}%)</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </Card>
             </div>
 
             {/* C. new and returning customers, and who spent most */}

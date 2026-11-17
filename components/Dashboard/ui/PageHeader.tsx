@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { RefreshCcw, Info } from 'lucide-react';
 import { IconButton } from './Button';
+import { Tooltip } from './Tooltip';
 import { TONE, type Tone } from '../lib/sections';
 
 // Standard page header: the title alone (no line above it), an optional ⓘ beside it with
-// the finer print, and refresh + extra actions on the right.
+// the finer print in a tooltip (on hover, focus or a tap), and refresh + extra actions on the right.
 interface Props {
     title: string;
     note?: React.ReactNode;     // the finer print, behind the ⓘ
@@ -24,20 +25,17 @@ export const TitleWash: React.FC<{ tone: Tone }> = ({ tone }) => (
 
 // (tone is kept for callers; the plum menu already says where a page belongs)
 const PageHeader: React.FC<Props> = ({ title, note, onRefresh, refreshing, children }) => {
-    const [showNote, setShowNote] = useState(false);
     return (
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div className="min-w-0">
                 <div className="flex items-center gap-2.5">
                     <h1 className="text-[34px] sm:text-[40px] font-bold tracking-[-0.02em] leading-tight text-text-light">{title}</h1>
                     {note && (
-                        <button type="button" onClick={() => setShowNote((v) => !v)} aria-expanded={showNote} aria-label="More about this page" title="More about this page"
-                            className={`p-1 rounded-full transition-colors ${showNote ? 'text-text-light' : 'text-text-subtle hover:text-text-light'}`}>
-                            <Info size={16} />
-                        </button>
+                        <Tooltip text={note} align="start" size="wide" label="More about this page">
+                            <span className="p-1 rounded-full text-text-subtle hover:text-text-light transition-colors"><Info size={16} /></span>
+                        </Tooltip>
                     )}
                 </div>
-                {note && showNote && <p className="mt-1 max-w-2xl text-[12.5px] leading-relaxed text-text-subtle">{note}</p>}
             </div>
             {(children || onRefresh) && (
                 <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 whitespace-nowrap">
