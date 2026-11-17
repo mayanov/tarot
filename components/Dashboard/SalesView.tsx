@@ -16,7 +16,7 @@ type Market = 'ID' | 'Global';
 type Cur = 'IDR' | 'USD';
 const marketOf = (b: Booking): Market => (b.market === 'ID' ? 'ID' : 'Global');
 
-const PAY = { all: 'Paid or not', paid: 'Paid', unpaid: 'Not paid' } as const;
+const PAY = { all: 'All payments', paid: 'Paid', unpaid: 'Not paid' } as const;
 const WHERE = { all: 'Anywhere', ID: 'Indonesia', Global: 'Abroad' } as const;
 const SOURCE = { all: 'Any way', booking: 'Booked on the site', manual: 'Added by hand' } as const;
 // "Any date": clears both dates and closes the menu
@@ -275,7 +275,7 @@ const SalesView: React.FC = () => {
                 {unpaidRows.length > 0 && <>{groupHead(`Not paid yet · ${unpaidRows.length}`)}{unpaidRows.map(row)}</>}
                 {paidRows.map((b, i) => (
                     <React.Fragment key={b.id}>
-                        {(i === 0 || monthOf(paidRows[i - 1]) !== monthOf(b)) && groupHead(`Paid · ${monthName(monthOf(b))}`)}
+                        {(i === 0 || monthOf(paidRows[i - 1]) !== monthOf(b)) && groupHead(monthName(monthOf(b)))}
                         {row(b)}
                     </React.Fragment>
                 ))}
