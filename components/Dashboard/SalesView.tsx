@@ -170,20 +170,20 @@ const SalesView: React.FC = () => {
         return (
             <div key={b.id} onClick={() => setOpenId(b.id)}
                 className={`grid grid-cols-[minmax(0,1fr)_auto] ${COLS} gap-x-4 gap-y-1 items-center px-4 sm:px-5 py-3.5 border-b border-adm-line last:border-0 cursor-pointer transition-colors ${paid ? 'hover:bg-adm-hover' : 'bg-amber-400/[0.07] hover:bg-amber-400/[0.12]'}`}>
-                <span className="hidden sm:block text-[14px] text-text-subtle tabular-nums">{dayOf(b.createdAt)}</span>
-                <b className="min-w-0 truncate text-[15px] text-text-light">{nameOf(b)}</b>
+                <span className="hidden sm:block text-[14px] text-text-light tabular-nums">{dayOf(b.createdAt)}</span>
+                <span className="min-w-0 truncate text-[14px] text-text-light">{nameOf(b)}</span>
                 {/* (on a phone the amount sits beside the name) */}
-                <b className="sm:hidden text-[15px] text-right tabular-nums text-text-light whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</b>
+                <span className="sm:hidden text-[14px] text-right tabular-nums text-text-light whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</span>
                 <span className="hidden sm:flex min-w-0 items-center gap-2 text-[14px] text-text-light">
                     <span aria-hidden className="w-2.5 h-2.5 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
                     <span className="truncate">{service}</span>
                 </span>
-                <span className="hidden sm:block min-w-0 truncate text-[14px] text-text-subtle">{detail || '—'}</span>
+                <span className="hidden sm:block min-w-0 truncate text-[14px] text-text-light">{detail || '—'}</span>
                 <span className="sm:hidden col-span-2 flex items-center gap-2 text-[13px] text-text-subtle min-w-0">
                     <span aria-hidden className="w-2 h-2 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
                     <span className="truncate">{[service, detail, dayOf(b.createdAt)].filter(Boolean).join(' · ')}</span>
                 </span>
-                <b className="hidden sm:block text-[15px] text-right tabular-nums text-text-light whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</b>
+                <span className="hidden sm:block text-[14px] text-right tabular-nums text-text-light whitespace-nowrap">{a ? fmtMoney(a.amount, a.currency) : '—'}</span>
                 <span className="hidden sm:block" onClick={(e) => e.stopPropagation()}>
                     <PaymentPill paid={paid} onToggle={() => togglePaid(b)} busy={savingId === b.id} />
                 </span>

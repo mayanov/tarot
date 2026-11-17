@@ -180,7 +180,7 @@ const ServiceFunnel: React.FC<Props> = ({ services }) => {
                         {services.map((s) => {
                             const bd = biggestDrop(s);
                             const cell = (n: number) => (
-                                <td className={`py-3 pl-2 text-right tabular-nums ${n ? 'text-text-light font-medium' : 'text-text-subtle'}`}>{n}</td>
+                                <td className="py-3 pl-2 text-right tabular-nums text-text-light">{n}</td>
                             );
                             return (
                                 <tr
@@ -193,8 +193,8 @@ const ServiceFunnel: React.FC<Props> = ({ services }) => {
                                     {cell(s.clicks)}
                                     {cell(s.bookings)}
                                     <td className="hidden sm:table-cell py-3 text-right tabular-nums text-text-light">{fmtPct(pct(s.bookings, s.views))}</td>
-                                    <td className="hidden sm:table-cell py-3 text-right text-xs text-text-subtle">
-                                        {bd ? <><span className="text-text-light font-medium tabular-nums">−{bd.p}%</span> {bd.at}</> : '—'}
+                                    <td className="hidden sm:table-cell py-3 text-right text-text-light">
+                                        {bd ? <><span className="tabular-nums">−{bd.p}%</span> {bd.at}</> : '—'}
                                     </td>
                                 </tr>
                             );

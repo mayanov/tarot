@@ -238,30 +238,30 @@ const CustomersView: React.FC = () => {
                             {/* narrow screens: name and what they paid, then one grey line with the rest */}
                             <div className="lg:hidden">
                                 <div className="flex items-baseline justify-between gap-3">
-                                    <b className="text-[15px] text-text-light truncate">{nameOf(c)}</b>
-                                    <span className="text-sm text-text-light tabular-nums whitespace-nowrap">{spentLabel(c)}</span>
+                                    <span className="text-[14px] text-text-light truncate">{nameOf(c)}</span>
+                                    <span className="text-[14px] text-text-light tabular-nums whitespace-nowrap">{spentLabel(c)}</span>
                                 </div>
                                 <div className="mt-0.5 flex items-baseline justify-between gap-3 text-xs text-text-subtle">
                                     <span className="truncate tabular-nums">{[c.phone ? fmtPhone(c.phone) : c.email, `${count} booking${count === 1 ? '' : 's'}`, `last ${fmtDate(c.lastSeen)}`].filter(Boolean).join(' · ')}</span>
-                                    {owedLabel(c) && <span className="text-coral-deep whitespace-nowrap">{owedLabel(c)} unpaid</span>}
+                                    {owedLabel(c) && <span className="whitespace-nowrap">{owedLabel(c)} unpaid</span>}
                                 </div>
                             </div>
                             <div className="hidden lg:block lg:col-span-4 min-w-0">
-                                <b className="block text-[15px] text-text-light truncate">{nameOf(c)}</b>
+                                <span className="block text-[14px] text-text-light truncate">{nameOf(c)}</span>
                             </div>
                             {/* their WhatsApp; for someone with only an email (abroad), the email */}
-                            <div className="hidden lg:block lg:col-span-3 text-[14px] text-text-subtle tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : c.email || '—'}</div>
-                            <div className="hidden lg:block lg:col-span-1 lg:text-center text-sm tabular-nums">
-                                <span className={`inline-flex items-center gap-1 ${count > 1 ? 'text-lilac font-semibold' : 'text-text-light'}`} title={count > 1 ? 'Returning client' : undefined}>
+                            <div className="hidden lg:block lg:col-span-3 text-[14px] text-text-light tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : c.email || '—'}</div>
+                            <div className="hidden lg:block lg:col-span-1 lg:text-center text-[14px] text-text-light tabular-nums">
+                                <span className="inline-flex items-center gap-1" title={count > 1 ? 'Returning client' : undefined}>
                                     {count > 1 && <Repeat size={11} />}{count}
                                 </span>
                             </div>
-                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-[15px] font-semibold text-text-light tabular-nums">
+                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-[14px] text-text-light tabular-nums">
                                 {spentLabel(c)}
                                 {/* what they still owe, only when they do */}
-                                {owedLabel(c) && <div className="text-xs text-coral-deep">{owedLabel(c)} unpaid</div>}
+                                {owedLabel(c) && <div className="text-[14px]">{owedLabel(c)} unpaid</div>}
                             </div>
-                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-[14px] text-text-subtle tabular-nums">{fmtDate(c.lastSeen)}</div>
+                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-[14px] text-text-light tabular-nums">{fmtDate(c.lastSeen)}</div>
                         </button>
                     );
                 })}

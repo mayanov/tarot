@@ -1906,22 +1906,22 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                 return (
                                     <div key={b.id} onClick={() => setSelectedId(b.id)}
                                         className={`grid grid-cols-[minmax(0,1fr)_auto] ${COLS} gap-x-4 gap-y-1 items-center px-4 lg:px-5 py-3.5 cursor-pointer hover:bg-adm-hover transition-colors`}>
-                                        <span className="hidden lg:block text-[14px] text-text-subtle tabular-nums">{fmtDate(b.createdAt)}</span>
-                                        <b className="min-w-0 truncate text-[15px] text-text-light">{nameOf(b)}</b>
-                                        <b className="lg:hidden text-[15px] text-right tabular-nums text-text-light whitespace-nowrap">{amountLabel(b)}</b>
+                                        <span className="hidden lg:block text-[14px] text-text-light tabular-nums">{fmtDate(b.createdAt)}</span>
+                                        <span className="min-w-0 truncate text-[14px] text-text-light">{nameOf(b)}</span>
+                                        <span className="lg:hidden text-[14px] text-right tabular-nums text-text-light whitespace-nowrap">{amountLabel(b)}</span>
                                         <span className="hidden lg:flex min-w-0 items-center gap-2 text-[14px] text-text-light">
                                             <span aria-hidden className="w-2.5 h-2.5 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
                                             <span className="truncate">{service}</span>
                                         </span>
-                                        <span className="hidden lg:block min-w-0 text-[14px] text-text-subtle">
+                                        <span className="hidden lg:block min-w-0 text-[14px] text-text-light">
                                             <span className="block truncate">{detail || '—'}</span>
-                                            {why && <span className="block text-[12px] due-soon-text">{why}</span>}
+                                            {why && <span className="block truncate">{why}</span>}
                                         </span>
                                         <span className="lg:hidden col-span-2 flex items-center gap-2 text-[13px] text-text-subtle min-w-0">
                                             <span aria-hidden className="w-2 h-2 shrink-0 rounded-full" style={{ background: colorFor(b.serviceId) }} />
                                             <span className="truncate">{[service, detail, fmtDate(b.createdAt), why].filter(Boolean).join(' · ')}</span>
                                         </span>
-                                        <b className="hidden lg:block text-[15px] text-right tabular-nums text-text-light whitespace-nowrap">{amountLabel(b)}</b>
+                                        <span className="hidden lg:block text-[14px] text-right tabular-nums text-text-light whitespace-nowrap">{amountLabel(b)}</span>
                                         <span className="col-span-2 lg:contents flex flex-wrap items-center gap-2 mt-1.5 lg:mt-0" onClick={(ev) => ev.stopPropagation()}>
                                             <span><PaymentPill paid={b.paymentStatus === 'paid'} onToggle={() => togglePaid(b)} busy={payBusy === b.id} /></span>
                                             <span><StatusControl b={b} /></span>
