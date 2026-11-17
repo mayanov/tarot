@@ -16,7 +16,6 @@ import { sameCustomer, normPhone as waNumber, moneyLabel, type Money } from './l
 import { openCustomerOf } from './lib/nav';
 import { replyLink } from './lib/reply';
 import { colorFor } from './lib/serviceColor';
-import TodoCard from './TodoCard';
 import { readingTodo, orderTodo, type Todo } from './lib/notifications';
 import { isSessionTitle, nameFromTitle, entryMinutes, serviceFromTitle, matchCustomers } from './lib/calendarEntry';
 
@@ -1841,7 +1840,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
 
             {/* ---------------- ORDERS (no fixed time) — one aligned list ---------------- */}
             {!initialLoading && tab === 'orders' && (() => {
-                // A board in three lanes, To do | Done | Cancelled, each order a small card. To do
+                // A board in three lanes, To do | Done | Cancelled, each order the same small card. To do
                 // leads with the most urgent; Done and Cancelled with the newest, showing the
                 // latest few until "Show all". On a phone the lanes are tabs, one at a time.
                 const LANE_MAX = 8;
@@ -1851,20 +1850,38 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                     { id: 'cancelled' as const, label: 'Cancelled', list: cancelledBookings, empty: 'Nothing cancelled.' },
                 ];
                 const card = 'rounded-xl bg-surface-1 border border-adm-line';
-                // a finished or cancelled order: who, what, how much, and its payment and status
-                const orderCard = (b: Booking, cancelled: boolean) => {
+                // how close a to-do is, as a coloured word
+                const TONE_CLS: Record<Todo['tone'], string> = { late: 'due-late-text font-semibold', soon: 'due-soon-text font-semibold', calm: 'text-text-subtle' };
+                const tickDone = async (b: Booking) => {
+                    setTicking((x) => new Set(x).add(b.id));
+                    await new Promise((r) => setTimeout(r, 450));
+                    if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Order'} marked done. It's under Done.`, 'ok');
+                    setTicking((x) => { const n = new Set(x); n.delete(b.id); return n; });
+                };
+                // one order, the same card in every lane: who and how much, what, when (a to-do:
+                // how close it's due), then its payment, status and buttons
+                const orderCard = (b: Booking, lane: 'active' | 'done' | 'cancelled') => {
+                    const cancelled = lane === 'cancelled';
                     const service = serviceGroup(b);
                     const detail = subServiceOf(b);
-                    const when = cancelled
-                        ? [b.date && b.time ? `${fmtDate(b.date)}, ${b.time}` : `Ordered ${fmtDate(b.createdAt)}`, b.cancelReason === 'unpaid' ? 'not paid within 1 hour' : ''].filter(Boolean).join(' · ')
-                        : `Ordered ${fmtDate(b.createdAt)}`;
+                    const t = lane === 'active' ? orderTodo(b, now) : null;
+                    const unpaid = b.paymentStatus !== 'paid';
+                    // (an unpaid one isn't due yet; its payment pill already says Not paid)
+                    const when = t && !unpaid
+                        ? <>Ordered {fmtDate(b.createdAt)} · <span className={TONE_CLS[t.tone]}>{t.pill}</span></>
+                        : cancelled
+                            ? [b.date && b.time ? `${fmtDate(b.date)}, ${b.time}` : `Ordered ${fmtDate(b.createdAt)}`, b.cancelReason === 'unpaid' ? 'not paid within 1 hour' : ''].filter(Boolean).join(' · ')
+                            : `Ordered ${fmtDate(b.createdAt)}`;
+                    // a to-do reading that's paid: where to send it
+                    const reply = t && t.kind === 'reading' && !unpaid ? replyLink(b) : null;
+                    const ticked = ticking.has(b.id);
                     const confirm = !cancelled && (b.market === 'ID'
                         ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
                         : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />);
                     return (
                         <li key={b.id} role="button" tabIndex={0} onClick={() => setSelectedId(b.id)}
                             onKeyDown={(e) => { if (e.key === 'Enter' && e.target === e.currentTarget) setSelectedId(b.id); }}
-                            className={`${card} p-3.5 cursor-pointer hover:border-adm-line-3 transition-colors ${cancelled ? 'opacity-80' : ''}`}>
+                            className={`${card} p-3.5 cursor-pointer hover:border-adm-line-3 transition-all ${cancelled ? 'opacity-80' : ''} ${ticked ? 'opacity-50' : ''}`}>
                             <div className="flex items-baseline justify-between gap-3">
                                 <span className="min-w-0 truncate text-[15px] font-semibold text-text-light">{nameOf(b)}</span>
                                 <span className="shrink-0 text-[14px] tabular-nums text-text-light">{amountLabel(b)}</span>
@@ -1879,6 +1896,20 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                 <StatusControl b={b} />
                                 {confirm && <span className="ml-auto">{confirm}</span>}
                             </div>
+                            {t && (
+                                <div className="mt-2 flex flex-wrap items-center gap-2" onClick={(ev) => ev.stopPropagation()}>
+                                    {reply && (
+                                        <a href={reply.href} target="_blank" rel="noopener noreferrer" className={SOFT_BTN}
+                                            title={reply.kind === 'email' ? `Open ${reply.to}'s emails in Gmail` : `Open ${b.name || 'their'} WhatsApp chat`}>
+                                            {reply.kind === 'email' ? <Mail size={13} /> : <FaWhatsapp size={13} />}
+                                            {reply.kind === 'email' ? 'Send by email' : 'Reply on WhatsApp'}
+                                        </a>
+                                    )}
+                                    <button type="button" disabled={ticked} onClick={() => tickDone(b)} className={SOFT_BTN} title="Mark done (sent)">
+                                        <Check size={13} />Mark done
+                                    </button>
+                                </div>
+                            )}
                         </li>
                     );
                 };
@@ -1905,22 +1936,7 @@ const BookingsView: React.FC<{ view: 'today' | 'calendar' | 'orders' | 'detail';
                                         </div>
                                     ) : (
                                         <ul className="space-y-2">
-                                            {lane.id === 'active' ? shown.map((b) => (
-                                                <li key={b.id} className={`${card} px-3.5`}>
-                                                    <TodoCard t={orderTodo(b, now)} now={now} done={ticking.has(b.id)} onOpen={() => setSelectedId(b.id)}
-                                                        onTick={async () => {
-                                                            setTicking((x) => new Set(x).add(b.id));
-                                                            await new Promise((r) => setTimeout(r, 450));
-                                                            if (await changeStatus(b.id, 'done')) flash(`${b.name || 'Order'} marked done. It's under Done.`, 'ok');
-                                                            setTicking((x) => { const n = new Set(x); n.delete(b.id); return n; });
-                                                        }}
-                                                        // paid is a label up by the pill (an unpaid one's pill says Not paid yet); changing it is in the details
-                                                        badge={b.paymentStatus === 'paid' ? <span className="text-sage font-semibold">paid</span> : undefined}
-                                                        footer={b.market === 'ID'
-                                                            ? <WaConfirmButton compact b={b} onSent={(f, at) => markWa(b.id, f, at)} onNote={flash} />
-                                                            : <EmailConfirmButton hideIdle b={b} onSent={(at) => markEmailSent(b.id, at)} />} />
-                                                </li>
-                                            )) : shown.map((b) => orderCard(b, lane.id === 'cancelled'))}
+                                            {shown.map((b) => orderCard(b, lane.id))}
                                         </ul>
                                     )}
                                     {lane.list.length > LANE_MAX && lane.id !== 'active' && (
