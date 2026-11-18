@@ -213,7 +213,6 @@ const RevenueView: React.FC = () => {
         }
         const monthlySeries = allRows.length ? buildStacked(allRows, months, (day) => day.slice(0, 7), services) : [];
         const thisMonth = (monthlySeries[11]?.total as number) || 0;
-        const lastMonth = (monthlySeries[10]?.total as number) || 0;
         const yearTotal = monthlySeries.reduce((sum, m) => sum + (m.total as number), 0);
         const monthSvc = new Map<string, number>();
         allRows.filter((r) => r.day.slice(0, 7) >= months[0].key).forEach((r) => monthSvc.set(r.serviceId, (monthSvc.get(r.serviceId) || 0) + r.amount));
@@ -235,7 +234,7 @@ const RevenueView: React.FC = () => {
 
         const best = series.reduce((m, x) => ((x.total as number) > m.value ? { label: x.label, value: x.total as number } : m), { label: '—', value: 0 });
         return {
-            currency, services, count: rangeRows.length, total, avg, series, running, monthlySeries, monthSvc, thisMonth, lastMonth, yearTotal, best,
+            currency, services, count: rangeRows.length, total, avg, series, running, monthlySeries, monthSvc, thisMonth, yearTotal, best,
             earners, fresh: { amount: fresh.amount, people: fresh.who.size }, back: { amount: back.amount, people: back.who.size }, top,
         };
     };
@@ -312,17 +311,21 @@ const RevenueView: React.FC = () => {
     };
 
     // the legend says how much each service brought in
-    const Legend = ({ items, currency }: { items: { id: string; amount: number }[]; currency: Currency }) => (
-        <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-3">
-            {items.filter((x) => x.amount > 0).map((x) => (
-                <span key={x.id} className="inline-flex items-center gap-1.5 text-xs text-text-subtle">
-                    <span className="w-2.5 h-2.5 rounded-sm" style={{ background: colorFor(x.id) }} />
-                    {SERVICE_LABEL[x.id] || x.id}
-                    <span className="text-text-light tabular-nums">{fmtMoney(x.amount, currency)}</span>
-                </span>
-            ))}
-        </div>
-    );
+    // under a chart: which colour is which service (biggest first), in a tidy row that wraps
+    const Legend = ({ items }: { items: { id: string; amount: number }[] }) => {
+        const shown = items.filter((x) => x.amount > 0).sort((a, b) => b.amount - a.amount);
+        if (!shown.length) return null;
+        return (
+            <ul className="mt-4 pt-3 border-t border-adm-line flex flex-wrap gap-x-5 gap-y-1.5 text-[12.5px] text-text-subtle">
+                {shown.map((x) => (
+                    <li key={x.id} className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: colorFor(x.id) }} />
+                        {SERVICE_LABEL[x.id] || x.id}
+                    </li>
+                ))}
+            </ul>
+        );
+    };
 
     const curName = (c: Currency) => (c === 'IDR' ? 'Rupiah' : 'Dollars');
     // a card: what it shows, then the answer (the figure) before the chart or list
@@ -432,8 +435,8 @@ const RevenueView: React.FC = () => {
                         {r.total === 0 ? <Empty text={`No ${curName(r.currency).toLowerCase()} came in in this range.`} />
                             : mode === 'total' ? <RunningChart data={r.running} currency={r.currency} />
                             : <>
-                                <Legend items={r.earners} currency={r.currency} />
                                 <Bars data={r.series} currency={r.currency} services={r.services} />
+                                <Legend items={r.earners} />
                             </>}
                     </Card>
                 ))}
@@ -443,10 +446,10 @@ const RevenueView: React.FC = () => {
             <div className="grid gap-4 xl:grid-cols-2">
                 {reports.map((r) => (
                     <Card key={r.currency} title="Last 12 months" currency={r.currency} figure={fmtMoney(r.thisMonth, r.currency)}
-                        note={<><span>this month so far</span><span>· last month {fmtMoney(r.lastMonth, r.currency)}</span></>}>
+                        note={<span>this month so far</span>}>
                         {r.yearTotal === 0 ? <Empty text={`No ${curName(r.currency).toLowerCase()} in the last 12 months.`} /> : <>
-                            <Legend items={r.services.map((id) => ({ id, amount: r.monthSvc.get(id) || 0 }))} currency={r.currency} />
                             <Bars data={r.monthlySeries} currency={r.currency} services={r.services} soFar />
+                            <Legend items={r.services.map((id) => ({ id, amount: r.monthSvc.get(id) || 0 }))} />
                         </>}
                     </Card>
                 ))}
