@@ -4,7 +4,7 @@ import { FilterBar, FilterMenu, MenuOption, MenuDate, useCloseMenu } from './ui/
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { colorFor } from './lib/serviceColor';
 import { CalendarDays, Repeat, UserPlus } from 'lucide-react';
-import { BarChart, Bar, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
 import StatStrip from './ui/StatStrip';
@@ -31,6 +31,10 @@ const CustomDates: React.FC<{ draft: { start: string; end: string }; setDraft: R
         </div>
     );
 };
+
+// the service a sub-service belongs to, for Most booked (the rest are services of their own)
+const SERVICE_OF: Record<string, string> = { '3card': 'email', '5card': 'email', payl: 'special', live: 'call' };
+const SERVICE_NAME_OF: Record<string, string> = { email: 'Email', special: 'Special Edition' };
 
 const SERVICE_LABEL: Record<string, string> = {
     chat: 'Chat', call: 'Call', meetup: 'Meetup', special: 'New Year Reading (PDF)',
@@ -83,8 +87,6 @@ const RevenueView: React.FC = () => {
     const [preset, setPreset] = useState<Preset>('30d');
     // by day or by week: picked from the range's length unless chosen on the chart
     const [granPick, setGranPick] = useState<Gran | null>(null);
-    // the range chart: the running total, or bars by day / week
-    const [mode, setMode] = useState<'total' | 'bars'>('total');
     const [customStart, setCustomStart] = useState('');
     const [customEnd, setCustomEnd] = useState('');
     const [customOpen, setCustomOpen] = useState(false); // picking dates; the page changes only on Show
@@ -179,8 +181,6 @@ const RevenueView: React.FC = () => {
 
         // daily / weekly stacked series across the range (continuous buckets)
         let series: StackRow[] = [];
-        // the running total, day by day
-        const running: { label: string; now: number }[] = [];
         if (endISO >= startISO) {
             const buckets: Bucket[] = [];
             const step = gran === 'week' ? 7 : 1;
@@ -190,16 +190,6 @@ const RevenueView: React.FC = () => {
             while (d <= end && guard++ < 800) { buckets.push({ key: toISO(d), label: dayLabel(toISO(d)) }); d = addDays(d, step); }
             const bucketOf = (day: string) => gran === 'week' ? toISO(startOfWeek(parseISO(day))) : day;
             if (rangeRows.length) series = buildStacked(rangeRows, buckets, bucketOf, services);
-
-            const perDay = (rows: Row[]) => { const m = new Map<string, number>(); rows.forEach((r) => m.set(r.day, (m.get(r.day) || 0) + r.amount)); return m; };
-            const nowDays = perDay(rangeRows);
-            const n = Math.min(daysBetween(startISO, endISO) + 1, 800);
-            let c1 = 0;
-            for (let i = 0; i < n; i++) {
-                const day = toISO(addDays(parseISO(startISO), i));
-                c1 += nowDays.get(day) || 0;
-                running.push({ label: dayLabel(day), now: c1 });
-            }
         }
 
         // the last 12 months, always (this month marked as so far)
@@ -234,7 +224,7 @@ const RevenueView: React.FC = () => {
 
         const best = series.reduce((m, x) => ((x.total as number) > m.value ? { label: x.label, value: x.total as number } : m), { label: '—', value: 0 });
         return {
-            currency, services, count: rangeRows.length, total, avg, series, running, monthlySeries, monthSvc, thisMonth, yearTotal, best,
+            currency, services, count: rangeRows.length, total, avg, series, monthlySeries, monthSvc, thisMonth, yearTotal, best,
             earners, fresh: { amount: fresh.amount, people: fresh.who.size }, back: { amount: back.amount, people: back.who.size }, top,
         };
     };
@@ -260,35 +250,7 @@ const RevenueView: React.FC = () => {
         );
     };
 
-    const RunTooltip = ({ active, payload, label, currency }: any) => {
-        if (!active || !payload || !payload.length) return null;
-        const v = (k: string) => payload.find((p: any) => p.dataKey === k)?.value;
-        return (
-            <div className="rounded-xl bg-surface-1 border border-adm-line-2 shadow-lg px-3 py-2 text-xs space-y-0.5">
-                <div className="font-semibold text-text-light mb-1">By {label}</div>
-                {v('now') !== undefined && <div className="flex justify-between gap-4"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#2E9E6A]" />Came in</span><span className="tabular-nums text-text-light font-semibold">{fmtMoney(v('now'), currency)}</span></div>}
-            </div>
-        );
-    };
     const axis = { tick: { fontSize: 11, fill: 'var(--adm-axis)' }, axisLine: false, tickLine: false } as const;
-    // the running total: how the money built up through the range
-    const RunningChart = ({ data, currency }: { data: Report['running']; currency: Currency }) => (
-        <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <defs>
-                    <linearGradient id={`run-${currency}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2E9E6A" stopOpacity={0.28} />
-                        <stop offset="100%" stopColor="#2E9E6A" stopOpacity={0.02} />
-                    </linearGradient>
-                </defs>
-                <CartesianGrid stroke="rgba(128,128,128,0.14)" vertical={false} />
-                <XAxis dataKey="label" {...axis} interval="preserveStartEnd" minTickGap={28} />
-                <YAxis {...axis} tickFormatter={(v) => axisMoney(v, currency)} width={44} tickCount={4} />
-                <Tooltip content={<RunTooltip currency={currency} />} cursor={{ stroke: 'rgba(128,128,128,0.35)', strokeDasharray: '3 3' }} />
-                <Area type="monotone" dataKey="now" stroke="#2E9E6A" strokeWidth={2.25} fill={`url(#run-${currency})`} dot={false} activeDot={{ r: 4 }} />
-            </AreaChart>
-        </ResponsiveContainer>
-    );
     // stacked bars by service; `soFar` lightens the last bar (a month still going)
     const Bars = ({ data, currency, services, soFar }: { data: StackRow[]; currency: Currency; services: string[]; soFar?: boolean }) => {
         const tick = data.length > 14 ? Math.ceil(data.length / 12) : 0;
@@ -374,12 +336,20 @@ const RevenueView: React.FC = () => {
 
     // Most booked: each service by how many paid bookings it had in the range, both markets
     // together (a booking counts the same whatever it was paid in)
-    const booked = (() => {
+    // by service, not sub-service (as Sales names them): 3-Card and 5-Card are both Email,
+    // Pay as you like and the New Year Reading both Special Edition, a Live Session a Call.
+    // One per market: Indonesia (paid in rupiah) and Global (paid in dollars)
+    const booked = reports.map((r) => {
         const by = new Map<string, number>();
-        reports.forEach((r) => r.earners.forEach((x) => by.set(x.id, (by.get(x.id) || 0) + x.count)));
+        r.earners.forEach((x) => { const g = SERVICE_OF[x.id] || x.id; by.set(g, (by.get(g) || 0) + x.count); });
         const total = [...by.values()].reduce((a, b) => a + b, 0);
-        return { total, rows: [...by].map(([id, count]) => ({ id, count, share: total ? count / total : 0 })).sort((a, b) => b.count - a.count) };
-    })();
+        return {
+            market: r.currency === 'IDR' ? 'Indonesia' : 'Global',
+            total,
+            rows: [...by].map(([id, count]) => ({ id, name: SERVICE_NAME_OF[id] || SERVICE_LABEL[id] || id, color: colorFor(id === 'email' ? '3card' : id), count, share: total ? count / total : 0 }))
+                .sort((a, b) => b.count - a.count),
+        };
+    });
 
     const initialLoading = loading && bookings.length === 0;
 
@@ -423,17 +393,13 @@ const RevenueView: React.FC = () => {
                 { label: `Best ${gran}`, lines: reports.map((r) => ({ key: r.currency, value: fmtMoney(r.best.value, r.currency), note: r.best.value > 0 ? r.best.label : undefined })) },
             ]} />
 
-            {/* how the money built up through the range, or bars */}
+            {/* the money in the range, by day or week, stacked by service */}
             <div className="grid gap-4 xl:grid-cols-2">
                 {reports.map((r) => (
                     <Card key={r.currency} title="Money over time" currency={r.currency} figure={fmtMoney(r.total, r.currency)}
                         note={<span>in this range</span>}
-                        extra={<>
-                            {mode === 'bars' && <Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGranPick} />}
-                            <Seg value={mode} options={[{ id: 'total', label: 'Running total' }, { id: 'bars', label: 'Bars' }]} onChange={setMode} />
-                        </>}>
+                        extra={<Seg value={gran} options={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }]} onChange={setGranPick} />}>
                         {r.total === 0 ? <Empty text={`No ${curName(r.currency).toLowerCase()} came in in this range.`} />
-                            : mode === 'total' ? <RunningChart data={r.running} currency={r.currency} />
                             : <>
                                 <Bars data={r.series} currency={r.currency} services={r.services} />
                                 <Legend items={r.earners} />
@@ -457,32 +423,39 @@ const RevenueView: React.FC = () => {
 
             <div className="grid gap-4">
                 {/* A. most booked in the range: the services by their number of bookings (not
-                    money), one donut for both markets and the services ranked beside it */}
+                    money), Indonesia and Global side by side, each a donut and its ranking */}
                 <Card title="Most booked">
-                    {!booked.total ? <Empty text="Nothing paid in this range." /> : (
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-10">
-                            <div className="shrink-0 self-center">
-                                <Donut slices={booked.rows.map((x) => ({ share: x.share, color: colorFor(x.id) }))}
-                                    label={booked.rows.map((x) => `${SERVICE_LABEL[x.id] || x.id} ${x.count} ${x.count === 1 ? 'booking' : 'bookings'}`).join(', ')}
-                                    center={String(booked.total)} sub={booked.total === 1 ? 'booking' : 'bookings'} />
-                            </div>
-                            <table className="min-w-0 flex-1 max-w-xl text-[13px]">
-                                <tbody>
-                                    {booked.rows.map((x, i) => (
-                                        <tr key={x.id} className="border-b border-adm-line last:border-0">
-                                            <td className="py-2 pr-3 w-6 text-text-subtle tabular-nums">{i + 1}</td>
-                                            <td className="py-2 pr-3">
-                                                <span className="flex items-center gap-2 min-w-0">
-                                                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colorFor(x.id) }} />
-                                                    <span className="truncate text-text-light font-medium">{SERVICE_LABEL[x.id] || x.id}</span>
-                                                </span>
-                                            </td>
-                                            <td className="py-2 pr-3 text-right text-text-light font-semibold tabular-nums whitespace-nowrap">{x.count} {x.count === 1 ? 'booking' : 'bookings'}</td>
-                                            <td className="py-2 text-right text-text-subtle tabular-nums whitespace-nowrap">{Math.round(x.share * 100)}%</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                    {booked.every((m) => !m.total) ? <Empty text="Nothing paid in this range." /> : (
+                        <div className="grid gap-x-10 gap-y-8 xl:grid-cols-2">
+                            {booked.filter((m) => m.total).map((m) => (
+                                <div key={m.market} className="min-w-0">
+                                    <h3 className="text-[11px] font-semibold text-text-subtle mb-2">{m.market}</h3>
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
+                                        <div className="shrink-0 self-center">
+                                            <Donut slices={m.rows.map((x) => ({ share: x.share, color: x.color }))}
+                                                label={`${m.market}: ${m.rows.map((x) => `${x.name} ${x.count} ${x.count === 1 ? 'booking' : 'bookings'}`).join(', ')}`}
+                                                center={String(m.total)} sub={m.total === 1 ? 'booking' : 'bookings'} />
+                                        </div>
+                                        <table className="min-w-0 flex-1 text-[13px]">
+                                            <tbody>
+                                                {m.rows.map((x, i) => (
+                                                    <tr key={x.id} className="border-b border-adm-line last:border-0">
+                                                        <td className="py-2 pr-3 w-6 text-text-subtle tabular-nums">{i + 1}</td>
+                                                        <td className="py-2 pr-3">
+                                                            <span className="flex items-center gap-2 min-w-0">
+                                                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: x.color }} />
+                                                                <span className="truncate text-text-light font-medium">{x.name}</span>
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2 pr-3 text-right text-text-light font-semibold tabular-nums whitespace-nowrap">{x.count} {x.count === 1 ? 'booking' : 'bookings'}</td>
+                                                        <td className="py-2 text-right text-text-subtle tabular-nums whitespace-nowrap">{Math.round(x.share * 100)}%</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </Card>
