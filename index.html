@@ -4,6 +4,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- the admin (/admin) shares this page but not the website's opening: no sunset sky
+       (html.booting, below) while its code loads, but the admin's own background, light
+       or dark as last picked, from the very first frame -->
+  <script>
+    (function () {
+      if (!/^\/admin\/?$/.test(location.pathname) && !/[?&]dashboard=true\b/.test(location.search)) return;
+      var dark = false;
+      try { dark = localStorage.getItem('admin_theme') === 'dark'; } catch (e) { /* storage blocked */ }
+      var html = document.documentElement;
+      html.classList.remove('booting');
+      html.classList.add('admin-boot');
+      html.style.background = dark ? '#141220' : '#FAF9FC';
+      html.style.colorScheme = dark ? 'dark' : 'light';
+    })();
+  </script>
+  <style>html.admin-boot body { background: transparent; }</style>
   <title>Mayanov Tarot — Clarity, Insight, and Real Guidance</title>
   <meta name="description"
     content="Strategic, psychological, and analytical tarot readings for clarity and insight. Get guidance on your career, relationships, and personal path." />
