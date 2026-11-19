@@ -3,10 +3,10 @@ import { SearchInput } from './ui/Field';
 import { FilterBar, FilterMenu, MenuHead, MenuOption, ClearFilters } from './ui/Filters';
 
 const WHERE = { all: 'Anywhere', ID: 'Indonesia', Global: 'Abroad' } as const;
-const SORT = { spent: 'Top spenders', bookings: 'Most bookings', recent: 'Most recent' } as const;
+const SORT = { name: 'A–Z', spent: 'Top spenders', bookings: 'Most bookings', recent: 'Most recent' } as const;
 import Dialog, { Section, KV } from './ui/Dialog';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Repeat, CalendarDays, ChevronRight } from 'lucide-react';
+import { CalendarDays, ChevronRight } from 'lucide-react';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { InlineLoader } from './ui/InlineLoader';
 import { amountForBooking, matchesSearch, fmtMoney, fmtDate, serviceLabel, sessionWhen, fmtPhone, nameOf } from './lib/format';
@@ -45,6 +45,7 @@ interface Customer {
     markets: Market[]; // where they've booked: Indonesia, Global or both
     lastSeen: string;
     firstSeen: string;
+    since: string;  // the day of their first booking that wasn't cancelled
     services: string[];
     contacts: string[]; // their phone/email tokens, to find others with the same ones
 }
@@ -58,7 +59,7 @@ const CustomersView: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [q, setQ] = useState('');
-    const [sort, setSort] = useState<'spent' | 'recent' | 'bookings'>('spent');
+    const [sort, setSort] = useState<keyof typeof SORT>('name');
     // the open customer, by key so it stays open when the bookings load again
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const setSelected = (c: Customer | null) => setSelectedKey(c ? c.key : null);
@@ -116,7 +117,7 @@ const CustomersView: React.FC = () => {
             const key = normPhone(phone) || email.toLowerCase() || `id:${list[0].id}`;
             const contacts = [...new Set(list.flatMap(contactTokens))];
             const c: Customer = { key, clientId: '', name: list.find((b) => b.name)?.name || '—', phone, email, bookings: list,
-                paid: { IDR: 0, USD: 0 }, owed: { IDR: 0, USD: 0 }, markets: [], lastSeen: '', firstSeen: '', services: [], contacts };
+                paid: { IDR: 0, USD: 0 }, owed: { IDR: 0, USD: 0 }, markets: [], lastSeen: '', firstSeen: '', since: '', services: [], contacts };
             for (const b of list) {
                 if (b.status === 'cancelled') continue; // in their history, not in the money or services
                 if (!c.markets.includes(marketOf(b))) c.markets.push(marketOf(b));
@@ -131,6 +132,7 @@ const CustomersView: React.FC = () => {
             const dates = list.map((b) => (b.createdAt || '').slice(0, 10)).filter(Boolean).sort();
             c.firstSeen = dates[0] || '';
             c.lastSeen = dates[dates.length - 1] || '';
+            c.since = list.filter((b) => b.status !== 'cancelled').map((b) => (b.createdAt || '').slice(0, 10)).filter(Boolean).sort()[0] || c.firstSeen;
             out.push(c);
         }
         // two people on one number get keys of their own (with the first name); someone alone
@@ -170,7 +172,8 @@ const CustomersView: React.FC = () => {
         if (needle) list = list.filter((c) =>
             matchesSearch(needle, c.name, c.phone, c.email, ...c.bookings.map((b) => b.contact), ...c.bookings.map((b) => b.adminNote)));
         return [...list].sort((a, b) =>
-            sort === 'recent' ? b.lastSeen.localeCompare(a.lastSeen)
+            sort === 'name' ? nameOf(a).localeCompare(nameOf(b), 'id', { sensitivity: 'base' })
+            : sort === 'recent' ? b.lastSeen.localeCompare(a.lastSeen)
                 : sort === 'bookings' ? liveCount(b) - liveCount(a)
                     : (rank(b.paid) - rank(a.paid)) || (rank(b.owed) - rank(a.owed)));
     }, [inMarket, q, sort, market]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -208,24 +211,26 @@ const CustomersView: React.FC = () => {
                         </MenuOption>
                     ))}
                 </FilterMenu>
-                <FilterMenu active={sort !== 'spent'} label={SORT[sort]} align="end">
+                <FilterMenu active={sort !== 'name'} label={SORT[sort]} align="end">
                     <MenuHead>List them by</MenuHead>
                     {(Object.keys(SORT) as (keyof typeof SORT)[]).map((id) => (
                         <MenuOption key={id} on={sort === id} onPick={() => setSort(id)}>{SORT[id]}</MenuOption>
                     ))}
                 </FilterMenu>
-                <ClearFilters show={market !== 'all' || sort !== 'spent'} onClear={() => { setMarket('all'); setSort('spent'); }} />
+                <ClearFilters show={market !== 'all' || sort !== 'name'} onClear={() => { setMarket('all'); setSort('name'); }} />
             </FilterBar>
 
             {/* list */}
             <div className="rounded-2xl bg-surface-1 overflow-hidden">
-                {/* one line per person: email, first booking and their history are in their details */}
-                <div className="hidden lg:grid grid-cols-12 gap-3 px-5 py-3 text-[13px] font-semibold text-text-subtle border-b border-adm-line">
-                    <div className="col-span-4">Customer</div>
-                    <div className="col-span-3">Contact</div>
-                    <div className="col-span-1 text-center">Bookings</div>
-                    <div className="col-span-2 text-right">Paid</div>
-                    <div className="col-span-2 text-right">Last booking</div>
+                {/* one line per person; their history is in their details */}
+                <div className="hidden lg:grid lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1.4fr)_4.5rem_minmax(0,1fr)_7.5rem_7rem] gap-4 px-5 py-3 text-[13px] font-semibold text-text-subtle border-b border-adm-line">
+                    <div>Customer</div>
+                    <div>WhatsApp</div>
+                    <div>Email</div>
+                    <div className="text-center">Bookings</div>
+                    <div className="text-right">Paid</div>
+                    <div className="text-right">Customer since</div>
+                    <div className="text-right">Last booking</div>
                 </div>
                 {filtered.length === 0 ? (
                     loading ? <InlineLoader /> : <p className="text-sm text-text-subtle py-12 text-center">No customers found{q.trim() ? ` for “${q.trim()}”` : ''}.</p>
@@ -233,7 +238,7 @@ const CustomersView: React.FC = () => {
                     const count = liveCount(c);
                     return (
                         <button key={c.key} onClick={() => setSelected(c)}
-                            className="w-full block lg:grid lg:grid-cols-12 lg:gap-3 px-4 lg:px-5 py-3 lg:py-3.5 text-left border-b border-adm-line last:border-0 hover:bg-adm-hover transition-colors items-center">
+                            className="w-full block lg:grid lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1.4fr)_4.5rem_minmax(0,1fr)_7.5rem_7rem] lg:gap-4 px-4 lg:px-5 py-3 lg:py-3.5 text-left border-b border-adm-line last:border-0 hover:bg-adm-hover transition-colors items-center">
                             {/* narrow screens: name and what they paid, then one grey line with the rest */}
                             <div className="lg:hidden">
                                 <div className="flex items-baseline justify-between gap-3">
@@ -241,26 +246,23 @@ const CustomersView: React.FC = () => {
                                     <span className="text-[14px] text-text-light tabular-nums whitespace-nowrap">{spentLabel(c)}</span>
                                 </div>
                                 <div className="mt-0.5 flex items-baseline justify-between gap-3 text-xs text-text-subtle">
-                                    <span className="truncate tabular-nums">{[c.phone ? fmtPhone(c.phone) : c.email, `${count} booking${count === 1 ? '' : 's'}`, `last ${fmtDate(c.lastSeen)}`].filter(Boolean).join(' · ')}</span>
+                                    <span className="truncate tabular-nums">{[c.phone ? fmtPhone(c.phone) : c.email, `${count} booking${count === 1 ? '' : 's'}`, `since ${fmtDate(c.since)}`].filter(Boolean).join(' · ')}</span>
                                     {owedLabel(c) && <span className="whitespace-nowrap">{owedLabel(c)} unpaid</span>}
                                 </div>
                             </div>
-                            <div className="hidden lg:block lg:col-span-4 min-w-0">
+                            <div className="hidden lg:block min-w-0">
                                 <span className="block text-[14px] text-text-light truncate">{nameOf(c)}</span>
                             </div>
-                            {/* their WhatsApp; for someone with only an email (abroad), the email */}
-                            <div className="hidden lg:block lg:col-span-3 text-[14px] text-text-light tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : c.email || '—'}</div>
-                            <div className="hidden lg:block lg:col-span-1 lg:text-center text-[14px] text-text-light tabular-nums">
-                                <span className="inline-flex items-center gap-1" title={count > 1 ? 'Returning client' : undefined}>
-                                    {count > 1 && <Repeat size={11} />}{count}
-                                </span>
-                            </div>
-                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-[14px] text-text-light tabular-nums">
+                            <div className="hidden lg:block text-[14px] text-text-light tabular-nums truncate">{c.phone ? fmtPhone(c.phone) : '-'}</div>
+                            <div className="hidden lg:block text-[14px] text-text-light truncate" title={c.email || undefined}>{c.email || '-'}</div>
+                            <div className="hidden lg:block lg:text-center text-[14px] text-text-light tabular-nums">{count}</div>
+                            <div className="hidden lg:block lg:text-right text-[14px] text-text-light tabular-nums">
                                 {spentLabel(c)}
                                 {/* what they still owe, only when they do */}
                                 {owedLabel(c) && <div className="text-[14px]">{owedLabel(c)} unpaid</div>}
                             </div>
-                            <div className="hidden lg:block lg:col-span-2 lg:text-right text-[14px] text-text-light tabular-nums">{fmtDate(c.lastSeen)}</div>
+                            <div className="hidden lg:block lg:text-right text-[14px] text-text-light tabular-nums">{fmtDate(c.since)}</div>
+                            <div className="hidden lg:block lg:text-right text-[14px] text-text-light tabular-nums">{fmtDate(c.lastSeen)}</div>
                         </button>
                     );
                 })}
@@ -285,7 +287,7 @@ const CustomersView: React.FC = () => {
                     <Dialog size="lg" onClose={() => setSelected(null)} label={`Customer ${selected.name}`}
                         eyebrow={<>Customer <span className="font-normal normal-case tracking-normal" title="Client id">· {selected.clientId}</span></>}
                         title={<span className="inline-flex items-center gap-3"><span className="grid place-items-center w-10 h-10 shrink-0 rounded-full bg-lilac/15 text-lilac font-bold tracking-[-0.01em] text-base">{initials}</span><span>{nameOf(selected)}<MarketTag c={selected} /></span></span>}
-                        subtitle={`Client since ${fmtDate(selected.firstSeen)}`}>
+                        subtitle={`Customer since ${fmtDate(selected.since)}`}>
                         {/* how to reach them */}
                         <Section title="Contact" aside={selected.phone && (
                             <a href={`https://wa.me/${normPhone(selected.phone)}`} target="_blank" rel="noopener noreferrer"
