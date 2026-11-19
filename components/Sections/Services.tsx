@@ -783,7 +783,7 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
     const handleBookDeep = () => trackEvent('initiate_checkout', { item_name: '5-Card Reading', market: 'Global' }, 'InitiateCheckout', { content_name: '5-Card Reading', value: 20.00, currency: 'USD', content_category: 'Global Service' });
 
     // --- Handlers for Indonesia (IDR) ---
-    const handleNewYear = () => trackEvent('begin_checkout', { item_name: 'New Year Reading 2026', market: 'ID' }, 'InitiateCheckout', { content_name: 'New Year Reading 2026', value: 250000, currency: 'IDR', content_category: 'ID Service' });
+    const handleNewYear = () => trackEvent('begin_checkout', { item_name: 'New Year Reading', market: 'ID' }, 'InitiateCheckout', { content_name: 'New Year Reading', value: 250000, currency: 'IDR', content_category: 'ID Service' });
     const handleHappyBirthday = () => { trackWhatsApp('promo', 'ID'); trackEvent('begin_checkout', { item_name: promoTrackName(true), market: 'ID' }, 'InitiateCheckout', { content_name: promoTrackName(true), currency: 'IDR', content_category: 'ID Service' }); };
     const handleHappyBirthdayGlobal = () => { trackWhatsApp('promo', 'Global'); trackEvent('begin_checkout', { item_name: promoTrackName(false), market: 'Global' }, 'InitiateCheckout', { content_name: promoTrackName(false), currency: 'USD', content_category: 'Global Service' }); };
     const handleChat3Question = () => trackEvent('begin_checkout', { item_name: '3 Question Chat', market: 'ID' }, 'InitiateCheckout', { content_name: '3 Question Chat', value: 315000, currency: 'IDR', content_category: 'ID Service' });
@@ -820,9 +820,9 @@ const Services: React.FC<ServicesProps> = ({ isIndonesian = false }) => {
                 priceLabel: 'Rp 250K',
                 offers: [
                     {
-                        name: 'New Year Reading 2026', price: 'Rp 250K',
+                        name: 'New Year Reading', price: 'Rp 250K',
                         desc: 'Siap hadapi tahun depan dengan strategi matang.',
-                        features: 'General Overview 2026 · Harta, Tahta, Cinta · PDF via WhatsApp (2 hari kerja)',
+                        features: 'General Overview · Harta, Tahta, Cinta · PDF via WhatsApp (2 hari kerja)',
                         book: [{ href: 'https://forms.gle/xpMFUUhkyRW8FgY67', onClick: handleNewYear }],
                     },
                 ],

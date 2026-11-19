@@ -51,7 +51,7 @@ const SERVICE_OPTIONS: Record<string, SvcOpt[]> = {
         { label: 'Jam Pertama', amount: 450000, currency: 'IDR', durationMin: 60 },
         { label: 'Jam Berikutnya (per jam)', amount: 360000, currency: 'IDR', durationMin: 60 },
     ],
-    special: [{ label: 'New Year Reading 2026', amount: 250000, currency: 'IDR' }],
+    special: [{ label: 'New Year Reading', amount: 250000, currency: 'IDR' }],
     '3card': [{ label: '3-Card Spread', amount: 12, currency: 'USD' }],
     '5card': [{ label: '5-Card Deep', amount: 20, currency: 'USD' }],
 };

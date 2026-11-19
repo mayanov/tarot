@@ -148,7 +148,8 @@ export const ALL_SERVICES: { name: string; subs: string[] }[] = (() => {
 export const subServiceOf = (b: Booking) => {
     // the Special Edition PDF is named by its reading; bookings made on the site carry no
     // reading name (there's one: the New Year Reading), so that's what it is unless one is given
-    if (b.serviceId === 'special') return detailOf(b) || 'New Year Reading';
+    // (a year on the end, "New Year Reading 2026", is dropped: it's the same reading every year)
+    if (b.serviceId === 'special') return (detailOf(b) || 'New Year Reading').replace(/\s+\d{4}$/, '');
     return SERVICE_GROUP[b.serviceId] && b.serviceId !== 'live' ? [serviceTitle(b), detailOf(b)].filter(Boolean).join(' · ') : detailOf(b);
 };
 

@@ -20,9 +20,18 @@ const PAY = { all: 'All payments', paid: 'Paid', unpaid: 'Not paid' } as const;
 const WHERE = { all: 'Anywhere', ID: 'Indonesia', Global: 'Abroad' } as const;
 const SOURCE = { all: 'Any way', booking: 'Booked on the site', manual: 'Added by hand' } as const;
 // "Any date": clears both dates and closes the menu
-const AnyDate: React.FC<{ onClear: () => void }> = ({ onClear }) => {
+// the first of this month (local), e.g. "2026-11-01": Sales opens on this month
+const monthStart = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`; };
+
+/** a quick pick under the dates in the date menu ("This month", "Any date") */
+const DateQuick: React.FC<{ on: boolean; onPick: () => void; children: React.ReactNode }> = ({ on, onPick, children }) => {
     const close = useCloseMenu();
-    return <button type="button" onClick={() => { onClear(); close(); }} className="w-full text-center text-xs text-text-subtle hover:text-text-light transition-colors py-1">Any date</button>;
+    return (
+        <button type="button" onClick={() => { onPick(); close(); }}
+            className={`flex-1 rounded-lg py-1.5 text-xs transition-colors ${on ? 'bg-adm-hover font-semibold text-text-light' : 'text-text-subtle hover:text-text-light hover:bg-adm-hover'}`}>
+            {children}
+        </button>
+    );
 };
 
 const SalesView: React.FC = () => {
@@ -34,7 +43,8 @@ const SalesView: React.FC = () => {
     const [serviceFilter, setServiceFilter] = useState<string>('all');
     const [subFilter, setSubFilter] = useState<string>('all');
     const [sourceFilter, setSourceFilter] = useState<'all' | 'manual' | 'booking'>('all');
-    const [dateFrom, setDateFrom] = useState<string>('');
+    // opens on this month (from the 1st, to today); "Any date" shows everything
+    const [dateFrom, setDateFrom] = useState<string>(monthStart);
     const [dateTo, setDateTo] = useState<string>('');
     // the booking whose details are open (the same popup as Orders and Schedule)
     const [openId, setOpenId] = useState<string | null>(null);
@@ -139,7 +149,9 @@ const SalesView: React.FC = () => {
 
     // Short label for the collapsed booking-date button.
     const shortDate = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
-    const dateLabel = dateFrom && dateTo ? `${shortDate(dateFrom)} – ${shortDate(dateTo)}`
+    const thisMonth = dateFrom === monthStart() && !dateTo;
+    const dateLabel = thisMonth ? 'This month'
+        : dateFrom && dateTo ? `${shortDate(dateFrom)} – ${shortDate(dateTo)}`
         : dateFrom ? `From ${shortDate(dateFrom)}`
             : dateTo ? `Until ${shortDate(dateTo)}`
                 : 'Any date';
@@ -330,11 +342,14 @@ const SalesView: React.FC = () => {
                     <div className="p-1.5 space-y-3">
                         <MenuDate label="Booked from" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)} />
                         <MenuDate label="Until" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)} />
-                        {dateActive && <AnyDate onClear={() => { setDateFrom(''); setDateTo(''); }} />}
+                        <div className="flex gap-1">
+                            <DateQuick on={thisMonth} onPick={() => { setDateFrom(monthStart()); setDateTo(''); }}>This month</DateQuick>
+                            <DateQuick on={!dateActive} onPick={() => { setDateFrom(''); setDateTo(''); }}>Any date</DateQuick>
+                        </div>
                     </div>
                 </FilterMenu>
-                <ClearFilters show={payFilter !== 'all' || market !== 'all' || sourceFilter !== 'all' || serviceFilter !== 'all' || subFilter !== 'all' || dateActive}
-                    onClear={() => { setPayFilter('all'); setMarket('all'); setServiceFilter('all'); setSubFilter('all'); setSourceFilter('all'); setDateFrom(''); setDateTo(''); }} />
+                <ClearFilters show={payFilter !== 'all' || market !== 'all' || sourceFilter !== 'all' || serviceFilter !== 'all' || subFilter !== 'all' || !thisMonth}
+                    onClear={() => { setPayFilter('all'); setMarket('all'); setServiceFilter('all'); setSubFilter('all'); setSourceFilter('all'); setDateFrom(monthStart()); setDateTo(''); }} />
             </FilterBar>
 
             {/* one list: not paid first, then month by month */}
