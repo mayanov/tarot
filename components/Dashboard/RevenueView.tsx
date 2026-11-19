@@ -3,7 +3,7 @@ import Segmented from './ui/Segmented';
 import { FilterBar, FilterMenu, MenuOption, MenuDate, useCloseMenu } from './ui/Filters';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { colorFor } from './lib/serviceColor';
-import { CalendarDays, Repeat, UserPlus } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAllBookings, Booking, BOOKINGS_CHANGED } from '../../services/booking';
 import { LoaderCard } from './ui/InlineLoader';
@@ -208,24 +208,22 @@ const RevenueView: React.FC = () => {
         allRows.filter((r) => r.day.slice(0, 7) >= months[0].key).forEach((r) => monthSvc.set(r.serviceId, (monthSvc.get(r.serviceId) || 0) + r.amount));
 
 
-        // new and returning: a booking is someone's first, or they came back (paid before it)
-        const fresh = { amount: 0, who: new Set<number>() }, back = { amount: 0, who: new Set<number>() };
-        const perPerson = new Map<number, { amount: number; count: number; returning: boolean }>();
+        // the people who paid in the range: new (their first paid booking is in it) or
+        // came back (they'd paid before it), and the five who spent most
+        const perPerson = new Map<number, number>();
         rangeRows.forEach((r) => {
             const p = people.of.get(r.b.id) ?? -1;
-            const again = p >= 0 && !!people.first[p] && (r.b.createdAt || '') > people.first[p];
-            const side = again ? back : fresh;
-            side.amount += r.amount; side.who.add(p);
-            const x = perPerson.get(p) || { amount: 0, count: 0, returning: false };
-            x.amount += r.amount; x.count++; x.returning ||= again; perPerson.set(p, x);
+            perPerson.set(p, (perPerson.get(p) || 0) + r.amount);
         });
-        const top = [...perPerson.entries()].sort((a, b) => b[1].amount - a[1].amount).slice(0, 5)
-            .map(([p, x]) => ({ name: p >= 0 ? people.name[p] : '—', ...x }));
+        const cameBack = [...perPerson.keys()].filter((p) => p >= 0 && !!people.first[p] && people.first[p].slice(0, 10) < startISO).length;
+        const customers = { all: perPerson.size, cameBack, fresh: perPerson.size - cameBack };
+        const top = [...perPerson.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5)
+            .map(([p, amount]) => ({ name: p >= 0 ? people.name[p] : '—', amount }));
 
         const best = series.reduce((m, x) => ((x.total as number) > m.value ? { label: x.label, value: x.total as number } : m), { label: '—', value: 0 });
         return {
             currency, services, count: rangeRows.length, total, avg, series, monthlySeries, monthSvc, thisMonth, yearTotal, best,
-            earners, fresh: { amount: fresh.amount, people: fresh.who.size }, back: { amount: back.amount, people: back.who.size }, top,
+            earners, customers, top,
         };
     };
     const reports = useMemo(() => (['IDR', 'USD'] as Currency[]).map(report),
@@ -462,43 +460,54 @@ const RevenueView: React.FC = () => {
 
             </div>
 
-            {/* C. new and returning customers, and who spent most */}
-            <Card title="New and returning customers">
-                {reports.every((r) => !r.count) ? <Empty text="Nothing paid in this range." /> : (
-                    <div className="grid gap-6 xl:grid-cols-2">
-                        {reports.filter((r) => r.count).map((r) => {
-                            const all = r.fresh.amount + r.back.amount || 1;
-                            return (
-                                <div key={r.currency} className="min-w-0">
-                                    <CurHead c={r.currency} />
-                                    <div className="flex h-2.5 rounded-full overflow-hidden bg-adm-hover">
-                                        <span style={{ width: `${(r.fresh.amount / all) * 100}%` }} className="bg-sec-people" />
-                                        <span style={{ width: `${(r.back.amount / all) * 100}%` }} className="bg-sec-money" />
+            {/* C. who booked: how many people, new or back again; and who spent most */}
+            <div className="grid gap-4 lg:grid-cols-2">
+                <Card title="Customers">
+                    {reports.every((r) => !r.count) ? <Empty text="Nothing paid in this range." /> : (
+                        <div className="space-y-6">
+                            {reports.filter((r) => r.count).map((r) => {
+                                const c = r.customers;
+                                return (
+                                    <div key={r.currency}>
+                                        <h3 className="text-[11px] font-semibold text-text-subtle mb-1">{r.currency === 'IDR' ? 'Indonesia' : 'Global'}</h3>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-[26px] font-bold tracking-[-0.02em] text-text-light tabular-nums">{c.all}</span>
+                                            <span className="text-[13px] text-text-subtle">{c.all === 1 ? 'person booked' : 'people booked'}</span>
+                                        </div>
+                                        <div className="mt-2 flex h-2 rounded-full overflow-hidden bg-adm-hover">
+                                            <span style={{ width: `${(c.fresh / c.all) * 100}%` }} className="bg-sec-people" />
+                                            <span style={{ width: `${(c.cameBack / c.all) * 100}%` }} className="bg-sec-money" />
+                                        </div>
+                                        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px]">
+                                            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-sec-people" /><span className="font-semibold text-text-light tabular-nums">{c.fresh}</span><span className="text-text-subtle">new</span></span>
+                                            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-sec-money" /><span className="font-semibold text-text-light tabular-nums">{c.cameBack}</span><span className="text-text-subtle">came back</span></span>
+                                        </div>
                                     </div>
-                                    <div className="mt-2 grid grid-cols-2 gap-3 text-[12px]">
-                                        <div><span className="inline-flex items-center gap-1.5 text-text-subtle"><UserPlus size={13} className="text-sec-people" />New</span>
-                                            <div className="font-semibold text-text-light tabular-nums text-[14px]">{fmtMoney(r.fresh.amount, r.currency)}</div>
-                                            <div className="text-text-subtle">{r.fresh.people} first {r.fresh.people === 1 ? 'booking' : 'bookings'}</div></div>
-                                        <div><span className="inline-flex items-center gap-1.5 text-text-subtle"><Repeat size={13} className="text-sec-money" />Came back</span>
-                                            <div className="font-semibold text-text-light tabular-nums text-[14px]">{fmtMoney(r.back.amount, r.currency)}</div>
-                                            <div className="text-text-subtle">{r.back.people} {r.back.people === 1 ? 'person' : 'people'} booked again</div></div>
-                                    </div>
-                                    <h4 className="mt-4 mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-subtle">Top customers</h4>
+                                );
+                            })}
+                        </div>
+                    )}
+                </Card>
+                <Card title="Top customers">
+                    {reports.every((r) => !r.count) ? <Empty text="Nothing paid in this range." /> : (
+                        <div className="space-y-6">
+                            {reports.filter((r) => r.count).map((r) => (
+                                <div key={r.currency}>
+                                    <h3 className="text-[11px] font-semibold text-text-subtle mb-1">{r.currency === 'IDR' ? 'Indonesia' : 'Global'}</h3>
                                     <ol className="divide-y divide-adm-line">
                                         {r.top.map((t, i) => (
-                                            <li key={i} className="flex items-baseline justify-between gap-3 py-1.5 text-[13px]">
-                                                <span className="flex items-baseline gap-2 min-w-0"><span className="text-text-subtle tabular-nums w-3">{i + 1}</span><span className="truncate text-text-light">{t.name}</span>
-                                                    <span className="text-[11px] text-text-subtle whitespace-nowrap">{t.count} {t.count === 1 ? 'booking' : 'bookings'}{t.returning ? ' · came back' : ''}</span></span>
+                                            <li key={i} className="flex items-baseline justify-between gap-3 py-2 text-[13px]">
+                                                <span className="flex items-baseline gap-2.5 min-w-0"><span className="text-text-subtle tabular-nums w-3">{i + 1}</span><span className="truncate text-text-light font-medium">{t.name}</span></span>
                                                 <span className="tabular-nums font-semibold text-text-light whitespace-nowrap">{fmtMoney(t.amount, r.currency)}</span>
                                             </li>
                                         ))}
                                     </ol>
                                 </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </Card>
+                            ))}
+                        </div>
+                    )}
+                </Card>
+            </div>
             </>)}
 
             {loading && <p className="text-center text-sm text-text-subtle">Loading…</p>}
